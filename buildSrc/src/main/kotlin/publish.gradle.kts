@@ -39,7 +39,7 @@ publishing {
 
             pom {
                 description.set("A template for Kotlin Android projects")
-                url.set("https://github.com/cortinico/kotlin-android-template/")
+                url.set("https://github.com/freesss/nltimer/")
 
                 licenses {
                     license {
@@ -49,18 +49,18 @@ publishing {
                 }
                 developers {
                     developer {
-                        id.set("cortinico")
-                        name.set("Nicola Corti")
+                        id.set("freesss")
+                        name.set("freesss")
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/cortinico/kotlin-android-template.git")
-                    developerConnection.set("scm:git:ssh://github.com/cortinico/kotlin-android-template.git")
-                    url.set("https://github.com/cortinico/kotlin-android-template/")
+                    connection.set("scm:git:git://github.com/freesss/nltimer.git")
+                    developerConnection.set("scm:git:ssh://github.com/freesss/nltimer.git")
+                    url.set("https://github.com/freesss/nltimer/")
                 }
                 issueManagement {
                     system.set("GitHub Issues")
-                    url.set("https://github.com/cortinico/kotlin-android-template/issues")
+                    url.set("https://github.com/freesss/nltimer/issues")
                 }
             }
         }
