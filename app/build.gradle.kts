@@ -37,8 +37,24 @@ android {
     }
 
     buildTypes {
+        val localProperties = com.android.build.gradle.internal.cxx.configure.gradleLocalProperties(rootDir, providers)
+        val releaseKeystorePath = localProperties.getProperty("keystore.path", System.getenv("KEYSTORE_PATH") ?: "")
+        val releaseKeystorePassword = localProperties.getProperty("keystore.password", System.getenv("KEYSTORE_PASSWORD") ?: "")
+        val releaseKeyAlias = localProperties.getProperty("key.alias", System.getenv("KEY_ALIAS") ?: "")
+        val releaseKeyPassword = localProperties.getProperty("key.password", System.getenv("KEY_PASSWORD") ?: "")
+
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = if (releaseKeystorePath.isNotBlank()) {
+                signingConfigs.create("release") {
+                    storeFile = file(releaseKeystorePath)
+                    storePassword = releaseKeystorePassword
+                    keyAlias = releaseKeyAlias
+                    keyPassword = releaseKeyPassword
+                }
+            } else {
+                signingConfigs.getByName("debug")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
