@@ -11,15 +11,13 @@ plugins {
 val detektFormatting = libs.detekt.formatting
 
 subprojects {
-    apply {
-        plugin("io.gitlab.arturbosch.detekt")
-    }
+    plugins.apply("io.gitlab.arturbosch.detekt")
 
     detekt {
         config.from(rootProject.files("config/detekt/detekt.yml"))
     }
 
     dependencies {
-        detektPlugins(detektFormatting)
+        "detektPlugins"(detektFormatting)
     }
 }
