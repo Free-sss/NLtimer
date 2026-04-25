@@ -13,13 +13,12 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = ("kotlin-android-template")
+rootProject.name = "NLtimer"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 include(
     "app",
-    "library-android",
-    "library-compose",
-    "library-kotlin"
+    "core:designsystem",
+    "feature:timer"
 )
