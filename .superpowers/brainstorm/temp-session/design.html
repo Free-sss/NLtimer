@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLtimer 设计方案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+  h1 { text-align: center; margin-bottom: 10px; font-size: 28px; color: #d0bcff; }
+  .subtitle { text-align: center; color: #aaa; margin-bottom: 40px; }
+  .section { margin-bottom: 40px; }
+  .section h2 { color: #d0bcff; margin-bottom: 15px; padding-left: 12px; border-left: 3px solid #6750a4; }
+  
+  /* Architecture diagram */
+  .arch { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 20px 0; }
+  .arch-row { display: flex; gap: 12px; }
+  .arch-box { flex: 1; background: #16213e; border: 2px solid #2a2a4a; border-radius: 8px; padding: 12px; text-align: center; }
+  .arch-box .title { font-weight: 600; color: #d0bcff; margin-bottom: 6px; font-size: 14px; }
+  .arch-box .desc { font-size: 12px; color: #aaa; }
+  .arch-arrow { text-align: center; color: #6750a4; font-size: 20px; margin: 4px 0; }
+  
+  /* File tree */
+  .file-tree { background: #0f0f23; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; margin: 15px 0; }
+  .file-tree .folder { color: #d0bcff; }
+  .file-tree .file { color: #ccc; }
+  .file-tree .new { color: #4caf50; }
+  .file-tree .mod { color: #ff9800; }
+  
+  /* Component card */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 20px 0; }
+  .card { background: #16213e; border-radius: 10px; padding: 16px; border: 1px solid #2a2a4a; }
+  .card h3 { color: #d0bcff; margin-bottom: 8px; font-size: 16px; }
+  .card ul { list-style: none; padding: 0; }
+  .card li { padding: 4px 0; font-size: 13px; color: #ccc; border-bottom: 1px solid #1a1a2e; }
+  .card li:last-child { border: none; }
+  .card li::before { content: "•"; color: #6750a4; margin-right: 8px; }
+  
+  /* Approval */
+  .approved { background: rgba(76, 175, 80, 0.15); border: 1px solid #4caf50; border-radius: 8px; padding: 16px; text-align: center; margin-top: 30px; }
+  .approved p { color: #4caf50; font-size: 16px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>NLtimer 应用框架设计</h1>
+  <p class="subtitle">模态侧边栏 (Modal Drawer) + 底部导航栏 (Navigation Bar)</p>
+
+  <div class="section">
+    <h2>1. 架构概览</h2>
+    <div class="arch">
+      <div class="arch-row">
+        <div class="arch-box">
+          <div class="title">MainActivity</div>
+          <div class="desc">单 Activity 入口<br/>enableEdgeToEdge + setContent</div>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row">
+        <div class="arch-box">
+          <div class="title">NLtimerApp (Composable)</div>
+          <div class="desc">Scaffold + ModalDrawerLayout + BottomNavigation<br/>管理全局状态：侧边栏展开/收起</div>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row">
+        <div class="arch-box">
+          <div class="title">NLtimerNavHost</div>
+          <div class="desc">NavHost 路由容器</div>
+        </div>
+      </div>
+      <div class="arch-arrow">▼</div>
+      <div class="arch-row">
+        <div class="arch-box">
+          <div class="title">Screen 路由页面</div>
+          <div class="desc">HomeRoute · SubRoute · StatsRoute · SettingsRoute</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>2. 文件结构变更</h2>
+    <div class="file-tree">
+      <span class="folder">app/src/main/java/com/nltimer/app/</span><br>
+      &nbsp;&nbsp;<span class="mod">NLtimerApp.kt</span> <span class="new">← 修改：添加 Drawer + BottomNav 骨架</span><br>
+      &nbsp;&nbsp;<span class="new">NLtimerScaffold.kt</span> <span class="new">← 新建：Scaffold 布局组件</span><br>
+      &nbsp;&nbsp;<span class="new">component/AppDrawer.kt</span> <span class="new">← 新建：侧边栏组件</span><br>
+      &nbsp;&nbsp;<span class="new">component/AppBottomNavigation.kt</span> <span class="new">← 新建：底部导航组件</span><br>
+      &nbsp;&nbsp;<span class="folder">navigation/</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span class="mod">NLtimerNavHost.kt</span> <span class="new">← 修改：新增 4 个路由</span><br>
+      <br>
+      <span class="folder">feature/</span><br>
+      &nbsp;&nbsp;<span class="folder">timer/</span> (保持不变)<br>
+      &nbsp;&nbsp;<span class="new">home/</span> <span class="new">← 新建：主页模块</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ui/HomeScreen.kt<br>
+      &nbsp;&nbsp;<span class="new">sub/</span> <span class="new">← 新建：副页模块</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ui/SubScreen.kt<br>
+      &nbsp;&nbsp;<span class="new">stats/</span> <span class="new">← 新建：统计模块</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ui/StatsScreen.kt<br>
+      &nbsp;&nbsp;<span class="new">settings/</span> <span class="new">← 新建：设置模块</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;ui/SettingsScreen.kt
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>3. 核心组件设计</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>AppDrawer (侧边栏)</h3>
+        <ul>
+          <li>ModalNavigationDrawer 包裹</li>
+          <li>抽屉内容：标题 + 选项列表</li>
+          <li>dismissible: true (点击外部关闭)</li>
+          <li>平滑过渡动画 (built-in)</li>
+          <li>至少 2 个测试选项</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>AppBottomNavigation</h3>
+        <ul>
+          <li>4 个 NavigationBarItem</li>
+          <li>主页 · 副页 · 统计 · 设置</li>
+          <li>Material Icons: Home, Apps, BarChart, Settings</li>
+          <li>选中状态跟随当前路由</li>
+          <li>适配不同屏幕尺寸</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>NLtimerScaffold</h3>
+        <ul>
+          <li>统一页面骨架</li>
+          <li>顶部：TopAppBar (含菜单按钮)</li>
+          <li>中间：NavHost 内容区</li>
+          <li>底部：BottomNavigation</li>
+          <li>外层包裹 ModalNavigationDrawer</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>路由 Screen 页面</h3>
+        <ul>
+          <li>简单占位文本 + 图标</li>
+          <li>使用 MD3 组件展示</li>
+          <li>无状态 Composable</li>
+          <li>便于后续填充业务逻辑</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>4. 依赖变更</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>app/build.gradle.kts</h3>
+        <ul>
+          <li>已有 compose-material3 (含 Drawer/Nav)</li>
+          <li>已有 navigation-compose</li>
+          <li>无需新增依赖</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>feature 模块</h3>
+        <ul>
+          <li>新建 feature/home/build.gradle.kts</li>
+          <li>新建 feature/sub/build.gradle.kts</li>
+          <li>新建 feature/stats/build.gradle.kts</li>
+          <li>新建 feature/settings/build.gradle.kts</li>
+          <li>或统一放在 feature/timer 同级</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. 导航路由表</h2>
+    <div class="file-tree">
+      <span class="folder">路由配置：</span><br>
+      &nbsp;&nbsp;<span class="new">"home"</span> → HomeRoute (主页)<br>
+      &nbsp;&nbsp;<span class="new">"sub"</span> → SubRoute (副页)<br>
+      &nbsp;&nbsp;<span class="new">"stats"</span> → StatsRoute (统计)<br>
+      &nbsp;&nbsp;<span class="new">"settings"</span> → SettingsRoute (设置)<br>
+      <br>
+      <span class="folder">启动目的地：</span> "home" (替代原 "timer")<br>
+      <span class="folder">底部导航选中：</span> 根据当前路由自动高亮
+    </div>
+  </div>
+
+  <div class="approved">
+    <p>✓ 设计方案已展示</p>
+    <p style="font-size: 14px; color: #aaa; font-weight: normal; margin-top: 8px;">
+      如果方案合理，回复"确认"或"开始"，我将编写设计文档并生成实现计划
+    </p>
+  </div>
+</div>
+</body>
+</html>

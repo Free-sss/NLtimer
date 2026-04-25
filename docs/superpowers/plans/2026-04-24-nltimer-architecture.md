@@ -1,6 +1,6 @@
-# NLtimer 架构重构实现计划
+﻿# NLtimer 架构重构实现计划
 
-> **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
+> **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [x]`）语法来跟踪进度。
 
 **目标：** 将 NLtimer 从 kotlin-android-template 模板全面重构为基于 MD3 + Clean Architecture + MVVM 的计时器应用
 
@@ -8,69 +8,70 @@
 
 **技术栈：** Kotlin 2.3.21, Compose BOM 2025.12.01, Material3, Hilt 2.56.1, KSP, Navigation Compose 2.9.0, Lifecycle 2.9.0
 
----
+***
 
 ## 文件结构
 
 ### 删除的文件/目录
 
-| 路径 | 原因 |
-|------|------|
-| `library-android/` | 模板模块 |
-| `library-compose/` | 模板模块 |
-| `library-kotlin/` | 模板模块 |
-| `buildSrc/` | 模板专用脚本 |
-| `app/src/main/res/layout/` | 传统 XML 布局 |
-| `app/src/main/res/drawable*/` | 模板占位图标 |
-| `app/src/main/res/mipmap*/` | 模板占位图标 |
-| `app/src/main/res/values/colors.xml` | MD3 主题替代 |
-| `app/src/main/res/values/dimens.xml` | 不再需要 |
-| `app/src/main/res/values/styles.xml` | MD3 主题替代 |
-| `.github/workflows/cleanup.yaml` | 模板 CI |
-| `.github/template-cleanup/` | 模板目录 |
-| `renovate.json` | 模板配置 |
-| `TROUBLESHOOTING.md` | 模板文档 |
-| `app/src/main/java/com/ncorti/` | 旧包名源码 |
+| 路径                                   | 原因        |
+| ------------------------------------ | --------- |
+| `library-android/`                   | 模板模块      |
+| `library-compose/`                   | 模板模块      |
+| `library-kotlin/`                    | 模板模块      |
+| `buildSrc/`                          | 模板专用脚本    |
+| `app/src/main/res/layout/`           | 传统 XML 布局 |
+| `app/src/main/res/drawable*/`        | 模板占位图标    |
+| `app/src/main/res/mipmap*/`          | 模板占位图标    |
+| `app/src/main/res/values/colors.xml` | MD3 主题替代  |
+| `app/src/main/res/values/dimens.xml` | 不再需要      |
+| `app/src/main/res/values/styles.xml` | MD3 主题替代  |
+| `.github/workflows/cleanup.yaml`     | 模板 CI     |
+| `.github/template-cleanup/`          | 模板目录      |
+| `renovate.json`                      | 模板配置      |
+| `TROUBLESHOOTING.md`                 | 模板文档      |
+| `app/src/main/java/com/ncorti/`      | 旧包名源码     |
 
 ### 修改的文件
 
-| 路径 | 变更 |
-|------|------|
-| `gradle.properties` | 更新 APP_ID，删除 GROUP/VERSION |
-| `settings.gradle.kts` | 更新 rootProject.name，替换模块列表 |
-| `build.gradle.kts`（根级） | 移除模板插件，新增 Hilt/KSP 插件 |
-| `gradle/libs.versions.toml` | 新增 Hilt/Navigation/Lifecycle/KSP 依赖，移除模板依赖 |
-| `app/build.gradle.kts` | 全面重写为 Compose + Hilt |
-| `app/src/main/AndroidManifest.xml` | 更新引用，添加 Application 类 |
-| `app/src/main/res/values/strings.xml` | 更新应用名 |
+| 路径                                    | 变更                                         |
+| ------------------------------------- | ------------------------------------------ |
+| `gradle.properties`                   | 更新 APP\_ID，删除 GROUP/VERSION                |
+| `settings.gradle.kts`                 | 更新 rootProject.name，替换模块列表                 |
+| `build.gradle.kts`（根级）                | 移除模板插件，新增 Hilt/KSP 插件                      |
+| `gradle/libs.versions.toml`           | 新增 Hilt/Navigation/Lifecycle/KSP 依赖，移除模板依赖 |
+| `app/build.gradle.kts`                | 全面重写为 Compose + Hilt                       |
+| `app/src/main/AndroidManifest.xml`    | 更新引用，添加 Application 类                      |
+| `app/src/main/res/values/strings.xml` | 更新应用名                                      |
 
 ### 创建的文件
 
-| 路径 | 职责 |
-|------|------|
-| `core/designsystem/build.gradle.kts` | designsystem 模块构建配置 |
-| `core/designsystem/src/main/AndroidManifest.xml` | 库模块 manifest |
-| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Color.kt` | MD3 配色定义 |
-| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Type.kt` | MD3 字体定义 |
-| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Theme.kt` | AppTheme composable |
-| `feature/timer/build.gradle.kts` | timer 模块构建配置 |
-| `feature/timer/src/main/AndroidManifest.xml` | 库模块 manifest |
-| `feature/timer/src/main/java/com/nltimer/feature/timer/model/TimerState.kt` | 计时器状态数据模型 |
-| `feature/timer/src/main/java/com/nltimer/feature/timer/repository/TimerRepository.kt` | 计时逻辑 Flow |
-| `feature/timer/src/main/java/com/nltimer/feature/timer/viewmodel/TimerViewModel.kt` | ViewModel + StateFlow |
-| `feature/timer/src/main/java/com/nltimer/feature/timer/ui/TimerScreen.kt` | Compose UI |
-| `feature/timer/src/test/java/com/nltimer/feature/timer/repository/TimerRepositoryTest.kt` | Repository 单元测试 |
-| `feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel/TimerViewModelTest.kt` | ViewModel 单元测试 |
-| `app/src/main/java/com/nltimer/app/NLtimerApplication.kt` | Hilt Application |
-| `app/src/main/java/com/nltimer/app/MainActivity.kt` | 单 Activity Compose 入口 |
-| `app/src/main/java/com/nltimer/app/NLtimerApp.kt` | 顶层 Composable |
-| `app/src/main/java/com/nltimer/app/navigation/NLtimerNavHost.kt` | Navigation Graph |
+| 路径                                                                                        | 职责                    |
+| ----------------------------------------------------------------------------------------- | --------------------- |
+| `core/designsystem/build.gradle.kts`                                                      | designsystem 模块构建配置   |
+| `core/designsystem/src/main/AndroidManifest.xml`                                          | 库模块 manifest          |
+| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Color.kt`            | MD3 配色定义              |
+| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Type.kt`             | MD3 字体定义              |
+| `core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Theme.kt`            | AppTheme composable   |
+| `feature/timer/build.gradle.kts`                                                          | timer 模块构建配置          |
+| `feature/timer/src/main/AndroidManifest.xml`                                              | 库模块 manifest          |
+| `feature/timer/src/main/java/com/nltimer/feature/timer/model/TimerState.kt`               | 计时器状态数据模型             |
+| `feature/timer/src/main/java/com/nltimer/feature/timer/repository/TimerRepository.kt`     | 计时逻辑 Flow             |
+| `feature/timer/src/main/java/com/nltimer/feature/timer/viewmodel/TimerViewModel.kt`       | ViewModel + StateFlow |
+| `feature/timer/src/main/java/com/nltimer/feature/timer/ui/TimerScreen.kt`                 | Compose UI            |
+| `feature/timer/src/test/java/com/nltimer/feature/timer/repository/TimerRepositoryTest.kt` | Repository 单元测试       |
+| `feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel/TimerViewModelTest.kt`   | ViewModel 单元测试        |
+| `app/src/main/java/com/nltimer/app/NLtimerApplication.kt`                                 | Hilt Application      |
+| `app/src/main/java/com/nltimer/app/MainActivity.kt`                                       | 单 Activity Compose 入口 |
+| `app/src/main/java/com/nltimer/app/NLtimerApp.kt`                                         | 顶层 Composable         |
+| `app/src/main/java/com/nltimer/app/navigation/NLtimerNavHost.kt`                          | Navigation Graph      |
 
----
+***
 
 ## 任务 1：删除模板模块和模板专用文件
 
 **文件：**
+
 - 删除：`library-android/`
 - 删除：`library-compose/`
 - 删除：`library-kotlin/`
@@ -79,14 +80,13 @@
 - 删除：`.github/template-cleanup/`
 - 删除：`renovate.json`
 - 删除：`TROUBLESHOOTING.md`
-
-- [ ] **步骤 1：删除模板模块目录**
+- [x] **步骤 1：删除模板模块目录**
 
 ```bash
 Remove-Item -Recurse -Force library-android/, library-compose/, library-kotlin/, buildSrc/
 ```
 
-- [ ] **步骤 2：删除模板专用 CI 和配置文件**
+- [x] **步骤 2：删除模板专用 CI 和配置文件**
 
 ```bash
 Remove-Item -Force .github/workflows/cleanup.yaml
@@ -95,7 +95,7 @@ Remove-Item -Force renovate.json
 Remove-Item -Force TROUBLESHOOTING.md
 ```
 
-- [ ] **步骤 3：验证删除完成**
+- [x] **步骤 3：验证删除完成**
 
 ```bash
 ls
@@ -103,21 +103,21 @@ ls
 
 预期：目录中不再有 `library-android`、`library-compose`、`library-kotlin`、`buildSrc`，根目录不再有 `renovate.json`、`TROUBLESHOOTING.md`。
 
-- [ ] **步骤 4：Commit**
+- [x] **步骤 4：Commit**
 
 ```bash
 git add -A
 git commit -m "chore: 删除模板模块和模板专用文件"
 ```
 
----
+***
 
 ## 任务 2：更新版本目录（libs.versions.toml）
 
 **文件：**
-- 修改：`gradle/libs.versions.toml`
 
-- [ ] **步骤 1：重写 libs.versions.toml**
+- 修改：`gradle/libs.versions.toml`
+- [x] **步骤 1：重写 libs.versions.toml**
 
 将整个文件替换为以下内容：
 
@@ -174,31 +174,31 @@ hilt_android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ```
 
-- [ ] **步骤 2：验证文件内容**
+- [x] **步骤 2：验证文件内容**
 
 ```bash
 cat gradle/libs.versions.toml
 ```
 
-预期：包含 hilt、navigation_compose、lifecycle、ksp 等新依赖，不再有 appcompat、constraint_layout、espresso_core、nexus_publish。
+预期：包含 hilt、navigation\_compose、lifecycle、ksp 等新依赖，不再有 appcompat、constraint\_layout、espresso\_core、nexus\_publish。
 
-- [ ] **步骤 3：Commit**
+- [x] **步骤 3：Commit**
 
 ```bash
 git add gradle/libs.versions.toml
 git commit -m "chore: 更新版本目录，新增 Hilt/Navigation/Lifecycle/KSP 依赖"
 ```
 
----
+***
 
 ## 任务 3：更新配置文件
 
 **文件：**
+
 - 修改：`gradle.properties`
 - 修改：`settings.gradle.kts`
 - 修改：`build.gradle.kts`（根级）
-
-- [ ] **步骤 1：重写 gradle.properties**
+- [x] **步骤 1：重写 gradle.properties**
 
 ```properties
 org.gradle.jvmargs=-Xmx1536m
@@ -211,7 +211,7 @@ APP_VERSION_CODE=1
 APP_ID=com.nltimer.app
 ```
 
-- [ ] **步骤 2：重写 settings.gradle.kts**
+- [x] **步骤 2：重写 settings.gradle.kts**
 
 ```kotlin
 pluginManagement {
@@ -240,7 +240,7 @@ include(
 )
 ```
 
-- [ ] **步骤 3：重写根级 build.gradle.kts**
+- [x] **步骤 3：重写根级 build.gradle.kts**
 
 ```kotlin
 plugins {
@@ -270,7 +270,7 @@ subprojects {
 }
 ```
 
-- [ ] **步骤 4：验证配置文件**
+- [x] **步骤 4：验证配置文件**
 
 ```bash
 cat gradle.properties
@@ -278,33 +278,33 @@ cat settings.gradle.kts
 cat build.gradle.kts
 ```
 
-预期：gradle.properties 中 APP_ID=com.nltimer.app，无 GROUP/VERSION；settings.gradle.kts 中 rootProject.name="NLtimer"，包含 app/core:designsystem/feature:timer；根级 build.gradle.kts 无 cleanup/base/nexus-publish 引用。
+预期：gradle.properties 中 APP\_ID=com.nltimer.app，无 GROUP/VERSION；settings.gradle.kts 中 rootProject.name="NLtimer"，包含 app/core:designsystem/feature:timer；根级 build.gradle.kts 无 cleanup/base/nexus-publish 引用。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add gradle.properties settings.gradle.kts build.gradle.kts
 git commit -m "chore: 更新配置文件，切换到新模块结构"
 ```
 
----
+***
 
 ## 任务 4：创建 core:designsystem 模块
 
 **文件：**
+
 - 创建：`core/designsystem/build.gradle.kts`
 - 创建：`core/designsystem/src/main/AndroidManifest.xml`
 - 创建：`core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Color.kt`
 - 创建：`core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Type.kt`
 - 创建：`core/designsystem/src/main/java/com/nltimer/core/designsystem/theme/Theme.kt`
-
-- [ ] **步骤 1：创建模块目录结构**
+- [x] **步骤 1：创建模块目录结构**
 
 ```bash
 mkdir -p core/designsystem/src/main/java/com/nltimer/core/designsystem/theme
 ```
 
-- [ ] **步骤 2：创建 core/designsystem/build.gradle.kts**
+- [x] **步骤 2：创建 core/designsystem/build.gradle.kts**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -357,14 +357,14 @@ dependencies {
 }
 ```
 
-- [ ] **步骤 3：创建 core/designsystem/src/main/AndroidManifest.xml**
+- [x] **步骤 3：创建 core/designsystem/src/main/AndroidManifest.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" />
 ```
 
-- [ ] **步骤 4：创建 Color.kt**
+- [x] **步骤 4：创建 Color.kt**
 
 ```kotlin
 package com.nltimer.core.designsystem.theme
@@ -432,7 +432,7 @@ val md_theme_dark_outlineVariant = Color(0xFF49454F)
 val md_theme_dark_scrim = Color(0xFF000000)
 ```
 
-- [ ] **步骤 5：创建 Type.kt**
+- [x] **步骤 5：创建 Type.kt**
 
 ```kotlin
 package com.nltimer.core.designsystem.theme
@@ -521,7 +521,7 @@ val Typography = Typography(
 )
 ```
 
-- [ ] **步骤 6：创建 Theme.kt**
+- [x] **步骤 6：创建 Theme.kt**
 
 ```kotlin
 package com.nltimer.core.designsystem.theme
@@ -611,25 +611,25 @@ fun AppTheme(
 }
 ```
 
-- [ ] **步骤 7：Commit**
+- [x] **步骤 7：Commit**
 
 ```bash
 git add core/
 git commit -m "feat: 创建 core:designsystem 模块，实现 MD3 主题系统"
 ```
 
----
+***
 
 ## 任务 5：创建 feature:timer 模块 — Model 与 Repository（TDD）
 
 **文件：**
+
 - 创建：`feature/timer/build.gradle.kts`
 - 创建：`feature/timer/src/main/AndroidManifest.xml`
 - 创建：`feature/timer/src/main/java/com/nltimer/feature/timer/model/TimerState.kt`
 - 创建：`feature/timer/src/main/java/com/nltimer/feature/timer/repository/TimerRepository.kt`
 - 创建：`feature/timer/src/test/java/com/nltimer/feature/timer/repository/TimerRepositoryTest.kt`
-
-- [ ] **步骤 1：创建模块目录结构**
+- [x] **步骤 1：创建模块目录结构**
 
 ```bash
 mkdir -p feature/timer/src/main/java/com/nltimer/feature/timer/model
@@ -640,7 +640,7 @@ mkdir -p feature/timer/src/test/java/com/nltimer/feature/timer/repository
 mkdir -p feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel
 ```
 
-- [ ] **步骤 2：创建 feature/timer/build.gradle.kts**
+- [x] **步骤 2：创建 feature/timer/build.gradle.kts**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -712,14 +712,14 @@ dependencies {
 }
 ```
 
-- [ ] **步骤 3：创建 feature/timer/src/main/AndroidManifest.xml**
+- [x] **步骤 3：创建 feature/timer/src/main/AndroidManifest.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" />
 ```
 
-- [ ] **步骤 4：编写 TimerRepository 失败测试**
+- [x] **步骤 4：编写 TimerRepository 失败测试**
 
 创建 `feature/timer/src/test/java/com/nltimer/feature/timer/repository/TimerRepositoryTest.kt`：
 
@@ -746,7 +746,7 @@ class TimerRepositoryTest {
 }
 ```
 
-- [ ] **步骤 5：运行测试验证失败**
+- [x] **步骤 5：运行测试验证失败**
 
 ```bash
 ./gradlew :feature:timer:test --tests "com.nltimer.feature.timer.repository.TimerRepositoryTest"
@@ -754,7 +754,7 @@ class TimerRepositoryTest {
 
 预期：编译失败，`TimerRepository` 类不存在。
 
-- [ ] **步骤 6：创建 TimerState.kt**
+- [x] **步骤 6：创建 TimerState.kt**
 
 ```kotlin
 package com.nltimer.feature.timer.model
@@ -765,7 +765,7 @@ data class TimerState(
 )
 ```
 
-- [ ] **步骤 7：创建 TimerRepository.kt**
+- [x] **步骤 7：创建 TimerRepository.kt**
 
 ```kotlin
 package com.nltimer.feature.timer.repository
@@ -786,7 +786,7 @@ class TimerRepository {
 }
 ```
 
-- [ ] **步骤 8：运行测试验证通过**
+- [x] **步骤 8：运行测试验证通过**
 
 ```bash
 ./gradlew :feature:timer:test --tests "com.nltimer.feature.timer.repository.TimerRepositoryTest"
@@ -794,22 +794,22 @@ class TimerRepository {
 
 预期：PASS。注意：`kotlinx.coroutines.test` 的 `runTest` 使用虚拟时间，`delay(1000)` 会被跳过。
 
-- [ ] **步骤 9：Commit**
+- [x] **步骤 9：Commit**
 
 ```bash
 git add feature/
 git commit -m "feat: 创建 feature:timer 模块，实现 TimerState 和 TimerRepository（TDD）"
 ```
 
----
+***
 
 ## 任务 6：创建 feature:timer 模块 — ViewModel（TDD）
 
 **文件：**
+
 - 创建：`feature/timer/src/main/java/com/nltimer/feature/timer/viewmodel/TimerViewModel.kt`
 - 创建：`feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel/TimerViewModelTest.kt`
-
-- [ ] **步骤 1：编写 TimerViewModel 失败测试**
+- [x] **步骤 1：编写 TimerViewModel 失败测试**
 
 创建 `feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel/TimerViewModelTest.kt`：
 
@@ -871,7 +871,7 @@ class TimerViewModelTest {
 }
 ```
 
-- [ ] **步骤 2：运行测试验证失败**
+- [x] **步骤 2：运行测试验证失败**
 
 ```bash
 ./gradlew :feature:timer:test --tests "com.nltimer.feature.timer.viewmodel.TimerViewModelTest"
@@ -879,7 +879,7 @@ class TimerViewModelTest {
 
 预期：编译失败，`TimerViewModel` 类不存在。
 
-- [ ] **步骤 3：创建 TimerViewModel.kt**
+- [x] **步骤 3：创建 TimerViewModel.kt**
 
 ```kotlin
 package com.nltimer.feature.timer.viewmodel
@@ -939,7 +939,7 @@ class TimerViewModel @Inject constructor(
 }
 ```
 
-- [ ] **步骤 4：运行测试验证通过**
+- [x] **步骤 4：运行测试验证通过**
 
 ```bash
 ./gradlew :feature:timer:test --tests "com.nltimer.feature.timer.viewmodel.TimerViewModelTest"
@@ -947,7 +947,7 @@ class TimerViewModel @Inject constructor(
 
 预期：PASS。
 
-- [ ] **步骤 5：Commit**
+- [x] **步骤 5：Commit**
 
 ```bash
 git add feature/timer/src/main/java/com/nltimer/feature/timer/viewmodel/
@@ -955,14 +955,14 @@ git add feature/timer/src/test/java/com/nltimer/feature/timer/viewmodel/
 git commit -m "feat: 实现 TimerViewModel（TDD）"
 ```
 
----
+***
 
 ## 任务 7：创建 feature:timer 模块 — UI
 
 **文件：**
-- 创建：`feature/timer/src/main/java/com/nltimer/feature/timer/ui/TimerScreen.kt`
 
-- [ ] **步骤 1：创建 TimerScreen.kt**
+- 创建：`feature/timer/src/main/java/com/nltimer/feature/timer/ui/TimerScreen.kt`
+- [x] **步骤 1：创建 TimerScreen.kt**
 
 ```kotlin
 package com.nltimer.feature.timer.ui
@@ -1088,18 +1088,19 @@ private fun TimerScreenInitialPreview() {
 }
 ```
 
-- [ ] **步骤 2：Commit**
+- [x] **步骤 2：Commit**
 
 ```bash
 git add feature/timer/src/main/java/com/nltimer/feature/timer/ui/
 git commit -m "feat: 实现 TimerScreen Compose UI"
 ```
 
----
+***
 
 ## 任务 8：重写 app 模块
 
 **文件：**
+
 - 修改：`app/build.gradle.kts`
 - 修改：`app/src/main/AndroidManifest.xml`
 - 修改：`app/src/main/res/values/strings.xml`
@@ -1107,8 +1108,7 @@ git commit -m "feat: 实现 TimerScreen Compose UI"
 - 创建：`app/src/main/java/com/nltimer/app/MainActivity.kt`
 - 创建：`app/src/main/java/com/nltimer/app/NLtimerApp.kt`
 - 创建：`app/src/main/java/com/nltimer/app/navigation/NLtimerNavHost.kt`
-
-- [ ] **步骤 1：重写 app/build.gradle.kts**
+- [x] **步骤 1：重写 app/build.gradle.kts**
 
 ```kotlin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -1202,7 +1202,7 @@ dependencies {
 }
 ```
 
-- [ ] **步骤 2：重写 AndroidManifest.xml**
+- [x] **步骤 2：重写 AndroidManifest.xml**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -1229,7 +1229,7 @@ dependencies {
 </manifest>
 ```
 
-- [ ] **步骤 3：重写 strings.xml**
+- [x] **步骤 3：重写 strings.xml**
 
 ```xml
 <resources>
@@ -1237,13 +1237,13 @@ dependencies {
 </resources>
 ```
 
-- [ ] **步骤 4：创建新包名目录结构**
+- [x] **步骤 4：创建新包名目录结构**
 
 ```bash
 mkdir -p app/src/main/java/com/nltimer/app/navigation
 ```
 
-- [ ] **步骤 5：创建 NLtimerApplication.kt**
+- [x] **步骤 5：创建 NLtimerApplication.kt**
 
 ```kotlin
 package com.nltimer.app
@@ -1255,7 +1255,7 @@ import dagger.hilt.android.HiltAndroidApp
 class NLtimerApplication : Application()
 ```
 
-- [ ] **步骤 6：创建 MainActivity.kt**
+- [x] **步骤 6：创建 MainActivity.kt**
 
 ```kotlin
 package com.nltimer.app
@@ -1281,7 +1281,7 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-- [ ] **步骤 7：创建 NLtimerApp.kt**
+- [x] **步骤 7：创建 NLtimerApp.kt**
 
 ```kotlin
 package com.nltimer.app
@@ -1305,7 +1305,7 @@ fun NLtimerApp() {
 }
 ```
 
-- [ ] **步骤 8：创建 NLtimerNavHost.kt**
+- [x] **步骤 8：创建 NLtimerNavHost.kt**
 
 ```kotlin
 package com.nltimer.app.navigation
@@ -1333,18 +1333,19 @@ fun NLtimerNavHost(
 }
 ```
 
-- [ ] **步骤 9：Commit**
+- [x] **步骤 9：Commit**
 
 ```bash
 git add app/
 git commit -m "feat: 重写 app 模块，切换到 Compose + Hilt + Navigation"
 ```
 
----
+***
 
 ## 任务 9：清理旧源码和资源
 
 **文件：**
+
 - 删除：`app/src/main/java/com/ncorti/`（旧包名目录）
 - 删除：`app/src/main/res/layout/`
 - 删除：`app/src/main/res/drawable/`
@@ -1359,14 +1360,13 @@ git commit -m "feat: 重写 app 模块，切换到 Compose + Hilt + Navigation"
 - 删除：`app/src/main/res/values/dimens.xml`
 - 删除：`app/src/main/res/values/styles.xml`
 - 修改：`app/src/main/res/values/strings.xml`（已在任务 8 更新）
-
-- [ ] **步骤 1：删除旧包名源码**
+- [x] **步骤 1：删除旧包名源码**
 
 ```bash
 Remove-Item -Recurse -Force app/src/main/java/com/ncorti/
 ```
 
-- [ ] **步骤 2：删除传统布局和模板图标**
+- [x] **步骤 2：删除传统布局和模板图标**
 
 ```bash
 Remove-Item -Recurse -Force app/src/main/res/layout/
@@ -1380,7 +1380,7 @@ Remove-Item -Recurse -Force app/src/main/res/mipmap-xxhdpi/
 Remove-Item -Recurse -Force app/src/main/res/mipmap-xxxhdpi/
 ```
 
-- [ ] **步骤 3：删除旧资源文件**
+- [x] **步骤 3：删除旧资源文件**
 
 ```bash
 Remove-Item -Force app/src/main/res/values/colors.xml
@@ -1388,13 +1388,13 @@ Remove-Item -Force app/src/main/res/values/dimens.xml
 Remove-Item -Force app/src/main/res/values/styles.xml
 ```
 
-- [ ] **步骤 4：删除旧测试目录**
+- [x] **步骤 4：删除旧测试目录**
 
 ```bash
 Remove-Item -Recurse -Force app/src/androidTest/
 ```
 
-- [ ] **步骤 5：验证清理结果**
+- [x] **步骤 5：验证清理结果**
 
 ```bash
 ls app/src/main/res/values/
@@ -1403,21 +1403,21 @@ ls app/src/main/java/com/nltimer/
 
 预期：values/ 中仅有 strings.xml；nltimer/ 下有 app/ 目录含新源码。
 
-- [ ] **步骤 6：Commit**
+- [x] **步骤 6：Commit**
 
 ```bash
 git add -A
 git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 ```
 
----
+***
 
 ## 任务 10：添加 MD3 主题资源并验证构建
 
 **文件：**
-- 创建：`app/src/main/res/values/themes.xml`
 
-- [ ] **步骤 1：创建 MD3 兼容的主题资源**
+- 创建：`app/src/main/res/values/themes.xml`
+- [x] **步骤 1：创建 MD3 兼容的主题资源**
 
 创建 `app/src/main/res/values/themes.xml`：
 
@@ -1427,7 +1427,7 @@ git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 </resources>
 ```
 
-- [ ] **步骤 2：运行 Gradle 同步和编译**
+- [x] **步骤 2：运行 Gradle 同步和编译**
 
 ```bash
 ./gradlew :core:designsystem:assembleDebug
@@ -1435,7 +1435,7 @@ git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 
 预期：BUILD SUCCESSFUL。
 
-- [ ] **步骤 3：编译 feature:timer 模块**
+- [x] **步骤 3：编译 feature:timer 模块**
 
 ```bash
 ./gradlew :feature:timer:assembleDebug
@@ -1443,7 +1443,7 @@ git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 
 预期：BUILD SUCCESSFUL。
 
-- [ ] **步骤 4：编译 app 模块**
+- [x] **步骤 4：编译 app 模块**
 
 ```bash
 ./gradlew :app:assembleDebug
@@ -1451,7 +1451,7 @@ git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 
 预期：BUILD SUCCESSFUL。
 
-- [ ] **步骤 5：运行全部单元测试**
+- [x] **步骤 5：运行全部单元测试**
 
 ```bash
 ./gradlew :feature:timer:test
@@ -1459,18 +1459,18 @@ git commit -m "chore: 清理旧包名源码、XML 布局和模板资源"
 
 预期：所有测试 PASS。
 
-- [ ] **步骤 6：Commit**
+- [x] **步骤 6：Commit**
 
 ```bash
 git add app/src/main/res/values/themes.xml
 git commit -m "feat: 添加 MD3 主题资源，验证构建通过"
 ```
 
----
+***
 
 ## 任务 11：最终验证与清理
 
-- [ ] **步骤 1：运行全项目构建**
+- [x] **步骤 1：运行全项目构建**
 
 ```bash
 ./gradlew assembleDebug
@@ -1478,7 +1478,7 @@ git commit -m "feat: 添加 MD3 主题资源，验证构建通过"
 
 预期：BUILD SUCCESSFUL。
 
-- [ ] **步骤 2：运行全项目测试**
+- [x] **步骤 2：运行全项目测试**
 
 ```bash
 ./gradlew test
@@ -1486,7 +1486,7 @@ git commit -m "feat: 添加 MD3 主题资源，验证构建通过"
 
 预期：所有测试 PASS。
 
-- [ ] **步骤 3：检查 Detekt**
+- [x] **步骤 3：检查 Detekt**
 
 ```bash
 ./gradlew detekt
@@ -1494,7 +1494,7 @@ git commit -m "feat: 添加 MD3 主题资源，验证构建通过"
 
 预期：无严重问题（可能有少量格式问题需修复）。
 
-- [ ] **步骤 4：验证 APK 生成**
+- [x] **步骤 4：验证 APK 生成**
 
 ```bash
 ls app/build/outputs/apk/debug/
@@ -1502,9 +1502,10 @@ ls app/build/outputs/apk/debug/
 
 预期：存在 `app-debug.apk`。
 
-- [ ] **步骤 5：最终 Commit**
+- [x] **步骤 5：最终 Commit**
 
 ```bash
 git add -A
 git commit -m "chore: 最终验证，确保构建和测试全部通过"
 ```
+
