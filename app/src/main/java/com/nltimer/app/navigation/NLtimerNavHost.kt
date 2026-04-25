@@ -5,7 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.nltimer.feature.timer.ui.TimerRoute
+import com.nltimer.feature.home.ui.HomeRoute
+import com.nltimer.feature.settings.ui.SettingsRoute
+import com.nltimer.feature.stats.ui.StatsRoute
+import com.nltimer.feature.sub.ui.SubRoute
 
 @Composable
 fun NLtimerNavHost(
@@ -14,11 +17,12 @@ fun NLtimerNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "timer",
+        startDestination = "home",
         modifier = modifier,
     ) {
-        composable("timer") {
-            TimerRoute()
-        }
+        composable("home") { HomeRoute() }
+        composable("sub") { SubRoute() }
+        composable("stats") { StatsRoute() }
+        composable("settings") { SettingsRoute() }
     }
 }
