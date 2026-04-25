@@ -1,48 +1,88 @@
-name: Publish Release
+name: Build and Release
+
 on:
   push:
+    branches:
+      - master
+      - "feature/*"
     tags:
-      - '*'
-  workflow_dispatch:
+      - "v*.*.*"
+  pull_request:
+    branches:
+      - master
+      - "feature/*"
 
 jobs:
-  publish:
-    # remove this check when your secrets are setup and you're ready to publish
-    if: ${{ github.repository == 'cortinico/kotlin-android-template'}}
-    runs-on: [ubuntu-latest]
-    env:
-      GRADLE_OPTS: -Dorg.gradle.parallel=false
-
+  apk:
+    name: Generate APK
+    runs-on: ubuntu-latest
     steps:
-
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Branch name
+        run: echo running on branch ${GITHUB_REF##*/}
+
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: temurin
+          java-version: "17"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Publish to Maven Local
-        run: ./gradlew publishToMavenLocal
-        env:
-          ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
+      - name: Set execution flag for gradlew
+        run: chmod +x gradlew
 
-      - name: Upload Build Artifacts
+      - name: Decode Keystore
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > ${{ github.workspace }}/release-key.jks
+
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./gradlew assembleRelease --stacktrace
+        env:
+          KEYSTORE_PATH: ${{ github.workspace }}/release-key.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Build Debug APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload Release APK
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
-          name: 'release-artifacts'
-          path: '~/.m2/repository/'
+          name: apk
+          path: app/build/outputs/apk/release/app-release.apk
 
-      - name: Publish to the Snapshot Repository
-        run: ./gradlew publishToSonatype closeAndReleaseStagingRepositories
+      - name: Upload Debug APK
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  release:
+    name: Release APK
+    needs: apk
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK from build
+        uses: actions/download-artifact@v4
+        with:
+          name: apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: app-release.apk
         env:
-          ORG_GRADLE_PROJECT_SIGNING_KEY: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_KEY }}
-          ORG_GRADLE_PROJECT_SIGNING_PWD: ${{ secrets.ORG_GRADLE_PROJECT_SIGNING_PWD }}
-          ORG_GRADLE_PROJECT_NEXUS_USERNAME: ${{ secrets.ORG_GRADLE_PROJECT_NEXUS_USERNAME }}
-          ORG_GRADLE_PROJECT_NEXUS_PASSWORD: ${{ secrets.ORG_GRADLE_PROJECT_NEXUS_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
