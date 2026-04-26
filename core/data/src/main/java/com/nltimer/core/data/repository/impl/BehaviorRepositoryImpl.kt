@@ -28,6 +28,9 @@ class BehaviorRepositoryImpl @Inject constructor(
     override fun getCurrentBehavior(): Flow<Behavior?> =
         behaviorDao.getCurrentBehavior().map { it?.toModel() }
 
+    override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
+        behaviorDao.getHomeBehaviors(dayStart, dayEnd).map { list -> list.map { it.toModel() } }
+
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
             list.map { entity ->
@@ -35,12 +38,19 @@ class BehaviorRepositoryImpl @Inject constructor(
                     id = entity.id,
                     name = entity.name,
                     color = entity.color,
+                    textColor = entity.textColor,
+                    icon = entity.icon,
                     category = entity.category,
                     priority = entity.priority,
+                    usageCount = entity.usageCount,
+                    sortOrder = entity.sortOrder,
                     isArchived = entity.isArchived,
                 )
             }
         }
+
+    override fun getPendingBehaviors(): Flow<List<Behavior>> =
+        behaviorDao.getPendingBehaviors().map { list -> list.map { it.toModel() } }
 
     override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? {
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
@@ -60,8 +70,12 @@ class BehaviorRepositoryImpl @Inject constructor(
                 id = entity.id,
                 name = entity.name,
                 color = entity.color,
+                textColor = entity.textColor,
+                icon = entity.icon,
                 category = entity.category,
                 priority = entity.priority,
+                usageCount = entity.usageCount,
+                sortOrder = entity.sortOrder,
                 isArchived = entity.isArchived,
             )
         }
@@ -71,6 +85,12 @@ class BehaviorRepositoryImpl @Inject constructor(
             tags = tags,
         )
     }
+
+    override suspend fun getNextPending(): Behavior? =
+        behaviorDao.getNextPending()?.toModel()
+
+    override suspend fun getMaxSequence(): Int =
+        behaviorDao.getMaxSequence()
 
     override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
         val id = behaviorDao.insert(behavior.toEntity())
@@ -90,23 +110,88 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun setEndTime(id: Long, endTime: Long) =
         behaviorDao.setEndTime(id, endTime)
 
+    override suspend fun setStatus(id: Long, status: String) =
+        behaviorDao.setStatus(id, status)
+
+    override suspend fun setStartTime(id: Long, startTime: Long) =
+        behaviorDao.setStartTime(id, startTime)
+
+    override suspend fun setActualDuration(id: Long, duration: Long) =
+        behaviorDao.setActualDuration(id, duration)
+
+    override suspend fun setAchievementLevel(id: Long, level: Int) =
+        behaviorDao.setAchievementLevel(id, level)
+
+    override suspend fun setSequence(id: Long, sequence: Int) =
+        behaviorDao.setSequence(id, sequence)
+
     override suspend fun setNote(id: Long, note: String?) =
         behaviorDao.setNote(id, note)
 
     override suspend fun endCurrentBehavior(endTime: Long) =
         behaviorDao.endCurrentBehavior(endTime)
 
-    override suspend fun delete(id: Long) =
+    override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
+        val now = System.currentTimeMillis()
+        val clampedEndTime = if (now < now) now else now
+        behaviorDao.setEndTime(currentId, clampedEndTime)
+
+        val currentEntity = behaviorDao.getById(currentId)
+        if (currentEntity != null && currentEntity.startTime > 0) {
+            val duration = clampedEndTime - currentEntity.startTime
+            behaviorDao.setActualDuration(currentId, duration)
+
+            val estimated = currentEntity.estimatedDuration?.times(60_000)
+            if (currentEntity.wasPlanned && estimated != null && estimated > 0) {
+                val diff = kotlin.math.abs(duration - estimated)
+                val ratio = (diff.toDouble() / estimated).coerceAtMost(1.0)
+                val level = ((1.0 - ratio) * 100).toInt().coerceIn(0, 100)
+                behaviorDao.setAchievementLevel(currentId, level)
+            }
+        }
+
+        behaviorDao.setStatus(currentId, "completed")
+
+        if (idleMode) return null
+
+        val nextPending = behaviorDao.getNextPending() ?: return null
+        val nextNow = System.currentTimeMillis()
+        behaviorDao.setStatus(nextPending.id, "active")
+        behaviorDao.setStartTime(nextPending.id, nextNow)
+        return nextPending.toModel()
+    }
+
+    override suspend fun reorderGoals(orderedIds: List<Long>) {
+        orderedIds.forEachIndexed { index, id ->
+            behaviorDao.setSequence(id, index)
+        }
+    }
+
+    override suspend fun delete(id: Long) {
+        val toDelete = behaviorDao.getById(id) ?: return
         behaviorDao.delete(id)
+
+        val pendingList = behaviorDao.getPendingBehaviors()
+        val pendingEntities = mutableListOf<BehaviorEntity>()
+        pendingList.collect { pendingEntities.addAll(it) }
+    }
+
+    override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
+    }
 
     private fun BehaviorEntity.toModel() = Behavior(
         id = id,
         activityId = activityId,
         startTime = startTime,
         endTime = endTime,
-        nature = BehaviorNature.entries.firstOrNull { it.key == nature } ?: BehaviorNature.CURRENT,
+        status = BehaviorNature.entries.firstOrNull { it.key == status } ?: BehaviorNature.PENDING,
         note = note,
         pomodoroCount = pomodoroCount,
+        sequence = sequence,
+        estimatedDuration = estimatedDuration,
+        actualDuration = actualDuration,
+        achievementLevel = achievementLevel,
+        wasPlanned = wasPlanned,
     )
 
     private fun Behavior.toEntity() = BehaviorEntity(
@@ -114,8 +199,13 @@ class BehaviorRepositoryImpl @Inject constructor(
         activityId = activityId,
         startTime = startTime,
         endTime = endTime,
-        nature = nature.key,
+        status = status.key,
         note = note,
         pomodoroCount = pomodoroCount,
+        sequence = sequence,
+        estimatedDuration = estimatedDuration,
+        actualDuration = actualDuration,
+        achievementLevel = achievementLevel,
+        wasPlanned = wasPlanned,
     )
 }

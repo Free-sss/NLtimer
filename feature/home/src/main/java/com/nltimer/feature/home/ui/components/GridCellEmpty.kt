@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun GridCellEmpty(
     onClick: () -> Unit,
+    isAddPlaceholder: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -41,12 +41,12 @@ fun GridCellEmpty(
         Text(
             text = "+",
             style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.outlineVariant,
+            color = if (isAddPlaceholder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
         )
         Text(
-            text = "点击添加",
+            text = if (isAddPlaceholder) "添加行为" else "点击添加",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.outlineVariant,
+            color = if (isAddPlaceholder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
         )
     }
 }

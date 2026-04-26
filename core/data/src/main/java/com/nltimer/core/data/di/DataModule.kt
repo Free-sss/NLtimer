@@ -41,7 +41,12 @@ abstract class DataModule {
                 context,
                 NLtimerDatabase::class.java,
                 "nltimer-database",
+<<<<<<< Updated upstream
             ).fallbackToDestructiveMigration(dropAllTables = true)
+=======
+            )
+                .fallbackToDestructiveMigration()
+>>>>>>> Stashed changes
                 .build()
 
         @Provides

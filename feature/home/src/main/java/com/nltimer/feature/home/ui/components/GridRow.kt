@@ -2,6 +2,7 @@ package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,9 +18,8 @@ fun GridRow(
     onEmptyCellClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
     Box(modifier = modifier.fillMaxWidth()) {
-        androidx.compose.foundation.layout.Column {
+        Column {
             if (row.cells.isNotEmpty()) {
                 TimeFloatingLabel(
                     time = row.startTime,
@@ -39,6 +39,10 @@ fun GridRow(
                     ) {
                         when {
                             row.isLocked -> GridCellLocked()
+                            cell.isAddPlaceholder -> GridCellEmpty(
+                                onClick = onEmptyCellClick,
+                                isAddPlaceholder = true,
+                            )
                             cell.behaviorId != null -> GridCell(cell = cell)
                             else -> GridCellEmpty(onClick = onEmptyCellClick)
                         }

@@ -15,7 +15,7 @@ import androidx.room.Index
             onDelete = ForeignKey.RESTRICT,
         ),
     ],
-    indices = [Index("activityId"), Index("startTime")],
+    indices = [Index("activityId"), Index("startTime"), Index("status"), Index("sequence")],
 )
 data class BehaviorEntity(
     @PrimaryKey(autoGenerate = true)
@@ -23,7 +23,12 @@ data class BehaviorEntity(
     val activityId: Long,
     val startTime: Long,
     val endTime: Long? = null,
-    val nature: String = "CURRENT",
+    val status: String = "pending",
     val note: String? = null,
     val pomodoroCount: Int = 0,
+    val sequence: Int = 0,
+    val estimatedDuration: Long? = null,
+    val actualDuration: Long? = null,
+    val achievementLevel: Int? = null,
+    val wasPlanned: Boolean = false,
 )

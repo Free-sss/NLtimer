@@ -14,7 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.feature.home.model.GridCellUiState
 
 @Composable
@@ -22,17 +24,27 @@ fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
-    val borderColor = if (cell.isCurrent) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outlineVariant
+    val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED && cell.achievementLevel != null
+    val platinumStrength = if (isPlatinum) cell.achievementLevel!! / 100f else 0f
+
+    val borderColor = when {
+        isPlatinum -> {
+            val strength = platinumStrength
+            Color(
+                red = (0.78f + 0.22f * strength),
+                green = (0.69f + 0.31f * strength),
+                blue = 1.0f,
+                alpha = 0.5f + 0.5f * strength,
+            )
+        }
+        cell.isCurrent -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.outlineVariant
     }
-    val borderWidth = if (cell.isCurrent) 2.dp else 1.dp
-    val backgroundColor = if (cell.isCurrent) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerLow
+    val borderWidth = if (cell.isCurrent || isPlatinum) 2.dp else 1.dp
+    val backgroundColor = when {
+        cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
+        else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
     Column(

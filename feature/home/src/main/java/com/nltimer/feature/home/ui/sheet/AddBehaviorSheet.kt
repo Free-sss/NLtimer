@@ -1,5 +1,6 @@
 package com.nltimer.feature.home.ui.sheet
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.BehaviorNature
@@ -37,8 +41,11 @@ import java.time.LocalTime
 fun AddBehaviorSheet(
     activities: List<Activity>,
     tagsForActivity: List<Tag>,
+    allTags: List<Tag> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddTag: (name: String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -47,8 +54,11 @@ fun AddBehaviorSheet(
     var selectedActivityId by remember { mutableStateOf<Long?>(null) }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var startTime by remember { mutableStateOf(LocalTime.now()) }
-    var nature by remember { mutableStateOf(BehaviorNature.CURRENT) }
+    var nature by remember { mutableStateOf(BehaviorNature.ACTIVE) }
     var note by remember { mutableStateOf("") }
+
+    var showAddActivityDialog by remember { mutableStateOf(false) }
+    var showAddTagDialog by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -79,11 +89,25 @@ fun AddBehaviorSheet(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = "常用活动",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showAddActivityDialog = true }
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "常用活动",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "+ 添加",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             ActivityPicker(
                 activities = activities,
@@ -93,11 +117,25 @@ fun AddBehaviorSheet(
 
             if (selectedActivityId != null && tagsForActivity.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "标签",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showAddTagDialog = true }
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "关联标签",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "+ 添加",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    )
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 TagPicker(
                     tags = tagsForActivity,
@@ -111,6 +149,39 @@ fun AddBehaviorSheet(
                     },
                 )
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showAddTagDialog = true }
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "所有标签",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "+ 添加",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            TagPicker(
+                tags = allTags,
+                selectedTagIds = selectedTagIds,
+                onTagToggle = { tagId ->
+                    selectedTagIds = if (tagId in selectedTagIds) {
+                        selectedTagIds - tagId
+                    } else {
+                        selectedTagIds + tagId
+                    }
+                },
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -135,15 +206,17 @@ fun AddBehaviorSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(
-                        "开始",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    TimePickerCompact(
-                        time = startTime,
-                        onTimeChange = { startTime = it },
-                    )
+                    if (nature == BehaviorNature.ACTIVE || nature == BehaviorNature.COMPLETED) {
+                        Text(
+                            "开始",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        TimePickerCompact(
+                            time = startTime,
+                            onTimeChange = { startTime = it },
+                        )
+                    }
                     Text(
                         "类型",
                         style = MaterialTheme.typography.labelMedium,
@@ -174,5 +247,25 @@ fun AddBehaviorSheet(
                 Text("完成", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
+    }
+
+    if (showAddActivityDialog) {
+        AddActivityDialog(
+            onDismiss = { showAddActivityDialog = false },
+            onConfirm = { name, emoji ->
+                onAddActivity(name, emoji)
+                showAddActivityDialog = false
+            },
+        )
+    }
+
+    if (showAddTagDialog) {
+        AddTagDialog(
+            onDismiss = { showAddTagDialog = false },
+            onConfirm = { name ->
+                onAddTag(name)
+                showAddTagDialog = false
+            },
+        )
     }
 }

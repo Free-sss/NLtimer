@@ -48,8 +48,12 @@ class TagRepositoryImpl @Inject constructor(
         id = id,
         name = name,
         color = color,
+        textColor = textColor,
+        icon = icon,
         category = category,
         priority = priority,
+        usageCount = usageCount,
+        sortOrder = sortOrder,
         isArchived = isArchived,
     )
 
@@ -57,8 +61,12 @@ class TagRepositoryImpl @Inject constructor(
         id = id,
         name = name,
         color = color,
+        textColor = textColor,
+        icon = icon,
         category = category,
         priority = priority,
+        usageCount = usageCount,
+        sortOrder = sortOrder,
         isArchived = isArchived,
     )
 }

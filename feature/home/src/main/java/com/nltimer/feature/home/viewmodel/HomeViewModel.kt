@@ -18,7 +18,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,21 +37,25 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState: StateFlow<HomeUiState> = _uiState
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     private val _activities = MutableStateFlow<List<Activity>>(emptyList())
-    val activities: StateFlow<List<Activity>> = _activities
+    val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
 
     private val _tagsForSelectedActivity = MutableStateFlow<List<Tag>>(emptyList())
-    val tagsForSelectedActivity: StateFlow<List<Tag>> = _tagsForSelectedActivity
+    val tagsForSelectedActivity: StateFlow<List<Tag>> = _tagsForSelectedActivity.asStateFlow()
+
+    private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
+    val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
     private var selectedActivityId: Long? = null
 
     private val today = LocalDate.now()
 
     init {
-        loadBehaviors()
+        loadHomeBehaviors()
         loadActivities()
+        loadAllTags()
     }
 
     private fun loadActivities() {
@@ -63,147 +66,181 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadBehaviors() {
+    private fun loadAllTags() {
+        viewModelScope.launch {
+            tagRepository.getAllActive().collect { list ->
+                _allTags.update { list }
+            }
+        }
+    }
+
+    private fun loadHomeBehaviors() {
         viewModelScope.launch {
             val dayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             val dayEnd = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-            combine(
-                behaviorRepository.getByDayRange(dayStart, dayEnd),
-                behaviorRepository.getCurrentBehavior(),
-            ) { behaviors, currentBehavior ->
-                buildUiState(behaviors, currentBehavior)
-            }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
-                .collect { state -> _uiState.update { state } }
+            behaviorRepository.getHomeBehaviors(dayStart, dayEnd)
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+                .collect { behaviors ->
+                    val state = buildUiState(behaviors)
+                    _uiState.update { state }
+                }
         }
     }
 
-    private suspend fun buildUiState(
-        behaviors: List<Behavior>,
-        currentBehavior: Behavior?,
-    ): HomeUiState {
+    private suspend fun buildUiState(behaviors: List<Behavior>): HomeUiState {
+        val now = LocalTime.now()
+        val hasActive = behaviors.any { it.status == BehaviorNature.ACTIVE }
+
         if (behaviors.isEmpty()) {
-            val now = LocalTime.now()
-            val currentRow = GridRowUiState(
-                rowId = "current-empty",
+            val addCell = GridCellUiState(
+                behaviorId = null,
+                activityEmoji = null,
+                activityName = null,
+                tags = emptyList(),
+                status = null,
+                isCurrent = false,
+                isAddPlaceholder = true,
+            )
+            val row = GridRowUiState(
+                rowId = "empty-row",
                 startTime = now,
                 isCurrentRow = true,
                 isLocked = false,
-                cells = buildEmptyCells(),
+                cells = listOf(addCell),
             )
             return HomeUiState(
-                rows = listOf(currentRow),
-                currentRowId = currentRow.rowId,
+                rows = listOf(row),
+                currentRowId = row.rowId,
                 isLoading = false,
                 selectedTimeHour = now.hour,
+                hasActiveBehavior = false,
             )
         }
 
         val rows = mutableListOf<GridRowUiState>()
-        val grouped = behaviors.groupBy { behavior ->
-            val startTime = java.time.Instant.ofEpochMilli(behavior.startTime)
-                .atZone(ZoneId.systemDefault()).toLocalTime()
-            startTime.truncatedTo(ChronoUnit.HOURS)
+        val cells = behaviors.map { behavior ->
+            val activity = activityRepository.getById(behavior.activityId)
+            val tags = try {
+                behaviorRepository.getTagsForBehavior(behavior.id).firstOrNull() ?: emptyList()
+            } catch (_: Exception) {
+                emptyList()
+            }
+            val isActive = behavior.status == BehaviorNature.ACTIVE
+
+            GridCellUiState(
+                behaviorId = behavior.id,
+                activityEmoji = activity?.emoji,
+                activityName = activity?.name,
+                tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) },
+                status = behavior.status,
+                isCurrent = isActive,
+                wasPlanned = behavior.wasPlanned,
+                achievementLevel = behavior.achievementLevel,
+                estimatedDuration = behavior.estimatedDuration,
+                actualDuration = behavior.actualDuration,
+                durationMs = if (isActive && behavior.startTime > 0) {
+                    System.currentTimeMillis() - behavior.startTime
+                } else null,
+            )
         }
 
-        val sortedKeys = grouped.keys.sorted()
+        val addCell = GridCellUiState(
+            behaviorId = null,
+            activityEmoji = null,
+            activityName = null,
+            tags = emptyList(),
+            status = null,
+            isCurrent = false,
+            isAddPlaceholder = true,
+        )
+        val allCells = cells + addCell
+
         var currentRowId: String? = null
+        allCells.chunked(4).forEachIndexed { rowIndex, rowCells ->
+            val rowId = "row-$rowIndex-${rowCells.firstOrNull()?.behaviorId ?: "add"}"
+            val hasCurrentInRow = rowCells.any { it.isCurrent }
+            if (hasCurrentInRow) currentRowId = rowId
 
-        for (timeSlot in sortedKeys) {
-            val slotBehaviors = grouped[timeSlot] ?: continue
-            val cells = mutableListOf<GridCellUiState>()
-
-            for (behavior in slotBehaviors) {
-                val activity = activityRepository.getById(behavior.activityId)
-                val tags = try {
-                    tagRepository.getByActivityId(behavior.activityId).firstOrNull() ?: emptyList()
-                } catch (_: Exception) {
-                    emptyList()
+            val timeForRow = if (rowIndex < allCells.size / 4) {
+                val behavior = behaviors.getOrNull(rowIndex * 4)
+                if (behavior != null) {
+                    java.time.Instant.ofEpochMilli(behavior.startTime)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalTime()
+                } else {
+                    now
                 }
-
-                val isCurrent = currentBehavior?.id == behavior.id
-                if (isCurrent) currentRowId = timeSlot.toString()
-
-                cells.add(
-                    GridCellUiState(
-                        behaviorId = behavior.id,
-                        activityEmoji = activity?.emoji,
-                        activityName = activity?.name,
-                        tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color) },
-                        nature = behavior.nature,
-                        isCurrent = isCurrent,
-                    )
-                )
+            } else {
+                now
             }
 
-            while (cells.size < 4) {
-                cells.add(
+            val paddedCells = rowCells.toMutableList()
+            while (paddedCells.size < 4) {
+                paddedCells.add(
                     GridCellUiState(
                         behaviorId = null,
                         activityEmoji = null,
                         activityName = null,
                         tags = emptyList(),
-                        nature = null,
+                        status = null,
                         isCurrent = false,
                     )
                 )
             }
 
-            val isCurrentRow = currentBehavior?.let { cb ->
-                val cbStart = java.time.Instant.ofEpochMilli(cb.startTime)
-                    .atZone(ZoneId.systemDefault()).toLocalTime()
-                    .truncatedTo(ChronoUnit.HOURS)
-                cbStart == timeSlot
-            } ?: false
-
             rows.add(
                 GridRowUiState(
-                    rowId = timeSlot.toString(),
-                    startTime = timeSlot,
-                    isCurrentRow = isCurrentRow,
+                    rowId = rowId,
+                    startTime = timeForRow,
+                    isCurrentRow = hasCurrentInRow,
                     isLocked = false,
-                    cells = cells.take(4),
+                    cells = paddedCells,
                 )
             )
-        }
-
-        val lastRow = rows.lastOrNull()
-        val hasEmptySlot = lastRow?.cells?.any { it.behaviorId == null } == true
-        val hasCurrent = lastRow?.cells?.any { it.isCurrent } == true
-
-        if (lastRow != null && hasEmptySlot && !hasCurrent) {
-            val now = LocalTime.now().truncatedTo(ChronoUnit.HOURS)
-            if (now !in sortedKeys) {
-                rows.add(
-                    GridRowUiState(
-                        rowId = "next-$now",
-                        startTime = now,
-                        isCurrentRow = true,
-                        isLocked = false,
-                        cells = buildEmptyCells(),
-                    )
-                )
-                currentRowId = "next-$now"
-            }
         }
 
         return HomeUiState(
             rows = rows,
             currentRowId = currentRowId,
             isLoading = false,
-            selectedTimeHour = LocalTime.now().hour,
+            selectedTimeHour = now.hour,
+            hasActiveBehavior = hasActive,
         )
     }
 
-    private fun buildEmptyCells(): List<GridCellUiState> = List(4) {
-        GridCellUiState(
-            behaviorId = null,
-            activityEmoji = null,
-            activityName = null,
-            tags = emptyList(),
-            nature = null,
-            isCurrent = false,
-        )
+    fun addActivity(name: String, emoji: String) {
+        viewModelScope.launch {
+            activityRepository.insert(
+                Activity(
+                    id = 0,
+                    name = name,
+                    emoji = emoji.ifBlank { null },
+                    iconKey = null,
+                    category = null,
+                    isArchived = false,
+                )
+            )
+        }
+    }
+
+    fun addTag(name: String) {
+        viewModelScope.launch {
+            tagRepository.insert(
+                Tag(
+                    id = 0,
+                    name = name,
+                    color = null,
+                    textColor = null,
+                    icon = null,
+                    category = null,
+                    priority = 0,
+                    usageCount = 0,
+                    sortOrder = 0,
+                    isArchived = false,
+                )
+            )
+        }
     }
 
     fun showAddSheet() {
@@ -229,26 +266,66 @@ class HomeViewModel @Inject constructor(
         activityId: Long,
         tagIds: List<Long>,
         startTime: Long,
-        nature: BehaviorNature,
+        status: BehaviorNature,
         note: String?,
     ) {
         viewModelScope.launch {
-            if (nature == BehaviorNature.CURRENT) {
+            if (status == BehaviorNature.ACTIVE) {
                 behaviorRepository.endCurrentBehavior(startTime)
             }
+
+            val maxSeq = behaviorRepository.getMaxSequence()
+            val wasPlanned = status == BehaviorNature.PENDING
+
             behaviorRepository.insert(
                 Behavior(
                     id = 0,
                     activityId = activityId,
-                    startTime = startTime,
-                    endTime = if (nature != BehaviorNature.CURRENT) startTime else null,
-                    nature = nature,
+                    startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
+                    endTime = if (status == BehaviorNature.COMPLETED) startTime else null,
+                    status = status,
                     note = note,
                     pomodoroCount = 0,
+                    sequence = maxSeq + 1,
+                    estimatedDuration = null,
+                    actualDuration = null,
+                    achievementLevel = null,
+                    wasPlanned = wasPlanned,
                 ),
                 tagIds = tagIds,
             )
             hideAddSheet()
+        }
+    }
+
+    fun completeBehavior(behaviorId: Long) {
+        viewModelScope.launch {
+            val isIdle = _uiState.value.isIdleMode
+            behaviorRepository.completeCurrentAndStartNext(behaviorId, isIdle)
+        }
+    }
+
+    fun toggleIdleMode() {
+        _uiState.update { it.copy(isIdleMode = !it.isIdleMode) }
+    }
+
+    fun startNextPending() {
+        viewModelScope.launch {
+            val next = behaviorRepository.getNextPending() ?: return@launch
+            behaviorRepository.setStatus(next.id, "active")
+            behaviorRepository.setStartTime(next.id, System.currentTimeMillis())
+        }
+    }
+
+    fun reorderGoals(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            behaviorRepository.reorderGoals(orderedIds)
+        }
+    }
+
+    fun deleteBehavior(id: Long) {
+        viewModelScope.launch {
+            behaviorRepository.delete(id)
         }
     }
 

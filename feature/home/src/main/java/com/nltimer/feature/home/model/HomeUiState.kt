@@ -6,4 +6,6 @@ data class HomeUiState(
     val isAddSheetVisible: Boolean = false,
     val selectedTimeHour: Int = 0,
     val isLoading: Boolean = true,
+    val isIdleMode: Boolean = false,
+    val hasActiveBehavior: Boolean = false,
 )

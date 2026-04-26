@@ -21,9 +21,9 @@ fun BehaviorNatureSelector(
         BehaviorNature.entries.forEach { nature ->
             val isSelected = nature == selected
             val label = when (nature) {
-                BehaviorNature.CURRENT -> "当前 ●"
+                BehaviorNature.PENDING -> "目标 ○"
+                BehaviorNature.ACTIVE -> "当前 ●"
                 BehaviorNature.COMPLETED -> "完成 ○"
-                BehaviorNature.TARGET -> "目标 ○"
             }
             Text(
                 text = label,

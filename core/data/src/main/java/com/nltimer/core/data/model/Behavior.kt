@@ -5,7 +5,12 @@ data class Behavior(
     val activityId: Long,
     val startTime: Long,
     val endTime: Long?,
-    val nature: BehaviorNature,
+    val status: BehaviorNature,
     val note: String?,
     val pomodoroCount: Int,
+    val sequence: Int,
+    val estimatedDuration: Long?,
+    val actualDuration: Long?,
+    val achievementLevel: Int?,
+    val wasPlanned: Boolean,
 )

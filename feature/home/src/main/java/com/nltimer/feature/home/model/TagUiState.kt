@@ -4,4 +4,5 @@ data class TagUiState(
     val id: Long,
     val name: String,
     val color: Long?,
+    val isActive: Boolean = true,
 )

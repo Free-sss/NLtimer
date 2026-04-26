@@ -7,6 +7,12 @@ data class GridCellUiState(
     val activityEmoji: String?,
     val activityName: String?,
     val tags: List<TagUiState>,
-    val nature: BehaviorNature?,
+    val status: BehaviorNature?,
     val isCurrent: Boolean,
+    val wasPlanned: Boolean = false,
+    val achievementLevel: Int? = null,
+    val estimatedDuration: Long? = null,
+    val actualDuration: Long? = null,
+    val durationMs: Long? = null,
+    val isAddPlaceholder: Boolean = false,
 )
