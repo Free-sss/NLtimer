@@ -41,7 +41,8 @@ abstract class DataModule {
                 context,
                 NLtimerDatabase::class.java,
                 "nltimer-database",
-            ).build()
+            ).fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
 
         @Provides
         fun provideActivityDao(database: NLtimerDatabase): ActivityDao =

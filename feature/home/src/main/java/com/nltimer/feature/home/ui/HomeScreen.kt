@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
@@ -57,7 +58,8 @@ fun HomeScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+//                    .padding(padding)
+                ,
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
@@ -67,7 +69,9 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
+//                    .padding(padding)
+                    .padding(top = 0.dp, bottom = 0.dp)
+                ,
             ) {
                 TimeAxisGrid(
                     rows = uiState.rows,
@@ -92,88 +96,6 @@ fun HomeScreen(
                 tagsForActivity = tagsForSelectedActivity,
                 onDismiss = onDismissSheet,
                 onConfirm = onAddBehavior,
-            )
-        }
-    }
-}
-
-/**
- * HomeScreen的Compose预览函数
- * 此函数用于在开发过程中预览HomeScreen组件的UI效果
- * 它创建了模拟数据来展示网格行、活动和标签的状态
- *
- * @param 无参数 - 这是一个预览函数，不需要外部参数
- * @return 无返回值 - 在预览中显示HomeScreen UI组件
- */
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
-    // 创建示例网格行数据，包含两行不同状态的数据
-    val sampleRows = listOf(
-        GridRowUiState(
-            rowId = "1",
-            startTime = LocalTime.of(8, 0),
-            isCurrentRow = false,
-            isLocked = false,
-            cells = List(4) {
-                GridCellUiState(
-                    behaviorId = null,
-                    activityEmoji = "🏃",
-                    activityName = "跑步",
-                    tags = emptyList(),
-                    nature = BehaviorNature.COMPLETED,
-                    isCurrent = false
-                )
-            }
-        ),
-        GridRowUiState(
-            rowId = "2",
-            startTime = LocalTime.of(9, 0),
-            isCurrentRow = true,
-            isLocked = false,
-            cells = List(4) { index ->
-                GridCellUiState(
-                    behaviorId = if (index == 0) 1L else null,
-                    activityEmoji = if (index == 0) "💻" else null,
-                    activityName = if (index == 0) "工作" else null,
-                    tags = if (index == 0) listOf(TagUiState(1, "编码", null)) else emptyList(),
-                    nature = if (index == 0) BehaviorNature.CURRENT else null,
-                    isCurrent = index == 0
-                )
-            }
-        )
-    )
-
-    // 创建示例活动数据
-    val sampleActivities = listOf(
-        Activity(1, "工作", "💻", null, "职业", false),
-        Activity(2, "运动", "🏃", null, "健康", false)
-    )
-
-    // 创建与所选活动相关的示例标签数据
-    val sampleTags = listOf(
-        Tag(1, "编码", null, "工作", 1, false),
-        Tag(2, "会议", null, "工作", 2, false)
-    )
-
-    // 使用应用主题包装HomeScreen组件
-    AppTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-//            color = androidx.compose.material3.MaterialTheme.colorScheme.background
-        ) {
-            HomeScreen(
-                uiState = HomeUiState(
-                    rows = sampleRows,
-                    isLoading = false,
-                    selectedTimeHour = 9
-                ),
-                activities = sampleActivities,
-                tagsForSelectedActivity = sampleTags,
-                onEmptyCellClick = {},
-                onAddBehavior = { _, _, _, _, _ -> },
-                onDismissSheet = {},
-                onHourClick = {}
             )
         }
     }
