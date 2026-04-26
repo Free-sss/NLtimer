@@ -17,10 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-<<<<<<< Updated upstream
 import androidx.compose.ui.tooling.preview.Preview
-=======
->>>>>>> Stashed changes
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.BehaviorNature
@@ -151,11 +148,8 @@ fun HomeScreen(
                 allTags = allTags,
                 onDismiss = onDismissSheet,
                 onConfirm = onAddBehavior,
-<<<<<<< Updated upstream
-=======
                 onAddActivity = onAddActivity,
                 onAddTag = onAddTag,
->>>>>>> Stashed changes
             )
         }
     }
