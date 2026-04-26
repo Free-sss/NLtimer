@@ -1,0 +1,145 @@
+<h2>添加行为弹窗：哪种交互流程更合适？</h2>
+<p class="subtitle">点击空格位后弹出80%高度弹窗，用户需要选择活动+标签+时间</p>
+
+<div class="cards">
+  <div class="card" data-choice="search-first" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#121212;padding:16px;border-radius:12px;font-family:system-ui;color:#E8E6E3;min-height:300px;display:flex;flex-direction:column;">
+        <div style="text-align:center;color:#9AA0A6;font-size:12px;margin-bottom:8px;">────── 拖拽条 ──────</div>
+        <div style="background:#2B2930;border-radius:28px;padding:12px 16px;display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <span style="color:#9AA0A6;font-size:16px;">🔍</span>
+          <span style="color:#9AA0A6;font-size:14px;">输入活动或标签关键词...</span>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">匹配结果</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="background:#1E4D2B;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">🎬</span>
+              <div>
+                <div style="font-size:14px;">看动漫</div>
+                <div style="font-size:11px;color:#A5D6A7;">活动 · 娱乐</div>
+              </div>
+            </div>
+            <div style="background:#311B54;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;background:rgba(208,188,255,0.3);color:#D0BCFF;padding:2px 8px;border-radius:10px;">鲁路修</span>
+              <div>
+                <div style="font-size:14px;">鲁路修</div>
+                <div style="font-size:11px;color:#CE93D8;">标签 · 看动漫下位</div>
+              </div>
+            </div>
+            <div style="background:#311B54;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;background:rgba(208,188,255,0.3);color:#D0BCFF;padding:2px 8px;border-radius:10px;">进击的巨人</span>
+              <div>
+                <div style="font-size:14px;">进击的巨人</div>
+                <div style="font-size:11px;color:#CE93D8;">标签 · 看动漫下位</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #36353A;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:12px;color:#9AA0A6;">行为类型：<span style="color:#D0BCFF;">当前 ●</span></div>
+            <div style="background:#6750A4;color:white;padding:8px 24px;border-radius:20px;font-size:14px;font-weight:500;">完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 搜索优先</h3>
+      <p>打开即聚焦搜索框，输入关键词实时匹配活动与标签。正则匹配可同时关联活动（如输入"鲁路修"自动关联"看动漫"活动）。底部显示行为类型切换和完成按钮。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="select-then-detail" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#121212;padding:16px;border-radius:12px;font-family:system-ui;color:#E8E6E3;min-height:300px;display:flex;flex-direction:column;">
+        <div style="text-align:center;color:#9AA0A6;font-size:12px;margin-bottom:8px;">────── 拖拽条 ──────</div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">选择活动</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <div style="background:#1E4D2B;border:1px solid #4CAF50;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">💼 工作</div>
+            <div style="background:#2B2930;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">😴 休息</div>
+            <div style="background:#2B2930;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">📚 学习</div>
+            <div style="background:#2B2930;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">🏠 生活</div>
+            <div style="background:#2B2930;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">📖 看小说</div>
+            <div style="background:#2B2930;border-radius:20px;padding:6px 14px;display:flex;align-items:center;gap:4px;font-size:13px;">🎬 看动漫</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">选择标签 <span style="color:#9AA0A6;font-weight:400;">(可选，已绑定看动漫)</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <div style="background:rgba(208,188,255,0.2);border:1px solid #D0BCFF;border-radius:14px;padding:4px 10px;font-size:12px;color:#D0BCFF;">鲁路修 ✓</div>
+            <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">进击的巨人</div>
+            <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">间谍过家家</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">开始时间</div>
+          <div style="background:#2B2930;border-radius:12px;padding:10px 12px;font-size:14px;">14:30</div>
+        </div>
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #36353A;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;gap:12px;font-size:12px;">
+              <span style="color:#D0BCFF;">当前 ●</span>
+              <span style="color:#9AA0A6;">完成 ○</span>
+              <span style="color:#9AA0A6;">目标 ○</span>
+            </div>
+            <div style="background:#6750A4;color:white;padding:8px 24px;border-radius:20px;font-size:14px;font-weight:500;">完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 选择优先</h3>
+      <p>先展示活动chip列表供选择，选中活动后自动展示该活动绑定的标签列表。时间选择器直接展示。行为类型三选一。步骤清晰但需要多次点击。</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#121212;padding:16px;border-radius:12px;font-family:system-ui;color:#E8E6E3;min-height:300px;display:flex;flex-direction:column;">
+        <div style="text-align:center;color:#9AA0A6;font-size:12px;margin-bottom:8px;">────── 拖拽条 ──────</div>
+        <div style="background:#2B2930;border-radius:28px;padding:12px 16px;display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="color:#9AA0A6;font-size:16px;">🔍</span>
+          <span style="color:#9AA0A6;font-size:14px;">搜索活动或标签...</span>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">常用活动</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <div style="background:#1E4D2B;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">💼 工作</div>
+            <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">📚 学习</div>
+            <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">🎬 看动漫</div>
+            <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">😴 休息</div>
+            <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">📖 看小说</div>
+            <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">🏠 生活</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">标签 <span style="color:#9AA0A6;font-weight:400;">(选中活动后显示绑定标签)</span></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <div style="background:rgba(208,188,255,0.2);border-radius:14px;padding:4px 10px;font-size:12px;color:#D0BCFF;">鲁路修</div>
+            <div style="background:rgba(208,188,255,0.2);border-radius:14px;padding:4px 10px;font-size:12px;color:#D0BCFF;">进击的巨人</div>
+            <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">+ 自定义</div>
+          </div>
+        </div>
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;gap:12px;font-size:12px;align-items:center;">
+            <span style="color:#9AA0A6;">开始</span>
+            <span style="background:#2B2930;padding:4px 10px;border-radius:8px;font-size:13px;">14:30</span>
+            <span style="color:#9AA0A6;">类型</span>
+            <span style="color:#D0BCFF;">当前 ●</span>
+          </div>
+        </div>
+        <div style="margin-top:auto;padding-top:12px;border-top:1px solid #36353A;">
+          <div style="display:flex;justify-content:flex-end;">
+            <div style="background:#6750A4;color:white;padding:8px 24px;border-radius:20px;font-size:14px;font-weight:500;">完成</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 混合模式（推荐）</h3>
+      <p>顶部搜索框 + 下方常用活动chip。搜索时实时过滤匹配，不搜索时显示常用列表。选中活动后自动展开绑定标签。时间与类型紧凑排列在底部。兼顾效率与易用性。</p>
+    </div>
+  </div>
+</div>

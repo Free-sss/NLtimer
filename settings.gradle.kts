@@ -21,6 +21,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(
     "app",
     "core:designsystem",
+    "core:data",
     "feature:timer",
     "feature:home",
     "feature:sub",

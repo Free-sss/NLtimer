@@ -1,54 +1,164 @@
 package com.nltimer.feature.home.ui
 
-// Mark 逻辑 - 主页数据加载、计时器状态显示、用户交互处理、导航跳转
-// Mark 样式 - 主页布局优化、视觉层次调整、响应式适配、动画效果
-// Mark... - 性能优化、测试用例、错误处理、无障碍支持等开发事项
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.feature.home.model.HomeUiState
+import com.nltimer.feature.home.model.TagUiState
+import com.nltimer.feature.home.ui.components.TimeAxisGrid
+import com.nltimer.feature.home.ui.components.TimeSideBar
+import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
+import java.time.LocalTime
 
+/**
+ * HomeScreen Composable - 显示主页的时间轴网格界面
+ *
+ * @param uiState 主页UI状态，包含加载状态、时间轴行数据等信息
+ * @param activities 活动列表，用于在添加行为时显示
+ * @param tagsForSelectedActivity 当前选中活动的标签列表
+ * @param onEmptyCellClick 点击时间轴网格中的空单元格时的回调函数
+ * @param onAddBehavior 添加行为时的回调函数，接收活动ID、标签ID列表、开始时间、行为性质和备注
+ * @param onDismissSheet 关闭添加行为表单时的回调函数
+ * @param onHourClick 点击小时侧边栏时的回调函数
+ * @param modifier 可选的修饰符
+ */
 @Composable
-fun HomeRoute() {
-    // Mark 逻辑 - 路由入口函数，负责 ViewModel 初始化和状态传递
-    HomeScreen()
+fun HomeScreen(
+    uiState: HomeUiState,
+    activities: List<Activity>,
+    tagsForSelectedActivity: List<Tag>,
+    onEmptyCellClick: () -> Unit,
+    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onDismissSheet: () -> Unit,
+    onHourClick: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Mark-style-main
+    // 创建带有内边距的脚手架布局
+    Scaffold(modifier = modifier) { padding ->
+        if (uiState.isLoading) {
+            // 显示加载指示器
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            // 显示时间轴网格和侧边栏
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+            ) {
+                TimeAxisGrid(
+                    rows = uiState.rows,
+                    onEmptyCellClick = onEmptyCellClick,
+                    modifier = Modifier.weight(1f),
+                )
+                TimeSideBar(
+                    activeHours = uiState.rows.map { it.startTime.hour }.toSet(),
+                    currentHour = uiState.selectedTimeHour,
+                    onHourClick = onHourClick,
+                )
+            }
+        }
+
+        // 显示添加行为表单（如果可见）
+        if (uiState.isAddSheetVisible) {
+            AddBehaviorSheet(
+                activities = activities,
+                tagsForActivity = tagsForSelectedActivity,
+                onDismiss = onDismissSheet,
+                onConfirm = onAddBehavior,
+            )
+        }
+    }
 }
 
+@Preview(showBackground = true)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
-    // Mark 样式 - 主页内容布局，居中显示图标和标题
-    Scaffold(modifier = modifier) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+fun HomeScreenPreview() {
+    val sampleRows = listOf(
+        GridRowUiState(
+            rowId = "1",
+            startTime = LocalTime.of(8, 0),
+            isCurrentRow = false,
+            isLocked = false,
+            cells = List(3) {
+                GridCellUiState(
+                    behaviorId = null,
+                    activityEmoji = "🏃",
+                    activityName = "跑步",
+                    tags = emptyList(),
+                    nature = BehaviorNature.COMPLETED,
+                    isCurrent = false
+                )
+            }
+        ),
+        GridRowUiState(
+            rowId = "2",
+            startTime = LocalTime.of(9, 0),
+            isCurrentRow = true,
+            isLocked = false,
+            cells = List(4) { index ->
+                GridCellUiState(
+                    behaviorId = if (index == 0) 1L else null,
+                    activityEmoji = if (index == 0) "💻" else null,
+                    activityName = if (index == 0) "工作" else null,
+                    tags = if (index == 0) listOf(TagUiState(1, "编码", null)) else emptyList(),
+                    nature = if (index == 0) BehaviorNature.CURRENT else null,
+                    isCurrent = index == 0
+                )
+            }
+        )
+    )
+
+    val sampleActivities = listOf(
+        Activity(1, "工作", "💻", null, "职业", false),
+        Activity(2, "运动", "🏃", null, "健康", false)
+    )
+
+    val sampleTags = listOf(
+        Tag(1, "编码", null, "工作", 1, false),
+        Tag(2, "会议", null, "工作", 2, false)
+    )
+
+    AppTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.background
         ) {
-            // Mark 样式 - 主页图标样式，后续可替换为自定义图标
-            Icon(
-                imageVector = Icons.Default.Home,
-                contentDescription = null,
-                modifier = Modifier.size(64.dp),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-            // Mark 样式 - 主页标题文字样式
-            Text(
-                text = "主页",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(top = 16.dp),
+            HomeScreen(
+                uiState = HomeUiState(
+                    rows = sampleRows,
+                    isLoading = false,
+                    selectedTimeHour = 9
+                ),
+                activities = sampleActivities,
+                tagsForSelectedActivity = sampleTags,
+                onEmptyCellClick = {},
+                onAddBehavior = { _, _, _, _, _ -> },
+                onDismissSheet = {},
+                onHourClick = {}
             )
         }
     }

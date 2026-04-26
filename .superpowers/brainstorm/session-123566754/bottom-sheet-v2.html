@@ -1,0 +1,98 @@
+<h2>添加行为弹窗 v2：混合模式 + 备注 + 预留扩展</h2>
+<p class="subtitle">确认方案：混合模式，新增备注输入框，预留正则匹配与AI智能匹配扩展点</p>
+
+<div class="mockup">
+  <div class="mockup-header">完整弹窗交互原型</div>
+  <div class="mockup-body" style="background:#121212;padding:0;">
+    <div style="padding:16px;font-family:system-ui;color:#E8E6E3;min-height:480px;display:flex;flex-direction:column;">
+      <!-- 拖拽条 -->
+      <div style="text-align:center;color:#9AA0A6;font-size:12px;margin-bottom:12px;">────── 拖拽条 ──────</div>
+
+      <!-- 搜索框 (扩展点: 未来支持正则匹配 + AI匹配) -->
+      <div style="background:#2B2930;border-radius:28px;padding:12px 16px;display:flex;align-items:center;gap:8px;margin-bottom:14px;position:relative;">
+        <span style="color:#9AA0A6;font-size:16px;">🔍</span>
+        <span style="color:#9AA0A6;font-size:14px;flex:1;">搜索活动或标签...</span>
+        <!-- 扩展点标识：未来AI匹配入口 -->
+        <div style="background:#36353A;border-radius:16px;padding:3px 8px;font-size:10px;color:#9AA0A6;display:flex;align-items:center;gap:3px;" title="未来: AI智能匹配">
+          <span>✨</span>
+          <span>AI</span>
+        </div>
+      </div>
+
+      <!-- 常用活动 -->
+      <div style="margin-bottom:12px;">
+        <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">常用活动</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <div style="background:#1E4D2B;border:1px solid #4CAF50;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">💼 工作 ✓</div>
+          <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">📚 学习</div>
+          <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">🎬 看动漫</div>
+          <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">😴 休息</div>
+          <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">📖 看小说</div>
+          <div style="background:#2B2930;border-radius:20px;padding:5px 12px;display:flex;align-items:center;gap:4px;font-size:12px;">🏠 生活</div>
+        </div>
+      </div>
+
+      <!-- 标签区 (选中活动后展示绑定标签) -->
+      <div style="margin-bottom:12px;">
+        <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">标签 <span style="color:#9AA0A6;font-weight:400;">(已绑定"工作"分类)</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <div style="background:rgba(103,180,100,0.2);border:1px solid #A5D6A7;border-radius:14px;padding:4px 10px;font-size:12px;color:#A5D6A7;">数学 ✓</div>
+          <div style="background:rgba(66,165,245,0.2);border:1px solid #90CAF9;border-radius:14px;padding:4px 10px;font-size:12px;color:#90CAF9;">英语 ✓</div>
+          <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">写代码</div>
+          <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">开会</div>
+          <div style="background:#2B2930;border-radius:14px;padding:4px 10px;font-size:12px;color:#9AA0A6;">+ 自定义</div>
+        </div>
+      </div>
+
+      <!-- 备注输入框 -->
+      <div style="margin-bottom:12px;">
+        <div style="color:#D0BCFF;font-size:12px;font-weight:600;margin-bottom:8px;">备注 <span style="color:#9AA0A6;font-weight:400;">(可选)</span></div>
+        <div style="background:#2B2930;border-radius:12px;padding:10px 12px;min-height:48px;font-size:13px;color:#9AA0A6;border:1px solid #36353A;">
+          补充描述这次行为的细节...
+        </div>
+      </div>
+
+      <!-- 底部信息栏：时间 + 类型 + 完成按钮 -->
+      <div style="margin-top:auto;padding-top:12px;border-top:1px solid #36353A;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="display:flex;gap:12px;font-size:12px;align-items:center;">
+            <span style="color:#9AA0A6;">开始</span>
+            <span style="background:#2B2930;padding:4px 10px;border-radius:8px;font-size:13px;">14:30</span>
+          </div>
+          <div style="display:flex;gap:12px;font-size:12px;align-items:center;">
+            <span style="color:#9AA0A6;">类型</span>
+            <span style="color:#D0BCFF;cursor:pointer;">当前 ●</span>
+            <span style="color:#9AA0A6;cursor:pointer;">完成 ○</span>
+            <span style="color:#9AA0A6;cursor:pointer;">目标 ○</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;">
+          <div style="background:#6750A4;color:white;padding:10px 32px;border-radius:20px;font-size:14px;font-weight:500;">完成</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;">
+  <h3>架构预留扩展点说明</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>预留的扩展接口</h4>
+      <ul>
+        <li><strong>搜索框 → 正则匹配引擎</strong>：搜索输入将经过 MatchStrategy 接口，默认实现为关键词匹配，可替换为正则匹配实现</li>
+        <li><strong>AI按钮 → 云端智能匹配</strong>：搜索框右侧 ✨AI 按钮为预留入口，点击后调用 AiMatchService 接口，可接入不同AI后端</li>
+        <li><strong>备注框 → 智能解析</strong>：备注输入框未来可扩展为自然语言解析入口，从备注文本中自动提取活动+标签</li>
+        <li><strong>显示模式 → 策略模式</strong>：网格渲染采用 DisplayModeStrategy，当前实现为"时间轴行式"，可扩展为"标签堆积式"等</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>接口设计原则</h4>
+      <ul>
+        <li>所有扩展点以 Interface/Strategy 模式定义，默认实现为空或基础逻辑</li>
+        <li>扩展不影响现有代码路径，通过依赖注入切换实现</li>
+        <li>UI层通过状态驱动，扩展只需提供新的数据源</li>
+      </ul>
+    </div>
+  </div>
+</div>

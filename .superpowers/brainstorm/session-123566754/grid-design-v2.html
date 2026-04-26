@@ -1,0 +1,178 @@
+<h2>主页网格设计原型 v2</h2>
+<p class="subtitle">基于方案A + 5项修改：时间悬浮于首个格位顶部 · 右侧0-24h时间滑条 · MD3风格 · 行填充锁定</p>
+
+<div class="mockup">
+  <div class="mockup-header">完整页面预览（含右侧时间定位条）</div>
+  <div class="mockup-body" style="background:#121212;padding:0;position:relative;">
+    <!-- 顶部栏 -->
+    <div style="background:#1C1B1F;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #36353A;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#E8E6E3"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        <span style="color:#E8E6E3;font-size:20px;font-weight:500;">NLtimer</span>
+      </div>
+      <span style="color:#9AA0A6;font-size:14px;">4月26日 周日</span>
+    </div>
+
+    <div style="display:flex;position:relative;">
+      <!-- 主内容区 -->
+      <div style="flex:1;padding:12px 16px;overflow-y:auto;max-height:520px;" id="gridArea">
+        
+        <!-- 第1行：08:00 -->
+        <div style="position:relative;margin-bottom:12px;">
+          <!-- 悬浮时间标签 (类似微信通讯录字母分组) -->
+          <div style="position:absolute;top:-10px;left:4px;z-index:2;background:#6750A4;color:white;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,0.3);">08:00</div>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:4px;">
+            <!-- 格位1：工作 -->
+            <div style="background:#1E4D2B;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #386A47;">
+              <div style="font-size:28px;margin-bottom:4px;">💼</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">工作</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">
+                <span style="background:rgba(103,180,100,0.25);color:#A5D6A7;font-size:11px;padding:1px 6px;border-radius:10px;">数学</span>
+                <span style="background:rgba(66,165,245,0.25);color:#90CAF9;font-size:11px;padding:1px 6px;border-radius:10px;">英语</span>
+              </div>
+            </div>
+            <!-- 格位2：跑步 -->
+            <div style="background:#4A1C1C;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #7A3333;">
+              <div style="font-size:28px;margin-bottom:4px;">🏃</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">跑步</div>
+            </div>
+            <!-- 格位3：看动漫 (当前行为 - 发光边框) -->
+            <div style="background:#311B54;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #D0BCFF;box-shadow:0 0 16px rgba(208,188,255,0.35);">
+              <div style="font-size:28px;margin-bottom:4px;">🎬</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">看动漫</div>
+              <span style="background:rgba(208,188,255,0.3);color:#D0BCFF;font-size:11px;padding:1px 6px;border-radius:10px;">鲁路修</span>
+            </div>
+            <!-- 格位4：工作 -->
+            <div style="background:#1E4D2B;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #386A47;">
+              <div style="font-size:28px;margin-bottom:4px;">💼</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">工作</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第2行：10:00 -->
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="position:absolute;top:-10px;left:4px;z-index:2;background:#6750A4;color:white;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,0.3);">10:00</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:4px;">
+            <div style="background:#4A3018;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #7A5530;">
+              <div style="font-size:28px;margin-bottom:4px;">📖</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">看小说</div>
+            </div>
+            <div style="background:#1E4D2B;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #386A47;">
+              <div style="font-size:28px;margin-bottom:4px;">💼</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">工作</div>
+            </div>
+            <div style="background:#1A3240;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #305060;">
+              <div style="font-size:28px;margin-bottom:4px;">📚</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">学习</div>
+            </div>
+            <div style="background:#4A3018;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #7A5530;">
+              <div style="font-size:28px;margin-bottom:4px;">📖</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">看小说</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第3行：14:30 (当前行 - 有一个空位可点击) -->
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="position:absolute;top:-10px;left:4px;z-index:2;background:#FFB74D;color:#1C1B1F;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:600;box-shadow:0 2px 4px rgba(0,0,0,0.3);">14:30 ●</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:4px;">
+            <div style="background:#311B54;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid #D0BCFF;box-shadow:0 0 16px rgba(208,188,255,0.35);">
+              <div style="font-size:28px;margin-bottom:4px;">🎬</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">看动漫</div>
+              <span style="background:rgba(208,188,255,0.3);color:#D0BCFF;font-size:11px;padding:1px 6px;border-radius:10px;">鲁路修</span>
+            </div>
+            <div style="background:#1A3240;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #305060;">
+              <div style="font-size:28px;margin-bottom:4px;">📚</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">学习</div>
+              <span style="background:rgba(66,165,245,0.25);color:#90CAF9;font-size:11px;padding:1px 6px;border-radius:10px;">英语</span>
+            </div>
+            <div style="background:#311B54;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #543A70;">
+              <div style="font-size:28px;margin-bottom:4px;">🎬</div>
+              <div style="color:#E8E6E3;font-size:14px;font-weight:500;margin-bottom:6px;">看动漫</div>
+              <span style="background:rgba(208,188,255,0.3);color:#D0BCFF;font-size:11px;padding:1px 6px;border-radius:10px;">进击的巨人</span>
+            </div>
+            <!-- 空位：可点击添加 -->
+            <div style="background:rgba(49,48,51,0.5);border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed #49454F;cursor:pointer;transition:border-color 0.2s;">
+              <div style="font-size:32px;color:#49454F;">+</div>
+              <div style="color:#49454F;font-size:11px;margin-top:4px;">点击添加</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第4行：未解锁 (灰色/半透明，提示需完成上一行) -->
+        <div style="position:relative;margin-bottom:12px;opacity:0.35;">
+          <div style="position:absolute;top:-10px;left:4px;z-index:2;background:#49454F;color:#9AA0A6;padding:2px 10px;border-radius:4px;font-size:13px;font-weight:600;">--:-- 🔒</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-top:4px;">
+            <div style="background:#2B2930;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed #3F3C44;">
+              <div style="font-size:28px;color:#49454F;">+</div>
+            </div>
+            <div style="background:#2B2930;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed #3F3C44;">
+              <div style="font-size:28px;color:#49454F;">+</div>
+            </div>
+            <div style="background:#2B2930;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed #3F3C44;">
+              <div style="font-size:28px;color:#49454F;">+</div>
+            </div>
+            <div style="background:#2B2930;border-radius:16px;padding:14px 8px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px dashed #3F3C44;">
+              <div style="font-size:28px;color:#49454F;">+</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:6px;color:#9AA0A6;font-size:12px;">⚠ 完成上一行后解锁</div>
+        </div>
+
+      </div>
+
+      <!-- 右侧时间定位条 (0-24小时) -->
+      <div style="width:40px;background:#1C1B1F;border-left:1px solid #36353A;display:flex;flex-direction:column;align-items:center;padding:8px 0;max-height:520px;overflow-y:auto;position:sticky;top:0;">
+        <div style="color:#9AA0A6;font-size:9px;font-weight:600;width:100%;text-align:center;padding:2px 0;">时</div>
+        <div id="timeBar" style="flex:1;display:flex;flex-direction:column;align-items:center;width:100%;position:relative;">
+          <!-- 时间刻度 -->
+          <div style="width:24px;height:24px;border-radius:50%;background:#6750A4;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;margin:1px 0;" title="08:00">8</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="09:00">9</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#6750A4;color:white;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;margin:1px 0;" title="10:00">10</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="11:00">11</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="12:00">12</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="13:00">13</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#FFB74D;color:#1C1B1F;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:600;cursor:pointer;margin:1px 0;box-shadow:0 0 6px rgba(255,183,77,0.5);" title="14:30 当前">14</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="15:00">15</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="16:00">16</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="17:00">17</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="18:00">18</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="19:00">19</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="20:00">20</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="21:00">21</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="22:00">22</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="23:00">23</div>
+          <div style="width:2px;height:16px;background:#36353A;"></div>
+          <div style="width:22px;height:22px;border-radius:50%;background:#2B2930;color:#9AA0A6;font-size:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;margin:1px 0;" title="00:00">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部说明 -->
+    <div style="padding:12px 16px;border-top:1px solid #36353A;background:#1C1B1F;">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:50%;background:#6750A4;"></div><span style="color:#9AA0A6;font-size:11px;">已完成行</span></div>
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:50%;background:#FFB74D;"></div><span style="color:#9AA0A6;font-size:11px;">当前时间</span></div>
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:50%;border:2px solid #D0BCFF;"></div><span style="color:#9AA0A6;font-size:11px;">进行中行为</span></div>
+        <div style="display:flex;align-items:center;gap:4px;"><div style="width:10px;height:10px;border-radius:2px;background:#49454F;border:1px dashed #666;"></div><span style="color:#9AA0A6;font-size:11px;">空位/待填充</span></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+package com.nltimer.feature.home.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.nltimer.feature.home.model.TagUiState
+
+@Composable
+fun TagChip(
+    tag: TagUiState,
+    modifier: Modifier = Modifier,
+) {
+    // Mark-style-main
+    val chipColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primaryContainer
+    val textColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.onPrimaryContainer
+
+    Text(
+        text = tag.name,
+        color = textColor,
+        style = MaterialTheme.typography.labelSmall,
+        modifier = modifier
+            .background(chipColor, RoundedCornerShape(10.dp))
+            .padding(horizontal = 6.dp, vertical = 1.dp),
+    )
+}

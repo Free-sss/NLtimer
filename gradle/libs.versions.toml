@@ -15,8 +15,9 @@ lifecycle = "2.9.0"
 navigation_compose = "2.9.0"
 kotlinx_coroutines_test = "1.10.2"
 compile_sdk_version = "36"
-min_sdk_version = "23"
+min_sdk_version = "31"
 target_sdk_version = "36"
+room = "2.7.1"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -41,6 +42,9 @@ lifecycle_viewmodel_compose = { module = "androidx.lifecycle:lifecycle-viewmodel
 lifecycle_runtime_compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 navigation_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
 kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx_coroutines_test" }
+room_runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room_ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room_compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 agp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kgp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 
