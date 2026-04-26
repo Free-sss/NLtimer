@@ -1,0 +1,23 @@
+<resources>
+    <string name="behavior_nature_pending">目标</string>
+    <string name="behavior_nature_active">当前</string>
+    <string name="behavior_nature_completed">完成</string>
+
+    <string name="add_behavior_search_placeholder">搜索活动或标签…</string>
+    <string name="add_behavior_common_activities">常用活动</string>
+    <string name="add_behavior_related_tags">关联标签</string>
+    <string name="add_behavior_all_tags">所有标签</string>
+    <string name="add_behavior_note_label">备注 (可选)</string>
+    <string name="add_behavior_note_placeholder">补充描述这次行为的细节…</string>
+    <string name="add_behavior_start_time">开始</string>
+    <string name="add_behavior_type">类型</string>
+    <string name="add_behavior_add_action">+ 添加</string>
+    <string name="add_behavior_confirm">完成</string>
+
+    <string name="home_complete_active_behavior">完成当前行为</string>
+    <string name="home_idle_mode">🟡 空闲模式</string>
+    <string name="home_auto_flow">🟢 自动流转</string>
+    <string name="home_enable_auto_flow">开启自动流转</string>
+    <string name="home_enter_idle_mode">进入空闲模式</string>
+    <string name="home_start_next">开始下一个</string>
+</resources>

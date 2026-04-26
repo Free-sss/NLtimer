@@ -1,13 +1,13 @@
 package com.nltimer.feature.home.ui.sheet
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,39 +21,44 @@ fun ActivityPicker(
     onActivitySelect: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
+    if (activities.isEmpty()) return
+
     FlowRow(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        activities.forEach { activity ->
+        for (activity in activities) {
             val isSelected = activity.id == selectedActivityId
-            val backgroundColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHigh
-            }
-            val borderColor = if (isSelected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                MaterialTheme.colorScheme.outlineVariant
-            }
-
-            Text(
-                text = "${activity.emoji ?: ""} ${activity.name}".trim(),
+            
+            Surface(
+                onClick = { onActivitySelect(activity.id) },
+                shape = RoundedCornerShape(20.dp),
                 color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
+                    MaterialTheme.colorScheme.primaryContainer
                 } else {
-                    MaterialTheme.colorScheme.onSurface
+                    MaterialTheme.colorScheme.surfaceContainerHigh
                 },
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier
-                    .background(backgroundColor, RoundedCornerShape(20.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(20.dp))
-                    .clickable { onActivitySelect(activity.id) }
-                    .padding(horizontal = 12.dp, vertical = 5.dp),
-            )
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    }
+                ),
+            ) {
+                Text(
+                    text = "${activity.emoji ?: ""} ${activity.name}".trim(),
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp),
+                )
+            }
         }
     }
 }

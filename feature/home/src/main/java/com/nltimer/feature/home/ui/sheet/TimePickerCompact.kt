@@ -23,16 +23,17 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerCompact(
-    time: LocalTime,
+    time: LocalTime?,
     onTimeChange: (LocalTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showPicker by remember { mutableStateOf(false) }
 
     if (showPicker) {
+        val now = LocalTime.now()
         val state = rememberTimePickerState(
-            initialHour = time.hour,
-            initialMinute = time.minute,
+            initialHour = time?.hour ?: now.hour,
+            initialMinute = time?.minute ?: now.minute,
             is24Hour = true,
         )
         AlertDialog(
@@ -52,7 +53,7 @@ fun TimePickerCompact(
     }
 
     Text(
-        text = time.format(DateTimeFormatter.ofPattern("HH:mm")),
+        text = time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "--:--",
         style = MaterialTheme.typography.bodyMedium,
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))

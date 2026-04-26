@@ -1,13 +1,13 @@
 package com.nltimer.feature.home.ui.sheet
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,11 +22,10 @@ fun TagPicker(
     onTagToggle: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
     if (tags.isEmpty()) return
 
     FlowRow(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -41,16 +40,19 @@ fun TagPicker(
             val borderColor = if (isSelected) tagColor else Color.Transparent
             val textColor = if (isSelected) tagColor else MaterialTheme.colorScheme.onSurfaceVariant
 
-            Text(
-                text = tag.name,
-                color = textColor,
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier
-                    .background(backgroundColor, RoundedCornerShape(14.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(14.dp))
-                    .clickable { onTagToggle(tag.id) }
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
-            )
+            Surface(
+                onClick = { onTagToggle(tag.id) },
+                shape = RoundedCornerShape(14.dp),
+                color = backgroundColor,
+                border = if (isSelected) BorderStroke(1.dp, borderColor) else null,
+            ) {
+                Text(
+                    text = tag.name,
+                    color = textColor,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            }
         }
     }
 }

@@ -8,8 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.feature.home.R
 
 @Composable
 fun BehaviorNatureSelector(
@@ -20,13 +22,15 @@ fun BehaviorNatureSelector(
     Row(modifier = modifier) {
         BehaviorNature.entries.forEach { nature ->
             val isSelected = nature == selected
-            val label = when (nature) {
-                BehaviorNature.PENDING -> "目标 ○"
-                BehaviorNature.ACTIVE -> "当前 ●"
-                BehaviorNature.COMPLETED -> "完成 ○"
+            val labelRes = when (nature) {
+                BehaviorNature.PENDING -> R.string.behavior_nature_pending
+                BehaviorNature.ACTIVE -> R.string.behavior_nature_active
+                BehaviorNature.COMPLETED -> R.string.behavior_nature_completed
             }
+            val symbol = if (isSelected) "●" else "○"
+            
             Text(
-                text = label,
+                text = "${stringResource(labelRes)} $symbol",
                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.clickable { onSelect(nature) },
