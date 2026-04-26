@@ -32,19 +32,26 @@ fun GridRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                row.cells.forEach { cell ->
+                val addPlaceholderIndex = row.cells.indexOfFirst { it.isAddPlaceholder }
+                val firstEmptyIndex = row.cells.indexOfFirst { it.behaviorId == null }
+                val targetEmptyIndex = if (addPlaceholderIndex != -1) addPlaceholderIndex else firstEmptyIndex
+
+                repeat(4) { index ->
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.Center,
                     ) {
-                        when {
-                            row.isLocked -> GridCellLocked()
-                            cell.isAddPlaceholder -> GridCellEmpty(
-                                onClick = onEmptyCellClick,
-                                isAddPlaceholder = true,
-                            )
-                            cell.behaviorId != null -> GridCell(cell = cell)
-                            else -> GridCellEmpty(onClick = onEmptyCellClick)
+                        val cell = row.cells.getOrNull(index)
+                        if (cell != null) {
+                            when {
+                                row.isLocked -> GridCellLocked()
+                                cell.behaviorId != null -> GridCell(cell = cell)
+                                index == targetEmptyIndex -> GridCellEmpty(
+                                    onClick = onEmptyCellClick,
+                                    isAddPlaceholder = cell.isAddPlaceholder,
+                                )
+                                else -> {}
+                            }
                         }
                     }
                 }

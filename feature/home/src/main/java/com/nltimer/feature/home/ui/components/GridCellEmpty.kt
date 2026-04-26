@@ -18,9 +18,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun GridCellEmpty(
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     isAddPlaceholder: Boolean = false,
-    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier

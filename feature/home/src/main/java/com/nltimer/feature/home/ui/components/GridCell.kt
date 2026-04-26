@@ -25,7 +25,7 @@ fun GridCell(
     modifier: Modifier = Modifier,
 ) {
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED && cell.achievementLevel != null
-    val platinumStrength = if (isPlatinum) cell.achievementLevel!! / 100f else 0f
+    val platinumStrength = if (isPlatinum) cell.achievementLevel / 100f else 0f
 
     val borderColor = when {
         isPlatinum -> {
