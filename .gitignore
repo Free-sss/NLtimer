@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/macos,linux,gradle,windows,android,androidstudio,java,kotlin
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,gradle,windows,android,androidstudio,java,kotlin
 
+# Worktrees
+.worktrees/
+
 ### Android ###
 # Gradle files
 .gradle/
