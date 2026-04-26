@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 fun GridCellEmpty(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
-    isAddPlaceholder: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -41,12 +40,12 @@ fun GridCellEmpty(
         Text(
             text = "+",
             style = MaterialTheme.typography.headlineMedium,
-            color = if (isAddPlaceholder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+            color = MaterialTheme.colorScheme.primary,
         )
         Text(
-            text = if (isAddPlaceholder) "添加行为" else "点击添加",
+            text = "添加行为",
             style = MaterialTheme.typography.labelSmall,
-            color = if (isAddPlaceholder) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+            color = MaterialTheme.colorScheme.primary,
         )
     }
 }

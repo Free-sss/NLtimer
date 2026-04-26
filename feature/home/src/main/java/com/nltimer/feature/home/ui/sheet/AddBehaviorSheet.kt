@@ -39,6 +39,7 @@ import java.time.LocalTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddBehaviorSheet(
+    modifier: Modifier = Modifier,
     activities: List<Activity>,
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
@@ -46,7 +47,6 @@ fun AddBehaviorSheet(
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
-    modifier: Modifier = Modifier,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
