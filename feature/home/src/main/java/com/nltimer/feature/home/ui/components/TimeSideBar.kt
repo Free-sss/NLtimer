@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -30,9 +31,9 @@ fun TimeSideBar(
     // Mark-style-main
     Column(
         modifier = modifier
-            .width(20.dp)
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .padding(vertical = 8.dp)
+            .width(0.dp)
+            .background(Color.Transparent)
+            .padding(vertical = 0.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(1.dp),
@@ -42,7 +43,8 @@ fun TimeSideBar(
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        for (hour in 0..23) {
+        val displayedHours = (activeHours + currentHour).sorted()
+        for (hour in displayedHours) {
             val isActive = hour in activeHours
             val isCurrent = hour == currentHour
 

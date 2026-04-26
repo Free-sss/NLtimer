@@ -75,7 +75,10 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f),
                 )
                 TimeSideBar(
-                    activeHours = uiState.rows.map { it.startTime.hour }.toSet(),
+                    activeHours = uiState.rows
+                        .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
+                        .map { it.startTime.hour }
+                        .toSet(),
                     currentHour = uiState.selectedTimeHour,
                     onHourClick = onHourClick,
                 )
@@ -94,16 +97,25 @@ fun HomeScreen(
     }
 }
 
+/**
+ * HomeScreen的Compose预览函数
+ * 此函数用于在开发过程中预览HomeScreen组件的UI效果
+ * 它创建了模拟数据来展示网格行、活动和标签的状态
+ *
+ * @param 无参数 - 这是一个预览函数，不需要外部参数
+ * @return 无返回值 - 在预览中显示HomeScreen UI组件
+ */
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
+    // 创建示例网格行数据，包含两行不同状态的数据
     val sampleRows = listOf(
         GridRowUiState(
             rowId = "1",
             startTime = LocalTime.of(8, 0),
             isCurrentRow = false,
             isLocked = false,
-            cells = List(3) {
+            cells = List(4) {
                 GridCellUiState(
                     behaviorId = null,
                     activityEmoji = "🏃",
@@ -132,20 +144,23 @@ fun HomeScreenPreview() {
         )
     )
 
+    // 创建示例活动数据
     val sampleActivities = listOf(
         Activity(1, "工作", "💻", null, "职业", false),
         Activity(2, "运动", "🏃", null, "健康", false)
     )
 
+    // 创建与所选活动相关的示例标签数据
     val sampleTags = listOf(
         Tag(1, "编码", null, "工作", 1, false),
         Tag(2, "会议", null, "工作", 2, false)
     )
 
+    // 使用应用主题包装HomeScreen组件
     AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
-            color = androidx.compose.material3.MaterialTheme.colorScheme.background
+//            color = androidx.compose.material3.MaterialTheme.colorScheme.background
         ) {
             HomeScreen(
                 uiState = HomeUiState(
