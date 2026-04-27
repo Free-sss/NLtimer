@@ -34,7 +34,8 @@ private data class DrawerMenuItem(
 private val drawerMenuItems = listOf(
     DrawerMenuItem("home", "主页", Icons.Default.Home),
     DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
-    DrawerMenuItem("categories", "活动分类管理", Icons.Default.Category),
+    DrawerMenuItem("categories", "分类管理", Icons.Default.Category),
+    DrawerMenuItem("categories", "活动管理", Icons.Default.Category),
     DrawerMenuItem("settings", "设置", Icons.Default.Settings),
 )
 

@@ -2,6 +2,7 @@ package com.nltimer.feature.categories.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.feature.categories.model.CategoriesUiState
 import com.nltimer.feature.categories.model.DialogState
@@ -12,13 +13,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private fun mergeAndSort(dbCategories: List<String>, addedCategories: Set<String>): List<String> =
+    (dbCategories + addedCategories).distinct().sorted()
+
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
+    private val settingsPrefs: SettingsPrefs,
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -29,17 +35,30 @@ class CategoriesViewModel @Inject constructor(
 
     private val _dialogState = MutableStateFlow<DialogState?>(null)
 
+    private val _addedActivityCategories = MutableStateFlow<Set<String>>(emptySet())
+    private val _addedTagCategories = MutableStateFlow<Set<String>>(emptySet())
+
+    init {
+        viewModelScope.launch {
+            _addedActivityCategories.value = settingsPrefs.getSavedActivityCategories().first()
+            _addedTagCategories.value = settingsPrefs.getSavedTagCategories().first()
+        }
+    }
+
     val uiState: StateFlow<CategoriesUiState> = combine(
         categoryRepository.getDistinctActivityCategories(),
         categoryRepository.getDistinctTagCategories(),
         _searchQuery,
         _dialogState,
-    ) { activityCats, tagCats, query, dialog ->
+        combine(_addedActivityCategories, _addedTagCategories, ::Pair),
+    ) { activityCats, tagCats, query, dialog, (addedActivity, addedTag) ->
+        val mergedActivity = mergeAndSort(activityCats, addedActivity)
+        val mergedTag = mergeAndSort(tagCats, addedTag)
         CategoriesUiState(
-            activityCategories = if (query.isBlank()) activityCats
-                else activityCats.filter { it.contains(query, ignoreCase = true) },
-            tagCategories = if (query.isBlank()) tagCats
-                else tagCats.filter { it.contains(query, ignoreCase = true) },
+            activityCategories = if (query.isBlank()) mergedActivity
+                else mergedActivity.filter { it.contains(query, ignoreCase = true) },
+            tagCategories = if (query.isBlank()) mergedTag
+                else mergedTag.filter { it.contains(query, ignoreCase = true) },
             searchQuery = query,
             isLoading = false,
             dialogState = dialog,
@@ -81,7 +100,26 @@ class CategoriesViewModel @Inject constructor(
     }
 
     fun confirmAddCategory(sectionType: SectionType, name: String) {
-        dismissDialog()
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) {
+            dismissDialog()
+            return
+        }
+        viewModelScope.launch {
+            when (sectionType) {
+                SectionType.ACTIVITY -> {
+                    val updated = _addedActivityCategories.value + trimmed
+                    _addedActivityCategories.value = updated
+                    settingsPrefs.saveActivityCategories(updated)
+                }
+                SectionType.TAG -> {
+                    val updated = _addedTagCategories.value + trimmed
+                    _addedTagCategories.value = updated
+                    settingsPrefs.saveTagCategories(updated)
+                }
+            }
+            dismissDialog()
+        }
     }
 
     fun confirmRenameCategory(sectionType: SectionType, oldName: String, newName: String) {
@@ -107,8 +145,22 @@ class CategoriesViewModel @Inject constructor(
 
         viewModelScope.launch {
             when (sectionType) {
-                SectionType.ACTIVITY -> categoryRepository.renameActivityCategory(oldName, newName)
-                SectionType.TAG -> categoryRepository.renameTagCategory(oldName, newName)
+                SectionType.ACTIVITY -> {
+                    if (oldName in _addedActivityCategories.value) {
+                        val updated = _addedActivityCategories.value - oldName + newName
+                        _addedActivityCategories.value = updated
+                        settingsPrefs.saveActivityCategories(updated)
+                    }
+                    categoryRepository.renameActivityCategory(oldName, newName)
+                }
+                SectionType.TAG -> {
+                    if (oldName in _addedTagCategories.value) {
+                        val updated = _addedTagCategories.value - oldName + newName
+                        _addedTagCategories.value = updated
+                        settingsPrefs.saveTagCategories(updated)
+                    }
+                    categoryRepository.renameTagCategory(oldName, newName)
+                }
             }
             dismissDialog()
         }
@@ -117,8 +169,18 @@ class CategoriesViewModel @Inject constructor(
     fun confirmDeleteCategory(sectionType: SectionType, category: String) {
         viewModelScope.launch {
             when (sectionType) {
-                SectionType.ACTIVITY -> categoryRepository.resetActivityCategory(category)
-                SectionType.TAG -> categoryRepository.resetTagCategory(category)
+                SectionType.ACTIVITY -> {
+                    val updated = _addedActivityCategories.value - category
+                    _addedActivityCategories.value = updated
+                    settingsPrefs.saveActivityCategories(updated)
+                    categoryRepository.resetActivityCategory(category)
+                }
+                SectionType.TAG -> {
+                    val updated = _addedTagCategories.value - category
+                    _addedTagCategories.value = updated
+                    settingsPrefs.saveTagCategories(updated)
+                    categoryRepository.resetTagCategory(category)
+                }
             }
             dismissDialog()
         }

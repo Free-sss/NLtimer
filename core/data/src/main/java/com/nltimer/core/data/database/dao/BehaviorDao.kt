@@ -101,6 +101,29 @@ interface BehaviorDao {
 
     @Query(
         """
+        UPDATE behaviors
+        SET activityId = :activityId,
+            startTime = :startTime,
+            endTime = :endTime,
+            status = :status,
+            note = :note
+        WHERE id = :id
+        """
+    )
+    suspend fun update(
+        id: Long,
+        activityId: Long,
+        startTime: Long,
+        endTime: Long?,
+        status: String,
+        note: String?,
+    )
+
+    @Query("DELETE FROM behavior_tag_cross_ref WHERE behaviorId = :behaviorId")
+    suspend fun deleteTagsForBehavior(behaviorId: Long)
+
+    @Query(
+        """
         SELECT t.* FROM tags t
         INNER JOIN behavior_tag_cross_ref btc ON t.id = btc.tagId
         WHERE btc.behaviorId = :behaviorId
