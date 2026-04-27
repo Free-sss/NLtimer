@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -41,6 +43,15 @@ tasks.withType<KotlinCompile>().configureEach {
 
 dependencies {
     implementation(projects.core.designsystem)
+    implementation(projects.core.data)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+    implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.viewmodel.compose)
+
+    implementation(libs.materialkolor)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)

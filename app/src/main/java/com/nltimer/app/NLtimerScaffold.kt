@@ -37,6 +37,7 @@ fun NLtimerScaffold(
         drawerState = drawerState,
         drawerContent = {
             AppDrawer(
+                navController = navController,
                 onClose = {
                     coroutineScope.launch { drawerState.close() }
                 },
