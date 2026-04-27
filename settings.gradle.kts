@@ -27,4 +27,5 @@ include(
     "feature:stats",
     "feature:settings",
     "feature:categories",
+    "feature:management_activities",
 )

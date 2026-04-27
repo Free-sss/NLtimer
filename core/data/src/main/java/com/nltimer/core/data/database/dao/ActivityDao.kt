@@ -49,4 +49,19 @@ interface ActivityDao {
 
     @Query("UPDATE activities SET category = NULL WHERE category = :category")
     suspend fun resetCategory(category: String)
+
+    @Query("SELECT * FROM activities WHERE groupId IS NULL AND isArchived = 0 ORDER BY name")
+    fun getUncategorized(): Flow<List<ActivityEntity>>
+
+    @Query("SELECT * FROM activities WHERE groupId = :groupId AND isArchived = 0 ORDER BY name")
+    fun getByGroup(groupId: Long): Flow<List<ActivityEntity>>
+
+    @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
+    fun getAllPresets(): Flow<List<ActivityEntity>>
+
+    @Query("UPDATE activities SET groupId = :groupId WHERE id = :activityId")
+    suspend fun moveToGroup(activityId: Long, groupId: Long?)
+
+    @Query("DELETE FROM activities WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }

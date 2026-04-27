@@ -1,10 +1,38 @@
 package com.nltimer.core.data.model
 
+import com.nltimer.core.data.database.entity.ActivityEntity
+
 data class Activity(
-    val id: Long,
+    val id: Long = 0,
     val name: String,
-    val emoji: String?,
-    val iconKey: String?,
-    val category: String?,
-    val isArchived: Boolean,
-)
+    val emoji: String? = null,
+    val iconKey: String? = null,
+    val category: String? = null,
+    val groupId: Long? = null,
+    val isPreset: Boolean = false,
+    val isArchived: Boolean = false,
+) {
+    fun toEntity() = ActivityEntity(
+        id = id,
+        name = name,
+        emoji = emoji,
+        iconKey = iconKey,
+        category = category,
+        groupId = groupId,
+        isPreset = isPreset,
+        isArchived = isArchived,
+    )
+
+    companion object {
+        fun fromEntity(entity: ActivityEntity) = Activity(
+            id = entity.id,
+            name = entity.name,
+            emoji = entity.emoji,
+            iconKey = entity.iconKey,
+            category = entity.category,
+            groupId = entity.groupId,
+            isPreset = entity.isPreset,
+            isArchived = entity.isArchived,
+        )
+    }
+}

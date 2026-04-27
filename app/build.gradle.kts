@@ -51,6 +51,7 @@ dependencies {
     implementation(projects.feature.stats)
     implementation(projects.feature.settings)
     implementation(projects.feature.categories)
+    implementation(projects.feature.managementActivities)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

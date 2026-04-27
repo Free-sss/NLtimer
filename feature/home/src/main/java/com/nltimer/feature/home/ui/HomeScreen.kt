@@ -131,8 +131,8 @@ private fun HomeScreenPreview() {
         Tag(2, "Tag 2", null, null, null, null, 0, 0, 0, false)
     )
     val sampleActivities = listOf(
-        Activity(1, "Activity 1", "😊", null, null, false),
-        Activity(2, "Activity 2", "🚀", null, null, false)
+        Activity(1, "Activity 1", "😊", null, null, 1),
+        Activity(2, "Activity 2", "🚀", null, null, 2)
     )
     val sampleUiState = HomeUiState(
         isLoading = false,

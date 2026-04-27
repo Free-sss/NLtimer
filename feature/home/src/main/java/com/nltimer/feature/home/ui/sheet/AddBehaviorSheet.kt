@@ -299,9 +299,9 @@ private fun AddBehaviorSheetPreview() {
     ) {
         AddBehaviorSheetContent(
             activities = listOf(
-                Activity(1, "Coding", "👨‍💻", null, null, false),
-                Activity(2, "Reading", "📚", null, null, false),
-                Activity(3, "Workout", "💪", null, null, false)
+                Activity(1, "Coding", "👨‍💻", null, null, 1),
+                Activity(2, "Reading", "📚", null, null, 2),
+                Activity(3, "Workout", "💪", null, null, 3)
             ),
             tagsForActivity = listOf(
                 Tag(1, "Work", null, null, null, null, 0, 0, 0, false),
