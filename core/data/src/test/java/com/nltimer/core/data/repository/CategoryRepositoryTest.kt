@@ -1,8 +1,8 @@
 package com.nltimer.core.data.repository
 
-import com.nltimer.core.data.database.dao.ActivityDao
+import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.TagDao
-import com.nltimer.core.data.database.entity.ActivityEntity
+import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,49 +19,46 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class CategoryRepositoryTest {
 
-    private val activityEntities = mutableListOf<ActivityEntity>()
+    private val groupEntities = mutableListOf<ActivityGroupEntity>()
     private val tagEntities = mutableListOf<TagEntity>()
-    private val activityFlow = MutableStateFlow<List<ActivityEntity>>(emptyList())
+    private val groupFlow = MutableStateFlow<List<ActivityGroupEntity>>(emptyList())
     private val tagFlow = MutableStateFlow<List<TagEntity>>(emptyList())
 
-    private val fakeActivityDao = object : ActivityDao {
-        override suspend fun insert(activity: ActivityEntity): Long {
-            val id = activityEntities.size.toLong() + 1
-            activityEntities.add(activity.copy(id = id))
-            activityFlow.value = activityEntities.toList()
+    private val fakeGroupDao = object : ActivityGroupDao {
+        override fun getAll(): Flow<List<ActivityGroupEntity>> = groupFlow
+
+        override suspend fun insert(group: ActivityGroupEntity): Long {
+            val id = groupEntities.size.toLong() + 1
+            groupEntities.add(group.copy(id = id))
+            groupFlow.value = groupEntities.toList()
             return id
         }
 
-        override suspend fun update(activity: ActivityEntity) {}
-        override suspend fun delete(activity: ActivityEntity) {}
-        override fun getAllActive(): Flow<List<ActivityEntity>> = flowOf(emptyList())
-        override fun getAll(): Flow<List<ActivityEntity>> = activityFlow
-        override suspend fun getById(id: Long): ActivityEntity? = null
-        override suspend fun getByName(name: String): ActivityEntity? = null
-        override fun getByCategory(category: String): Flow<List<ActivityEntity>> = flowOf(emptyList())
-        override suspend fun setArchived(id: Long, archived: Boolean) {}
-        override fun search(query: String): Flow<List<ActivityEntity>> = flowOf(emptyList())
-
-        override fun getDistinctCategories(): Flow<List<String>> =
-            activityFlow.map { entities ->
-                entities.mapNotNull { it.category }
-                    .filter { it.isNotBlank() }
-                    .distinct()
-                    .sorted()
-            }
-
-        override suspend fun renameCategory(oldName: String, newName: String) {
-            activityEntities.replaceAll {
-                if (it.category == oldName) it.copy(category = newName) else it
-            }
-            activityFlow.value = activityEntities.toList()
+        override suspend fun update(group: ActivityGroupEntity) {
+            groupEntities.replaceAll { if (it.id == group.id) group else it }
+            groupFlow.value = groupEntities.toList()
         }
 
-        override suspend fun resetCategory(category: String) {
-            activityEntities.replaceAll {
-                if (it.category == category) it.copy(category = null) else it
+        override suspend fun delete(group: ActivityGroupEntity) {
+            groupEntities.removeAll { it.id == group.id }
+            groupFlow.value = groupEntities.toList()
+        }
+
+        override suspend fun ungroupAllActivities(groupId: Long) {}
+
+        override suspend fun getByName(name: String): ActivityGroupEntity? =
+            groupEntities.find { it.name == name }
+
+        override suspend fun renameByName(oldName: String, newName: String) {
+            groupEntities.replaceAll {
+                if (it.name == oldName) it.copy(name = newName) else it
             }
-            activityFlow.value = activityEntities.toList()
+            groupFlow.value = groupEntities.toList()
+        }
+
+        override suspend fun deleteByName(name: String) {
+            groupEntities.removeAll { it.name == name }
+            groupFlow.value = groupEntities.toList()
         }
     }
 
@@ -72,14 +69,23 @@ class CategoryRepositoryTest {
             tagFlow.value = tagEntities.toList()
             return id
         }
-        override suspend fun update(tag: TagEntity) {}
-        override suspend fun delete(tag: TagEntity) {}
+        override suspend fun update(tag: TagEntity) {
+            tagEntities.replaceAll { if (it.id == tag.id) tag else it }
+            tagFlow.value = tagEntities.toList()
+        }
+        override suspend fun delete(tag: TagEntity) {
+            tagEntities.removeAll { it.id == tag.id }
+            tagFlow.value = tagEntities.toList()
+        }
         override fun getAllActive(): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getAll(): Flow<List<TagEntity>> = tagFlow
-        override suspend fun getById(id: Long): TagEntity? = null
-        override suspend fun getByName(name: String): TagEntity? = null
+        override suspend fun getById(id: Long): TagEntity? = tagEntities.find { it.id == id }
+        override suspend fun getByName(name: String): TagEntity? = tagEntities.find { it.name == name }
         override fun getByCategory(category: String): Flow<List<TagEntity>> = flowOf(emptyList())
-        override suspend fun setArchived(id: Long, archived: Boolean) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {
+            tagEntities.replaceAll { if (it.id == id) it.copy(isArchived = archived) else it }
+            tagFlow.value = tagEntities.toList()
+        }
         override fun search(query: String): Flow<List<TagEntity>> = flowOf(emptyList())
         override fun getByActivityId(activityId: Long): Flow<List<TagEntity>> = flowOf(emptyList())
         override suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity> = emptyList()
@@ -107,56 +113,45 @@ class CategoryRepositoryTest {
         }
     }
 
-    private val repository = CategoryRepositoryImpl(fakeActivityDao, fakeTagDao)
+    private val repository = CategoryRepositoryImpl(fakeGroupDao, fakeTagDao)
 
     @Test
-    fun getDistinctActivityCategories_filtersNullAndEmpty() = runTest {
-        fakeActivityDao.insert(ActivityEntity(name = "跑步", category = "运动"))
-        fakeActivityDao.insert(ActivityEntity(name = "阅读", category = null))
-        fakeActivityDao.insert(ActivityEntity(name = "冥想", category = ""))
-        fakeActivityDao.insert(ActivityEntity(name = "游泳", category = "运动"))
+    fun getDistinctActivityCategories_returnsSortedNames() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "运动"))
+        fakeGroupDao.insert(ActivityGroupEntity(name = "学习"))
 
         val categories = repository.getDistinctActivityCategories().first()
 
-        assertEquals(listOf("运动"), categories)
+        assertEquals(listOf("学习", "运动"), categories)
     }
 
     @Test
-    fun getDistinctActivityCategories_returnsDistinctSorted() = runTest {
-        fakeActivityDao.insert(ActivityEntity(name = "A", category = "工作"))
-        fakeActivityDao.insert(ActivityEntity(name = "B", category = "学习"))
-        fakeActivityDao.insert(ActivityEntity(name = "C", category = "工作"))
+    fun addActivityCategory_createsNewGroup() = runTest {
+        repository.addActivityCategory("工作")
 
         val categories = repository.getDistinctActivityCategories().first()
 
-        assertEquals(listOf("学习", "工作"), categories)
+        assertEquals(listOf("工作"), categories)
     }
 
     @Test
-    fun renameActivityCategory_updatesAllMatching() = runTest {
-        fakeActivityDao.insert(ActivityEntity(name = "跑步", category = "运动"))
-        fakeActivityDao.insert(ActivityEntity(name = "游泳", category = "运动"))
-        fakeActivityDao.insert(ActivityEntity(name = "阅读", category = "学习"))
-
-        val beforeRename = activityFlow.value.map { it.category }.filterNotNull().distinct().sorted()
-        assertEquals(listOf("学习", "运动"), beforeRename)
+    fun renameActivityCategory_updatesName() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "运动"))
 
         repository.renameActivityCategory("运动", "体育")
 
-        val afterRename = activityFlow.value.map { it.category }.filterNotNull().distinct().sorted()
-        assertTrue(afterRename.contains("体育"))
-        assertTrue(afterRename.contains("学习"))
+        val categories = repository.getDistinctActivityCategories().first()
+        assertEquals(listOf("体育"), categories)
     }
 
     @Test
-    fun resetActivityCategory_setsCategoryToNull() = runTest {
-        fakeActivityDao.insert(ActivityEntity(name = "跑步", category = "运动"))
-        fakeActivityDao.insert(ActivityEntity(name = "阅读", category = "学习"))
+    fun resetActivityCategory_deletesGroup() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "运动"))
 
         repository.resetActivityCategory("运动")
 
         val categories = repository.getDistinctActivityCategories().first()
-        assertEquals(listOf("学习"), categories)
+        assertTrue(categories.isEmpty())
     }
 
     @Test
