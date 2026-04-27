@@ -9,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -265,6 +266,7 @@ class CategoriesViewModelTest {
     @Test
     fun confirmRenameTagCategory_updatesSettingsPrefs() = runTest {
         settingsPrefs.savedTagCategories = setOf("旧标签")
+        viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
 
         viewModel.onRenameCategory(SectionType.TAG, "旧标签")
@@ -279,6 +281,7 @@ class CategoriesViewModelTest {
     @Test
     fun confirmDeleteTagCategory_removesFromSettingsPrefs() = runTest {
         settingsPrefs.savedTagCategories = setOf("待删除", "保留")
+        viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
 
         viewModel.confirmDeleteCategory(SectionType.TAG, "待删除")
@@ -297,9 +300,6 @@ class CategoriesViewModelTest {
         override fun getThemeFlow(): Flow<com.nltimer.core.designsystem.theme.Theme> =
             flowOf(com.nltimer.core.designsystem.theme.Theme())
         override suspend fun updateTheme(theme: com.nltimer.core.designsystem.theme.Theme) {}
-
-        override fun getSavedActivityCategories(): Flow<Set<String>> = flowOf(emptySet())
-        override suspend fun saveActivityCategories(categories: Set<String>) {}
 
         override fun getSavedTagCategories(): Flow<Set<String>> =
             MutableStateFlow(savedTagCategories)
@@ -323,15 +323,16 @@ class CategoriesViewModelTest {
         var lastRenameActivityPair: Pair<String, String>? = null
         var lastResetActivityCategory: String? = null
 
-        override fun getDistinctActivityCategories() = activityCategories
-        override fun getDistinctTagCategories() = tagCategories
+        override fun getDistinctActivityCategories(parent: String?) =
+            activityCategories.map { it.sorted() }
+        override fun getDistinctTagCategories(parent: String?) = tagCategories
 
         override suspend fun addActivityCategory(name: String) {
             addActivityCategoryCalled = true
             lastAddedActivityCategory = name
         }
 
-        override suspend fun renameActivityCategory(oldName: String, newName: String) {
+        override suspend fun renameActivityCategory(oldName: String, newName: String, parent: String?) {
             renameActivityCategoryCalled = true
             lastRenameActivityPair = oldName to newName
         }
@@ -341,7 +342,7 @@ class CategoriesViewModelTest {
             lastResetActivityCategory = category
         }
 
-        override suspend fun renameTagCategory(oldName: String, newName: String) {
+        override suspend fun renameTagCategory(oldName: String, newName: String, parent: String?) {
             renameTagCategoryCalled = true
         }
 
