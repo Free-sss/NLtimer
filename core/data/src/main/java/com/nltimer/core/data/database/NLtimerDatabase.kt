@@ -54,6 +54,32 @@ abstract class NLtimerDatabase : RoomDatabase() {
                     ) WHERE category IS NOT NULL AND category != ''
                     """.trimIndent()
                 )
+                db.execSQL("PRAGMA foreign_keys = OFF")
+                db.execSQL(
+                    """
+                    CREATE TABLE activities_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        emoji TEXT,
+                        iconKey TEXT,
+                        groupId INTEGER,
+                        isPreset INTEGER NOT NULL DEFAULT 0,
+                        isArchived INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL,
+                        updatedAt INTEGER NOT NULL
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL(
+                    """
+                    INSERT INTO activities_new (id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt)
+                    SELECT id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt
+                    FROM activities
+                    """.trimIndent()
+                )
+                db.execSQL("DROP TABLE activities")
+                db.execSQL("ALTER TABLE activities_new RENAME TO activities")
+                db.execSQL("PRAGMA foreign_keys = ON")
             }
         }
     }
