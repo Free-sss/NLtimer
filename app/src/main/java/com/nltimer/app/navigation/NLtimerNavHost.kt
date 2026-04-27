@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
@@ -24,6 +25,7 @@ fun NLtimerNavHost(
         composable("home") { HomeRoute() }
         composable("sub") { SubRoute() }
         composable("stats") { StatsRoute() }
+        composable("categories") { CategoriesRoute() }
         composable("settings") { SettingsRoute() }
         composable("theme_settings") {
             ThemeSettingsRoute(

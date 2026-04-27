@@ -60,4 +60,13 @@ interface TagDao {
         """
     )
     suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity>
+
+    @Query("SELECT DISTINCT category FROM tags WHERE category IS NOT NULL AND category != '' ORDER BY category")
+    fun getDistinctCategories(): Flow<List<String>>
+
+    @Query("UPDATE tags SET category = :newName WHERE category = :oldName")
+    suspend fun renameCategory(oldName: String, newName: String)
+
+    @Query("UPDATE tags SET category = NULL WHERE category = :category")
+    suspend fun resetCategory(category: String)
 }

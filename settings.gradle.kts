@@ -26,4 +26,5 @@ include(
     "feature:sub",
     "feature:stats",
     "feature:settings",
+    "feature:categories",
 )

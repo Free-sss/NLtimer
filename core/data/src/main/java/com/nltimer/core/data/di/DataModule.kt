@@ -8,9 +8,11 @@ import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.repository.impl.ActivityRepositoryImpl
 import com.nltimer.core.data.repository.impl.BehaviorRepositoryImpl
+import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -32,6 +34,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindBehaviorRepository(impl: BehaviorRepositoryImpl): BehaviorRepository
+
+    @Binds
+    abstract fun bindCategoryRepository(impl: CategoryRepositoryImpl): CategoryRepository
 
     companion object {
         @Provides
