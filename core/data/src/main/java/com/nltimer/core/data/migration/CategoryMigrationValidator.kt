@@ -1,6 +1,9 @@
 package com.nltimer.core.data.migration
 
-import com.nltimer.core.data.SettingsPrefs
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import kotlinx.coroutines.flow.first
@@ -9,13 +12,17 @@ import javax.inject.Singleton
 
 @Singleton
 class CategoryMigrationValidator @Inject constructor(
-    private val settingsPrefs: SettingsPrefs,
+    private val dataStore: DataStore<Preferences>,
     private val groupDao: ActivityGroupDao,
 ) {
-    suspend fun migrateIfNeeded() {
-        val savedCategories = settingsPrefs.getSavedActivityCategories().first()
-        if (savedCategories.isEmpty()) return
+    private val savedActivityCategoriesKey = stringPreferencesKey("saved_activity_categories")
 
+    suspend fun migrateIfNeeded() {
+        val prefs = dataStore.data.first()
+        val raw = prefs[savedActivityCategoriesKey] ?: ""
+        if (raw.isBlank()) return
+
+        val savedCategories = raw.split(",").toSet()
         val existingNames = groupDao.getAll().first().map { it.name }.toSet()
         savedCategories
             .filter { it !in existingNames }
@@ -24,6 +31,6 @@ class CategoryMigrationValidator @Inject constructor(
                 groupDao.insert(ActivityGroupEntity(name = name, sortOrder = maxOrder + 1))
             }
 
-        settingsPrefs.saveActivityCategories(emptySet())
+        dataStore.edit { it.remove(savedActivityCategoriesKey) }
     }
 }
