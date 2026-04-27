@@ -18,9 +18,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private fun mergeAndSort(dbCategories: List<String>, addedCategories: Set<String>): List<String> =
-    (dbCategories + addedCategories).distinct().sorted()
-
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
@@ -35,12 +32,10 @@ class CategoriesViewModel @Inject constructor(
 
     private val _dialogState = MutableStateFlow<DialogState?>(null)
 
-    private val _addedActivityCategories = MutableStateFlow<Set<String>>(emptySet())
     private val _addedTagCategories = MutableStateFlow<Set<String>>(emptySet())
 
     init {
         viewModelScope.launch {
-            _addedActivityCategories.value = settingsPrefs.getSavedActivityCategories().first()
             _addedTagCategories.value = settingsPrefs.getSavedTagCategories().first()
         }
     }
@@ -50,13 +45,12 @@ class CategoriesViewModel @Inject constructor(
         categoryRepository.getDistinctTagCategories(),
         _searchQuery,
         _dialogState,
-        combine(_addedActivityCategories, _addedTagCategories, ::Pair),
-    ) { activityCats, tagCats, query, dialog, (addedActivity, addedTag) ->
-        val mergedActivity = mergeAndSort(activityCats, addedActivity)
-        val mergedTag = mergeAndSort(tagCats, addedTag)
+        _addedTagCategories,
+    ) { activityCats, tagCats, query, dialog, addedTag ->
+        val mergedTag = (tagCats + addedTag).distinct().sorted()
         CategoriesUiState(
-            activityCategories = if (query.isBlank()) mergedActivity
-                else mergedActivity.filter { it.contains(query, ignoreCase = true) },
+            activityCategories = if (query.isBlank()) activityCats
+                else activityCats.filter { it.contains(query, ignoreCase = true) },
             tagCategories = if (query.isBlank()) mergedTag
                 else mergedTag.filter { it.contains(query, ignoreCase = true) },
             searchQuery = query,
@@ -108,9 +102,7 @@ class CategoriesViewModel @Inject constructor(
         viewModelScope.launch {
             when (sectionType) {
                 SectionType.ACTIVITY -> {
-                    val updated = _addedActivityCategories.value + trimmed
-                    _addedActivityCategories.value = updated
-                    settingsPrefs.saveActivityCategories(updated)
+                    categoryRepository.addActivityCategory(trimmed)
                 }
                 SectionType.TAG -> {
                     val updated = _addedTagCategories.value + trimmed
@@ -146,11 +138,6 @@ class CategoriesViewModel @Inject constructor(
         viewModelScope.launch {
             when (sectionType) {
                 SectionType.ACTIVITY -> {
-                    if (oldName in _addedActivityCategories.value) {
-                        val updated = _addedActivityCategories.value - oldName + newName
-                        _addedActivityCategories.value = updated
-                        settingsPrefs.saveActivityCategories(updated)
-                    }
                     categoryRepository.renameActivityCategory(oldName, newName)
                 }
                 SectionType.TAG -> {
@@ -170,9 +157,6 @@ class CategoriesViewModel @Inject constructor(
         viewModelScope.launch {
             when (sectionType) {
                 SectionType.ACTIVITY -> {
-                    val updated = _addedActivityCategories.value - category
-                    _addedActivityCategories.value = updated
-                    settingsPrefs.saveActivityCategories(updated)
                     categoryRepository.resetActivityCategory(category)
                 }
                 SectionType.TAG -> {
