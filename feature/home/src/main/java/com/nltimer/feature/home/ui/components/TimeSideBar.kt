@@ -30,18 +30,19 @@ fun TimeSideBar(
 ) {
     // Mark-style-main
     Column(
-        modifier = modifier
-            .width(0.dp)
-            .background(Color.Transparent)
-            .padding(vertical = 0.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = modifier.padding(0.dp,end = 2.dp)
+//            .width(33.dp)
+            .verticalScroll(rememberScrollState())
+//            .background(Color.Red.copy(alpha = 0.3f))
+        ,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(1.dp),
+        verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         Text(
             text = "时",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 15.sp
         )
         val displayedHours = (activeHours + currentHour).sorted()
         for (hour in displayedHours) {
@@ -61,22 +62,22 @@ fun TimeSideBar(
 
             Box(
                 modifier = Modifier
-                    .size(if (isCurrent) 24.dp else 22.dp)
-                    .background(backgroundColor, CircleShape)
+//                    .size(if (isCurrent) 18.dp else 16.dp)
+//                    .background(backgroundColor, CircleShape)
                     .clickable { onHourClick(hour) },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = hour.toString(),
-                    color = contentColor,
-                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 11.sp,
                 )
             }
             Box(
                 modifier = Modifier
-                    .width(2.dp)
-                    .height(16.dp)
-                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+//                    .width(2.dp)
+                    .height(13.dp)
+//                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
             )
         }
     }

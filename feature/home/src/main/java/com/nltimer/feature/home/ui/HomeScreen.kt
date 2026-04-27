@@ -19,6 +19,11 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.home.model.HomeUiState
+import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
@@ -89,6 +94,7 @@ fun HomeScreen(
                     TimeAxisGrid(
                         rows = uiState.rows,
                         onEmptyCellClick = onEmptyCellClick,
+                        currentHour = uiState.selectedTimeHour,
                         modifier = Modifier.weight(1f),
                     )
                     TimeSideBar(
@@ -114,5 +120,58 @@ fun HomeScreen(
                 onAddTag = onAddTag,
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeScreenPreview() {
+    val sampleTags = listOf(
+        Tag(1, "Tag 1", null, null, null, null, 0, 0, 0, false),
+        Tag(2, "Tag 2", null, null, null, null, 0, 0, 0, false)
+    )
+    val sampleActivities = listOf(
+        Activity(1, "Activity 1", "😊", null, null, false),
+        Activity(2, "Activity 2", "🚀", null, null, false)
+    )
+    val sampleUiState = HomeUiState(
+        isLoading = false,
+        rows = listOf(
+            GridRowUiState(
+                rowId = "1",
+                startTime = LocalTime.of(9, 0),
+                isCurrentRow = true,
+                isLocked = false,
+                cells = listOf(
+                    GridCellUiState(
+                        behaviorId = 1L,
+                        activityEmoji = "😊",
+                        activityName = "Activity 1",
+                        tags = listOf(TagUiState(1, "Tag 1", null)),
+                        status = BehaviorNature.ACTIVE,
+                        isCurrent = true
+                    )
+                )
+            )
+        ),
+        selectedTimeHour = 9
+    )
+
+    NLtimerTheme {
+        HomeScreen(
+            uiState = sampleUiState,
+            activities = sampleActivities,
+            tagsForSelectedActivity = sampleTags,
+            allTags = sampleTags,
+            onEmptyCellClick = {},
+            onAddBehavior = { _, _, _, _, _ -> },
+            onDismissSheet = {},
+            onCompleteBehavior = {},
+            onToggleIdleMode = {},
+            onStartNextPending = {},
+            onAddActivity = { _, _ -> },
+            onAddTag = {},
+            onHourClick = {}
+        )
     }
 }

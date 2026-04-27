@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.TagUiState
 
@@ -16,7 +17,6 @@ fun TagChip(
     tag: TagUiState,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
     val chipColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primaryContainer
     val textColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.onPrimaryContainer
 
@@ -24,6 +24,8 @@ fun TagChip(
         text = tag.name,
         color = textColor,
         style = MaterialTheme.typography.labelSmall,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier
             .background(chipColor, RoundedCornerShape(10.dp))
             .padding(horizontal = 6.dp, vertical = 1.dp),
