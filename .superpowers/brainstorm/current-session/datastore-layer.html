@@ -1,0 +1,187 @@
+<h2>第四小节：DataStore 持久化层 & 项目配置</h2>
+<p class="subtitle">SettingsPrefs 接口 · Hilt DI 绑定 · 字体资源 · Gradle 依赖 · MainActivity 改造</p>
+
+<div class="section">
+  <h3>💾 SettingsPrefs 接口（core:data）</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// core:data/SettingsPrefs.kt</span>
+
+<span style="color:#1565C0">interface</span> <b>SettingsPrefs</b> {
+    <span style="color:#4CAF50">fun</span> <b>getThemeFlow</b>(): Flow&lt;Theme&gt;
+    <span style="color:#4CAF50">suspend fun</span> <b>updateTheme</b>(theme: Theme)
+}
+
+<span style="color:#888">// 仅 2 个方法。内部键名、映射逻辑全部封装在 Impl 中</span>
+</pre>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+  <div style="font-weight:600;margin-bottom:12px">SettingsPrefsImpl 实现要点</div>
+  <table style="width:100%;border-collapse:collapse;font-size:11px">
+    <tr style="background:var(--bg)">
+      <th style="padding:6px;text-align:left">关注点</th>
+      <th style="padding:6px;text-align:left">实现</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">Preferences Keys</td>
+      <td style="padding:6px"><code>seedColor(int) + appTheme(string) + amoled(bool) + paletteStyle(string) + materialYou(bool) + font(string)</code> — 全部 <b>private</b> 在 Impl 内</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">getThemeFlow()</td>
+      <td style="padding:6px"><code>combine(6个 Flow) { ... → Theme(...) }</code></td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:6px">updateTheme()</td>
+      <td style="padding:6px"><code>dataStore.edit { 逐个写入6个字段 }</code></td>
+    </tr>
+    <tr>
+      <td style="padding:6px">异常处理</td>
+      <td style="padding:6px">PaletteStyle 反序列化 catch Exception → fallback TONALSPOT</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>🔌 Hilt DI 绑定（app 模块）</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// app/di/DataModule.kt（新增或附加到现有 Module）</span>
+
+<span style="color:#1565C0">@Module
+@InstallIn(SingletonComponent::class)
+object</span> <b>DataModule</b> {
+
+    <span style="color:#1565C0">@Provides
+    @Singleton
+    fun</span> <b>provideDataStore</b>(
+        <span style="color:#1565C0">@ApplicationContext</span> context: Context
+    ): DataStore&lt;Preferences&gt; = PreferenceDataStoreFactory.createWithPath {
+        context.filesDir.resolve(<span style="color:#4CAF50">"settings.preferences_pb"</span>).absolutePath.toPath()
+    }
+
+    <span style="color:#1565C0">@Provides
+    @Singleton
+    fun</span> <b>provideSettingsPrefs</b>(
+        dataStore: DataStore&lt;Preferences&gt;
+    ): SettingsPrefs = SettingsPrefsImpl(dataStore)
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>🅰️ MainActivity 改造</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#1565C0">@AndroidEntryPoint
+class</span> <b>MainActivity</b> : ComponentActivity() {
+
+    <span style="color:#1565C0">@Inject
+    lateinit var</span> settingsPrefs: SettingsPrefs
+
+    <span style="color:#4CAF50">override fun</span> onCreate(savedInstanceState: Bundle?) {
+        <span style="color:#4CAF50">super</span>.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
+        setContent {
+            <span style="color:#888">// 直接 collect DataStore Flow，不经 ViewModel 中转</span>
+            <span style="color:#4CAF50">val</span> theme <span style="color:#4CAF50">by</span> settingsPrefs.getThemeFlow()
+                .collectAsStateWithLifecycle(initialValue = Theme())
+
+            NLtimerTheme(theme = theme) {
+                NLtimerApp()
+            }
+        }
+    }
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>📦 Gradle 依赖变更</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:8px;text-align:left">模块</th>
+    <th style="padding:8px;text-align:left">新增依赖</th>
+    <th style="padding:8px;text-align:left">说明</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px"><b>core:designsystem</b></td>
+    <td style="padding:8px;font-size:11px">materialkolor</td>
+    <td style="padding:8px;font-size:11px">DynamicMaterialTheme + PaletteStyle</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px"><b>core:data</b></td>
+    <td style="padding:8px;font-size:11px">designsystem · datastore-preferences · okio</td>
+    <td style="padding:8px;font-size:11px">依赖 Theme 数据类 + DataStore</td>
+  </tr>
+  <tr>
+    <td style="padding:8px;font-family:monospace;font-size:11px"><b>app</b></td>
+    <td style="padding:8px;font-size:11px">（已有全部依赖）</td>
+    <td style="padding:8px;font-size:11px">Hilt 已就绪，无需新增</td>
+  </tr>
+</table>
+
+<div class="section">
+  <h3>🔤 字体资源准备</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <tr style="background:var(--bg)">
+      <th style="padding:8px;text-align:left">字体</th>
+      <th style="padding:8px;text-align:left">资源路径</th>
+      <th style="padding:8px;text-align:left">来源</th>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px">Figtree</td>
+      <td style="padding:8px;font-family:monospace;font-size:11px">core:designsystem/src/main/res/font/figtree.ttf</td>
+      <td style="padding:8px;font-size:11px">从 Momentum 复制</td>
+    </tr>
+    <tr>
+      <td style="padding:8px">Google Sans Flex</td>
+      <td style="padding:8px;font-family:monospace;font-size:11px">core:designsystem/src/main/res/font/google_sans_flex.ttf</td>
+      <td style="padding:8px;font-size:11px">从 Momentum 复制</td>
+    </tr>
+  </table>
+  <div style="margin-top:12px;font-size:11px;opacity:0.7">
+    ⚠️ 注意 License：Momentum 使用 GPL-3.0，字体文件需确认许可后再复制
+  </div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">📁 最终文件清单 — 确认版</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:11px">
+  <tr style="background:var(--bg)">
+    <th style="padding:6px;text-align:left">#</th>
+    <th style="padding:6px;text-align:left">文件</th>
+    <th style="padding:6px;text-align:left">模块</th>
+    <th style="padding:6px;text-align:left">操作</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">1</td><td style="padding:4px 6px;font-family:monospace">Theme.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">2</td><td style="padding:4px 6px;font-family:monospace">Fonts.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">3</td><td style="padding:4px 6px;font-family:monospace">AppTheme.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">4</td><td style="padding:4px 6px;font-family:monospace">PaletteStyle.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">5</td><td style="padding:4px 6px;font-family:monospace">NLtimerTheme.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">6</td><td style="padding:4px 6px;font-family:monospace">provideTypography.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">7</td><td style="padding:4px 6px;font-family:monospace">listItemExt.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">8</td><td style="padding:4px 6px;font-family:monospace">enumExt.kt</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">9</td><td style="padding:4px 6px;font-family:monospace">SettingsPrefs.kt</td><td style="padding:4px 6px">data</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">10</td><td style="padding:4px 6px;font-family:monospace">SettingsPrefsImpl.kt</td><td style="padding:4px 6px">data</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">11</td><td style="padding:4px 6px;font-family:monospace">DataModule.kt</td><td style="padding:4px 6px">app</td><td style="padding:4px 6px;color:#FF5722">新增</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">12</td><td style="padding:4px 6px;font-family:monospace">build.gradle.kts</td><td style="padding:4px 6px">designsystem</td><td style="padding:4px 6px;color:#FFC107">修改</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">13</td><td style="padding:4px 6px;font-family:monospace">build.gradle.kts</td><td style="padding:4px 6px">data</td><td style="padding:4px 6px;color:#FFC107">修改</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">14</td><td style="padding:4px 6px;font-family:monospace">MainActivity.kt</td><td style="padding:4px 6px">app</td><td style="padding:4px 6px;color:#FFC107">修改</td></tr>
+  <tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 6px">15</td><td style="padding:4px 6px;font-family:monospace">themes.xml</td><td style="padding:4px 6px">app</td><td style="padding:4px 6px;color:#FFC107">修改</td></tr>
+  <tr><td style="padding:4px 6px">16</td><td style="padding:4px 6px;font-family:monospace">AppTopAppBar.kt</td><td style="padding:4px 6px">app</td><td style="padding:4px 6px;color:#FFC107">修改</td></tr>
+</table>

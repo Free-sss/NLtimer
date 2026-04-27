@@ -1,0 +1,156 @@
+<h2>第三小节修订 — 代码审查修正</h2>
+<p class="subtitle">修正 animateColorScheme 缺失 · DynamicMaterialTheme 参数冲突 · Composable 误用 · AnimatedContent 细化</p>
+
+<div class="section">
+  <h3>⚠️ 修正 1+2：移除颜色动画，保持简单正确</h3>
+</div>
+
+<div class="pros-cons">
+  <div class="cons">
+    <h4>原问题</h4>
+    <ul style="font-size:11px">
+      <li><code>animateColorScheme()</code> 不存在，需自行实现</li>
+      <li>计算了 <code>animatedScheme</code> 但未传入 DynamicMaterialTheme</li>
+      <li>DynamicMaterialTheme 内部重新生成无动画 ColorScheme</li>
+      <li>颜色动画完全无效 + 代码冗余</li>
+    </ul>
+  </div>
+  <div class="pros">
+    <h4>修正方案</h4>
+    <ul style="font-size:11px">
+      <li>✅ 移除 <code>animateColorScheme</code> 和手动 <code>rememberDynamicColorScheme</code></li>
+      <li>✅ 所有参数直接传入 <code>DynamicMaterialTheme</code>，它内部自行生成</li>
+      <li>✅ 靠 <code>AnimatedContent</code> 淡入淡出掩盖颜色切换</li>
+      <li>✅ 颜色动画非刚需，AnimatedContent 已足够平滑</li>
+    </ul>
+  </div>
+</div>
+
+<div style="background:#E8F5E9;border-radius:12px;padding:20px;margin:16px 0">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// core:designsystem/NLtimerTheme.kt — 修正版</span>
+
+<span style="color:#1565C0">@OptIn</span>(ExperimentalMaterial3ExpressiveApi::<span style="color:#4CAF50">class</span>)
+<span style="color:#1565C0">@Composable</span>
+<span style="color:#4CAF50">fun</span> <b>NLtimerTheme</b>(
+    theme: Theme = Theme(),
+    content: <span style="color:#1565C0">@Composable</span> () -> Unit
+) {
+    <span style="color:#888">// 确定 Dark/Light</span>
+    <span style="color:#4CAF50">val</span> isDark = <span style="color:#4CAF50">when</span> (theme.appTheme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
+
+    <span style="color:#888">// 构建 Typography（普通函数，非 Composable）</span>
+    <span style="color:#4CAF50">val</span> typography = <b>provideTypography</b>(font = theme.font.toFontRes())
+
+    <span style="color:#888">// DynamicMaterialTheme 内部自行生成 ColorScheme</span>
+    <span style="color:#888">// 无需手动 rememberDynamicColorScheme + animateColorScheme</span>
+    <b>DynamicMaterialTheme</b>(
+        seedColor = theme.seedColor,
+        isDark = isDark,
+        isAmoled = theme.isAmoled,
+        style = theme.paletteStyle.toMPaletteStyle(),
+        typography = typography,
+    ) {
+        <span style="color:#888">// AnimatedContent 靠淡入淡出掩盖主题切换</span>
+        <span style="color:#888">// 仅对引起强烈视觉变化的属性做过渡</span>
+        <span style="color:#1565C0">AnimatedContent</span>(
+            targetState = theme.appTheme <span style="color:#FF5722">to</span> theme.isAmoled,
+            transitionSpec = { fadeIn(tween(300)) + fadeOut(tween(300)) },
+            label = "theme-transition"
+        ) {
+            content()
+        }
+    }
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>⚠️ 修正 3：provideTypography 降级为普通函数</h3>
+</div>
+
+<div style="background:#E8F5E9;border-radius:12px;padding:20px;margin-bottom:16px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// 不再标记 @Composable，避免误导和多余重组开销</span>
+
+<span style="color:#4CAF50">fun</span> <b>provideTypography</b>(font: Int? = null): Typography {
+    <span style="color:#4CAF50">val</span> selectedFont = font?.let { FontFamily(Font(it)) }
+        ?: FontFamily.Default
+
+    <span style="color:#4CAF50">return</span> Typography(
+        displayLarge  = TYPOGRAPHY.displayLarge.copy(fontFamily = selectedFont),
+        headlineLarge = TYPOGRAPHY.headlineLarge.copy(fontFamily = selectedFont),
+        titleLarge    = TYPOGRAPHY.titleLarge.copy(fontFamily = selectedFont),
+        <span style="opacity:0.5">// ... 全部 15 个层级</span>
+    )
+}
+
+<span style="color:#4CAF50">private val</span> TYPOGRAPHY = Typography()  <span style="opacity:0.5">// 静态单例，避免重复创建</span>
+</pre>
+</div>
+
+<div class="section">
+  <h3>⚠️ 修正 4：AnimatedContent key 精简化</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:8px;text-align:left;width:30%">原设计</th>
+    <th style="padding:8px;text-align:left;width:30%">修正后</th>
+    <th style="padding:8px;text-align:left;width:40%">理由</th>
+  </tr>
+  <tr>
+    <td style="padding:10px;font-family:monospace;font-size:11px">targetState = <b>theme</b></td>
+    <td style="padding:10px;font-family:monospace;font-size:11px;background:#E8F5E9">targetState = <b>theme.appTheme to theme.isAmoled</b></td>
+    <td style="padding:10px;font-size:11px">字体/PaletteStyle/seedColor 变化不触发全屏淡入淡出，仅 Light↔Dark 或 Amoled 切换时过渡</td>
+  </tr>
+</table>
+
+<div class="section">
+  <h3>⚠️ 修正 6：AppTopAppBar 容器色</h3>
+</div>
+
+<div style="font-size:12px">
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <tr style="background:var(--bg)">
+      <th style="padding:8px;text-align:left">原代码</th>
+      <th style="padding:8px;text-align:left">修正后</th>
+    </tr>
+    <tr>
+      <td style="padding:8px;font-family:monospace;font-size:11px">containerColor = <b>Color.Transparent</b></td>
+      <td style="padding:8px;font-family:monospace;font-size:11px;background:#E8F5E9">containerColor = <b>MaterialTheme.colorScheme.surfaceContainer</b></td>
+    </tr>
+  </table>
+  <div style="margin-top:8px;opacity:0.8">✅ 符合 M3 分层规范，使用 surfaceContainer 而非 surface，与背景形成正确的视觉层次</div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">✅ 修正汇总</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-weight:600">#1+2</td>
+    <td style="padding:8px">移除 <code>animateColorScheme</code> + 手动 <code>rememberDynamicColorScheme</code>，交由 DynamicMaterialTheme 内部处理</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-weight:600">#3</td>
+    <td style="padding:8px"><code>provideTypography</code> 改为普通函数（非 Composable）</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-weight:600">#4</td>
+    <td style="padding:8px">AnimatedContent key 从 <code>theme</code> 精简为 <code>theme.appTheme to theme.isAmoled</code></td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-weight:600">#5</td>
+    <td style="padding:8px">枚举映射依赖 <code>R.font.xxx</code> — 可接受，designsystem 本身依赖 Android</td>
+  </tr>
+  <tr>
+    <td style="padding:8px;font-weight:600">#6</td>
+    <td style="padding:8px">AppTopAppBar <code>containerColor</code> 改为 <code>surfaceContainer</code></td>
+  </tr>
+</table>

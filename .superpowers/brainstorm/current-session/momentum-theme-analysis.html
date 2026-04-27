@@ -1,0 +1,218 @@
+<h2>Momentum 应用视觉主题全面分析</h2>
+<p class="subtitle">基于源代码逆向工程 — 色彩系统、排版、组件样式、动画</p>
+
+<div class="section">
+  <h3>🎨 色彩系统 — MaterialKolor 动态主题</h3>
+  <p>Momentum 使用 <code>DynamicMaterialTheme</code>（基于 <code>com.materialkolor</code> 库）生成完整色彩方案。核心配置：</p>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-image">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:12px">
+        <div style="width:48px;height:48px;border-radius:50%;background:#1565C0;border:2px solid #fff"></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#FF5722;border:2px solid #fff"></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#4CAF50;border:2px solid #fff"></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#FFC107;border:2px solid #fff"></div>
+        <div style="width:48px;height:48px;border-radius:50%;background:#9C27B0;border:2px solid #fff"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Seed Color（种子色）</h3>
+      <p>用户可自定义主色（默认 <b>Color.Blue</b>），支持 Material You 系统取色（API 31+）</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-image">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px">
+        <div style="height:32px;background:#1B1B1F;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#E6E1E5;font-size:10px">TONAL</div>
+        <div style="height:32px;background:#F5F5F5;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#1C1B1F;font-size:10px">NEUTRAL</div>
+        <div style="height:32px;background:linear-gradient(135deg,#7C4DFF,#FF4081);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">VIBRANT</div>
+        <div style="height:32px;background:linear-gradient(135deg,#00BCD4,#8BC34A);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px">EXPRESSIVE</div>
+        <div style="height:32px;background:linear-gradient(135deg,#FF0000,#FF9800,#FFEB3B,#4CAF50,#2196F3,#9C27B0);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px">RAINBOW</div>
+        <div style="height:32px;background:linear-gradient(135deg,#E91E63,#FF9800);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px">FRUIT</div>
+        <div style="height:32px;background:linear-gradient(135deg,#607D8B,#455A64,#37474F);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px">MONO</div>
+        <div style="height:32px;background:linear-gradient(135deg,#42A5F5,#7E57C2);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px">FIDELITY</div>
+        <div style="height:32px;background:linear-gradient(135deg,#26A69A,#8D6E63);border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px">CONTENT</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>9 种 PaletteStyle 配色方案</h3>
+      <p>TonalSpot · Neutral · Vibrant · Expressive · Rainbow · FruitSalad · Monochrome · Fidelity · Content</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-image">
+      <div style="display:flex;gap:4px;padding:16px">
+        <div style="flex:1;height:60px;background:#1C1B1F;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#E6E1E5;font-size:11px">AMOLED<br>黑色</div>
+        <div style="flex:1;height:60px;background:#121212;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:11px">Dark</div>
+        <div style="flex:1;height:60px;background:#FFFFFF;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#1C1B1F;font-size:11px">Light</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>三方主题模式</h3>
+      <p>AppTheme: LIGHT · DARK · SYSTEM + Amoled 纯黑模式（Plus 功能）</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>✍️ 排版系统 — 8 字体 × Material3 Typography</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:24px">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="font-family:Inter,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Inter</div>
+    </div>
+    <div style="font-family:Poppins,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Poppins</div>
+    </div>
+    <div style="font-family:Manrope,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Manrope</div>
+    </div>
+    <div style="font-family:Montserrat,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Montserrat</div>
+    </div>
+    <div style="font-family:Figtree,sans-serif;background:#1565C0;border-radius:8px;padding:12px;text-align:center;color:#fff">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.9">Figtree ★默认</div>
+    </div>
+    <div style="font-family:Quicksand,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Quicksand</div>
+    </div>
+    <div style="font-family:Google Sans,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">Google Sans</div>
+    </div>
+    <div style="font-family:system-ui,sans-serif;background:var(--bg);border-radius:8px;padding:12px;text-align:center">
+      <div style="font-size:20px;font-weight:700;margin-bottom:4px">Aa</div>
+      <div style="font-size:11px;opacity:0.7">System</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h4>特殊可变字体 — Google Sans Flex</h4>
+  <p>支持 <b>flexFontEmphasis()</b>（斜体、加宽、极高字重 1000）和 <b>flexFontRounded()</b>（圆角变体），用于标题强调和 Changelog 版本号展示</p>
+</div>
+
+<div class="section">
+  <h3>🧩 组件样式规范</h3>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-image">
+      <div style="padding:16px">
+        <div style="background:var(--bg);border-radius:16px;margin-bottom:4px">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600">📋 首项</div>
+        </div>
+        <div style="background:var(--bg);margin-bottom:2px">
+          <div style="padding:12px 16px;font-size:13px">📄 中间项</div>
+        </div>
+        <div style="background:var(--bg);border-radius:0 0 16px 16px">
+          <div style="padding:12px 16px;font-size:13px">📄 末项</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>ListItem 曲面连接</h3>
+      <p>leadingShape(16dp角)→middleShape(4dp连接)→endShape(16dp角)，形成连续曲面卡片组</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-image">
+      <div style="padding:16px;display:flex;flex-direction:column;gap:8px">
+        <div style="background:var(--bg);border-radius:28px;padding:16px;text-align:center;font-size:13px;border:1px solid var(--border)">
+          MomentumDialog<br><span style="font-size:10px;opacity:0.6">Card + extraLarge shape</span>
+        </div>
+        <div style="background:var(--bg);border-radius:28px 28px 0 0;padding:20px 16px 8px;text-align:center;font-size:13px;border-top:1px solid var(--border)">
+          MomentumBottomSheet<br><span style="font-size:10px;opacity:0.6">maxWidth=500dp · 32dp padding</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Dialog &amp; BottomSheet</h3>
+      <p>统一通过 shared 组件封装，Dialog 使用 extraLarge 圆角，BottomSheet 限宽 500dp</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-image">
+      <div style="padding:16px;display:flex;gap:8px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center;font-size:11px">
+          ⬛<br>Toggle<br>Button
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center;font-size:11px">
+          🎚️<br>Slider<br>+Label
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center;font-size:11px">
+          🎨<br>Color<br>Picker
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>开关与选择器</h3>
+      <p>ToggleButton 群组（主题/字体切换）、SettingsSlider（带数值显示）、HsvColorPicker（全功能取色器）</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>✨ 动画效果</h3>
+  <table style="width:100%;border-collapse:collapse">
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 0;font-weight:600">animateContentSize</td>
+      <td style="padding:10px 0;opacity:0.8">BottomSheet 内容展开/收缩平滑过渡</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 0;font-weight:600">AnimatedVisibility</td>
+      <td style="padding:10px 0;opacity:0.8">Seed Color 选择器随 Material You 开关显隐</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 0;font-weight:600">horizontalTransition</td>
+      <td style="padding:10px 0;opacity:0.8">设置子页面（LookAndFeel/Changelog）水平滑入</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px 0;font-weight:600">enterAlwaysScrollBehavior</td>
+      <td style="padding:10px 0;opacity:0.8">TopAppBar 随滚动收起/展开</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 0;font-weight:600">basicMarquee</td>
+      <td style="padding:10px 0;opacity:0.8">长文本自动跑马灯（ToggleButton 溢出处理）</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>🏗️ 整体架构模式</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>Momentum 架构亮点</h4>
+      <ul>
+        <li>MVVM + MVI (State/Action 密封接口)</li>
+        <li>Koin 依赖注入 (ComponentScan 自动发现)</li>
+        <li>DataStore 持久化主题配置</li>
+        <li>Theme 数据类集中管理所有主题参数</li>
+        <li>DynamicMaterialTheme 自动生成 Material3 色彩</li>
+        <li>Navigation3 声明式子路由 (NavKey sealed interface)</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>NLtimer 当前状态</h4>
+      <ul>
+        <li>硬编码主题 (Theme.NLtimer 仅一个空壳)</li>
+        <li>无设计系统模块 (core:designsystem 目录为空)</li>
+        <li>无主题切换能力</li>
+        <li>无字体自定义</li>
+        <li>无色彩方案管理</li>
+        <li>组件样式散落在各文件中</li>
+      </ul>
+    </div>
+  </div>
+</div>

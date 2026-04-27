@@ -1,0 +1,117 @@
+<h2>设计总览 — NLtimer 主题系统架构</h2>
+<p class="subtitle">方案 A：独立 core:designsystem 模块 · 完整复刻 Momentum 主题能力</p>
+
+<div class="section">
+  <h3>🏗️ 模块分层</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:16px;padding:24px;margin-bottom:20px">
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #FF5722">
+      <div style="font-weight:700;margin-bottom:8px;color:#FF5722">📱 app 模块</div>
+      <div style="font-size:13px;opacity:0.8">
+        NLtimerApplication · NLtimerTheme.kt · NLtimerScaffold<br>
+        SettingsScreen（主题设置 UI）· 各 feature 页面
+      </div>
+      <div style="margin-top:8px;background:#FFF3E0;border-radius:6px;padding:6px 10px;font-size:11px">
+        ⚡ 职责：组装 DI、提供入口 Composable、主题设置页面 v2
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center">
+      <span style="font-size:18px;opacity:0.3">⬆️ depends on ⬆️</span>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #1565C0">
+      <div style="font-weight:700;margin-bottom:8px;color:#1565C0">🎨 core:designsystem 模块</div>
+      <div style="font-size:13px;opacity:0.8">
+        Theme.kt · Fonts.kt · PaletteStyle.kt · AppTheme.kt<br>
+        NLtimerTheme.kt · provideTypography.kt<br>
+        listItemExt.kt · 通用组件样式
+      </div>
+      <div style="margin-top:8px;background:#E3F2FD;border-radius:6px;padding:6px 10px;font-size:11px">
+        ⚡ 职责：主题数据模型、主题渲染引擎、组件样式规范 —— 被所有模块依赖
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center">
+      <span style="font-size:18px;opacity:0.3">⬆️ depends on ⬆️</span>
+    </div>
+    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #4CAF50">
+      <div style="font-weight:700;margin-bottom:8px;color:#4CAF50">💾 core:data 模块</div>
+      <div style="font-size:13px;opacity:0.8">
+        SettingsPrefs.kt（接口）· SettingsPrefsImpl.kt<br>
+        DatastoreFactory.kt · ThemePreferencesKeys
+      </div>
+      <div style="margin-top:8px;background:#E8F5E9;border-radius:6px;padding:6px 10px;font-size:11px">
+        ⚡ 职责：主题配置的 DataStore 持久化，提供 Flow 流式读取和更新
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔄 数据流</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:20px">
+  <div style="font-size:13px;font-family:monospace;line-height:2">
+    👤 用户操作 (SettingsScreen)<br>
+    &nbsp;&nbsp;→ <span style="color:#FF5722">SettingsAction</span> (sealed interface)<br>
+    &nbsp;&nbsp;→ <span style="color:#1565C0">SettingsViewModel</span> (Hilt)<br>
+    &nbsp;&nbsp;→ <span style="color:#4CAF50">SettingsPrefsImpl</span>.updateXxx() → <b>DataStore</b><br>
+    &nbsp;&nbsp;→ <span style="color:#4CAF50">SettingsPrefs</span>.getXxxFlow() → StateFlow&lt;Theme&gt;<br>
+    &nbsp;&nbsp;→ <span style="color:#1565C0">MainAppViewModel</span>.state (MainAppState.theme)<br>
+    &nbsp;&nbsp;→ 🎨 <span style="color:#9C27B0">NLtimerTheme(theme)</span> → DynamicMaterialTheme<br>
+    &nbsp;&nbsp;→ 所有子 Composable 自动继承主题
+  </div>
+</div>
+
+<div class="section">
+  <h3>📦 对比：Momentum vs NLtimer 新架构</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+  <tr style="background:var(--bg)">
+    <th style="padding:10px;text-align:left;border-radius:8px 0 0 0">维度</th>
+    <th style="padding:10px;text-align:left">Momentum</th>
+    <th style="padding:10px;text-align:left;border-radius:0 8px 0 0">NLtimer（新）</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">色彩引擎</td>
+    <td style="padding:10px">MaterialKolor DynamicMaterialTheme</td>
+    <td style="padding:10px">✅ 相同</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">DI 框架</td>
+    <td style="padding:10px">Koin (@KoinViewModel, @Single)</td>
+    <td style="padding:10px">Hilt (@HiltViewModel, @Singleton)</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">导航</td>
+    <td style="padding:10px">Navigation3 (NavKey sealed)</td>
+    <td style="padding:10px">Navigation Compose (routes)</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">PaletteStyle</td>
+    <td style="padding:10px">9 种</td>
+    <td style="padding:10px">✅ 9 种，相同</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">字体</td>
+    <td style="padding:10px">8 种</td>
+    <td style="padding:10px">3 种 (Figtree/Google Sans/System)</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">AppTheme</td>
+    <td style="padding:10px">LIGHT / DARK / SYSTEM</td>
+    <td style="padding:10px">✅ 相同</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">Amoled</td>
+    <td style="padding:10px">✅ 支持</td>
+    <td style="padding:10px">✅ 相同</td>
+  </tr>
+  <tr>
+    <td style="padding:10px;font-weight:600">Material You</td>
+    <td style="padding:10px">✅ 支持 (API 31+)</td>
+    <td style="padding:10px">✅ 相同</td>
+  </tr>
+</table>

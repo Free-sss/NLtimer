@@ -1,0 +1,176 @@
+<h2>第三小节：Theme 渲染引擎</h2>
+<p class="subtitle">NLtimerTheme 内部实现 · 动画过渡 · Typography 构建 · 枚举映射</p>
+
+<div class="section">
+  <h3>🎨 NLtimerTheme — 核心 Composable</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// core:designsystem/NLtimerTheme.kt</span>
+
+<span style="color:#1565C0">@Composable</span>
+<span style="color:#4CAF50">fun</span> <b>NLtimerTheme</b>(
+    theme: Theme = Theme(),
+    content: <span style="color:#1565C0">@Composable</span> () -> Unit
+) {
+    <span style="color:#888">// 1. 确定 Dark/Light</span>
+    <span style="color:#4CAF50">val</span> isDark = <span style="color:#4CAF50">when</span> (theme.appTheme) {
+        AppTheme.SYSTEM -> isSystemInDarkTheme()
+        AppTheme.LIGHT -> false
+        AppTheme.DARK -> true
+    }
+
+    <span style="color:#888">// 2. 生成 ColorScheme</span>
+    <span style="color:#4CAF50">val</span> colorScheme = <b>rememberDynamicColorScheme</b>(
+        primary = theme.seedColor,
+        isDark = isDark,
+        isAmoled = theme.isAmoled,
+        style = theme.paletteStyle.toMPaletteStyle(),
+    )
+
+    <span style="color:#888">// 3. 构建 Typography</span>
+    <span style="color:#4CAF50">val</span> typography = <b>provideTypography</b>(font = theme.font.toFontRes())
+
+    <span style="color:#888">// 4. 动画过渡（防闪烁）</span>
+    <span style="color:#4CAF50">val</span> animatedScheme = <b>animateColorScheme</b>(
+        targetScheme = colorScheme,
+        animationSpec = tween(durationMillis = 300)
+    )
+
+    <span style="color:#888">// 5. 组装</span>
+    <b>DynamicMaterialTheme</b>(
+        seedColor = theme.seedColor,
+        isDark = isDark,
+        isAmoled = theme.isAmoled,
+        style = theme.paletteStyle.toMPaletteStyle(),
+        typography = typography,
+    ) {
+        <span style="color:#1565C0">AnimatedContent</span>(
+            targetState = theme,
+            transitionSpec = { fadeIn(tween(300)) + fadeOut(tween(300)) }
+        ) {
+            content()
+        }
+    }
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>✍️ Typography 构建</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// core:designsystem/provideTypography.kt</span>
+
+<span style="color:#1565C0">@Composable</span>
+<span style="color:#4CAF50">fun</span> <b>provideTypography</b>(font: Int? = null): Typography {
+    <span style="color:#4CAF50">val</span> selectedFont = font?.let { FontFamily(Font(font)) }
+        ?: FontFamily.Default
+
+    <span style="color:#4CAF50">return</span> Typography(
+        displayLarge  = <span style="color:#888">/* 默认值 */</span>.copy(fontFamily = selectedFont),
+        headlineLarge = <span style="color:#888">/* 默认值 */</span>.copy(fontFamily = selectedFont),
+        titleLarge    = <span style="color:#888">/* 默认值 */</span>.copy(fontFamily = selectedFont),
+        bodyLarge     = <span style="color:#888">/* 默认值 */</span>.copy(fontFamily = selectedFont),
+        labelLarge    = <span style="color:#888">/* 默认值 */</span>.copy(fontFamily = selectedFont),
+        <span style="opacity:0.5">// ... 全部 15 个 Material3 typography 层级</span>
+    )
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>🔀 枚举映射扩展</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0;overflow-x:auto">
+<span style="color:#888">// core:designsystem/enumExt.kt</span>
+
+<span style="color:#4CAF50">fun</span> Fonts.<b>toFontRes</b>(): Int? = <span style="color:#4CAF50">when</span> (this) {
+    Fonts.FIGTREE      -> R.font.figtree
+    Fonts.GOOGLE_SANS  -> R.font.google_sans_flex
+    Fonts.SYSTEM_DEFAULT -> null       <span style="opacity:0.5">// null → FontFamily.Default</span>
+}
+
+<span style="color:#4CAF50">fun</span> Fonts.<b>toDisplayString</b>(): String = <span style="color:#4CAF50">when</span> (this) {
+    Fonts.FIGTREE      -> "Figtree"
+    Fonts.GOOGLE_SANS  -> "Google Sans"
+    Fonts.SYSTEM_DEFAULT -> "System Default"
+}
+
+<span style="color:#4CAF50">fun</span> PaletteStyle.<b>toMPaletteStyle</b>(): com.materialkolor.PaletteStyle = <span style="color:#4CAF50">when</span> (this) {
+    PaletteStyle.TONALSPOT   -> PaletteStyle.TonalSpot
+    PaletteStyle.NEUTRAL     -> PaletteStyle.Neutral
+    PaletteStyle.VIBRANT     -> PaletteStyle.Vibrant
+    <span style="opacity:0.5">// ... 其余 6 种映射</span>
+}
+
+<span style="color:#4CAF50">fun</span> AppTheme.<b>toDisplayRes</b>(): String = <span style="color:#4CAF50">when</span> (this) {
+    AppTheme.LIGHT  -> "Light"
+    AppTheme.DARK   -> "Dark"
+    AppTheme.SYSTEM -> "Follow System"
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>📐 ListItem 曲面连接（组件样式）</h3>
+</div>
+
+<div style="display:flex;gap:12px;margin-bottom:20px">
+  <div style="flex:1;background:var(--surface);border-radius:12px;padding:16px;text-align:center">
+    <div style="background:var(--bg);border-radius:16px 16px 4px 4px;padding:12px;margin-bottom:2px;font-size:11px">首项<br>16dp 角</div>
+    <div style="background:var(--bg);border-radius:4px;padding:12px;margin-bottom:2px;font-size:11px">中项<br>4dp 连接</div>
+    <div style="background:var(--bg);border-radius:4px 4px 16px 16px;padding:12px;font-size:11px">末项<br>16dp 角</div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;font-size:11px;opacity:0.8">
+    <div>
+      <code>leadingItemShape()</code> → 16dp顶角 + 4dp底角<br><br>
+      <code>middleItemShape()</code> → 4dp全角<br><br>
+      <code>endItemShape()</code> → 4dp顶角 + 16dp底角<br><br>
+      <code>detachedItemShape()</code> → 16dp全角<br><br>
+      <code>listItemColors()</code> → surfaceContainerHigh
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔌 现有代码重构映射</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:8px;text-align:left">现有代码</th>
+    <th style="padding:8px;text-align:left">问题</th>
+    <th style="padding:8px;text-align:left">重构方式</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">themes.xml<br>Theme.NLtimer</td>
+    <td style="padding:8px;font-size:11px">空壳，仅继承 Material.Light.NoActionBar</td>
+    <td style="padding:8px;font-size:11px">移除硬编码样式，theme 完全由 Compose 运行时接管</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">MainActivity.kt</td>
+    <td style="padding:8px;font-size:11px">未使用 NLtimerTheme 包裹</td>
+    <td style="padding:8px;font-size:11px">setContent 层注入 themeFlow，用 NLtimerTheme 包裹</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">AppTopAppBar.kt</td>
+    <td style="padding:8px;font-size:11px">containerColor = Color.Transparent 硬编码</td>
+    <td style="padding:8px;font-size:11px">使用 MaterialTheme.colorScheme.surface</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">AppDrawer.kt</td>
+    <td style="padding:8px;font-size:11px">硬编码宽度、已使用 MaterialTheme.typography</td>
+    <td style="padding:8px;font-size:11px">小幅调整，已部分就绪</td>
+  </tr>
+  <tr>
+    <td style="padding:8px;font-family:monospace;font-size:11px">NLtimerScaffold.kt</td>
+    <td style="padding:8px;font-size:11px">无主题引用问题</td>
+    <td style="padding:8px;font-size:11px">无需修改，自动继承 MaterialTheme</td>
+  </tr>
+</table>

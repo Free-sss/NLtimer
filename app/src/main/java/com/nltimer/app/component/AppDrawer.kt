@@ -37,6 +37,8 @@ private data class DrawerMenuItem(
 private val drawerMenuItems = listOf(
     DrawerMenuItem("home", "选项一", Icons.AutoMirrored.Filled.List),
     DrawerMenuItem("settings", "选项二", Icons.Default.Brightness5),
+    DrawerMenuItem("settings", "主题配置", Icons.Default.Brightness5),
+
 )
 
 @Composable

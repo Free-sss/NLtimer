@@ -97,6 +97,9 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.datastore.preferences)
+    implementation(libs.okio)
+
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.lifecycle.viewmodel.compose)

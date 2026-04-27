@@ -32,12 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.tooling.preview.Preview
-import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.NLtimerTheme
 
 @Preview(showBackground = true)
 @Composable
 fun RouteSettingsPopupPreview() {
-    AppTheme {
+    NLtimerTheme {
         RouteSettingsPopup(
             currentRoute = "home",
             onDismiss = {}

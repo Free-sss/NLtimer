@@ -18,6 +18,9 @@ compile_sdk_version = "36"
 min_sdk_version = "31"
 target_sdk_version = "36"
 room = "2.7.1"
+materialkolor = "4.1.1"
+datastore_preferences = "1.2.1"
+okio = "3.9.1"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -45,6 +48,9 @@ kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 room_runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room_ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room_compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+materialkolor = { module = "com.materialkolor:material-kolor", version.ref = "materialkolor" }
+datastore_preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore_preferences" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 agp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kgp = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 

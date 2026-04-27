@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.NLtimerTheme
 
 @Composable
 fun AddActivityDialog(
@@ -97,7 +97,7 @@ fun AddActivityDialog(
 @Preview(showBackground = true)
 @Composable
 fun AddActivityDialogPreview() {
-    AppTheme {
+    NLtimerTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             AddActivityDialog(
                 onDismiss = {},

@@ -25,7 +25,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.feature.timer.model.TimerState
 import com.nltimer.feature.timer.viewmodel.TimerViewModel
 
@@ -94,7 +94,7 @@ fun formatTime(seconds: Long): String {
 @Preview(showBackground = true)
 @Composable
 private fun TimerScreenPreview() {
-    AppTheme {
+    NLtimerTheme {
         var state by remember { mutableStateOf(TimerState(elapsedSeconds = 3661, isRunning = true)) }
         TimerScreen(
             state = state,
@@ -111,7 +111,7 @@ private fun TimerScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 private fun TimerScreenInitialPreview() {
-    AppTheme {
+    NLtimerTheme {
         TimerScreen(
             state = TimerState(),
             onToggle = {},

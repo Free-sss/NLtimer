@@ -49,6 +49,12 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    implementation(libs.datastore.preferences)
+    implementation(libs.okio)
+    implementation(libs.compose.ui)
+
+    implementation(projects.core.designsystem)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }
