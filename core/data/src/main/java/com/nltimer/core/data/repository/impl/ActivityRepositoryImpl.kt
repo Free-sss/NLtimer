@@ -20,9 +20,6 @@ class ActivityRepositoryImpl @Inject constructor(
     override fun getAll(): Flow<List<Activity>> =
         activityDao.getAll().map { list -> list.map { it.toModel() } }
 
-    override fun getByCategory(category: String): Flow<List<Activity>> =
-        activityDao.getByCategory(category).map { list -> list.map { it.toModel() } }
-
     override fun search(query: String): Flow<List<Activity>> =
         activityDao.search(query).map { list -> list.map { it.toModel() } }
 
