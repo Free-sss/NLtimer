@@ -25,4 +25,13 @@ interface ActivityGroupDao {
 
     @Query("UPDATE activities SET groupId = NULL WHERE groupId = :groupId")
     suspend fun ungroupAllActivities(groupId: Long)
+
+    @Query("SELECT * FROM activity_groups WHERE name = :name LIMIT 1")
+    suspend fun getByName(name: String): ActivityGroupEntity?
+
+    @Query("UPDATE activity_groups SET name = :newName WHERE name = :oldName")
+    suspend fun renameByName(oldName: String, newName: String)
+
+    @Query("DELETE FROM activity_groups WHERE name = :name")
+    suspend fun deleteByName(name: String)
 }
