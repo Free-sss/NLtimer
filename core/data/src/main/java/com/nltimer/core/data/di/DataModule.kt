@@ -56,6 +56,7 @@ abstract class DataModule {
                 "nltimer-database",
             )
                 .fallbackToDestructiveMigration(false)
+                .addMigrations(NLtimerDatabase.MIGRATION_3_4)
                 .build()
 
         @Provides
