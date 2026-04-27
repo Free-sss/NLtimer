@@ -17,11 +17,8 @@ fun ActivityChip(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val label = buildString {
-        activity?.let { append(it) }
-        append(" ")
-        append(activity.name)
-    }.trim()
+    val emoji = activity.emoji?.takeIf { it.isNotBlank() } ?: "📌"
+    val label = "$emoji ${activity.name}"
 
     AssistChip(
         onClick = onClick,
