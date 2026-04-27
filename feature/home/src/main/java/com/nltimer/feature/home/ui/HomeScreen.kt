@@ -3,21 +3,17 @@ package com.nltimer.feature.home.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.BehaviorNature
@@ -45,7 +41,32 @@ fun HomeScreen(
     onHourClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(modifier = modifier) { padding ->
+    Scaffold(
+        modifier = modifier,
+        floatingActionButton = {
+            if (uiState.hasActiveBehavior) {
+                FloatingActionButton(
+                    modifier = Modifier.offset(y = 24.dp,x=4.dp),
+                    onClick = {
+                        val activeBehaviorId = uiState.rows
+                            .flatMap { it.cells }
+                            .firstOrNull { it.isCurrent && it.behaviorId != null }
+                            ?.behaviorId
+                        if (activeBehaviorId != null) {
+                            onCompleteBehavior(activeBehaviorId)
+                        }
+                    },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                ) {
+                    Text(
+                        text = "完成当前行为",
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+        }
+    ) { padding ->
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier
@@ -78,32 +99,6 @@ fun HomeScreen(
                         currentHour = uiState.selectedTimeHour,
                         onHourClick = onHourClick,
                     )
-                }
-
-                if (uiState.hasActiveBehavior) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End,
-                    ) {
-                        Button(
-                            onClick = {
-                                val activeBehaviorId = uiState.rows
-                                    .flatMap { it.cells }
-                                    .firstOrNull { it.isCurrent && it.behaviorId != null }
-                                    ?.behaviorId
-                                if (activeBehaviorId != null) {
-                                    onCompleteBehavior(activeBehaviorId)
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                            ),
-                        ) {
-                            Text("完成当前行为")
-                        }
-                    }
                 }
             }
         }

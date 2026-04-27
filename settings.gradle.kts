@@ -22,7 +22,6 @@ include(
     "app",
     "core:designsystem",
     "core:data",
-    "feature:timer",
     "feature:home",
     "feature:sub",
     "feature:stats",
