@@ -105,39 +105,6 @@ fun HomeScreen(
                         }
                     }
                 }
-
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 16.dp, vertical = 4.dp),
-//                ) {
-//                    Text(
-//                        text = if (uiState.isIdleMode) "🟡 空闲模式" else "🟢 自动流转",
-//                        style = MaterialTheme.typography.labelSmall,
-//                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                    )
-//                    Spacer(modifier = Modifier.weight(1f))
-//                    Button(
-//                        onClick = onToggleIdleMode,
-//                        colors = ButtonDefaults.buttonColors(
-//                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-//                            contentColor = MaterialTheme.colorScheme.onSurface,
-//                        ),
-//                    ) {
-//                        Text(if (uiState.isIdleMode) "开启自动流转" else "进入空闲模式")
-//                    }
-//                    if (uiState.isIdleMode) {
-//                        Spacer(modifier = Modifier.width(8.dp))
-//                        Button(
-//                            onClick = onStartNextPending,
-//                            colors = ButtonDefaults.buttonColors(
-//                                containerColor = MaterialTheme.colorScheme.primary,
-//                            ),
-//                        ) {
-//                            Text("开始下一个")
-//                        }
-//                    }
-//                }
             }
         }
 

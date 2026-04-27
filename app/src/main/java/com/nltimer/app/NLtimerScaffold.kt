@@ -39,6 +39,9 @@ fun NLtimerScaffold(
                     onMenuClick = {
                         coroutineScope.launch { drawerState.open() }
                     },
+                    onSettingClick = {
+                        navController.navigate("settings")
+                    },
                 )
             },
             bottomBar = { AppBottomNavigation(navController) },
