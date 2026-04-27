@@ -44,17 +44,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
-    override fun getSavedActivityCategories(): Flow<Set<String>> = dataStore.data.map { prefs ->
-        val raw = prefs[savedActivityCategoriesKey] ?: ""
-        if (raw.isBlank()) emptySet() else raw.split(",").toSet()
-    }
-
-    override suspend fun saveActivityCategories(categories: Set<String>) {
-        dataStore.edit { prefs ->
-            prefs[savedActivityCategoriesKey] = categories.joinToString(",")
-        }
-    }
-
     override fun getSavedTagCategories(): Flow<Set<String>> = dataStore.data.map { prefs ->
         val raw = prefs[savedTagCategoriesKey] ?: ""
         if (raw.isBlank()) emptySet() else raw.split(",").toSet()
@@ -73,7 +62,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val paletteStyleKey = stringPreferencesKey("palette_style")
         private val isMaterialYouKey = booleanPreferencesKey("is_material_you")
         private val fontKey = stringPreferencesKey("font")
-        private val savedActivityCategoriesKey = stringPreferencesKey("saved_activity_categories")
         private val savedTagCategoriesKey = stringPreferencesKey("saved_tag_categories")
     }
 }

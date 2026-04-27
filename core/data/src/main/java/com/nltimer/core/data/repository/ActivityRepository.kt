@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityRepository {
     fun getAllActive(): Flow<List<Activity>>
     fun getAll(): Flow<List<Activity>>
-    fun getByCategory(category: String): Flow<List<Activity>>
     fun search(query: String): Flow<List<Activity>>
     suspend fun getById(id: Long): Activity?
     suspend fun getByName(name: String): Activity?

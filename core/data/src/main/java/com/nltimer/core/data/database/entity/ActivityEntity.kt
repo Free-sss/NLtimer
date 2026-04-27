@@ -10,7 +10,6 @@ data class ActivityEntity(
     val name: String,
     val emoji: String? = null,
     val iconKey: String? = null,
-    val category: String? = null,
     val groupId: Long? = null,
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,

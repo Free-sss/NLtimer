@@ -32,23 +32,11 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE name = :name LIMIT 1")
     suspend fun getByName(name: String): ActivityEntity?
 
-    @Query("SELECT * FROM activities WHERE category = :category AND isArchived = 0 ORDER BY name")
-    fun getByCategory(category: String): Flow<List<ActivityEntity>>
-
     @Query("UPDATE activities SET isArchived = :archived WHERE id = :id")
     suspend fun setArchived(id: Long, archived: Boolean)
 
     @Query("SELECT * FROM activities WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<ActivityEntity>>
-
-    @Query("SELECT DISTINCT category FROM activities WHERE category IS NOT NULL AND category != '' ORDER BY category")
-    fun getDistinctCategories(): Flow<List<String>>
-
-    @Query("UPDATE activities SET category = :newName WHERE category = :oldName")
-    suspend fun renameCategory(oldName: String, newName: String)
-
-    @Query("UPDATE activities SET category = NULL WHERE category = :category")
-    suspend fun resetCategory(category: String)
 
     @Query("SELECT * FROM activities WHERE groupId IS NULL AND isArchived = 0 ORDER BY name")
     fun getUncategorized(): Flow<List<ActivityEntity>>

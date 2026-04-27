@@ -7,9 +7,6 @@ interface SettingsPrefs {
     fun getThemeFlow(): Flow<Theme>
     suspend fun updateTheme(theme: Theme)
 
-    fun getSavedActivityCategories(): Flow<Set<String>>
-    suspend fun saveActivityCategories(categories: Set<String>)
-
     fun getSavedTagCategories(): Flow<Set<String>>
     suspend fun saveTagCategories(categories: Set<String>)
 }

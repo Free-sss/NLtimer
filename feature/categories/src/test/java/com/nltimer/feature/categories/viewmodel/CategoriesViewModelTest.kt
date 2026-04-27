@@ -2,7 +2,6 @@ package com.nltimer.feature.categories.viewmodel
 
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.repository.CategoryRepository
-import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.feature.categories.model.DialogState
 import com.nltimer.feature.categories.model.SectionType
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +9,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -62,6 +62,8 @@ class CategoriesViewModelTest {
 
     @Test
     fun searchQuery_filtersCategories() = runTest {
+        activityCategoriesFlow.value = listOf("运动", "学习")
+        tagCategoriesFlow.value = listOf("优先级", "状态")
         advanceUntilIdle()
 
         viewModel.onSearchQueryChange("运动")
@@ -69,10 +71,13 @@ class CategoriesViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals("运动", state.searchQuery)
+        assertEquals(listOf("运动"), state.activityCategories)
     }
 
     @Test
     fun searchQuery_emptyShowsAll() = runTest {
+        activityCategoriesFlow.value = listOf("运动", "学习")
+        tagCategoriesFlow.value = listOf("优先级", "状态")
         advanceUntilIdle()
 
         viewModel.onSearchQueryChange("运动")
@@ -82,6 +87,8 @@ class CategoriesViewModelTest {
 
         val state = viewModel.uiState.value
         assertEquals("", state.searchQuery)
+        assertEquals(listOf("学习", "运动"), state.activityCategories)
+        assertEquals(listOf("优先级", "状态"), state.tagCategories)
     }
 
     @Test
@@ -108,6 +115,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun renameCategory_showsDialog() = runTest {
+        activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
         viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
@@ -162,6 +170,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmDelete_callsRepository() = runTest {
+        activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
         viewModel.confirmDeleteCategory(SectionType.ACTIVITY, "运动")
@@ -179,6 +188,7 @@ class CategoriesViewModelTest {
         advanceUntilIdle()
 
         assertTrue(repository.resetTagCategoryCalled)
+        assertTrue(settingsPrefs.saveTagCategoriesCalled)
     }
 
     @Test
@@ -213,30 +223,26 @@ class CategoriesViewModelTest {
     }
 
     @Test
-    fun confirmAdd_appendsCategoryToList() = runTest {
+    fun confirmAddActivityCategory_callsRepository() = runTest {
         advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.ACTIVITY)
-        advanceUntilIdle()
-        assertNotNull(viewModel.uiState.value.dialogState)
 
         viewModel.confirmAddCategory(SectionType.ACTIVITY, "新分类")
         advanceUntilIdle()
 
+        assertTrue(repository.addActivityCategoryCalled)
+        assertEquals("新分类", repository.lastAddedActivityCategory)
         assertNull(viewModel.uiState.value.dialogState)
-        assertTrue(viewModel.uiState.value.activityCategories.contains("新分类"))
     }
 
     @Test
-    fun confirmAddTag_appendsToTagList() = runTest {
-        advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.TAG)
+    fun confirmAddTagCategory_updatesSettingsPrefs() = runTest {
         advanceUntilIdle()
 
         viewModel.confirmAddCategory(SectionType.TAG, "我的标签")
         advanceUntilIdle()
 
+        assertTrue(settingsPrefs.saveTagCategoriesCalled)
+        assertEquals(setOf("我的标签"), settingsPrefs.lastSavedTagCategories)
         assertTrue(viewModel.uiState.value.tagCategories.contains("我的标签"))
     }
 
@@ -258,55 +264,47 @@ class CategoriesViewModelTest {
     }
 
     @Test
-    fun confirmAdd_persistsToDataStore() = runTest {
+    fun confirmRenameTagCategory_updatesSettingsPrefs() = runTest {
+        settingsPrefs.savedTagCategories = setOf("旧标签")
+        viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
 
-        viewModel.onAddCategory(SectionType.ACTIVITY)
+        viewModel.onRenameCategory(SectionType.TAG, "旧标签")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "旧标签", "新标签")
         advanceUntilIdle()
 
-        viewModel.confirmAddCategory(SectionType.ACTIVITY, "持久分类")
-        advanceUntilIdle()
-
-        assertEquals(setOf("持久分类"), settingsPrefs.lastSavedActivityCategories)
+        assertTrue(settingsPrefs.saveTagCategoriesCalled)
+        assertEquals(setOf("新标签"), settingsPrefs.lastSavedTagCategories)
     }
 
     @Test
-    fun confirmDelete_removesFromDataStore() = runTest {
+    fun confirmDeleteTagCategory_removesFromSettingsPrefs() = runTest {
+        settingsPrefs.savedTagCategories = setOf("待删除", "保留")
+        viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
 
-        viewModel.onAddCategory(SectionType.ACTIVITY)
-        advanceUntilIdle()
-        viewModel.confirmAddCategory(SectionType.ACTIVITY, "待删除")
+        viewModel.confirmDeleteCategory(SectionType.TAG, "待删除")
         advanceUntilIdle()
 
-        viewModel.onDeleteCategory(SectionType.ACTIVITY, "待删除")
-        advanceUntilIdle()
-        viewModel.confirmDeleteCategory(SectionType.ACTIVITY, "待删除")
-        advanceUntilIdle()
-
-        assertEquals(emptySet<String>(), settingsPrefs.lastSavedActivityCategories)
+        assertTrue(settingsPrefs.saveTagCategoriesCalled)
+        assertEquals(setOf("保留"), settingsPrefs.lastSavedTagCategories)
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {
 
-        private val activityCategories = MutableStateFlow<Set<String>>(emptySet())
-        private val tagCategories = MutableStateFlow<Set<String>>(emptySet())
-
-        var lastSavedActivityCategories: Set<String>? = null
+        var savedTagCategories: Set<String> = emptySet()
         var lastSavedTagCategories: Set<String>? = null
+        var saveTagCategoriesCalled = false
 
-        override fun getThemeFlow(): Flow<Theme> = flowOf(Theme())
-        override suspend fun updateTheme(theme: Theme) {}
+        override fun getThemeFlow(): Flow<com.nltimer.core.designsystem.theme.Theme> =
+            flowOf(com.nltimer.core.designsystem.theme.Theme())
+        override suspend fun updateTheme(theme: com.nltimer.core.designsystem.theme.Theme) {}
 
-        override fun getSavedActivityCategories(): Flow<Set<String>> = activityCategories
-        override suspend fun saveActivityCategories(categories: Set<String>) {
-            activityCategories.value = categories
-            lastSavedActivityCategories = categories
-        }
-
-        override fun getSavedTagCategories(): Flow<Set<String>> = tagCategories
+        override fun getSavedTagCategories(): Flow<Set<String>> =
+            MutableStateFlow(savedTagCategories)
         override suspend fun saveTagCategories(categories: Set<String>) {
-            tagCategories.value = categories
+            saveTagCategoriesCalled = true
             lastSavedTagCategories = categories
         }
     }
@@ -316,15 +314,23 @@ class CategoriesViewModelTest {
         private val tagCategories: MutableStateFlow<List<String>>,
     ) : CategoryRepository {
 
+        var addActivityCategoryCalled = false
         var renameActivityCategoryCalled = false
         var renameTagCategoryCalled = false
         var resetActivityCategoryCalled = false
         var resetTagCategoryCalled = false
+        var lastAddedActivityCategory: String? = null
         var lastRenameActivityPair: Pair<String, String>? = null
         var lastResetActivityCategory: String? = null
 
-        override fun getDistinctActivityCategories(parent: String?) = activityCategories
+        override fun getDistinctActivityCategories(parent: String?) =
+            activityCategories.map { it.sorted() }
         override fun getDistinctTagCategories(parent: String?) = tagCategories
+
+        override suspend fun addActivityCategory(name: String) {
+            addActivityCategoryCalled = true
+            lastAddedActivityCategory = name
+        }
 
         override suspend fun renameActivityCategory(oldName: String, newName: String, parent: String?) {
             renameActivityCategoryCalled = true
