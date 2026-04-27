@@ -43,7 +43,8 @@ class ActivityRepositoryImpl @Inject constructor(
         name = name,
         emoji = emoji,
         iconKey = iconKey,
-        category = category,
+        groupId = groupId,
+        isPreset = isPreset,
         isArchived = isArchived,
     )
 
@@ -52,7 +53,8 @@ class ActivityRepositoryImpl @Inject constructor(
         name = name,
         emoji = emoji,
         iconKey = iconKey,
-        category = category,
+        groupId = groupId,
+        isPreset = isPreset,
         isArchived = isArchived,
     )
 }

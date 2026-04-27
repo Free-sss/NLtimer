@@ -61,7 +61,8 @@ class BehaviorRepositoryImpl @Inject constructor(
             name = activityEntity.name,
             emoji = activityEntity.emoji,
             iconKey = activityEntity.iconKey,
-            category = activityEntity.category,
+            groupId = activityEntity.groupId,
+            isPreset = activityEntity.isPreset,
             isArchived = activityEntity.isArchived,
         )
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
