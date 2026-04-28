@@ -14,4 +14,5 @@ dependencies {
     debugImplementation(libs.compose.ui.tooling)
 
     implementation(libs.materialkolor)
+    implementation(libs.colorpicker.compose)
 }

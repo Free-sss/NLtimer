@@ -59,6 +59,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.materialkolor.rememberDynamicColorScheme
+import com.nltimer.core.designsystem.component.ColorPickerDialog
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.PaletteStyle
@@ -104,6 +105,14 @@ fun ThemeSettingsScreen(
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
+    if (showColorPicker) {
+        ColorPickerDialog(
+            initialColor = theme.seedColor,
+            onSelect = onSeedColorChange,
+            onDismiss = { showColorPicker = false }
+        )
+    }
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
