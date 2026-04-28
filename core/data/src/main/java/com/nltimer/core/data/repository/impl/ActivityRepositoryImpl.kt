@@ -1,8 +1,11 @@
 package com.nltimer.core.data.repository.impl
 
 import com.nltimer.core.data.database.dao.ActivityDao
+import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.entity.ActivityEntity
+import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.repository.ActivityRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -12,6 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class ActivityRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
+    private val groupDao: ActivityGroupDao,
 ) : ActivityRepository {
 
     override fun getAllActive(): Flow<List<Activity>> =
@@ -19,6 +23,9 @@ class ActivityRepositoryImpl @Inject constructor(
 
     override fun getAll(): Flow<List<Activity>> =
         activityDao.getAll().map { list -> list.map { it.toModel() } }
+
+    override fun getAllGroups(): Flow<List<ActivityGroup>> =
+        groupDao.getAll().map { list -> list.map { it.toModel() } }
 
     override fun search(query: String): Flow<List<Activity>> =
         activityDao.search(query).map { list -> list.map { it.toModel() } }
@@ -56,5 +63,11 @@ class ActivityRepositoryImpl @Inject constructor(
         groupId = groupId,
         isPreset = isPreset,
         isArchived = isArchived,
+    )
+
+    private fun ActivityGroupEntity.toModel() = ActivityGroup(
+        id = id,
+        name = name,
+        sortOrder = sortOrder,
     )
 }

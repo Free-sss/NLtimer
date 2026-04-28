@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.home.model.HomeUiState
@@ -33,6 +34,7 @@ import java.time.LocalTime
 fun HomeScreen(
     uiState: HomeUiState,
     activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     tagsForSelectedActivity: List<Tag>,
     allTags: List<Tag>,
     onEmptyCellClick: () -> Unit,
@@ -112,6 +114,7 @@ fun HomeScreen(
         if (uiState.isAddSheetVisible) {
             AddBehaviorSheet(
                 activities = activities,
+                activityGroups = activityGroups,
                 tagsForActivity = tagsForSelectedActivity,
                 allTags = allTags,
                 onDismiss = onDismissSheet,
@@ -161,6 +164,7 @@ private fun HomeScreenPreview() {
         HomeScreen(
             uiState = sampleUiState,
             activities = sampleActivities,
+            activityGroups = emptyList(),
             tagsForSelectedActivity = sampleTags,
             allTags = sampleTags,
             onEmptyCellClick = {},

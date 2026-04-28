@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import java.time.LocalTime
@@ -38,6 +39,7 @@ import java.time.LocalTime
 fun AddBehaviorSheet(
     modifier: Modifier = Modifier,
     activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     onDismiss: () -> Unit,
@@ -56,6 +58,7 @@ fun AddBehaviorSheet(
         AddBehaviorSheetContent(
             modifier = modifier,
             activities = activities,
+            activityGroups = activityGroups,
             tagsForActivity = tagsForActivity,
             allTags = allTags,
             onConfirm = { activityId, tagIds, startTime, nature, note ->
@@ -72,6 +75,7 @@ fun AddBehaviorSheet(
 fun AddBehaviorSheetContent(
     modifier: Modifier = Modifier,
     activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
@@ -106,7 +110,7 @@ fun AddBehaviorSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "常用活动",
+                text = "活动",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -119,6 +123,7 @@ fun AddBehaviorSheetContent(
         Spacer(modifier = Modifier.height(8.dp))
         ActivityPicker(
             activities = activities,
+            activityGroups = activityGroups,
             selectedActivityId = selectedActivityId,
             onActivitySelect = { selectedActivityId = it },
         )
@@ -303,6 +308,7 @@ private fun AddBehaviorSheetPreview() {
                 Activity(2, "Reading", "📚", null, null, false),
                 Activity(3, "Workout", "💪", null, null, false)
             ),
+            activityGroups = emptyList(),
             tagsForActivity = listOf(
                 Tag(1, "Work", null, null, null, null, 0, 0, 0, false),
                 Tag(2, "Study", null, null, null, null, 0, 0, 0, false)
