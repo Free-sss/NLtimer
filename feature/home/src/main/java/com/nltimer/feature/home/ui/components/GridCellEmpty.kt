@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appBorder
 
 @Composable
 fun GridCellEmpty(
@@ -28,9 +29,11 @@ fun GridCellEmpty(
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 RoundedCornerShape(16.dp),
             )
-            .border(
-                BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-                RoundedCornerShape(16.dp),
+            .appBorder(
+                borderProducer = {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                },
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable(onClick = onClick)
             .padding(8.dp),

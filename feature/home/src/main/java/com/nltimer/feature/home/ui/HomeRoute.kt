@@ -15,12 +15,14 @@ fun HomeRoute(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val activities by viewModel.activities.collectAsState()
+    val activityGroups by viewModel.activityGroups.collectAsState()
     val tagsForSelectedActivity by viewModel.tagsForSelectedActivity.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
 
     HomeScreen(
         uiState = uiState,
         activities = activities,
+        activityGroups = activityGroups,
         tagsForSelectedActivity = tagsForSelectedActivity,
         allTags = allTags,
         onEmptyCellClick = viewModel::showAddSheet,
@@ -39,5 +41,6 @@ fun HomeRoute(
         onAddActivity = { name, emoji -> viewModel.addActivity(name, emoji) },
         onAddTag = { name -> viewModel.addTag(name) },
         onHourClick = viewModel::scrollToTime,
+        onLayoutChange = viewModel::onHomeLayoutChange,
     )
 }

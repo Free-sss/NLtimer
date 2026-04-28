@@ -8,4 +8,8 @@ data class HomeUiState(
     val isLoading: Boolean = true,
     val isIdleMode: Boolean = false,
     val hasActiveBehavior: Boolean = false,
+    val isDetailSheetVisible: Boolean = false,
+    val detailBehavior: BehaviorDetailUiState? = null,
+    val isSaving: Boolean = false,
+    val errorMessage: String? = null,
 )

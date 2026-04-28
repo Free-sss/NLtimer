@@ -1,0 +1,191 @@
+<h2>第二小节：数据模型 & 接口设计</h2>
+<p class="subtitle">Theme 数据类 · 枚举定义 · SettingsPrefs 接口 · 文件清单</p>
+
+<div class="section">
+  <h3>📦 Theme 数据类（core:designsystem）</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.8;margin:0;overflow-x:auto">
+<span style="color:#888">// com.nltimer.core.designsystem.Theme</span>
+
+<span style="color:#1565C0">data class</span> <b>Theme</b>(
+    <span style="color:#4CAF50">val</span> appTheme: AppTheme = AppTheme.SYSTEM,
+    <span style="color:#4CAF50">val</span> isAmoled: Boolean = false,
+    <span style="color:#4CAF50">val</span> paletteStyle: PaletteStyle = PaletteStyle.TONALSPOT,
+    <span style="color:#4CAF50">val</span> isMaterialYou: Boolean = false,
+    <span style="color:#4CAF50">val</span> seedColor: Color = Color(0xFF1565C0),  <span style="opacity:0.5">// NLtimer 品牌蓝</span>
+    <span style="color:#4CAF50">val</span> font: Fonts = Fonts.FIGTREE,
+)
+</pre>
+</div>
+
+<div class="section">
+  <h3>🏷️ 枚举定义（core:designsystem）</h3>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-body">
+      <h3>AppTheme</h3>
+      <pre style="font-family:monospace;font-size:11px;margin:0">
+LIGHT
+DARK  
+SYSTEM
+</pre>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>Fonts</h3>
+      <pre style="font-family:monospace;font-size:11px;margin:0">
+FIGTREE
+GOOGLE_SANS
+SYSTEM_DEFAULT
+</pre>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>PaletteStyle</h3>
+      <pre style="font-family:monospace;font-size:11px;margin:0">
+TONALSPOT, NEUTRAL,
+VIBRANT, EXPRESSIVE,
+RAINBOW, FRUITSALAD,
+MONOCHROME, FIDELITY,
+CONTENT
+</pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔌 SettingsPrefs 接口（core:data）</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.8;margin:0">
+<span style="color:#888">// com.nltimer.core.data.SettingsPrefs</span>
+
+<span style="color:#1565C0">interface</span> <b>SettingsPrefs</b> {
+    <span style="color:#4CAF50">fun</span> <b>getThemeFlow</b>(): Flow&lt;Theme&gt;
+    <span style="color:#4CAF50">suspend fun</span> <b>updateTheme</b>(theme: Theme)
+}
+</pre>
+
+<div style="margin-top:16px;padding:12px;background:#FFF3E0;border-radius:8px;font-size:12px">
+  💡 仅 2 个方法。所有 DataStore key、序列化/反序列化逻辑、各字段映射全部封装在 <b>SettingsPrefsImpl</b>（core:data）内部。
+</div>
+</div>
+
+<div class="section">
+  <h3>📁 新增/修改文件清单</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:8px;text-align:left">文件</th>
+    <th style="padding:8px;text-align:left">模块</th>
+    <th style="padding:8px;text-align:left">操作</th>
+    <th style="padding:8px;text-align:left">说明</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">Theme.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">主题数据类</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">Fonts.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">字体枚举</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">AppTheme.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">主题模式枚举</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">PaletteStyle.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">配色方案枚举</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">NLtimerTheme.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">主题 Composable（含动画）</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">provideTypography.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">字体 Typography 构建</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">listItemExt.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">ListItem 曲面连接样式</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">enumExt.kt</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">枚举扩展（font→res, palette→MPalette）</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">SettingsPrefs.kt</td>
+    <td style="padding:8px">core:data</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">主题配置接口（2 方法）</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">SettingsPrefsImpl.kt</td>
+    <td style="padding:8px">core:data</td>
+    <td style="padding:8px;color:#FF5722"><b>新增</b></td>
+    <td style="padding:8px;font-size:11px">DataStore 实现</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">DI 绑定模块</td>
+    <td style="padding:8px">app</td>
+    <td style="padding:8px;color:#FFC107"><b>修改</b></td>
+    <td style="padding:8px;font-size:11px">Hilt @Provides 绑定</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">MainActivity.kt</td>
+    <td style="padding:8px">app</td>
+    <td style="padding:8px;color:#FFC107"><b>修改</b></td>
+    <td style="padding:8px;font-size:11px">setContent 层 collect themeFlow</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">themes.xml</td>
+    <td style="padding:8px">app</td>
+    <td style="padding:8px;color:#FFC107"><b>修改</b></td>
+    <td style="padding:8px;font-size:11px">移除硬编码主题样式</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">build.gradle.kts</td>
+    <td style="padding:8px">core:designsystem</td>
+    <td style="padding:8px;color:#FFC107"><b>修改</b></td>
+    <td style="padding:8px;font-size:11px">添加 MaterialKolor 依赖</td>
+  </tr>
+  <tr>
+    <td style="padding:8px;font-family:monospace;font-size:11px">build.gradle.kts</td>
+    <td style="padding:8px">core:data</td>
+    <td style="padding:8px;color:#FFC107"><b>修改</b></td>
+    <td style="padding:8px;font-size:11px">添加 DataStore + designsystem 依赖</td>
+  </tr>
+</table>
+
+<div class="section">
+  <h3>🧪 不立刻做的（可在后续迭代）</h3>
+  <ul>
+    <li>⏸️ 主题设置页面 UI（LookAndFeel 等）— 本期只建架构，设置页单独规划</li>
+    <li>⏸️ 字体文件 (figtree.ttf, google_sans_flex.ttf) — 本期用系统默认字体占位</li>
+    <li>⏸️ zigZagBackground、MomentumDialog 等装饰组件 — 按需引入</li>
+  </ul>
+</div>

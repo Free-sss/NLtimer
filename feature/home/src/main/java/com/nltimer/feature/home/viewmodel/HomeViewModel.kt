@@ -3,12 +3,15 @@ package com.nltimer.feature.home.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
@@ -19,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -33,6 +37,7 @@ class HomeViewModel @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
     private val activityRepository: ActivityRepository,
     private val tagRepository: TagRepository,
+    private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
 ) : ViewModel() {
 
@@ -41,6 +46,9 @@ class HomeViewModel @Inject constructor(
 
     private val _activities = MutableStateFlow<List<Activity>>(emptyList())
     val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
+
+    private val _activityGroups = MutableStateFlow<List<ActivityGroup>>(emptyList())
+    val activityGroups: StateFlow<List<ActivityGroup>> = _activityGroups.asStateFlow()
 
     private val _tagsForSelectedActivity = MutableStateFlow<List<Tag>>(emptyList())
     val tagsForSelectedActivity: StateFlow<List<Tag>> = _tagsForSelectedActivity.asStateFlow()
@@ -54,14 +62,20 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHomeBehaviors()
-        loadActivities()
+        loadActivitiesAndGroups()
         loadAllTags()
     }
 
-    private fun loadActivities() {
+    private fun loadActivitiesAndGroups() {
         viewModelScope.launch {
-            activityRepository.getAllActive().collect { list ->
-                _activities.update { list }
+            combine(
+                activityRepository.getAllActive(),
+                activityRepository.getAllGroups()
+            ) { activities, groups ->
+                activities to groups
+            }.collect { (activities, groups) ->
+                _activities.update { activities }
+                _activityGroups.update { groups }
             }
         }
     }
@@ -127,6 +141,14 @@ class HomeViewModel @Inject constructor(
                 emptyList()
             }
             val isActive = behavior.status == BehaviorNature.ACTIVE
+            val startLocal = java.time.Instant.ofEpochMilli(behavior.startTime)
+                .atZone(ZoneId.systemDefault())
+                .toLocalTime()
+            val endLocal = behavior.endTime?.let {
+                java.time.Instant.ofEpochMilli(it)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
 
             GridCellUiState(
                 behaviorId = behavior.id,
@@ -142,6 +164,9 @@ class HomeViewModel @Inject constructor(
                 durationMs = if (isActive && behavior.startTime > 0) {
                     System.currentTimeMillis() - behavior.startTime
                 } else null,
+                startTime = startLocal,
+                endTime = endLocal,
+                note = behavior.note,
             )
         }
 
@@ -217,7 +242,7 @@ class HomeViewModel @Inject constructor(
                     name = name,
                     emoji = emoji.ifBlank { null },
                     iconKey = null,
-                    category = null,
+//                    category = null,
                     isArchived = false,
                 )
             )
@@ -332,5 +357,13 @@ class HomeViewModel @Inject constructor(
 
     fun scrollToTime(hour: Int) {
         _uiState.update { it.copy(selectedTimeHour = hour) }
+    }
+
+    fun onHomeLayoutChange(layout: HomeLayout) {
+        viewModelScope.launch {
+            settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->
+                settingsPrefs.updateTheme(theme.copy(homeLayout = layout))
+            }
+        }
     }
 }

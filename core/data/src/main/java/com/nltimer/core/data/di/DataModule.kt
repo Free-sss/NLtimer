@@ -4,13 +4,18 @@ import android.content.Context
 import androidx.room.Room
 import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.database.dao.ActivityDao
+import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.repository.impl.ActivityManagementRepositoryImpl
 import com.nltimer.core.data.repository.impl.ActivityRepositoryImpl
 import com.nltimer.core.data.repository.impl.BehaviorRepositoryImpl
+import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import dagger.Binds
 import dagger.Module
@@ -33,6 +38,14 @@ abstract class DataModule {
     @Binds
     abstract fun bindBehaviorRepository(impl: BehaviorRepositoryImpl): BehaviorRepository
 
+    @Binds
+    abstract fun bindCategoryRepository(impl: CategoryRepositoryImpl): CategoryRepository
+
+    @Binds
+    abstract fun bindActivityManagementRepository(
+        impl: ActivityManagementRepositoryImpl,
+    ): ActivityManagementRepository
+
     companion object {
         @Provides
         @Singleton
@@ -43,11 +56,16 @@ abstract class DataModule {
                 "nltimer-database",
             )
                 .fallbackToDestructiveMigration(false)
+                .addMigrations(NLtimerDatabase.MIGRATION_3_4)
                 .build()
 
         @Provides
         fun provideActivityDao(database: NLtimerDatabase): ActivityDao =
             database.activityDao()
+
+        @Provides
+        fun provideActivityGroupDao(database: NLtimerDatabase): ActivityGroupDao =
+            database.activityGroupDao()
 
         @Provides
         fun provideTagDao(database: NLtimerDatabase): TagDao =

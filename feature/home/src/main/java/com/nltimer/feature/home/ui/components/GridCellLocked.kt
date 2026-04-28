@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appBorder
 
 @Composable
 fun GridCellLocked(
@@ -27,9 +28,11 @@ fun GridCellLocked(
                 MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.35f),
                 RoundedCornerShape(16.dp),
             )
-            .border(
-                BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-                RoundedCornerShape(16.dp),
+            .appBorder(
+                borderProducer = {
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                },
+                shape = RoundedCornerShape(16.dp)
             )
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,

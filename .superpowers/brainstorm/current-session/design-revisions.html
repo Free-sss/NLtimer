@@ -1,0 +1,165 @@
+<h2>设计修订 — 根据反馈优化</h2>
+<p class="subtitle">修正 ②③④⑤ 四点，展示最终数据流与接口设计</p>
+
+<div class="section">
+  <h3>② 修正：去掉 MainAppViewModel 主题瓶颈</h3>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>修正后的数据流</h4>
+    <div style="font-family:monospace;font-size:12px;line-height:2;margin-top:8px">
+      <b>MainActivity.setContent {</b><br>
+      &nbsp;&nbsp;<span style="color:#4CAF50">val theme by settingsPrefs.getThemeFlow()</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#4CAF50">.collectAsStateWithLifecycle(Theme())</span><br>
+      &nbsp;&nbsp;<b>NLtimerTheme(theme = theme) {</b><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;NLtimerApp() <span style="opacity:0.6">// 所有子组件自动继承</span><br>
+      &nbsp;&nbsp;<b>} }</b><br><br>
+      <span style="opacity:0.6">// SettingsViewModel 只处理设置页 UI 逻辑</span><br>
+      <span style="opacity:0.6">// 不持有全局 Theme 状态，调用 settingsPrefs.updateTheme()</span><br>
+      <span style="opacity:0.6">// DataStore 写入 → Flow 自动发射 → setContent 层重组</span>
+    </div>
+  </div>
+  <div class="cons">
+    <h4>原来的问题</h4>
+    <div style="font-size:12px;opacity:0.8">
+      ❌ MainAppViewModel 必须全局存活<br>
+      ❌ 子组件需向上依赖 ViewModel 或逐层传参<br>
+      ❌ ViewModel 和 Compose CompositionLocal 双轨维护 Theme 状态
+    </div>
+  </div>
+</div>
+
+<div style="background:#E3F2FD;border-radius:10px;padding:14px;margin-top:16px;font-size:12px">
+  💡 <b>设计原则：</b>Theme 属于 Compose 层级的状态（通过 CompositionLocal 分发），不属于 ViewModel 的职责。SettingsViewModel 只有"写入"操作，没有"持有"操作。顶层 setContent 通过 collectAsStateWithLifecycle 直接订阅 DataStore Flow。
+</div>
+
+<div class="section">
+  <h3>③ 修正：SettingsPrefs 接口精简</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:10px;text-align:left;width:50%">原设计（暴露内部细节）</th>
+    <th style="padding:10px;text-align:left;width:50%">新设计（紧凑接口）</th>
+  </tr>
+  <tr>
+    <td style="padding:10px;vertical-align:top;font-family:monospace;font-size:11px">
+      getSeedColorFlow(): Flow&lt;Color&gt;<br>
+      updateSeedColor(Color)<br>
+      getFontFlow(): Flow&lt;Fonts&gt;<br>
+      updateFonts(Fonts)<br>
+      getPaletteStyle(): Flow&lt;PaletteStyle&gt;<br>
+      updatePaletteStyle(PaletteStyle)<br>
+      getAppThemePrefFlow(): Flow&lt;AppTheme&gt;<br>
+      updateAppThemePref(AppTheme)<br>
+      getAmoledPrefFlow(): Flow&lt;Boolean&gt;<br>
+      updateAmoledPref(Boolean)<br>
+      getMaterialYouFlow(): Flow&lt;Boolean&gt;<br>
+      updateMaterialTheme(Boolean)<br>
+      <span style="opacity:0.5">// 6 个 Flow + 6 个 update = 12 个方法</span><br>
+      <span style="opacity:0.5">// ThemePreferencesKeys 暴露在外</span>
+    </td>
+    <td style="padding:10px;vertical-align:top;font-family:monospace;font-size:11px;background:#E8F5E9;border-radius:6px">
+      <b>getThemeFlow(): Flow&lt;Theme&gt;</b><br>
+      <b>updateTheme(Theme)</b><br><br>
+      <span style="opacity:0.5">// 2 个方法，实现类内部处理</span><br>
+      <span style="opacity:0.5">// PreferencesKeys + 各字段映射细节</span><br>
+      <span style="opacity:0.5">// 全部封装在 SettingsPrefsImpl 内</span>
+    </td>
+  </tr>
+</table>
+
+<div class="section">
+  <h3>④ 新增：主题过渡防闪烁策略</h3>
+</div>
+
+<div style="font-family:monospace;font-size:12px;line-height:1.8;background:var(--surface);border-radius:10px;padding:16px">
+  <b>NLtimerTheme</b>(theme: Theme, content: @Composable () → Unit) {<br>
+  &nbsp;&nbsp;<span style="color:#1565C0">val animatedScheme</span> = <b>animateColorScheme</b>(<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;targetScheme = dynamicScheme,<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;animationSpec = <span style="color:#4CAF50">tween(300ms)</span><br>
+  &nbsp;&nbsp;)<br>
+  &nbsp;&nbsp;<b>DynamicMaterialTheme</b>(scheme = animatedScheme, ...) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;<b>AnimatedContent</b>(targetState = theme, <span style="color:#4CAF50">fadeIn + fadeOut</span>) {<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content()<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+  &nbsp;&nbsp;}<br>
+  }
+</div>
+
+<div style="margin-top:12px;font-size:12px;opacity:0.8">
+  ✅ 色彩过渡：animateColorScheme 让颜色平滑渐变而非突变<br>
+  ✅ 内容过渡：AnimatedContent + fadeIn/fadeOut 消除视觉闪烁<br>
+  ✅ 稳定 key：Theme data class 直接作为 key，Compose 正确识别变更
+</div>
+
+<div class="section">
+  <h3>⑤ 明确：Amoled 实现细节</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:10px;padding:16px;margin-bottom:16px">
+  <div style="display:flex;gap:16px;align-items:flex-start">
+    <div style="flex:1;text-align:center">
+      <div style="width:80px;height:120px;background:#121212;border-radius:12px;margin:0 auto 8px;border:2px solid var(--border)"></div>
+      <div style="font-size:11px">🌙 Dark</div>
+      <div style="font-size:10px;opacity:0.5">#121212</div>
+    </div>
+    <div style="display:flex;align-items:center;font-size:24px;padding:0 8px">→</div>
+    <div style="flex:1;text-align:center">
+      <div style="width:80px;height:120px;background:#000000;border-radius:12px;margin:0 auto 8px;border:2px solid #333"></div>
+      <div style="font-size:11px">🖤 Amoled</div>
+      <div style="font-size:10px;opacity:0.5">#000000</div>
+    </div>
+  </div>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">数据模型</td>
+    <td style="padding:10px;font-family:monospace;font-size:11px">Theme.isAmoled: Boolean = false</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">UI 控件</td>
+    <td style="padding:10px">Settings 页 Switch 开关（仅在 Dark 主题时可见/可用）</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:10px;font-weight:600">作用范围</td>
+    <td style="padding:10px">仅影响 Dark 模式背景色（#121212 → #000000），Light 模式忽略</td>
+  </tr>
+  <tr>
+    <td style="padding:10px;font-weight:600">实现方式</td>
+    <td style="padding:10px;font-family:monospace;font-size:11px">DynamicMaterialTheme(isAmoled = theme.isAmoled)</td>
+  </tr>
+</table>
+
+<hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">📋 修订后的最终数据流</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px">
+  <div style="font-family:monospace;font-size:12px;line-height:2.2">
+    <span style="color:#888">// === 写入路径（设置页触发）===</span><br>
+    SettingsScreen → <span style="color:#FF5722">SettingsAction</span> → <span style="color:#1565C0">SettingsViewModel</span><br>
+    &nbsp;&nbsp;→ <span style="color:#4CAF50">settingsPrefs.updateTheme(newTheme)</span> → <b>DataStore</b><br><br>
+
+    <span style="color:#888">// === 读取路径（Compose 声明式）===</span><br>
+    <b>DataStore</b> → <span style="color:#4CAF50">getThemeFlow(): Flow&lt;Theme&gt;</span><br>
+    &nbsp;&nbsp;→ <span style="color:#9C27B0">MainActivity.setContent</span> 层 collectAsStateWithLifecycle<br>
+    &nbsp;&nbsp;→ 🎨 <span style="color:#9C27B0">NLtimerTheme(theme, animatedScheme)</span><br>
+    &nbsp;&nbsp;→ CompositionLocal 自动分发到所有子组件<br><br>
+
+    <span style="color:#888">// === 子组件获取主题 ===</span><br>
+    MaterialTheme.colorScheme / MaterialTheme.typography<br>
+    <span style="opacity:0.6">// 无需 ViewModel，无需参数传递，声明式获取</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🚫 明确不做的</h3>
+  <ul>
+    <li>❌ 不在 MainAppViewModel 中持 Theme 状态</li>
+    <li>❌ 不暴露 DataStore PreferencesKeys 到接口外</li>
+    <li>❌ 不做无动画的主题硬切换</li>
+  </ul>
+</div>

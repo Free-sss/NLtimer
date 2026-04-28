@@ -1,10 +1,13 @@
 package com.nltimer.feature.home.ui.sheet
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -18,7 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
 @Composable
 fun AddActivityDialog(
@@ -36,33 +44,28 @@ fun AddActivityDialog(
             Text("添加活动", style = MaterialTheme.typography.titleMedium)
         },
         text = {
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = { Text("活动名称，如：编程、健身") },
-                    label = { Text("名称") },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    ),
-                    singleLine = true,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+            Row {
                 OutlinedTextField(
                     value = emoji,
                     onValueChange = { emoji = it.take(2) },
-                    placeholder = { Text("例如：💻") },
-                    label = { Text("Emoji (可选)") },
-                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("图标", style = MaterialTheme.typography.bodySmall) },
+                    modifier = Modifier.width(64.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    ),
+                    colors = appOutlinedTextFieldColors(),
                     singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    placeholder = { Text("名称（如：健身）") },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = appOutlinedTextFieldColors(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )
             }
         },
@@ -84,4 +87,17 @@ fun AddActivityDialog(
             }
         },
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AddActivityDialogPreview() {
+    NLtimerTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+            AddActivityDialog(
+                onDismiss = {},
+                onConfirm = { _, _ -> }
+            )
+        }
+    }
 }

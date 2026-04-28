@@ -1,24 +1,96 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.model.GridRowUiState
 
 @Composable
 fun TimeAxisGrid(
+    modifier: Modifier = Modifier,
     rows: List<GridRowUiState>,
     onEmptyCellClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    onLayoutChange: (HomeLayout) -> Unit,
+    currentHour: Int = 0,
 ) {
+    val listState = rememberLazyListState()
+    var showLayoutMenu by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentHour) {
+        val targetIndex = rows.indexOfFirst { it.startTime.hour >= currentHour }
+        if (targetIndex >= 0) {
+            listState.animateScrollToItem(targetIndex)
+        }
+    }
+
     LazyColumn(
-        modifier = modifier.padding(horizontal = 16.dp),
+        state = listState,
+        modifier = modifier.padding(start = 10.dp, end = 16.dp, top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item {
+            Box {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable { showLayoutMenu = true }
+                ) {
+                    Text(
+                        text = "网格时间",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color(0xFF4CAF50),
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showLayoutMenu,
+                    onDismissRequest = { showLayoutMenu = false }
+                ) {
+                    HomeLayout.values().forEach { layout ->
+                        DropdownMenuItem(
+                            text = { Text(layout.toDisplayString()) },
+                            onClick = {
+                                onLayoutChange(layout)
+                                showLayoutMenu = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(
                 row = row,

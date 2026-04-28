@@ -61,7 +61,8 @@ class BehaviorRepositoryImpl @Inject constructor(
             name = activityEntity.name,
             emoji = activityEntity.emoji,
             iconKey = activityEntity.iconKey,
-            category = activityEntity.category,
+            groupId = activityEntity.groupId,
+            isPreset = activityEntity.isPreset,
             isArchived = activityEntity.isArchived,
         )
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
@@ -208,4 +209,20 @@ class BehaviorRepositoryImpl @Inject constructor(
         achievementLevel = achievementLevel,
         wasPlanned = wasPlanned,
     )
+
+    override suspend fun updateBehavior(
+        id: Long,
+        activityId: Long,
+        startTime: Long,
+        endTime: Long?,
+        status: String,
+        note: String?,
+    ) {
+        behaviorDao.update(id, activityId, startTime, endTime, status, note)
+    }
+
+    override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {
+        behaviorDao.deleteTagsForBehavior(behaviorId)
+        behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
+    }
 }

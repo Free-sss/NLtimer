@@ -1,0 +1,201 @@
+2026-04-28 00:39:25.077 11822-11849 VRI[MainActivity]       com.nltimer.app                      D  Received frameCommittedCallback lastAttemptedDrawFrameNum=3 didProduceBuffer=true syncBuffer=false
+2026-04-28 00:39:25.077 11822-11822 VRI[MainActivity]       com.nltimer.app                      D  draw finished. seqId=0
+2026-04-28 00:39:25.078 11822-11822 InsetsController        com.nltimer.app                      D  hide(ime(), fromIme=false)
+2026-04-28 00:39:25.079 11822-11822 ImeTracker              com.nltimer.app                      I  com.nltimer.app:530b1118: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+2026-04-28 00:39:25.096 11822-11822 Choreographer           com.nltimer.app                      I  Skipped 31 frames!  The application may be doing too much work on its main thread.
+2026-04-28 00:39:25.306 11822-11822 AndroidRuntime          com.nltimer.app                      E  FATAL EXCEPTION: main
+                                                                                                    Process: com.nltimer.app, PID: 11822
+                                                                                                    java.lang.IllegalStateException: Migration didn't properly handle: activities(com.nltimer.core.data.database.entity.ActivityEntity).
+                                                                                                     Expected:
+                                                                                                    TableInfo {
+                                                                                                        name = 'activities',
+                                                                                                        columns = {    
+                                                                                                            Column {
+                                                                                                               name = 'createdAt',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'emoji',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'groupId',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'iconKey',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'id',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '1',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'isArchived',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'isPreset',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'name',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'updatedAt',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            }
+                                                                                                        },
+                                                                                                        foreignKeys = { }
+                                                                                                        indices = { }
+                                                                                                    }
+                                                                                                     Found:
+                                                                                                    TableInfo {
+                                                                                                        name = 'activities',
+                                                                                                        columns = {    
+                                                                                                            Column {
+                                                                                                               name = 'category',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'createdAt',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'emoji',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'groupId',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'iconKey',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'false',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'id',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '1',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'isArchived',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'isPreset',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+2026-04-28 00:39:25.306 11822-11822 AndroidRuntime          com.nltimer.app                      E             defaultValue = 'undefined' (Fix with AI)
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'name',
+                                                                                                               type = 'TEXT',
+                                                                                                               affinity = '2',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            },
+                                                                                                            Column {
+                                                                                                               name = 'updatedAt',
+                                                                                                               type = 'INTEGER',
+                                                                                                               affinity = '3',
+                                                                                                               notNull = 'true',
+                                                                                                               primaryKeyPosition = '0',
+                                                                                                               defaultValue = 'undefined'
+                                                                                                            }
+                                                                                                        },
+                                                                                                        foreignKeys = { }
+                                                                                                        indices = { }
+                                                                                                    }
+                                                                                                    	at androidx.room.BaseRoomConnectionManager.onMigrate(RoomConnectionManager.kt:212)
+                                                                                                    	at androidx.room.RoomConnectionManager$SupportOpenHelperCallback.onUpgrade(RoomConnectionManager.android.kt:152)
+                                                                                                    	at androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper$OpenHelper.onUpgrade(FrameworkSQLiteOpenHelper.android.kt:245)
+                                                                                                    	at android.database.sqlite.SQLiteOpenHelper.getDatabaseLocked(SQLiteOpenHelper.java:437)
+                                                                                                    	at android.database.sqlite.SQLiteOpenHelper.getWritableDatabase(SQLiteOpenHelper.java:336)
+                                                                                                    	at androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper$OpenHelper.getWritableOrReadableDatabase(FrameworkSQLiteOpenHelper.android.kt:224)
+                                                                                                    	at androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper$OpenHelper.innerGetDatabase(FrameworkSQLiteOpenHelper.android.kt:180)
+                                                                                                    	at androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper$OpenHelper.getSupportDatabase(FrameworkSQLiteOpenHelper.android.kt:141)
+                                                                                                    	at androidx.sqlite.db.framework.FrameworkSQLiteOpenHelper.getWritableDatabase(FrameworkSQLiteOpenHelper.android.kt:96)
+                                                                                                    	at androidx.room.driver.SupportSQLiteDriver.open(SupportSQLiteDriver.android.kt:26)
+                                                                                                    	at androidx.room.driver.SupportSQLiteConnectionPool.getSupportConnection(SupportSQLiteConnectionPool.android.kt:35)
+                                                                                                    	at androidx.room.driver.SupportSQLiteConnectionPool.useConnection(SupportSQLiteConnectionPool.android.kt:42)
+                                                                                                    	at androidx.room.RoomConnectionManager.useConnection(RoomConnectionManager.android.kt:126)
+                                                                                                    	at androidx.room.RoomDatabase.useConnection$room_runtime_release(RoomDatabase.android.kt:593)
+                                                                                                    	at androidx.room.TriggerBasedInvalidationTracker.syncTriggers$room_runtime_release(InvalidationTracker.kt:300)
+                                                                                                    	at androidx.room.TriggerBasedInvalidationTracker$createFlow$1$1.invokeSuspend(InvalidationTracker.kt:233)
+                                                                                                    	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:34)
+                                                                                                    	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
+                                                                                                    	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1156)
+                                                                                                    	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:651)
+                                                                                                    	at java.lang.Thread.run(Thread.java:1119)
+                                                                                                    	Suppressed: kotlinx.coroutines.internal.DiagnosticCoroutineContextException: [StandaloneCoroutine{Cancelling}@b1b0dbb, Dispatchers.Main.immediate]
+2026-04-28 00:39:25.326 11822-11822 Process                 com.nltimer.app                      I  Quit itself,  Pid:11822  StackTrace:com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException:201 java.lang.ThreadGroup.uncaughtException:1102 java.lang.ThreadGroup.uncaughtException:1093 com.android.internal.os.RuntimeInitExtImpl.uncaughtExceptionExt:72 com.android.internal.os.RuntimeInit$LoggingHandler.uncaughtException:138 com.android.internal.os.RuntimeInit$KillApplicationHandler.ensureLogging:226 com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException:171 java.lang.ThreadGroup.uncaughtException:1102 java.lang.ThreadGroup.uncaughtException:1093 kotlinx.coroutines.internal.CoroutineExceptionHandlerImplKt.propagateExceptionFinalResort:31 
+2026-04-28 00:39:25.326 11822-11822 Process                 com.nltimer.app                      I  Sending signal. PID: 11822 SIG: 9
+2026-04-28 00:39:25.388  2369-2369  qspmHal                 vendor.qti.qspmhal-service           E  setAppInfoH atPid = 11822, gpuFname:com.nltimer.app, gpuFver:10

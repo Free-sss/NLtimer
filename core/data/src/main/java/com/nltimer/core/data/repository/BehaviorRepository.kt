@@ -27,4 +27,15 @@ interface BehaviorRepository {
     suspend fun reorderGoals(orderedIds: List<Long>)
     suspend fun delete(id: Long)
     suspend fun settleDay(dayStart: Long, dayEnd: Long)
+
+    suspend fun updateBehavior(
+        id: Long,
+        activityId: Long,
+        startTime: Long,
+        endTime: Long?,
+        status: String,
+        note: String?,
+    )
+
+    suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>)
 }

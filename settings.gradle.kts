@@ -22,9 +22,10 @@ include(
     "app",
     "core:designsystem",
     "core:data",
-    "feature:timer",
     "feature:home",
     "feature:sub",
     "feature:stats",
     "feature:settings",
+    "feature:categories",
+    "feature:management_activities",
 )

@@ -1,6 +1,7 @@
 package com.nltimer.feature.home.model
 
 import com.nltimer.core.data.model.BehaviorNature
+import java.time.LocalTime
 
 data class GridCellUiState(
     val behaviorId: Long?,
@@ -14,5 +15,8 @@ data class GridCellUiState(
     val estimatedDuration: Long? = null,
     val actualDuration: Long? = null,
     val durationMs: Long? = null,
+    val startTime: LocalTime? = null,
+    val endTime: LocalTime? = null,
     val isAddPlaceholder: Boolean = false,
+    val note: String? = null,
 )

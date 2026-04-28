@@ -1,0 +1,64 @@
+<h2>修正：移除 Google Sans</h2>
+<p class="subtitle">字体选项精简为 Figtree + System Default 两种</p>
+
+<div class="section">
+  <h3>🔤 Fonts 枚举</h3>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0">
+<span style="color:#888">// core:designsystem/Fonts.kt</span>
+
+<span style="color:#1565C0">enum class</span> <b>Fonts</b> {
+    FIGTREE,
+    SYSTEM_DEFAULT,
+}
+</pre>
+</div>
+
+<div style="background:var(--surface);border-radius:12px;padding:20px;margin-bottom:20px">
+<pre style="font-family:monospace;font-size:11px;line-height:1.7;margin:0">
+<span style="color:#888">// core:designsystem/enumExt.kt — 字体映射</span>
+
+<span style="color:#4CAF50">fun</span> Fonts.<b>toFontRes</b>(): Int? = <span style="color:#4CAF50">when</span> (this) {
+    Fonts.FIGTREE        -> R.font.figtree
+    Fonts.SYSTEM_DEFAULT -> null       <span style="opacity:0.5">// null → FontFamily.Default</span>
+}
+
+<span style="color:#4CAF50">fun</span> Fonts.<b>toDisplayString</b>(): String = <span style="color:#4CAF50">when</span> (this) {
+    Fonts.FIGTREE        -> "Figtree"
+    Fonts.SYSTEM_DEFAULT -> "System Default"
+}
+</pre>
+</div>
+
+<div class="section">
+  <h3>📁 影响范围</h3>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+  <tr style="background:var(--bg)">
+    <th style="padding:8px;text-align:left">文件</th>
+    <th style="padding:8px;text-align:left">变更</th>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">Fonts.kt</td>
+    <td style="padding:8px">仅 FIGTREE + SYSTEM_DEFAULT</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">enumExt.kt</td>
+    <td style="padding:8px">移除 GOOGLE_SANS 分支</td>
+  </tr>
+  <tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px;font-family:monospace;font-size:11px">Theme.kt</td>
+    <td style="padding:8px">默认值保持不变 (FIGTREE)</td>
+  </tr>
+  <tr>
+    <td style="padding:8px;font-family:monospace;font-size:11px">资源文件</td>
+    <td style="padding:8px">仅复制 figtree.ttf，不复制 google_sans_flex.ttf</td>
+  </tr>
+</table>
+
+<div style="margin-top:16px;padding:12px;background:#FFF3E0;border-radius:8px;font-size:12px">
+  ⚠️ <b>检查 Figtree 许可：</b>Figtree 也需确认 Momentum 中的源文件是否附带 OFL 声明。如有疑问可改用系统自带字体或从 Google Fonts 官方渠道下载。
+</div>
