@@ -217,7 +217,7 @@ class HomeViewModel @Inject constructor(
                     name = name,
                     emoji = emoji.ifBlank { null },
                     iconKey = null,
-                    category = null,
+//                    category = null,
                     isArchived = false,
                 )
             )
