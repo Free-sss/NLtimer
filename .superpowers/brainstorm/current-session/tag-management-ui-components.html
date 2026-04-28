@@ -1,0 +1,112 @@
+<h2>🎨 第 2 部分：UI 组件与交互设计</h2>
+<p class="subtitle">基于参考截图的紧凑型标签管理界面</p>
+
+<div class="mockup">
+  <div class="mockup-header">完整界面布局结构</div>
+  <div class="mockup-body" style="background: #f5f5f5; padding: 0; border-radius: 12px; overflow: hidden; position: relative;">
+    
+    <!-- Top App Bar -->
+    <div style="background: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e0e0e0;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-size: 20px; cursor: pointer;">←</span>
+        <span style="font-size: 18px; font-weight: 600;">标签管理</span>
+      </div>
+      <span style="color: #2196F3; font-size: 20px; cursor: pointer;" title="批量删除">🗑️</span>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div style="padding: 16px; background: #fafafa; min-height: 450px; max-height: 500px; overflow-y: auto;">
+
+      <!-- 默认分类（未分类） -->
+      <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px; color: #333;">默认</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="background: #E8E8E8; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #555; cursor: pointer;" title="点击编辑">#xjdj</span>
+          <span style="background: #E8E8E8; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #555; cursor: pointer;" title="点击编辑">#工作</span>
+          <span style="background: #E3F2FD; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #2196F3; font-size: 18px; cursor: pointer; border: none;" title="添加标签">+</span>
+        </div>
+      </div>
+
+      <!-- 分类1：优先级 -->
+      <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 15px; font-weight: 600; color: #333;">优先级</span>
+          <span style="color: #999; font-size: 18px; cursor: pointer; padding: 4px;" title="更多操作">⋮</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="background: #FFCDD2; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #C62828; cursor: pointer;" title="点击编辑">#紧急</span>
+          <span style="background: #FFF9C4; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #F57F17; cursor: pointer;" title="点击编辑">#重要</span>
+          <span style="background: #C8E6C9; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #2E7D32; cursor: pointer;" title="点击编辑">#普通</span>
+          <span style="background: #E3F2FD; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #2196F3; font-size: 18px; cursor: pointer;" title="添加标签">+</span>
+        </div>
+      </div>
+
+      <!-- 分类2：状态 -->
+      <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span style="font-size: 15px; font-weight: 600; color: #333;">状态</span>
+          <span style="color: #999; font-size: 18px; cursor: pointer; padding: 4px;" title="更多操作">⋮</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <span style="background: #E1BEE7; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #6A1B9A; cursor: pointer;" title="点击编辑">#进行中</span>
+          <span style="background: #B3E5FC; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #01579B; cursor: pointer;" title="点击编辑">#已完成</span>
+          <span style="background: #FFE0B2; padding: 6px 14px; border-radius: 16px; font-size: 13px; color: #E65100; cursor: pointer;" title="点击编辑">#待处理</span>
+          <span style="background: #E3F2FD; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #2196F3; font-size: 18px; cursor: pointer;" title="添加标签">+</span>
+        </div>
+      </div>
+
+      <!-- 增加分类按钮 -->
+      <div style="background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer; border: 1px dashed #ddd;">
+        <span style="color: #999; font-size: 14px;">+ 增加标签分类</span>
+      </div>
+
+    </div>
+
+    <!-- FAB - 更多操作 -->
+    <div style="position: absolute; bottom: 24px; right: 24px; background: #2196F3; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(33,150,243,0.4); cursor: pointer;">
+      <span style="color: white; font-size: 20px; letter-spacing: 2px;">⋯</span>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📱 界面组成说明</h3>
+  
+  <h4>1️⃣ 顶部导航栏 (TopAppBar)</h4>
+  <ul>
+    <li><strong>返回按钮</strong> ← ：返回上一页</li>
+    <li><strong>标题</strong>："标签管理"</li>
+    <li><strong>操作按钮</strong> 🗑️：批量删除模式切换（可选）</li>
+  </ul>
+
+  <h4>2️⃣ 分类卡片 (CategoryCard)</h4>
+  <ul>
+    <li><strong>分类标题</strong>：显示分类名称（"默认"、"优先级"、"状态"等）</li>
+    <li><strong>操作菜单</strong> ⋮：重命名、删除、排序等操作</li>
+    <li><strong>标签列表</strong>：FlowRow 横向排列的 TagChip</li>
+    <li><strong>添加按钮</strong> +：在该分类下新建标签</li>
+  </ul>
+
+  <h4>3️⃣ 标签芯片 (TagChip)</h4>
+  <ul>
+    <li><strong>样式</strong>：圆角胶囊形状，带背景色</li>
+    <li><strong>颜色</strong>：根据 tag.color 字段动态设置（或使用分类主题色）</li>
+    <li><strong>交互</strong>：
+      <ul>
+        <li><strong>单击</strong> → 打开编辑对话框</li>
+        <li><strong>长按</strong> → 显示操作菜单（移动、删除）</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h4>4️⃣ 底部入口</h4>
+  <ul>
+    <li><strong>+ 增加标签分类</strong>：虚线边框卡片，点击弹出新建分类对话框</li>
+  </ul>
+
+  <h4>5️⃣ 浮动按钮 (FAB)</h4>
+  <ul>
+    <li><strong>位置</strong>：右下角</li>
+    <li><strong>功能</strong>：展开更多操作菜单（排序方式、导入/导出等）</li>
+  </ul>
+</div>

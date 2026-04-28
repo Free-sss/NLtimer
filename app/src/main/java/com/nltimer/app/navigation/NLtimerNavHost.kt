@@ -12,6 +12,7 @@ import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.sub.ui.SubRoute
+import com.nltimer.feature.tag_management.ui.TagManagementRoute
 
 @Composable
 fun NLtimerNavHost(
@@ -28,6 +29,11 @@ fun NLtimerNavHost(
         composable("stats") { StatsRoute() }
         composable("categories") { CategoriesRoute() }
         composable("management_activities") { ActivityManagementRoute() }
+        composable("tag_management") {
+            TagManagementRoute(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
         composable("settings") { SettingsRoute() }
         composable("theme_settings") {
             ThemeSettingsRoute(

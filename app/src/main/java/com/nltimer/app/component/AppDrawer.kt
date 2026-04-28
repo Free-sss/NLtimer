@@ -9,8 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness5
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -38,6 +39,7 @@ private val drawerMenuItems = listOf(
     DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem("categories", "分类管理", Icons.Default.Category),
     DrawerMenuItem("management_activities", "活动管理", Icons.Default.List),
+    DrawerMenuItem("tag_management", "标签管理", Icons.Default.Label),
     DrawerMenuItem("settings", "设置", Icons.Default.Settings),
 )
 

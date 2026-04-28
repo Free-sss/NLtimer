@@ -31,4 +31,5 @@ include(
     "feature:settings",
     "feature:categories",
     "feature:management_activities",
+    "feature:tag_management",
 )

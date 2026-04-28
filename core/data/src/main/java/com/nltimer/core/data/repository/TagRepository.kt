@@ -14,4 +14,8 @@ interface TagRepository {
     suspend fun insert(tag: Tag): Long
     suspend fun update(tag: Tag)
     suspend fun setArchived(id: Long, archived: Boolean)
+    
+    fun getDistinctCategories(): Flow<List<String>>
+    suspend fun renameCategory(oldName: String, newName: String)
+    suspend fun resetCategory(category: String)
 }

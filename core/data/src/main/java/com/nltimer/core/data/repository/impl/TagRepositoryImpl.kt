@@ -44,6 +44,15 @@ class TagRepositoryImpl @Inject constructor(
     override suspend fun setArchived(id: Long, archived: Boolean) =
         tagDao.setArchived(id, archived)
 
+    override fun getDistinctCategories(): Flow<List<String>> =
+        tagDao.getDistinctCategories()
+
+    override suspend fun renameCategory(oldName: String, newName: String) =
+        tagDao.renameCategory(oldName, newName)
+
+    override suspend fun resetCategory(category: String) =
+        tagDao.resetCategory(category)
+
     private fun TagEntity.toModel() = Tag(
         id = id,
         name = name,

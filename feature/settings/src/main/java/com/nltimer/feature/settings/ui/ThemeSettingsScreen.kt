@@ -28,7 +28,8 @@ import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -37,8 +38,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.ToggleButton
-import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
@@ -91,7 +90,7 @@ fun ThemeSettingsRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
     theme: Theme,
@@ -171,39 +170,38 @@ fun ThemeSettingsScreen(
                                 .padding(start = 52.dp, end = 16.dp, bottom = 8.dp),
                         ) {
                             AppTheme.values().toList().forEach { appTheme ->
-                                ToggleButton(
-                                    checked = appTheme == theme.appTheme,
-                                    onCheckedChange = { onThemeSwitch(appTheme) },
+                                FilterChip(
+                                    selected = appTheme == theme.appTheme,
+                                    onClick = { onThemeSwitch(appTheme) },
                                     modifier = Modifier.weight(1f),
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
+                                    colors = FilterChipDefaults.filterChipColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                                     ),
-                                ) {
-                                    Text(
-                                        text = appTheme.toDisplayString(),
-                                        modifier = Modifier.basicMarquee(),
-                                        maxLines = 1,
-                                    )
-                                }
+                                    label = {
+                                        Text(
+                                            text = appTheme.toDisplayString(),
+                                            modifier = Modifier.basicMarquee(),
+                                            maxLines = 1,
+                                        )
+                                    }
+                                )
                             }
                         }
                     }
 
                     // Material You toggle (API 31+)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        ListItem(
-                            headlineContent = { Text(text = "Material You") },
-                            supportingContent = { Text(text = "使用系统壁纸颜色") },
-                            trailingContent = {
-                                Switch(
-                                    checked = theme.isMaterialYou,
-                                    onCheckedChange = { onMaterialYouToggle(it) },
-                                )
-                            },
-                            colors = listItemColors(),
-                            modifier = Modifier.clip(middleItemShape()),
-                        )
-                    }
+                    ListItem(
+                        headlineContent = { Text(text = "Material You") },
+                        supportingContent = { Text(text = "使用系统壁纸颜色") },
+                        trailingContent = {
+                            Switch(
+                                checked = theme.isMaterialYou,
+                                onCheckedChange = { onMaterialYouToggle(it) },
+                            )
+                        },
+                        colors = listItemColors(),
+                        modifier = Modifier.clip(middleItemShape()),
+                    )
 
                     // Font picker
                     Column(modifier = Modifier.clip(middleItemShape())) {
@@ -225,19 +223,20 @@ fun ThemeSettingsScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             Fonts.values().toList().forEach { font ->
-                                ToggleButton(
-                                    checked = theme.font == font,
-                                    onCheckedChange = { onFontChange(font) },
-                                    colors = ToggleButtonDefaults.toggleButtonColors(
+                                FilterChip(
+                                    selected = theme.font == font,
+                                    onClick = { onFontChange(font) },
+                                    colors = FilterChipDefaults.filterChipColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                                     ),
-                                ) {
-                                    Text(
-                                        text = font.toDisplayString(),
-                                        fontFamily = font.toFontRes()?.let { FontFamily(Font(it)) }
-                                            ?: FontFamily.Default,
-                                    )
-                                }
+                                    label = {
+                                        Text(
+                                            text = font.toDisplayString(),
+                                            fontFamily = font.toFontRes()?.let { FontFamily(Font(it)) }
+                                                ?: FontFamily.Default,
+                                        )
+                                    }
+                                )
                             }
                         }
                     }
