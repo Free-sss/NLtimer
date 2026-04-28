@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
 @Composable
 fun AddGroupDialog(
@@ -29,6 +30,7 @@ fun AddGroupDialog(
                 label = { Text("分组名称") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                colors = appOutlinedTextFieldColors(),
             )
         },
         confirmButton = {

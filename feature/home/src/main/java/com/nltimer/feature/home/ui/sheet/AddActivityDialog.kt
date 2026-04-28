@@ -26,6 +26,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
 @Composable
 fun AddActivityDialog(
@@ -50,10 +51,7 @@ fun AddActivityDialog(
                     placeholder = { Text("图标", style = MaterialTheme.typography.bodySmall) },
                     modifier = Modifier.width(64.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    ),
+                    colors = appOutlinedTextFieldColors(),
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
@@ -65,10 +63,7 @@ fun AddActivityDialog(
                     placeholder = { Text("名称（如：健身）") },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    ),
+                    colors = appOutlinedTextFieldColors(),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )

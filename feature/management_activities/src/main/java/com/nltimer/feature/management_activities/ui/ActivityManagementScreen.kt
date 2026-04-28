@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
@@ -287,6 +288,7 @@ private fun RenameGroupDialog(
                 label = { Text("新名称") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
+                colors = appOutlinedTextFieldColors(),
             )
         },
         confirmButton = {

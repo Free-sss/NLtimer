@@ -3,11 +3,13 @@ package com.nltimer.feature.management_activities.ui.components
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.designsystem.theme.appAssistChipBorder
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -28,6 +30,7 @@ fun ActivityChip(
                 style = MaterialTheme.typography.bodyMedium,
             )
         },
+        border = appAssistChipBorder(),
         modifier = modifier.combinedClickable(
             onClick = onClick,
             onLongClick = onLongClick,

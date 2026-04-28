@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
 @Composable
 fun NoteInput(
@@ -30,10 +31,7 @@ fun NoteInput(
         },
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-        ),
+        colors = appOutlinedTextFieldColors(),
         textStyle = MaterialTheme.typography.bodySmall,
         maxLines = 3,
         keyboardOptions = KeyboardOptions.Default,

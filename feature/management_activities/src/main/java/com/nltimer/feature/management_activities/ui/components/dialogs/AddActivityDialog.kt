@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 import com.nltimer.core.data.model.ActivityGroup
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +50,7 @@ fun AddActivityDialog(
                     label = { Text("活动名称") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    colors = appOutlinedTextFieldColors(),
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -62,6 +64,7 @@ fun AddActivityDialog(
                     singleLine = true,
                     placeholder = { Text("📺") },
                     modifier = Modifier.fillMaxWidth(),
+                    colors = appOutlinedTextFieldColors(),
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -78,6 +81,7 @@ fun AddActivityDialog(
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                         },
+                        colors = appOutlinedTextFieldColors(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(MenuAnchorType.PrimaryNotEditable),
