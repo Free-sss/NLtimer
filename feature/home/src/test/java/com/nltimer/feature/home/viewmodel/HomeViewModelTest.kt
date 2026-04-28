@@ -1,0 +1,233 @@
+package com.nltimer.feature.home.viewmodel
+
+import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.feature.home.match.KeywordMatchStrategy
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class HomeViewModelTest {
+
+    private val testDispatcher = StandardTestDispatcher()
+
+    private lateinit var behaviorRepository: FakeBehaviorRepository
+    private lateinit var activityRepository: FakeActivityRepository
+    private lateinit var tagRepository: FakeTagRepository
+    private lateinit var settingsPrefs: FakeSettingsPrefs
+    private lateinit var viewModel: HomeViewModel
+
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+        behaviorRepository = FakeBehaviorRepository()
+        activityRepository = FakeActivityRepository()
+        tagRepository = FakeTagRepository()
+        settingsPrefs = FakeSettingsPrefs()
+        viewModel = HomeViewModel(
+            behaviorRepository,
+            activityRepository,
+            tagRepository,
+            settingsPrefs,
+            KeywordMatchStrategy()
+        )
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `initial state loading`() = runTest {
+        advanceUntilIdle()
+        val uiState = viewModel.uiState.value
+        assertFalse(uiState.isLoading)
+        // By default buildUiState returns one empty placeholder row if no behaviors
+        assertEquals(1, uiState.rows.size)
+    }
+
+    @Test
+    fun `addActivity calls repository`() = runTest {
+        viewModel.addActivity("Test Activity", "😊")
+        advanceUntilIdle()
+        assertEquals(1, activityRepository.insertedActivities.size)
+        assertEquals("Test Activity", activityRepository.insertedActivities[0].name)
+    }
+
+    @Test
+    fun `addTag calls repository`() = runTest {
+        viewModel.addTag("Test Tag")
+        advanceUntilIdle()
+        assertEquals(1, tagRepository.insertedTags.size)
+        assertEquals("Test Tag", tagRepository.insertedTags[0].name)
+    }
+
+    @Test
+    fun `showAddSheet updates uiState`() = runTest {
+        viewModel.showAddSheet()
+        assertTrue(viewModel.uiState.value.isAddSheetVisible)
+    }
+
+    @Test
+    fun `hideAddSheet updates uiState`() = runTest {
+        viewModel.showAddSheet()
+        viewModel.hideAddSheet()
+        assertFalse(viewModel.uiState.value.isAddSheetVisible)
+    }
+
+    @Test
+    fun `onActivitySelected loads tags`() = runTest {
+        val tags = listOf(Tag(1, "Tag1", null, null, null, null, 0, 0, 0, false))
+        tagRepository.tagsByActivityId[1L] = tags
+        
+        viewModel.onActivitySelected(1L)
+        advanceUntilIdle()
+        
+        assertEquals(tags, viewModel.tagsForSelectedActivity.value)
+    }
+
+    @Test
+    fun `addBehavior calls repository and hides sheet`() = runTest {
+        viewModel.showAddSheet()
+        viewModel.addBehavior(1L, listOf(10L), 1000L, BehaviorNature.ACTIVE, "Note")
+        advanceUntilIdle()
+
+        assertTrue(behaviorRepository.endCurrentBehaviorCalled)
+        assertEquals(1, behaviorRepository.insertedBehaviors.size)
+        assertEquals(1L, behaviorRepository.insertedBehaviors[0].activityId)
+        assertFalse(viewModel.uiState.value.isAddSheetVisible)
+    }
+
+    @Test
+    fun `completeBehavior calls repository`() = runTest {
+        viewModel.completeBehavior(1L)
+        advanceUntilIdle()
+        assertTrue(behaviorRepository.completeCurrentAndStartNextCalled)
+    }
+
+    @Test
+    fun `toggleIdleMode updates uiState`() = runTest {
+        val initial = viewModel.uiState.value.isIdleMode
+        viewModel.toggleIdleMode()
+        assertEquals(!initial, viewModel.uiState.value.isIdleMode)
+    }
+
+    @Test
+    fun `deleteBehavior calls repository`() = runTest {
+        viewModel.deleteBehavior(1L)
+        advanceUntilIdle()
+        assertTrue(behaviorRepository.deleteCalled)
+    }
+
+    private class FakeBehaviorRepository : BehaviorRepository {
+        val insertedBehaviors = mutableListOf<Behavior>()
+        var endCurrentBehaviorCalled = false
+        var completeCurrentAndStartNextCalled = false
+        var deleteCalled = false
+
+        override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
+        override fun getCurrentBehavior(): Flow<Behavior?> = flowOf(null)
+        override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
+        override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getPendingBehaviors(): Flow<List<Behavior>> = flowOf(emptyList())
+        override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? = null
+        override suspend fun getNextPending(): Behavior? = null
+        override suspend fun getMaxSequence(): Int = 0
+        override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
+            insertedBehaviors.add(behavior)
+            return 1L
+        }
+        override suspend fun setEndTime(id: Long, endTime: Long) {}
+        override suspend fun setStatus(id: Long, status: String) {}
+        override suspend fun setStartTime(id: Long, startTime: Long) {}
+        override suspend fun setActualDuration(id: Long, duration: Long) {}
+        override suspend fun setAchievementLevel(id: Long, level: Int) {}
+        override suspend fun setSequence(id: Long, sequence: Int) {}
+        override suspend fun setNote(id: Long, note: String?) {}
+        override suspend fun endCurrentBehavior(endTime: Long) {
+            endCurrentBehaviorCalled = true
+        }
+        override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
+            completeCurrentAndStartNextCalled = true
+            return null
+        }
+        override suspend fun reorderGoals(orderedIds: List<Long>) {}
+        override suspend fun delete(id: Long) {
+            deleteCalled = true
+        }
+        override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
+        override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {}
+        override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
+    }
+
+    private class FakeActivityRepository : ActivityRepository {
+        val insertedActivities = mutableListOf<Activity>()
+        
+        override fun getAllActive(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getAll(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getAllGroups(): Flow<List<ActivityGroup>> = flowOf(emptyList())
+        override fun search(query: String): Flow<List<Activity>> = flowOf(emptyList())
+        override suspend fun getById(id: Long): Activity? = null
+        override suspend fun getByName(name: String): Activity? = null
+        override suspend fun insert(activity: Activity): Long {
+            insertedActivities.add(activity)
+            return 1L
+        }
+        override suspend fun update(activity: Activity) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
+    }
+
+    private class FakeTagRepository : TagRepository {
+        val insertedTags = mutableListOf<Tag>()
+        val tagsByActivityId = mutableMapOf<Long, List<Tag>>()
+
+        override fun getAllActive(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getAll(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getByCategory(category: String): Flow<List<Tag>> = flowOf(emptyList())
+        override fun search(query: String): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getByActivityId(activityId: Long): Flow<List<Tag>> = flowOf(tagsByActivityId[activityId] ?: emptyList())
+        override suspend fun getById(id: Long): Tag? = null
+        override suspend fun getByName(name: String): Tag? = null
+        override suspend fun insert(tag: Tag): Long {
+            insertedTags.add(tag)
+            return 1L
+        }
+        override suspend fun update(tag: Tag) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
+    }
+
+    private class FakeSettingsPrefs : SettingsPrefs {
+        private val _theme = MutableStateFlow(Theme())
+        override fun getThemeFlow(): Flow<Theme> = _theme
+        override suspend fun updateTheme(theme: Theme) {
+            _theme.value = theme
+        }
+        override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
+        override suspend fun saveTagCategories(categories: Set<String>) {}
+    }
+}
