@@ -14,11 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.LocalTheme
 
 @Composable
 fun GridCellLocked(
     modifier: Modifier = Modifier,
 ) {
+    val showBorders = LocalTheme.current.showBorders
+    val borderModifier = if (showBorders) {
+        Modifier.border(
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+            RoundedCornerShape(16.dp),
+        )
+    } else Modifier
+
     // Mark-style-main
     Column(
         modifier = modifier
@@ -27,10 +36,7 @@ fun GridCellLocked(
                 MaterialTheme.colorScheme.surfaceDim.copy(alpha = 0.35f),
                 RoundedCornerShape(16.dp),
             )
-            .border(
-                BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
-                RoundedCornerShape(16.dp),
-            )
+            .then(borderModifier)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

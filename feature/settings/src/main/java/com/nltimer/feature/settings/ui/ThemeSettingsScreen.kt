@@ -86,6 +86,7 @@ fun ThemeSettingsRoute(
         onPaletteChange = viewModel::onPaletteChange,
         onMaterialYouToggle = viewModel::onMaterialYouToggle,
         onFontChange = viewModel::onFontChange,
+        onShowBordersToggle = viewModel::onShowBordersToggle,
         onNavigateBack = onNavigateBack,
     )
 }
@@ -100,6 +101,7 @@ fun ThemeSettingsScreen(
     onPaletteChange: (PaletteStyle) -> Unit,
     onMaterialYouToggle: (Boolean) -> Unit,
     onFontChange: (Fonts) -> Unit,
+    onShowBordersToggle: (Boolean) -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -279,7 +281,7 @@ fun ThemeSettingsScreen(
                     }
 
                     // Palette style picker
-                    Column(modifier = Modifier.clip(endItemShape())) {
+                    Column(modifier = Modifier.clip(middleItemShape())) {
                         ListItem(
                             headlineContent = { Text(text = "配色方案") },
                             colors = listItemColors(),
@@ -356,6 +358,20 @@ fun ThemeSettingsScreen(
                             }
                         }
                     }
+
+                    // Border toggle
+                    ListItem(
+                        headlineContent = { Text(text = "显示边框") },
+                        supportingContent = { Text(text = "在网格卡片上显示轮廓边框") },
+                        trailingContent = {
+                            Switch(
+                                checked = theme.showBorders,
+                                onCheckedChange = { onShowBordersToggle(it) },
+                            )
+                        },
+                        colors = listItemColors(),
+                        modifier = Modifier.clip(endItemShape()),
+                    )
                 }
             }
         }

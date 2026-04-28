@@ -9,7 +9,11 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import com.materialkolor.DynamicMaterialTheme
+
+val LocalTheme = staticCompositionLocalOf { Theme() }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -32,15 +36,17 @@ fun NLtimerTheme(
         style = theme.paletteStyle.toMPaletteStyle(),
         typography = typography,
     ) {
-        AnimatedContent(
-            targetState = theme.appTheme to theme.isAmoled,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(300)) togetherWith
-                    fadeOut(animationSpec = tween(300))
-            },
-            label = "theme-transition",
-        ) {
-            content()
+        CompositionLocalProvider(LocalTheme provides theme) {
+            AnimatedContent(
+                targetState = theme.appTheme to theme.isAmoled,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
+                },
+                label = "theme-transition",
+            ) {
+                content()
+            }
         }
     }
 }

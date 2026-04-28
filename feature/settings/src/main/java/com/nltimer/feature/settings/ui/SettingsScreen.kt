@@ -37,7 +37,7 @@ fun SettingsScreen(modifier: Modifier = Modifier)
     Scaffold(modifier = modifier) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
+                .padding(horizontal = 16.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

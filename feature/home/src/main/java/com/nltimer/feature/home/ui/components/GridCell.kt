@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.home.model.GridCellUiState
 
 @Composable
@@ -27,6 +28,7 @@ fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
 ) {
+    val showBorders = LocalTheme.current.showBorders
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED && cell.achievementLevel != null
     val platinumStrength = if (isPlatinum) cell.achievementLevel / 100f else 0f
 
@@ -50,13 +52,17 @@ fun GridCell(
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
+    val borderModifier = if (showBorders) {
+        Modifier.border(BorderStroke(borderWidth, borderColor), RoundedCornerShape(16.dp))
+    } else Modifier
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .heightIn(max = 140.dp)
             .clipToBounds()
             .background(backgroundColor, RoundedCornerShape(16.dp))
-            .border(BorderStroke(borderWidth, borderColor), RoundedCornerShape(16.dp))
+            .then(borderModifier)
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,

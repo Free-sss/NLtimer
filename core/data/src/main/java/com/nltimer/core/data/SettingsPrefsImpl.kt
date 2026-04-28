@@ -30,6 +30,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             paletteStyle = try { PaletteStyle.valueOf(paletteStyleName) } catch (_: Exception) { PaletteStyle.TONALSPOT },
             isMaterialYou = prefs[isMaterialYouKey] == true,
             font = try { Fonts.valueOf(fontName) } catch (_: Exception) { Fonts.FIGTREE },
+            showBorders = prefs[showBordersKey] != false,
         )
     }
 
@@ -41,6 +42,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[paletteStyleKey] = theme.paletteStyle.name
             prefs[isMaterialYouKey] = theme.isMaterialYou
             prefs[fontKey] = theme.font.name
+            prefs[showBordersKey] = theme.showBorders
         }
     }
 
@@ -62,6 +64,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val paletteStyleKey = stringPreferencesKey("palette_style")
         private val isMaterialYouKey = booleanPreferencesKey("is_material_you")
         private val fontKey = stringPreferencesKey("font")
+        private val showBordersKey = booleanPreferencesKey("show_borders")
         private val savedTagCategoriesKey = stringPreferencesKey("saved_tag_categories")
     }
 }

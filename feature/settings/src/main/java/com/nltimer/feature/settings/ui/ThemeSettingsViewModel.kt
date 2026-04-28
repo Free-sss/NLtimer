@@ -58,4 +58,10 @@ class ThemeSettingsViewModel @Inject constructor(
             settingsPrefs.updateTheme(theme.value.copy(font = font))
         }
     }
+
+    fun onShowBordersToggle(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPrefs.updateTheme(theme.value.copy(showBorders = enabled))
+        }
+    }
 }
