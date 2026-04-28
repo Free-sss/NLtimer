@@ -19,10 +19,12 @@ data class GroupWithActivities(
 
 sealed interface DialogState {
     object AddActivity : DialogState
+    data class AddActivityToGroup(val group: ActivityGroup) : DialogState
     data class EditActivity(val activity: Activity) : DialogState
     object AddGroup : DialogState
     data class RenameGroup(val group: ActivityGroup) : DialogState
     data class DeleteGroup(val group: ActivityGroup) : DialogState
     data class DeleteActivity(val activity: Activity) : DialogState
     data class MoveToGroup(val activity: Activity) : DialogState
+    data class ActivityDetail(val activity: Activity) : DialogState
 }

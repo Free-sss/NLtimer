@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.feature.management_activities.model.ActivityManagementUiState
 import com.nltimer.feature.management_activities.model.DialogState
@@ -11,12 +12,16 @@ import com.nltimer.feature.management_activities.model.GroupWithActivities
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +34,13 @@ class ActivityManagementViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ActivityManagementUiState())
     val uiState: StateFlow<ActivityManagementUiState> = _uiState.asStateFlow()
+
+    private val _selectedActivityId = MutableStateFlow<Long?>(null)
+    val currentActivityStats: StateFlow<ActivityStats> = _selectedActivityId
+        .flatMapLatest { id ->
+            if (id != null) repository.getActivityStats(id) else flowOf(ActivityStats())
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ActivityStats())
 
     init {
         loadData()
@@ -90,6 +102,15 @@ class ActivityManagementViewModel @Inject constructor(
 
     fun showAddActivityDialog() {
         _uiState.update { it.copy(dialogState = DialogState.AddActivity) }
+    }
+
+    fun showAddActivityToGroupDialog(group: ActivityGroup) {
+        _uiState.update { it.copy(dialogState = DialogState.AddActivityToGroup(group)) }
+    }
+
+    fun showActivityDetail(activity: Activity) {
+        _selectedActivityId.value = activity.id
+        _uiState.update { it.copy(dialogState = DialogState.ActivityDetail(activity)) }
     }
 
     fun showEditActivityDialog(activity: Activity) {
@@ -172,6 +193,7 @@ class ActivityManagementViewModel @Inject constructor(
     }
 
     fun dismissDialog() {
+        _selectedActivityId.value = null
         _uiState.update { it.copy(dialogState = null) }
     }
 }

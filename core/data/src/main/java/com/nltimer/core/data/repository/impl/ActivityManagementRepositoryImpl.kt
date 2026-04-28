@@ -2,11 +2,14 @@ package com.nltimer.core.data.repository.impl
 
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
+import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -16,6 +19,7 @@ import javax.inject.Singleton
 class ActivityManagementRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
     private val groupDao: ActivityGroupDao,
+    private val behaviorDao: BehaviorDao,
 ) : ActivityManagementRepository {
 
     companion object {
@@ -42,6 +46,19 @@ class ActivityManagementRepositoryImpl @Inject constructor(
 
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
         groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
+
+    override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
+        combine(
+            behaviorDao.getUsageCount(activityId),
+            behaviorDao.getTotalDurationMs(activityId),
+            behaviorDao.getLastUsedTimestamp(activityId)
+        ) { count, durationMs, lastUsed ->
+            ActivityStats(
+                usageCount = count,
+                totalDurationMinutes = (durationMs ?: 0L) / 60000,
+                lastUsedTimestamp = lastUsed
+            )
+        }
 
     override suspend fun addActivity(activity: Activity): Long =
         activityDao.insert(activity.toEntity())

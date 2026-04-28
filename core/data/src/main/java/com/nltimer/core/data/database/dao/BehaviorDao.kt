@@ -75,6 +75,15 @@ interface BehaviorDao {
     @Query("SELECT * FROM behaviors WHERE status = 'pending' ORDER BY sequence ASC")
     fun getPendingBehaviors(): Flow<List<BehaviorEntity>>
 
+    @Query("SELECT COUNT(*) FROM behaviors WHERE activityId = :activityId AND status = 'completed'")
+    fun getUsageCount(activityId: Long): Flow<Int>
+
+    @Query("SELECT SUM(COALESCE(actualDuration, (endTime - startTime))) FROM behaviors WHERE activityId = :activityId AND status = 'completed'")
+    fun getTotalDurationMs(activityId: Long): Flow<Long?>
+
+    @Query("SELECT MAX(startTime) FROM behaviors WHERE activityId = :activityId AND status != 'pending'")
+    fun getLastUsedTimestamp(activityId: Long): Flow<Long?>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTagCrossRef(crossRef: BehaviorTagCrossRefEntity)
 

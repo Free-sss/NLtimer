@@ -39,6 +39,7 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
+import com.nltimer.feature.management_activities.ui.components.ActivityDetailSheet
 import com.nltimer.feature.management_activities.ui.components.GroupCard
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityDialog
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddGroupDialog
@@ -113,7 +114,7 @@ fun ActivityManagementScreen(
                                 uiState.uncategorizedActivities.forEach { activity ->
                                     ActivityChip(
                                         activity = activity,
-                                        onClick = {},
+                                        onClick = { viewModel.showActivityDetail(activity) },
                                         onLongClick = {
                                             viewModel.showMoveToGroupDialog(activity)
                                         },
@@ -145,13 +146,18 @@ fun ActivityManagementScreen(
                             onToggleExpand = {
                                 viewModel.toggleGroupExpand(groupWithActivities.group.id)
                             },
+                            onAddActivity = {
+                                viewModel.showAddActivityToGroupDialog(groupWithActivities.group)
+                            },
                             onRename = {
                                 viewModel.showRenameGroupDialog(groupWithActivities.group)
                             },
                             onDelete = {
                                 viewModel.showDeleteGroupDialog(groupWithActivities.group)
                             },
-                            onActivityClick = {},
+                            onActivityClick = { activity ->
+                                viewModel.showActivityDetail(activity)
+                            },
                             onActivityLongClick = { activity ->
                                 viewModel.showMoveToGroupDialog(activity)
                             },
@@ -170,6 +176,17 @@ fun ActivityManagementScreen(
         is DialogState.AddActivity -> {
             AddActivityDialog(
                 allGroups = uiState.allGroups,
+                onDismiss = { viewModel.dismissDialog() },
+                onConfirm = { name, emoji, groupId ->
+                    viewModel.addActivity(name, emoji, groupId)
+                },
+            )
+        }
+
+        is DialogState.AddActivityToGroup -> {
+            AddActivityDialog(
+                allGroups = uiState.allGroups,
+                initialGroupId = dialog.group.id,
                 onDismiss = { viewModel.dismissDialog() },
                 onConfirm = { name, emoji, groupId ->
                     viewModel.addActivity(name, emoji, groupId)
@@ -233,6 +250,18 @@ fun ActivityManagementScreen(
                 onConfirm = { targetGroupId ->
                     viewModel.moveActivityToGroup(dialog.activity.id, targetGroupId)
                 },
+            )
+        }
+
+        is DialogState.ActivityDetail -> {
+            val stats by viewModel.currentActivityStats.collectAsState()
+            ActivityDetailSheet(
+                activity = dialog.activity,
+                stats = stats,
+                allGroups = uiState.allGroups,
+                onDismiss = { viewModel.dismissDialog() },
+                onUpdate = { viewModel.updateActivity(it) },
+                onDelete = { viewModel.showDeleteActivityDialog(dialog.activity) }
             )
         }
 

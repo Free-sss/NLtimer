@@ -2,6 +2,7 @@ package com.nltimer.feature.management_activities.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -38,6 +39,7 @@ fun GroupCard(
     activities: List<Activity>,
     isExpanded: Boolean,
     onToggleExpand: () -> Unit,
+    onAddActivity: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
     onActivityClick: (Activity) -> Unit,
@@ -69,28 +71,37 @@ fun GroupCard(
                     modifier = Modifier.padding(end = 8.dp),
                 )
 
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
-                }
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
+                    }
 
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("重命名") },
-                        onClick = {
-                            showMenu = false
-                            onRename()
-                        },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                        onClick = {
-                            showMenu = false
-                            onDelete()
-                        },
-                    )
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("添加活动") },
+                            onClick = {
+                                showMenu = false
+                                onAddActivity()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("重命名") },
+                            onClick = {
+                                showMenu = false
+                                onRename()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                            onClick = {
+                                showMenu = false
+                                onDelete()
+                            },
+                        )
+                    }
                 }
             }
 

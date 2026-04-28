@@ -28,11 +28,14 @@ fun AddActivityDialog(
     allGroups: List<ActivityGroup>,
     onDismiss: () -> Unit,
     onConfirm: (name: String, emoji: String?, groupId: Long?) -> Unit,
+    initialGroupId: Long? = null,
 ) {
     var name by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
-    var selectedGroupId by remember { mutableStateOf<Long?>(null) }
-    var groupName by remember { mutableStateOf("未分类") }
+    var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
+    var groupName by remember(initialGroupId, allGroups) {
+        mutableStateOf(if (initialGroupId == null) "未分类" else allGroups.find { it.id == initialGroupId }?.name ?: "未分类")
+    }
     var expanded by remember { mutableStateOf(false) }
 
     AlertDialog(
