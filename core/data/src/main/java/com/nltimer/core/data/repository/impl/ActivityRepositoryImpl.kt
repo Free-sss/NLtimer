@@ -55,16 +55,6 @@ class ActivityRepositoryImpl @Inject constructor(
         isArchived = isArchived,
     )
 
-    private fun Activity.toEntity() = ActivityEntity(
-        id = id,
-        name = name,
-        emoji = emoji,
-        iconKey = iconKey,
-        groupId = groupId,
-        isPreset = isPreset,
-        isArchived = isArchived,
-    )
-
     private fun ActivityGroupEntity.toModel() = ActivityGroup(
         id = id,
         name = name,

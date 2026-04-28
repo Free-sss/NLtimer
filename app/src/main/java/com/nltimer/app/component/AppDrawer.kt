@@ -1,5 +1,6 @@
 package com.nltimer.app.component
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,7 @@ private val drawerMenuItems = listOf(
     DrawerMenuItem("settings", "设置", Icons.Default.Settings),
 )
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun AppDrawer(
     navController: NavHostController,

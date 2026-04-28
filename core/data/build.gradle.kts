@@ -19,6 +19,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
+    implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
 
     implementation(projects.core.designsystem)
