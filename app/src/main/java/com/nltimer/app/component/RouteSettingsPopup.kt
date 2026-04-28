@@ -23,8 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.IntOffset
@@ -32,6 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 
 @Preview(showBackground = true)
@@ -40,7 +47,8 @@ fun RouteSettingsPopupPreview() {
     NLtimerTheme {
         RouteSettingsPopup(
             currentRoute = "home",
-            onDismiss = {}
+            onDismiss = {},
+            onHomeLayoutChange = {}
         )
     }
 }
@@ -49,11 +57,14 @@ fun RouteSettingsPopupPreview() {
 fun RouteSettingsPopup(
     currentRoute: String?,
     onDismiss: () -> Unit,
+    onHomeLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val popupWidth = screenWidth * 0.4f
+    val popupWidth = screenWidth * 0.45f
+    val currentLayout = LocalTheme.current.homeLayout
+    var showLayoutOptions by remember { mutableStateOf(false) }
 
     Popup(
         alignment = Alignment.TopEnd,
@@ -83,31 +94,54 @@ fun RouteSettingsPopup(
                 
                 HorizontalDivider()
 
-                PopupItem(
-                    icon = Icons.Default.Dashboard,
-                    label = "更改布局",
-                    onClick = { /* TODO */ onDismiss() }
-                )
-                PopupItem(
-                    icon = Icons.Default.Search,
-                    label = "搜索",
-                    onClick = { /* TODO */ onDismiss() }
-                )
-                PopupItem(
-                    icon = Icons.AutoMirrored.Filled.List,
-                    label = "活动管理",
-                    onClick = { /* TODO */ onDismiss() }
-                )
-                PopupItem(
-                    icon = Icons.AutoMirrored.Filled.Label,
-                    label = "标签管理",
-                    onClick = { /* TODO */ onDismiss() }
-                )
-                PopupItem(
-                    icon = Icons.AutoMirrored.Filled.Accessible,
-                    label = "导出今日记录",
-                    onClick = { /* TODO */ onDismiss() }
-                )
+                if (currentRoute == "home") {
+                    PopupItem(
+                        icon = Icons.Default.Dashboard,
+                        label = if (showLayoutOptions) "返回设置" else "更改布局",
+                        onClick = { showLayoutOptions = !showLayoutOptions }
+                    )
+                    
+                    if (showLayoutOptions) {
+                        HomeLayout.values().forEach { layout ->
+                            val isSelected = currentLayout == layout
+                            PopupItem(
+                                icon = if (isSelected) Icons.Default.Search else Icons.Default.Dashboard, // Dummy icon for selection
+                                label = when(layout) {
+                                    HomeLayout.GRID -> "网格时间"
+                                    HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
+                                },
+                                onClick = {
+                                    onHomeLayoutChange(layout)
+                                    onDismiss()
+                                },
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                if (!showLayoutOptions) {
+                    PopupItem(
+                        icon = Icons.Default.Search,
+                        label = "搜索",
+                        onClick = { /* TODO */ onDismiss() }
+                    )
+                    PopupItem(
+                        icon = Icons.AutoMirrored.Filled.List,
+                        label = "活动管理",
+                        onClick = { /* TODO */ onDismiss() }
+                    )
+                    PopupItem(
+                        icon = Icons.AutoMirrored.Filled.Label,
+                        label = "标签管理",
+                        onClick = { /* TODO */ onDismiss() }
+                    )
+                    PopupItem(
+                        icon = Icons.AutoMirrored.Filled.Accessible,
+                        label = "导出今日记录",
+                        onClick = { /* TODO */ onDismiss() }
+                    )
+                }
             }
         }
     }
@@ -117,7 +151,8 @@ fun RouteSettingsPopup(
 private fun PopupItem(
     icon: ImageVector,
     label: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
 ) {
     Row(
         modifier = Modifier
@@ -130,11 +165,12 @@ private fun PopupItem(
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.padding(end = 12.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = tint
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            color = tint
         )
     }
 }

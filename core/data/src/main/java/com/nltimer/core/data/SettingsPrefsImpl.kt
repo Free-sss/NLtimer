@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.Fonts
+import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.Theme
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         val appThemeName = prefs[appThemeKey] ?: AppTheme.SYSTEM.name
         val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.TONALSPOT.name
         val fontName = prefs[fontKey] ?: Fonts.FIGTREE.name
+        val homeLayoutName = prefs[homeLayoutKey] ?: HomeLayout.GRID.name
 
         Theme(
             seedColor = Color(seed),
@@ -31,6 +33,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             isMaterialYou = prefs[isMaterialYouKey] == true,
             font = try { Fonts.valueOf(fontName) } catch (_: Exception) { Fonts.FIGTREE },
             showBorders = prefs[showBordersKey] != false,
+            homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: Exception) { HomeLayout.GRID },
         )
     }
 
@@ -43,6 +46,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[isMaterialYouKey] = theme.isMaterialYou
             prefs[fontKey] = theme.font.name
             prefs[showBordersKey] = theme.showBorders
+            prefs[homeLayoutKey] = theme.homeLayout.name
         }
     }
 
@@ -65,6 +69,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val isMaterialYouKey = booleanPreferencesKey("is_material_you")
         private val fontKey = stringPreferencesKey("font")
         private val showBordersKey = booleanPreferencesKey("show_borders")
+        private val homeLayoutKey = stringPreferencesKey("home_layout")
         private val savedTagCategoriesKey = stringPreferencesKey("saved_tag_categories")
     }
 }

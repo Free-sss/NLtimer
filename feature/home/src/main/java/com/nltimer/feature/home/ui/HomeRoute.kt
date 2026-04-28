@@ -41,5 +41,6 @@ fun HomeRoute(
         onAddActivity = { name, emoji -> viewModel.addActivity(name, emoji) },
         onAddTag = { name -> viewModel.addTag(name) },
         onHourClick = viewModel::scrollToTime,
+        onLayoutChange = viewModel::onHomeLayoutChange,
     )
 }

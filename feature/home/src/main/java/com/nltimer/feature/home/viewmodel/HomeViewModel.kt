@@ -10,6 +10,8 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
@@ -35,6 +37,7 @@ class HomeViewModel @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
     private val activityRepository: ActivityRepository,
     private val tagRepository: TagRepository,
+    private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
 ) : ViewModel() {
 
@@ -138,6 +141,14 @@ class HomeViewModel @Inject constructor(
                 emptyList()
             }
             val isActive = behavior.status == BehaviorNature.ACTIVE
+            val startLocal = java.time.Instant.ofEpochMilli(behavior.startTime)
+                .atZone(ZoneId.systemDefault())
+                .toLocalTime()
+            val endLocal = behavior.endTime?.let {
+                java.time.Instant.ofEpochMilli(it)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
 
             GridCellUiState(
                 behaviorId = behavior.id,
@@ -153,6 +164,9 @@ class HomeViewModel @Inject constructor(
                 durationMs = if (isActive && behavior.startTime > 0) {
                     System.currentTimeMillis() - behavior.startTime
                 } else null,
+                startTime = startLocal,
+                endTime = endLocal,
+                note = behavior.note,
             )
         }
 
@@ -343,5 +357,13 @@ class HomeViewModel @Inject constructor(
 
     fun scrollToTime(hour: Int) {
         _uiState.update { it.copy(selectedTimeHour = hour) }
+    }
+
+    fun onHomeLayoutChange(layout: HomeLayout) {
+        viewModelScope.launch {
+            settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->
+                settingsPrefs.updateTheme(theme.copy(homeLayout = layout))
+            }
+        }
     }
 }

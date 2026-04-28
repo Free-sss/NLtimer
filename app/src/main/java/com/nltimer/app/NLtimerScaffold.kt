@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.component.AppBottomNavigation
@@ -21,12 +22,14 @@ import com.nltimer.app.component.AppDrawer
 import com.nltimer.app.component.AppTopAppBar
 import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
+import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun NLtimerScaffold(
     navController: NavHostController,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
+    themeViewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
     val coroutineScope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -67,7 +70,8 @@ fun NLtimerScaffold(
             if (showSettingsPopup) {
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
-                    onDismiss = { showSettingsPopup = false }
+                    onDismiss = { showSettingsPopup = false },
+                    onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) }
                 )
             }
         }

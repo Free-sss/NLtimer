@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.Fonts
+import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.Theme
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -62,6 +63,12 @@ class ThemeSettingsViewModel @Inject constructor(
     fun onShowBordersToggle(enabled: Boolean) {
         viewModelScope.launch {
             settingsPrefs.updateTheme(theme.value.copy(showBorders = enabled))
+        }
+    }
+
+    fun onHomeLayoutChange(layout: HomeLayout) {
+        viewModelScope.launch {
+            settingsPrefs.updateTheme(theme.value.copy(homeLayout = layout))
         }
     }
 }

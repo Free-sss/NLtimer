@@ -21,12 +21,15 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.home.model.HomeUiState
 import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeSideBar
+import com.nltimer.feature.home.ui.components.TimelineReverseView
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
 import java.time.LocalTime
 
@@ -46,12 +49,15 @@ fun HomeScreen(
     onAddActivity: (name: String, emoji: String) -> Unit,
     onAddTag: (name: String) -> Unit,
     onHourClick: (Int) -> Unit,
+    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val layout = LocalTheme.current.homeLayout
+
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            if (uiState.hasActiveBehavior) {
+            if (uiState.hasActiveBehavior && layout != HomeLayout.TIMELINE_REVERSE) {
                 FloatingActionButton(
                     modifier = Modifier.offset(y = 24.dp,x=4.dp),
                     onClick = {
@@ -88,24 +94,33 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-//                    .padding(padding)
                     .padding(top = 0.dp, bottom = 0.dp)
                 ,
             ) {
-                Row(modifier = Modifier.weight(1f)) {
-                    TimeAxisGrid(
-                        rows = uiState.rows,
-                        onEmptyCellClick = onEmptyCellClick,
-                        currentHour = uiState.selectedTimeHour,
-                        modifier = Modifier.weight(1f),
-                    )
-                    TimeSideBar(
-                        activeHours = uiState.rows
-                            .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
-                            .map { it.startTime.hour }
-                            .toSet(),
-                        currentHour = uiState.selectedTimeHour,
-                        onHourClick = onHourClick,
+                if (layout == HomeLayout.GRID) {
+                    Row(modifier = Modifier.weight(1f)) {
+                        TimeAxisGrid(
+                            rows = uiState.rows,
+                            onEmptyCellClick = onEmptyCellClick,
+                            currentHour = uiState.selectedTimeHour,
+                            onLayoutChange = onLayoutChange,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TimeSideBar(
+                            activeHours = uiState.rows
+                                .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
+                                .map { it.startTime.hour }
+                                .toSet(),
+                            currentHour = uiState.selectedTimeHour,
+                            onHourClick = onHourClick,
+                        )
+                    }
+                } else {
+                    TimelineReverseView(
+                        cells = uiState.rows.flatMap { it.cells },
+                        onAddClick = onEmptyCellClick,
+                        onLayoutChange = onLayoutChange,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -175,7 +190,8 @@ private fun HomeScreenPreview() {
             onStartNextPending = {},
             onAddActivity = { _, _ -> },
             onAddTag = {},
-            onHourClick = {}
+            onHourClick = {},
+            onLayoutChange = {}
         )
     }
 }

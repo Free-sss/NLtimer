@@ -10,4 +10,5 @@ data class Theme(
     val seedColor: Color = Color(0xFF1565C0),
     val font: Fonts = Fonts.FIGTREE,
     val showBorders: Boolean = true,
+    val homeLayout: HomeLayout = HomeLayout.GRID,
 )

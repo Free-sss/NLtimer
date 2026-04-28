@@ -30,3 +30,8 @@ fun AppTheme.toDisplayString(): String = when (this) {
     AppTheme.DARK -> "Dark"
     AppTheme.SYSTEM -> "Follow System"
 }
+
+fun HomeLayout.toDisplayString(): String = when (this) {
+    HomeLayout.GRID -> "网格时间"
+    HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
+}
