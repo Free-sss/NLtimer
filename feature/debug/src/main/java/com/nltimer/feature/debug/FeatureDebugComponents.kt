@@ -61,6 +61,7 @@ object FeatureDebugComponents {
                 name = "新增标签",
                 group = "Forms",
                 description = "新增标签表单，含图标/名称/分类",
+                implemented = true,
             ) {
                 AddTagPreview()
             }
@@ -71,6 +72,7 @@ object FeatureDebugComponents {
                 name = "编辑标签",
                 group = "Forms",
                 description = "编辑标签表单，预填模拟数据",
+                implemented = true,
             ) {
                 EditTagPreview()
             }

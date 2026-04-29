@@ -133,8 +133,8 @@ fun TagManagementScreen(
                 AddTagDialog(
                     initialCategory = dialog.category,
                     onDismiss = { viewModel.dismissDialog() },
-                    onConfirm = { name, category ->
-                        viewModel.addTag(name, null, null, null, category)
+                    onConfirm = { name, color, icon, priority, category ->
+                        viewModel.addTag(name, color, null, icon, priority, category)
                     },
                 )
             }

@@ -138,20 +138,12 @@ class TagManagementViewModel @Inject constructor(
      * @param icon 图标标识
      * @param category 归属分类名
      */
-    fun addTag(name: String, color: Long?, textColor: Long?, icon: String?, category: String?) {
+    fun addTag(name: String, color: Long?, textColor: Long?, icon: String?, priority: Int, category: String?) {
         viewModelScope.launch {
-            // 构造新标签对象，id 由数据库自动生成
             val tag = Tag(
-                id = 0,
-                name = name,
-                color = color,
-                textColor = textColor,
-                icon = icon,
-                category = category,
-                priority = 0,
-                usageCount = 0,
-                sortOrder = 0,
-                isArchived = false,
+                id = 0, name = name, color = color, textColor = textColor,
+                icon = icon, category = category, priority = priority,
+                usageCount = 0, sortOrder = 0, isArchived = false,
             )
             tagRepository.insert(tag)
             dismissDialog()

@@ -48,6 +48,7 @@ fun GenericFormDialog(
     initialData: Map<String, String>?,
     onDismiss: () -> Unit,
     onSubmit: (Map<String, String>) -> Unit,
+    trailing: (@Composable () -> Unit)? = null,
 ) {
     val formState = remember {
         val defaults = spec.defaultValues().toMutableMap()
@@ -84,6 +85,8 @@ fun GenericFormDialog(
                         }
                     }
                 }
+
+                trailing?.invoke()
             }
         },
         confirmButton = {

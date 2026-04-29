@@ -1,83 +1,67 @@
 package com.nltimer.feature.tag_management.ui.components.dialogs
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
+import com.nltimer.core.designsystem.form.FormRow
+import com.nltimer.core.designsystem.form.FormSection
+import com.nltimer.core.designsystem.form.FormSpec
+import com.nltimer.core.designsystem.form.GenericFormDialog
 
-/**
- * 添加标签对话框
- *
- * 输入标签名称，可选择指定归属分类。
- *
- * @param initialCategory 初始分类，如果非空则标签将添加到该分类
- * @param onDismiss 关闭对话框回调
- * @param onConfirm 确认回调，参数为标签名称和分类名
- */
+private val createTagSpec = FormSpec(
+    title = "新增标签",
+    submitLabel = "新增标签",
+    sections = listOf(
+        FormSection(
+            rows = listOf(
+                FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "🏷️"),
+            ),
+        ),
+        FormSection(
+            rows = listOf(
+                FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入标签名"),
+                FormRow.NumberInput(key = "priority", label = "优先级", initialValue = 0, range = 0..99),
+            ),
+        ),
+        FormSection(
+            rows = listOf(
+                FormRow.LabelAction(key = "category", label = "所属分类", actionText = "未分类"),
+            ),
+        ),
+    ),
+)
+
 @Composable
 fun AddTagDialog(
     initialCategory: String?,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, category: String?) -> Unit,
+    onConfirm: (name: String, color: Long?, icon: String?, priority: Int, category: String?) -> Unit,
 ) {
-    // 标签名称输入状态
-    var tagName by remember { mutableStateOf("") }
+    val categoryName = initialCategory ?: "未分类"
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("新建标签") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = tagName,
-                    onValueChange = { tagName = it },
-                    label = { Text("标签名称") },
-                    singleLine = true,
-                    colors = appOutlinedTextFieldColors(),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                // 如果在分类内添加，显示归属提示
-                if (!initialCategory.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "将添加到「$initialCategory」分类",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            // 名称非空时才允许确认
-            TextButton(
-                onClick = {
-                    if (tagName.isNotBlank()) {
-                        onConfirm(tagName.trim(), initialCategory)
-                    }
+    val specWithCategory = createTagSpec.copy(
+        sections = createTagSpec.sections.map { section ->
+            section.copy(
+                rows = section.rows.map { row ->
+                    if (row is FormRow.LabelAction && row.key == "category") {
+                        row.copy(actionText = categoryName)
+                    } else row
                 },
-                enabled = tagName.isNotBlank(),
-            ) {
-                Text("确定")
-            }
+            )
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
+    )
+
+    GenericFormDialog(
+        spec = specWithCategory,
+        initialData = null,
+        onDismiss = onDismiss,
+        onSubmit = { formState ->
+            val name = formState["name"]?.trim() ?: ""
+            val icon = formState["icon"]?.trim()?.ifBlank { null }
+            val colorHex = formState["color"]?.trim()?.ifBlank { null }
+            val priority = formState["priority"]?.toIntOrNull() ?: 0
+            val color = colorHex?.let {
+                try { it.toLong(16).or(0xFF000000.toLong()) } catch (_: Exception) { null }
             }
+            onConfirm(name, color, icon, priority, initialCategory)
         },
     )
 }
