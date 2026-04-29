@@ -16,15 +16,23 @@ import com.nltimer.core.designsystem.theme.Theme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+/**
+ * SettingsPrefsImpl 偏好设置实现类
+ * 基于 DataStore Preferences 持久化存储主题与标签分类配置
+ *
+ * @param dataStore DataStore 偏好存储实例
+ */
 class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : SettingsPrefs {
 
     override fun getThemeFlow(): Flow<Theme> = dataStore.data.map { prefs ->
+        // 读取各主题属性，缺失时用默认值
         val seed = prefs[seedColorKey] ?: Color(0xFF1565C0).toArgb()
         val appThemeName = prefs[appThemeKey] ?: AppTheme.SYSTEM.name
         val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.TONALSPOT.name
         val fontName = prefs[fontKey] ?: Fonts.FIGTREE.name
         val homeLayoutName = prefs[homeLayoutKey] ?: HomeLayout.GRID.name
 
+        // 拼装 Theme 对象，枚举字段解析失败时回退默认值
         Theme(
             seedColor = Color(seed),
             appTheme = try { AppTheme.valueOf(appThemeName) } catch (_: Exception) { AppTheme.SYSTEM },
@@ -38,6 +46,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     override suspend fun updateTheme(theme: Theme) {
+        // 将 Theme 对象的每个属性写入 DataStore
         dataStore.edit { prefs ->
             prefs[seedColorKey] = theme.seedColor.toArgb()
             prefs[appThemeKey] = theme.appTheme.name
@@ -51,17 +60,20 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     override fun getSavedTagCategories(): Flow<Set<String>> = dataStore.data.map { prefs ->
+        // 读取逗号分隔的原始字符串，空字符串返回空集合
         val raw = prefs[savedTagCategoriesKey] ?: ""
         if (raw.isBlank()) emptySet() else raw.split(",").toSet()
     }
 
     override suspend fun saveTagCategories(categories: Set<String>) {
+        // 将集合以逗号连接后写入 DataStore
         dataStore.edit { prefs ->
             prefs[savedTagCategoriesKey] = categories.joinToString(",")
         }
     }
 
     companion object {
+        // DataStore 偏好键定义
         private val seedColorKey = intPreferencesKey("seed_color")
         private val appThemeKey = stringPreferencesKey("app_theme")
         private val isAmoledKey = booleanPreferencesKey("is_amoled")

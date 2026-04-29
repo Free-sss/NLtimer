@@ -9,6 +9,10 @@ import androidx.room.Update
 import com.nltimer.core.data.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * TagDao 标签数据访问对象
+ * 提供 tags 表的基础 CRUD、按分类/活动/行为筛选、搜索及分类管理操作
+ */
 @Dao
 interface TagDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -41,6 +45,7 @@ interface TagDao {
     @Query("SELECT * FROM tags WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<TagEntity>>
 
+    /** 查询与指定活动绑定的标签 */
     @Query(
         """
         SELECT t.* FROM tags t
@@ -51,6 +56,7 @@ interface TagDao {
     )
     fun getByActivityId(activityId: Long): Flow<List<TagEntity>>
 
+    /** 查询与指定行为关联的标签（同步版本） */
     @Query(
         """
         SELECT t.* FROM tags t

@@ -20,11 +20,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 添加新标签的对话框 Composable。
+ *
+ * @param onDismiss 关闭对话框回调
+ * @param onConfirm 确认添加回调（标签名称）
+ */
 @Composable
 fun AddTagDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String) -> Unit,
 ) {
+    // 本地状态：标签名称
     var name by remember { mutableStateOf("") }
 
     AlertDialog(

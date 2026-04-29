@@ -12,6 +12,10 @@ import com.nltimer.core.designsystem.theme.Theme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+/**
+ * 应用主入口 Activity
+ * 使用 Hilt 注入主题偏好设置，在 Compose 中读取主题并渲染应用界面
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -23,9 +27,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
+            // 从 DataStore 中收集主题配置流，获取当前主题状态
             val theme by settingsPrefs.getThemeFlow()
                 .collectAsStateWithLifecycle(initialValue = Theme())
 
+            // 使用动态主题包裹应用根组件
             NLtimerTheme(theme = theme) {
                 NLtimerApp()
             }

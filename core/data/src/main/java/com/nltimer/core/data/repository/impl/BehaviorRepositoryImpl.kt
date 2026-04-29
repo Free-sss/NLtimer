@@ -15,6 +15,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * BehaviorRepositoryImpl 行为记录仓库实现
+ * 处理行为记录的完整生命周期：创建、计时、状态变更、完成度评估、标签关联
+ *
+ * @param behaviorDao 行为数据访问对象
+ * @param activityDao 活动数据访问对象（用于构建详情）
+ * @param tagDao 标签数据访问对象（用于构建标签关联）
+ */
 @Singleton
 class BehaviorRepositoryImpl @Inject constructor(
     private val behaviorDao: BehaviorDao,
@@ -33,6 +41,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
+            // TagEntity 转换为领域模型
             list.map { entity ->
                 Tag(
                     id = entity.id,
@@ -53,6 +62,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.getPendingBehaviors().map { list -> list.map { it.toModel() } }
 
     override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? {
+        // 查询行为、活动、标签三层数据组装完整详情
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
         val behavior = behaviorEntity.toModel()
         val activityEntity = activityDao.getById(behavior.activityId) ?: return null
@@ -94,6 +104,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.getMaxSequence()
 
     override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
+        // 先插入行为记录，再批量插入标签关联
         val id = behaviorDao.insert(behavior.toEntity())
         if (tagIds.isNotEmpty()) {
             behaviorDao.insertTagCrossRefs(
@@ -133,15 +144,18 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.endCurrentBehavior(endTime)
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
+        // 1. 结束当前行为：设置结束时间和实际耗时
         val now = System.currentTimeMillis()
         val clampedEndTime = if (now < now) now else now
         behaviorDao.setEndTime(currentId, clampedEndTime)
 
+        // 2. 计算实际耗时并评估完成度
         val currentEntity = behaviorDao.getById(currentId)
         if (currentEntity != null && currentEntity.startTime > 0) {
             val duration = clampedEndTime - currentEntity.startTime
             behaviorDao.setActualDuration(currentId, duration)
 
+            // 如果是有计划的行为，根据耗时偏差计算完成度百分比
             val estimated = currentEntity.estimatedDuration?.times(60_000)
             if (currentEntity.wasPlanned && estimated != null && estimated > 0) {
                 val diff = kotlin.math.abs(duration - estimated)
@@ -151,10 +165,13 @@ class BehaviorRepositoryImpl @Inject constructor(
             }
         }
 
+        // 3. 标记为已完成
         behaviorDao.setStatus(currentId, "completed")
 
+        // 4. 空闲模式不启动下一个
         if (idleMode) return null
 
+        // 5. 自动启动下一个待办行为
         val nextPending = behaviorDao.getNextPending() ?: return null
         val nextNow = System.currentTimeMillis()
         behaviorDao.setStatus(nextPending.id, "active")
@@ -163,6 +180,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun reorderGoals(orderedIds: List<Long>) {
+        // 根据传入的 ID 顺序重新设置 sequence
         orderedIds.forEachIndexed { index, id ->
             behaviorDao.setSequence(id, index)
         }
@@ -172,6 +190,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         val toDelete = behaviorDao.getById(id) ?: return
         behaviorDao.delete(id)
 
+        // 刷新待办列表快照（用于 UI 更新通知）
         val pendingList = behaviorDao.getPendingBehaviors()
         val pendingEntities = mutableListOf<BehaviorEntity>()
         pendingList.collect { pendingEntities.addAll(it) }
@@ -180,6 +199,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
     }
 
+    // 数据库实体与领域模型互转
     private fun BehaviorEntity.toModel() = Behavior(
         id = id,
         activityId = activityId,
@@ -222,6 +242,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {
+        // 先删除原有关联，再重新插入
         behaviorDao.deleteTagsForBehavior(behaviorId)
         behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
     }

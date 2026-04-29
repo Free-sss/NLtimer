@@ -20,15 +20,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * 副页路由入口，负责初始化副页所需状态并委托给 SubScreen 进行界面渲染。
+ * 作为导航图的目标节点，接收来自主页的导航参数并管理 ViewModel 生命周期。
+ */
 @Composable
 fun SubRoute() {
-    // Mark 逻辑 - 路由入口函数，负责 ViewModel 初始化和状态传递
+    // 路由入口函数，负责 ViewModel 初始化和状态传递
     SubScreen()
 }
 
+/**
+ * 副页主屏幕组件，展示应用副功能的中心内容。
+ * 当前为占位布局，居中显示副页图标与标题文本，后续将接入具体业务模块。
+ *
+ * @param modifier 应用于根容器的 Modifier，用于外部调整布局位置和内边距
+ */
 @Composable
 fun SubScreen(modifier: Modifier = Modifier) {
-    // Mark 样式 - 副页内容布局，居中显示图标和标题
+    // 副页内容布局，居中显示图标和标题
     Scaffold(modifier = modifier) { padding ->
         Column(
             modifier = Modifier
@@ -37,14 +47,14 @@ fun SubScreen(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // Mark 样式 - 副页图标样式，后续可替换为业务相关图标
+            // 使用 Material 默认图标作为占位，待业务确定后替换为具体功能图标
             Icon(
                 imageVector = Icons.Default.Apps,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
-            // Mark 样式 - 副页标题文字样式
+            // 采用 headlineLarge 样式突出页面主题，上边距与图标保持视觉间距
             Text(
                 text = "副页",
                 style = MaterialTheme.typography.headlineLarge,

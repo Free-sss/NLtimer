@@ -12,13 +12,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 备注输入框 Composable。
+ * 多行文本输入，用于补充行为细节描述。
+ *
+ * @param note 当前备注文本
+ * @param onNoteChange 备注内容变更回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun NoteInput(
     note: String,
     onNoteChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
+    // 最多 3 行的备注输入框
     OutlinedTextField(
         value = note,
         onValueChange = onNoteChange,

@@ -33,6 +33,27 @@ import com.nltimer.feature.home.ui.components.TimelineReverseView
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
 import java.time.LocalTime
 
+/**
+ * 首页主屏幕 Composable。
+ * 根据当前布局模式渲染网格时间轴或时间线倒序视图。
+ *
+ * @param uiState 聚合的首页 UI 状态
+ * @param activities 可选活动列表
+ * @param activityGroups 活动分组列表
+ * @param tagsForSelectedActivity 当前选中活动关联的标签
+ * @param allTags 全部可用标签
+ * @param onEmptyCellClick 点击空白单元格回调
+ * @param onAddBehavior 添加行为回调
+ * @param onDismissSheet 关闭底部弹窗回调
+ * @param onCompleteBehavior 完成行为回调
+ * @param onToggleIdleMode 切换空闲模式回调
+ * @param onStartNextPending 开始下一个待办行为回调
+ * @param onAddActivity 添加活动回调
+ * @param onAddTag 添加标签回调
+ * @param onHourClick 点击小时数回调
+ * @param onLayoutChange 切换布局模式回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
@@ -52,10 +73,12 @@ fun HomeScreen(
     onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 获取当前主题中保存的布局模式（网格或时间线）
     val layout = LocalTheme.current.homeLayout
 
     Scaffold(
         modifier = modifier,
+        // 有活跃行为且在网格模式下显示"完成当前行为"按钮
         floatingActionButton = {
             if (uiState.hasActiveBehavior && layout != HomeLayout.TIMELINE_REVERSE) {
                 FloatingActionButton(
@@ -80,11 +103,11 @@ fun HomeScreen(
             }
         }
     ) { padding ->
+        // 加载中显示转圈指示器，否则渲染主内容
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-//                    .padding(padding)
                 ,
                 contentAlignment = Alignment.Center,
             ) {
@@ -97,6 +120,7 @@ fun HomeScreen(
                     .padding(top = 0.dp, bottom = 0.dp)
                 ,
             ) {
+                // 网格模式：左侧时间轴网格 + 右侧小时侧边栏
                 if (layout == HomeLayout.GRID) {
                     Row(modifier = Modifier.weight(1f)) {
                         TimeAxisGrid(
@@ -115,6 +139,7 @@ fun HomeScreen(
                             onHourClick = onHourClick,
                         )
                     }
+                // 时间线倒序模式：纵向时间线展示
                 } else {
                     TimelineReverseView(
                         cells = uiState.rows.flatMap { it.cells },
@@ -126,6 +151,7 @@ fun HomeScreen(
             }
         }
 
+        // 显示添加行为的底部弹窗
         if (uiState.isAddSheetVisible) {
             AddBehaviorSheet(
                 activities = activities,
@@ -141,6 +167,7 @@ fun HomeScreen(
     }
 }
 
+// 预览用示例数据
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {

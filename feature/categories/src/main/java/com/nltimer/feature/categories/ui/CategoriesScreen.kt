@@ -47,6 +47,23 @@ import com.nltimer.feature.categories.model.CategoriesUiState
 import com.nltimer.feature.categories.model.DialogState
 import com.nltimer.feature.categories.model.SectionType
 
+/**
+ * Main screen composable for managing activity and tag categories.
+ * Displays a search bar, two category sections, and conditionally renders dialogs.
+ *
+ * @param uiState current [CategoriesUiState]
+ * @param onSearchQueryChange callback when search query text changes
+ * @param onAddCategory callback to trigger the add-category dialog for a given section type
+ * @param onRenameCategory callback to trigger the rename dialog for a given category
+ * @param onDeleteCategory callback to trigger the delete confirmation dialog for a given category
+ * @param onDismissDialog callback to dismiss any active dialog
+ * @param onConfirmAdd callback to confirm adding a new category
+ * @param onConfirmRename callback to confirm renaming an existing category
+ * @param onConfirmDelete callback to confirm deleting a category
+ * @param renameConflict non-null when a rename conflict exists, holding the conflicting name
+ * @param onClearConflict callback to clear the rename conflict state
+ * @param modifier optional [Modifier]
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun CategoriesScreen(
@@ -63,6 +80,7 @@ fun CategoriesScreen(
     onClearConflict: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 顶栏 + 可滚动内容布局
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,6 +98,7 @@ fun CategoriesScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
+            // 搜索输入框：根据关键字过滤分类列表
             OutlinedTextField(
                 value = uiState.searchQuery,
                 onValueChange = onSearchQueryChange,
@@ -91,6 +110,7 @@ fun CategoriesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 活动分类区域
             CategorySection(
                 title = "活动分类",
                 categories = uiState.activityCategories,
@@ -102,6 +122,7 @@ fun CategoriesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 标签分类区域
             CategorySection(
                 title = "标签分类",
                 categories = uiState.tagCategories,
@@ -113,6 +134,7 @@ fun CategoriesScreen(
         }
     }
 
+    // 如果有活跃的对话框状态，渲染对应的对话框
     uiState.dialogState?.let { dialog ->
         CategoryDialog(
             dialogState = dialog,
@@ -126,6 +148,18 @@ fun CategoriesScreen(
     }
 }
 
+/**
+ * A section displaying a title row and a [FlowRow] of category chips.
+ * Each chip supports long-press to show a context menu for rename/delete.
+ *
+ * @param title section header text
+ * @param categories list of category names to display as chips
+ * @param sectionType the type of section (ACTIVITY or TAG)
+ * @param onAdd callback to trigger add dialog for this section
+ * @param onRename callback to trigger rename dialog for a specific category
+ * @param onDelete callback to trigger delete confirmation for a specific category
+ * @param modifier optional [Modifier]
+ */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 private fun CategorySection(
@@ -149,6 +183,7 @@ private fun CategorySection(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
+        // 遍历每个分类，生成可长按弹出菜单的 AssistChip
         categories.forEach { category ->
             var showMenu by remember { mutableStateOf(false) }
 
@@ -162,6 +197,7 @@ private fun CategorySection(
                         onLongClick = { showMenu = true },
                     ),
                 )
+                // 长按弹出的上下文菜单：重命名 / 删除
                 DropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
@@ -184,6 +220,7 @@ private fun CategorySection(
             }
         }
 
+        // 末尾的"新建分类"按钮
         InputChip(
             selected = false,
             onClick = { onAdd(sectionType) },
@@ -199,6 +236,17 @@ private fun CategorySection(
     }
 }
 
+/**
+ * Dispatches the active [DialogState] to the correct dialog composable.
+ *
+ * @param dialogState the current dialog state determining which dialog to show
+ * @param onDismiss callback to dismiss the dialog
+ * @param onConfirmAdd callback to confirm adding a category
+ * @param onConfirmRename callback to confirm renaming a category
+ * @param onConfirmDelete callback to confirm deleting a category
+ * @param renameConflict non-null conflict name when a rename would cause a duplicate
+ * @param onClearConflict callback to clear the rename conflict
+ */
 @Composable
 private fun CategoryDialog(
     dialogState: DialogState,
@@ -210,9 +258,11 @@ private fun CategoryDialog(
     onClearConflict: () -> Unit,
 ) {
     when (dialogState) {
+        // 新增分类对话框（活动 / 标签共用 UI）
         is DialogState.AddActivityCategory,
         is DialogState.AddTagCategory -> {
             var name by remember { mutableStateOf("") }
+            // 根据密封类型推断 sectionType
             val sectionType = when (dialogState) {
                 is DialogState.AddActivityCategory -> SectionType.ACTIVITY
                 is DialogState.AddTagCategory -> SectionType.TAG
@@ -233,6 +283,7 @@ private fun CategoryDialog(
                 confirmButton = {
                     TextButton(
                         onClick = { onConfirmAdd(sectionType, name.trim()) },
+                        // 名称为空时禁用确定按钮
                         enabled = name.isNotBlank(),
                     ) {
                         Text("确定")
@@ -246,6 +297,7 @@ private fun CategoryDialog(
             )
         }
 
+        // 重命名活动分类对话框
         is DialogState.RenameActivityCategory -> {
             RenameDialog(
                 oldName = dialogState.oldName,
@@ -258,6 +310,7 @@ private fun CategoryDialog(
             )
         }
 
+        // 重命名标签分类对话框
         is DialogState.RenameTagCategory -> {
             RenameDialog(
                 oldName = dialogState.oldName,
@@ -270,6 +323,7 @@ private fun CategoryDialog(
             )
         }
 
+        // 确认删除活动分类
         is DialogState.DeleteActivityCategory -> {
             DeleteConfirmDialog(
                 category = dialogState.category,
@@ -278,6 +332,7 @@ private fun CategoryDialog(
             )
         }
 
+        // 确认删除标签分类
         is DialogState.DeleteTagCategory -> {
             DeleteConfirmDialog(
                 category = dialogState.category,
@@ -288,6 +343,15 @@ private fun CategoryDialog(
     }
 }
 
+/**
+ * Dialog for renaming a category, with inline conflict detection.
+ *
+ * @param oldName the current category name to rename from
+ * @param conflict non-null when the new name already exists
+ * @param onDismiss callback to dismiss the dialog
+ * @param onConfirm callback with the new name to confirm the rename
+ * @param onClearConflict callback to clear the rename conflict
+ */
 @Composable
 private fun RenameDialog(
     oldName: String,
@@ -296,6 +360,7 @@ private fun RenameDialog(
     onConfirm: (String) -> Unit,
     onClearConflict: () -> Unit,
 ) {
+    // 用旧名称初始化文本框
     var newName by remember(oldName) { mutableStateOf(oldName) }
     val isConflict = conflict != null
 
@@ -311,6 +376,7 @@ private fun RenameDialog(
                     value = newName,
                     onValueChange = {
                         newName = it
+                        // 用户修改输入时清除冲突状态
                         if (isConflict) onClearConflict()
                     },
                     label = { Text("新名称") },
@@ -326,6 +392,7 @@ private fun RenameDialog(
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(newName.trim()) },
+                // 名称为空或存在冲突时禁用确定
                 enabled = newName.isNotBlank() && !isConflict,
             ) {
                 Text("确定")
@@ -342,6 +409,14 @@ private fun RenameDialog(
     )
 }
 
+/**
+ * Confirmation dialog before deleting a category.
+ * Warns the user that associated activities/tags will become uncategorized.
+ *
+ * @param category the name of the category to be deleted
+ * @param onDismiss callback to dismiss without deleting
+ * @param onConfirm callback to confirm deletion
+ */
 @Composable
 private fun DeleteConfirmDialog(
     category: String,

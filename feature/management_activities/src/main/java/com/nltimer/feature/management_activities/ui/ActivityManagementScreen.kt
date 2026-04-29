@@ -48,16 +48,26 @@ import com.nltimer.feature.management_activities.ui.components.dialogs.ConfirmDi
 import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityDialog
 import com.nltimer.feature.management_activities.ui.components.dialogs.MoveToGroupDialog
 
+/**
+ * 活动管理主屏幕
+ *
+ * 展示未分类活动、自定义分组卡片，并管理各类弹窗的显示逻辑。
+ *
+ * @param viewModel 活动管理的 ViewModel
+ * @param modifier 修饰符
+ */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityManagementScreen(
     viewModel: ActivityManagementViewModel,
     modifier: Modifier = Modifier,
 ) {
+    // 收集 UI 状态流，驱动界面刷新
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         floatingActionButton = {
+            // 右下角悬浮按钮：点击弹出添加活动弹窗
             FloatingActionButton(onClick = { viewModel.showAddActivityDialog() }) {
                 Icon(Icons.Default.Add, contentDescription = "添加活动")
             }
@@ -69,6 +79,7 @@ fun ActivityManagementScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            // 根据状态显示：加载中、空状态或内容列表
             if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
@@ -77,6 +88,7 @@ fun ActivityManagementScreen(
                 uiState.uncategorizedActivities.isEmpty() &&
                 uiState.groups.isEmpty()
             ) {
+                // 没有任何活动时的空状态提示
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -91,11 +103,13 @@ fun ActivityManagementScreen(
                     )
                 }
             } else {
+                // 有内容时使用 LazyColumn 展示未分类区域和分组卡片列表
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     item {
+                        // 未分类活动区域标题
                         Text(
                             text = "未分类",
                             style = MaterialTheme.typography.titleMedium,
@@ -108,6 +122,7 @@ fun ActivityManagementScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         } else {
+                            // 使用 FlowRow 让活动标签自动换行排列
                             FlowRow(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -115,7 +130,9 @@ fun ActivityManagementScreen(
                                 uiState.uncategorizedActivities.forEach { activity ->
                                     ActivityChip(
                                         activity = activity,
+                                        // 单击查看详情
                                         onClick = { viewModel.showActivityDetail(activity) },
+                                        // 长按弹出移动分组弹窗
                                         onLongClick = {
                                             viewModel.showMoveToGroupDialog(activity)
                                         },
@@ -126,6 +143,7 @@ fun ActivityManagementScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
+                        // 自定义分组区域标题
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -138,6 +156,7 @@ fun ActivityManagementScreen(
                         }
                     }
 
+                    // 遍历渲染每个分组卡片
                     items(uiState.groups.size) { index ->
                         val groupWithActivities = uiState.groups[index]
                         GroupCard(
@@ -173,6 +192,7 @@ fun ActivityManagementScreen(
         }
     }
 
+    // 根据弹窗状态展示对应的弹窗组件
     when (val dialog = uiState.dialogState) {
         is DialogState.AddActivity -> {
             AddActivityDialog(
@@ -270,12 +290,20 @@ fun ActivityManagementScreen(
     }
 }
 
+/**
+ * 重命名分组的弹窗
+ *
+ * @param currentName 当前分组名称
+ * @param onDismiss 关闭弹窗回调
+ * @param onConfirm 确认重命名回调，参数为新名称
+ */
 @Composable
 private fun RenameGroupDialog(
     currentName: String,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
+    // 使用 currentName 作为输入框初始值，重命名时自动填充当前名称
     var name by remember(currentName) { mutableStateOf(currentName) }
 
     AlertDialog(
@@ -294,6 +322,7 @@ private fun RenameGroupDialog(
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(name.trim()) },
+                // 名称不能为空且必须与当前名称不同才能启用确认按钮
                 enabled = name.isNotBlank() && name != currentName,
             ) {
                 Text("确定")

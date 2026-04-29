@@ -23,12 +23,21 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 
+/**
+ * 网格单行 Composable，包含时间标签和最多 4 个单元格。
+ * 支持点击单元格弹出行为详情对话框。
+ *
+ * @param row 行 UI 状态
+ * @param onEmptyCellClick 点击空单元格回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun GridRow(
     row: GridRowUiState,
     onEmptyCellClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 记录当前点击的详情单元格，用于弹出对话框
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val gridMinHeight  = 90.dp
@@ -46,10 +55,12 @@ fun GridRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                // 确定唯一的空单元格位置：优先用添加占位，其次第一个空位
                 val addPlaceholderIndex = row.cells.indexOfFirst { it.isAddPlaceholder }
                 val firstEmptyIndex = row.cells.indexOfFirst { it.behaviorId == null }
                 val targetEmptyIndex = if (addPlaceholderIndex != -1) addPlaceholderIndex else firstEmptyIndex
 
+                // 一行固定渲染 4 列，根据状态显示不同组件
                 repeat(4) { index ->
                     Box(
                         modifier = Modifier
@@ -79,6 +90,7 @@ fun GridRow(
         }
     }
 
+    // 非空时弹出行为详情弹窗
     detailCell?.let { cell ->
         BehaviorDetailDialog(
             cell = cell,
@@ -87,6 +99,13 @@ fun GridRow(
     }
 }
 
+/**
+ * 行为详情对话框 Composable。
+ * 展示活动 emoji、名称、标签、状态、预计时长和实际时长等信息。
+ *
+ * @param cell 要展示详情的单元格数据
+ * @param onDismiss 关闭对话框回调
+ */
 @Composable
 private fun BehaviorDetailDialog(
     cell: GridCellUiState,

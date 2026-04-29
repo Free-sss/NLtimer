@@ -15,6 +15,10 @@ import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
 
+/**
+ * NLtimerDatabase 主数据库类
+ * 使用 Room 管理所有实体（活动、分组、标签、行为）及其 DAO
+ */
 @Database(
     entities = [
         ActivityEntity::class,
@@ -34,9 +38,11 @@ abstract class NLtimerDatabase : RoomDatabase() {
     abstract fun behaviorDao(): BehaviorDao
 
     companion object {
+        // 数据库从版本 3 到 4 的迁移：将 category 字段迁移到 activity_groups 表
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 val now = System.currentTimeMillis()
+                // 将 activities 中的分类去重写入 activity_groups
                 db.execSQL(
                     """
                     INSERT INTO activity_groups (name, sortOrder, createdAt)
@@ -46,6 +52,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
                       AND category NOT IN (SELECT name FROM activity_groups)
                     """.trimIndent()
                 )
+                // 用 groupId 外键替换原有的 category 字段
                 db.execSQL(
                     """
                     UPDATE activities SET groupId = (
@@ -54,6 +61,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
                     ) WHERE category IS NOT NULL AND category != ''
                     """.trimIndent()
                 )
+                // 关闭外键约束后重建表，移除 category 列
                 db.execSQL("PRAGMA foreign_keys = OFF")
                 db.execSQL(
                     """
@@ -70,6 +78,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
                     )
                     """.trimIndent()
                 )
+                // 迁移所有数据到新表
                 db.execSQL(
                     """
                     INSERT INTO activities_new (id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt)

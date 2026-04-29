@@ -18,6 +18,16 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 
+/**
+ * 活动选择器 Composable。
+ * 将活动按分组展示为 FlowRow 可点选的标签网格。
+ *
+ * @param activities 全部活动列表
+ * @param activityGroups 活动分组列表
+ * @param selectedActivityId 当前选中的活动 ID
+ * @param onActivitySelect 选中活动回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun ActivityPicker(
     activities: List<Activity>,
@@ -28,6 +38,7 @@ fun ActivityPicker(
 ) {
     if (activities.isEmpty()) return
 
+    // 按分组将活动归类，未分组的放入"未分类"，并按排序顺序排列
     val groupedActivities = remember(activities, activityGroups) {
         val groupsMap = activityGroups.associateBy { it.id }
         activities.groupBy { it.groupId }
@@ -56,6 +67,7 @@ fun ActivityPicker(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 )
 
+                // FlowRow 排列每个分组下的活动按钮
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),

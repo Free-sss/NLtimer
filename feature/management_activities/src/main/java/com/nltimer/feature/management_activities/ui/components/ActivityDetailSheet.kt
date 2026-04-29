@@ -46,6 +46,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * 活动详情底部弹出表单
+ *
+ * 展示活动统计信息，支持切换编辑模式修改名称、Emoji 和所属分组。
+ *
+ * @param activity 当前查看的活动
+ * @param stats 活动统计数据
+ * @param allGroups 全部分组列表（用于分组选择下拉）
+ * @param onDismiss 关闭底部表单回调
+ * @param onUpdate 更新活动回调
+ * @param onDelete 删除活动回调
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityDetailSheet(
@@ -56,12 +68,16 @@ fun ActivityDetailSheet(
     onUpdate: (Activity) -> Unit,
     onDelete: () -> Unit,
 ) {
+    // 底部弹窗默认完全展开，不可半展开
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    // 控制当前是否为编辑模式
     var isEditing by remember { mutableStateOf(false) }
 
+    // 编辑模式下各字段的临时状态，初始值从 activity 同步
     var name by remember(activity.name) { mutableStateOf(activity.name) }
     var emoji by remember(activity.emoji) { mutableStateOf(activity.emoji ?: "") }
     var selectedGroupId by remember(activity.groupId) { mutableStateOf(activity.groupId) }
+    // 分组下拉菜单展开状态
     var expanded by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
@@ -75,7 +91,7 @@ fun ActivityDetailSheet(
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 32.dp)
         ) {
-            // Header
+            // 顶部：活动 Emoji + 名称 + 编辑/删除按钮
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -115,6 +131,7 @@ fun ActivityDetailSheet(
             Spacer(modifier = Modifier.height(24.dp))
 
             if (isEditing) {
+                // 编辑模式：显示名称、Emoji、分组下拉和保存按钮
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     OutlinedTextField(
                         value = name,
@@ -126,12 +143,14 @@ fun ActivityDetailSheet(
 
                     OutlinedTextField(
                         value = emoji,
+                        // 限制 Emoji 输入最多 2 个字符
                         onValueChange = { if (it.length <= 2) emoji = it },
                         label = { Text("Emoji") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
 
+                    // 分组选择下拉框
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -152,6 +171,7 @@ fun ActivityDetailSheet(
                             expanded = expanded,
                             onDismissRequest = { expanded = false },
                         ) {
+                            // "未分类"选项，对应 groupId = null
                             DropdownMenuItem(
                                 text = { Text("未分类") },
                                 onClick = {
@@ -177,13 +197,14 @@ fun ActivityDetailSheet(
                             isEditing = false
                         },
                         modifier = Modifier.fillMaxWidth(),
+                        // 只有内容有实际变动且名称不为空时才可保存
                         enabled = name.isNotBlank() && (name != activity.name || emoji != (activity.emoji ?: "") || selectedGroupId != activity.groupId)
                     ) {
                         Text("保存修改")
                     }
                 }
             } else {
-                // Statistics
+                // 非编辑模式：显示活动统计信息
                 Text(
                     text = "简单统计",
                     style = MaterialTheme.typography.titleMedium,
@@ -211,6 +232,12 @@ fun ActivityDetailSheet(
     }
 }
 
+/**
+ * 统计信息的一行展示
+ *
+ * @param label 统计项名称
+ * @param value 统计值
+ */
 @Composable
 private fun StatRow(label: String, value: String) {
     Row(
@@ -223,16 +250,29 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
+/**
+ * 将分钟数格式化为可读的中文时长字符串
+ *
+ * @param minutes 总分钟数
+ * @return 如 "2 小时 30 分钟" 的格式化字符串
+ */
 private fun formatDuration(minutes: Long): String {
     if (minutes == 0L) return "0 分钟"
     val hours = minutes / 60
     val mins = minutes % 60
     return buildString {
         if (hours > 0) append("${hours} 小时 ")
+        // 当总分钟不足 60 时也显示分钟部分
         if (mins > 0 || hours == 0L) append("${mins} 分钟")
     }.trim()
 }
 
+/**
+ * 将时间戳格式化为可读日期字符串
+ *
+ * @param timestamp 毫秒时间戳，为 null 或 0 表示从未使用
+ * @return 如 "2024-01-15 14:30" 的格式化字符串
+ */
 private fun formatTimestamp(timestamp: Long?): String {
     if (timestamp == null || timestamp == 0L) return "从未使用"
     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())

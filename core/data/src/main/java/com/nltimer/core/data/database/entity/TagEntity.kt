@@ -3,6 +3,10 @@ package com.nltimer.core.data.database.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/**
+ * TagEntity 标签数据库实体
+ * 对应 tags 表，存储标签名称、颜色、图标、分类、优先级和使用统计
+ */
 @Entity(tableName = "tags")
 data class TagEntity(
     @PrimaryKey(autoGenerate = true)

@@ -9,6 +9,10 @@ import androidx.room.Update
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * ActivityGroupDao 活动分组数据访问对象
+ * 提供 activity_groups 表的 CRUD、排序查询及活动解绑操作
+ */
 @Dao
 interface ActivityGroupDao {
     @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
@@ -23,6 +27,7 @@ interface ActivityGroupDao {
     @Delete
     suspend fun delete(group: ActivityGroupEntity)
 
+    /** 解除指定分组下所有活动的关联 */
     @Query("UPDATE activities SET groupId = NULL WHERE groupId = :groupId")
     suspend fun ungroupAllActivities(groupId: Long)
 

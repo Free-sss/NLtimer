@@ -28,11 +28,19 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 添加新活动的对话框 Composable。
+ * 提供 emoji 图标和名称两个输入框。
+ *
+ * @param onDismiss 关闭对话框回调
+ * @param onConfirm 确认添加回调（名称、emoji）
+ */
 @Composable
 fun AddActivityDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String, emoji: String) -> Unit,
 ) {
+    // 本地状态：活动名称和 emoji 图标
     var name by remember { mutableStateOf("") }
     var emoji by remember { mutableStateOf("") }
 
@@ -45,6 +53,7 @@ fun AddActivityDialog(
         },
         text = {
             Row {
+                // emoji 输入框，最多 2 个字符
                 OutlinedTextField(
                     value = emoji,
                     onValueChange = { emoji = it.take(2) },
@@ -70,6 +79,7 @@ fun AddActivityDialog(
             }
         },
         confirmButton = {
+            // 名称非空时才可确认
             TextButton(
                 onClick = {
                     if (name.isNotBlank()) {

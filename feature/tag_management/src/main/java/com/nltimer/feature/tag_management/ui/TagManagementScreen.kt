@@ -45,6 +45,15 @@ import com.nltimer.feature.tag_management.ui.components.dialogs.ConfirmDialog
 import com.nltimer.feature.tag_management.ui.components.dialogs.EditTagDialog
 import com.nltimer.feature.tag_management.ui.components.dialogs.RenameCategoryDialog
 
+/**
+ * 标签管理主界面
+ *
+ * 展示所有标签分类，支持添加、编辑、删除、移动标签和分类操作。
+ *
+ * @param viewModel 标签管理 ViewModel
+ * @param onNavigateBack 返回上一页的回调
+ * @param modifier 修饰符
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagManagementScreen(
@@ -52,7 +61,9 @@ fun TagManagementScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 收集 UI 状态流
     val uiState by viewModel.uiState.collectAsState()
+    // 顶部栏折叠滚动行为
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
@@ -70,6 +81,7 @@ fun TagManagementScreen(
 //                scrollBehavior = scrollBehavior,
 //            )
 //        },
+        // 悬浮按钮：点击弹出添加分类对话框
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.showAddCategoryDialog() }) {
                 Icon(Icons.Default.Add, contentDescription = "更多操作")
@@ -82,15 +94,18 @@ fun TagManagementScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            // 加载中状态：显示圆形进度指示器
             if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                 )
             } else {
+                // 使用 LazyColumn 展示所有分类卡片
                 LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    // "默认"分类：展示所有未分类标签
                     item {
                         CategoryCard(
                             categoryName = "默认",
@@ -102,6 +117,7 @@ fun TagManagementScreen(
                         )
                     }
 
+                    // 遍历所有用户自定义分类
                     items(uiState.categories.size) { index ->
                         val category = uiState.categories[index]
                         CategoryCard(
@@ -121,6 +137,7 @@ fun TagManagementScreen(
                         )
                     }
 
+                    // 底部"增加标签分类"按钮
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -138,6 +155,7 @@ fun TagManagementScreen(
         }
     }
 
+    // 根据当前对话框状态弹出对应对话框
     uiState.dialogState?.let { dialog ->
         when (dialog) {
             is DialogState.AddTag -> {
@@ -202,6 +220,17 @@ fun TagManagementScreen(
     }
 }
 
+/**
+ * 移动标签对话框包装组件
+ *
+ * 提供下拉菜单让用户选择目标分类。
+ *
+ * @param tag 要移动的标签
+ * @param currentCategory 当前分类
+ * @param categories 所有可选分类列表
+ * @param onDismiss 关闭对话框回调
+ * @param onConfirm 确认移动回调，参数为目标分类名或 null（未分类）
+ */
 @Composable
 private fun MoveTagDialogWrapper(
     tag: Tag,
@@ -210,6 +239,7 @@ private fun MoveTagDialogWrapper(
     onDismiss: () -> Unit,
     onConfirm: (String?) -> Unit,
 ) {
+    // 当前选中的分类，初始为标签所属分类
     var selectedCategory by remember { mutableStateOf(currentCategory) }
 
     androidx.compose.material3.AlertDialog(
@@ -223,11 +253,13 @@ private fun MoveTagDialogWrapper(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // "未分类"选项
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text("未分类") },
                     onClick = { selectedCategory = null },
                 )
 
+                // 遍历所有分类供用户选择
                 categories.forEach { category ->
                     androidx.compose.material3.DropdownMenuItem(
                         text = { Text(category) },

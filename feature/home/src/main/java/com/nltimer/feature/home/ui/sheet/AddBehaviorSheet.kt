@@ -34,6 +34,20 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.Tag
 import java.time.LocalTime
 
+/**
+ * 添加行为的 ModalBottomSheet Composable。
+ * 包含活动选择、标签选择、时间选择、类型选择和备注输入。
+ *
+ * @param modifier 修饰符
+ * @param activities 全部活动列表
+ * @param activityGroups 活动分组列表
+ * @param tagsForActivity 当前选中活动关联的标签
+ * @param allTags 全部可用标签
+ * @param onDismiss 关闭弹窗回调
+ * @param onConfirm 确认添加行为回调
+ * @param onAddActivity 添加活动回调
+ * @param onAddTag 添加标签回调
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddBehaviorSheet(
@@ -71,6 +85,10 @@ fun AddBehaviorSheet(
     }
 }
 
+/**
+ * 添加行为底部弹窗的内容主体 Composable（不含 ModalBottomSheet 壳）。
+ * 分离出来便于预览和测试。
+ */
 @Composable
 fun AddBehaviorSheetContent(
     modifier: Modifier = Modifier,
@@ -82,6 +100,7 @@ fun AddBehaviorSheetContent(
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
+    // 表单本地状态：选中的活动、标签、时间、类型和备注
     var selectedActivityId by remember { mutableStateOf<Long?>(null) }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var startTime by remember { mutableStateOf(LocalTime.now()) }
@@ -89,6 +108,7 @@ fun AddBehaviorSheetContent(
     var nature by remember { mutableStateOf(BehaviorNature.ACTIVE) }
     var note by remember { mutableStateOf("") }
 
+    // 控制添加活动和标签的弹出对话框
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
 
@@ -101,6 +121,7 @@ fun AddBehaviorSheetContent(
     ) {
         Spacer(modifier = Modifier.height(14.dp))
 
+        // "活动"标题行，右侧有"+ 添加"快速入口
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,6 +149,7 @@ fun AddBehaviorSheetContent(
             onActivitySelect = { selectedActivityId = it },
         )
 
+        // 选中活动且有标签时显示关联标签选择
         if (selectedActivityId != null && tagsForActivity.isNotEmpty()) {
             Spacer(modifier = Modifier.height(12.dp))
             Row(
@@ -163,6 +185,7 @@ fun AddBehaviorSheetContent(
             )
         }
 
+        // "所有标签"区域，独立显示全部标签供选择
         Spacer(modifier = Modifier.height(12.dp))
         Row(
             modifier = Modifier
@@ -196,6 +219,7 @@ fun AddBehaviorSheetContent(
             },
         )
 
+        // 备注输入
         Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "备注 (可选)",
@@ -217,6 +241,7 @@ fun AddBehaviorSheetContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                // ACTIVE 和 COMPLETED 类型才显示开始时间（COMPLETED 额外显示结束时间）
                 if (nature == BehaviorNature.ACTIVE || nature == BehaviorNature.COMPLETED) {
                     Text(
                         "开始",
@@ -258,6 +283,7 @@ fun AddBehaviorSheetContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // 提交按钮：选中活动后启用
         Button(
             onClick = {
                 selectedActivityId?.let { activityId ->
@@ -275,6 +301,7 @@ fun AddBehaviorSheetContent(
         }
     }
 
+    // 弹出添加活动对话框
     if (showAddActivityDialog) {
         AddActivityDialog(
             onDismiss = { showAddActivityDialog = false },
@@ -285,6 +312,7 @@ fun AddBehaviorSheetContent(
         )
     }
 
+    // 弹出添加标签对话框
     if (showAddTagDialog) {
         AddTagDialog(
             onDismiss = { showAddTagDialog = false },

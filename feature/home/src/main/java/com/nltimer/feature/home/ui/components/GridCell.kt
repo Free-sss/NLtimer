@@ -23,14 +23,23 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.feature.home.model.GridCellUiState
 
+/**
+ * 网格视图中的行为单元格 Composable。
+ * 根据行为状态渲染不同的背景色、边框色和白金成就效果。
+ *
+ * @param cell 单元格 UI 状态数据
+ * @param modifier 修饰符
+ */
 @Composable
 fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
 ) {
+    // 判断是否为已完成且达到白金成就等级的行为
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED && cell.achievementLevel != null
     val platinumStrength = if (isPlatinum) cell.achievementLevel / 100f else 0f
 
+    // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
         cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
         isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
@@ -67,9 +76,11 @@ fun GridCell(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
+        // 显示活动 emoji
         cell.activityEmoji?.let { emoji ->
             Text(text = emoji, style = MaterialTheme.typography.headlineMedium)
         }
+        // 显示活动名称（单行省略）
         cell.activityName?.let { name ->
             Text(
                 text = name,
@@ -79,6 +90,7 @@ fun GridCell(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        // 渲染标签列表为 FlowRow 标签条
         if (cell.tags.isNotEmpty()) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),

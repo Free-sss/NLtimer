@@ -32,6 +32,10 @@ import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
+/**
+ * 首页 ViewModel。
+ * 负责加载当天行为、活动和标签数据，管理添加/完成行为、布局切换等交互逻辑。
+ */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
@@ -41,31 +45,39 @@ class HomeViewModel @Inject constructor(
     private val matchStrategy: MatchStrategy,
 ) : ViewModel() {
 
+    // --- 暴露给 UI 的状态流 ---
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    // 活动列表流
     private val _activities = MutableStateFlow<List<Activity>>(emptyList())
     val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
 
+    // 活动分组流
     private val _activityGroups = MutableStateFlow<List<ActivityGroup>>(emptyList())
     val activityGroups: StateFlow<List<ActivityGroup>> = _activityGroups.asStateFlow()
 
+    // 当前选中活动关联的标签流
     private val _tagsForSelectedActivity = MutableStateFlow<List<Tag>>(emptyList())
     val tagsForSelectedActivity: StateFlow<List<Tag>> = _tagsForSelectedActivity.asStateFlow()
 
+    // 全部标签流
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
+    // 当前选中的活动 ID（用于标签过滤）
     private var selectedActivityId: Long? = null
 
     private val today = LocalDate.now()
 
+    // 初始化时加载所有数据
     init {
         loadHomeBehaviors()
         loadActivitiesAndGroups()
         loadAllTags()
     }
 
+    // 从仓库加载活动列表和分组
     private fun loadActivitiesAndGroups() {
         viewModelScope.launch {
             combine(
@@ -80,6 +92,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 从仓库加载全部标签
     private fun loadAllTags() {
         viewModelScope.launch {
             tagRepository.getAllActive().collect { list ->
@@ -88,6 +101,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 从仓库加载当天行为数据，并构建 UI 状态
     private fun loadHomeBehaviors() {
         viewModelScope.launch {
             val dayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -102,12 +116,15 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 将领域行为数据转换为 UI 状态，包括分页、标签填充和占位单元格
     private suspend fun buildUiState(behaviors: List<Behavior>): HomeUiState {
         val now = LocalTime.now()
         val hasActive = behaviors.any { it.status == BehaviorNature.ACTIVE }
 
+        // 无行为数据时返回一个空行含添加占位
         if (behaviors.isEmpty()) {
-            val addCell = GridCellUiState(
+        // 在末尾添加一个占位单元格用作"添加行为"入口
+        val addCell = GridCellUiState(
                 behaviorId = null,
                 activityEmoji = null,
                 activityName = null,
@@ -132,6 +149,7 @@ class HomeViewModel @Inject constructor(
             )
         }
 
+        // 将行为列表转为 GridCellUiState 列表
         val rows = mutableListOf<GridRowUiState>()
         val cells = behaviors.map { behavior ->
             val activity = activityRepository.getById(behavior.activityId)
@@ -181,6 +199,7 @@ class HomeViewModel @Inject constructor(
         )
         val allCells = cells + addCell
 
+        // 按每行 4 个分块，构建 GridRowUiState
         var currentRowId: String? = null
         allCells.chunked(4).forEachIndexed { rowIndex, rowCells ->
             val rowId = "row-$rowIndex-${rowCells.firstOrNull()?.behaviorId ?: "add"}"
@@ -200,6 +219,7 @@ class HomeViewModel @Inject constructor(
                 now
             }
 
+            // 不足 4 个的用空单元格补齐
             val paddedCells = rowCells.toMutableList()
             while (paddedCells.size < 4) {
                 paddedCells.add(
@@ -234,6 +254,7 @@ class HomeViewModel @Inject constructor(
         )
     }
 
+    // 添加新活动到仓库
     fun addActivity(name: String, emoji: String) {
         viewModelScope.launch {
             activityRepository.insert(
@@ -249,6 +270,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 添加新标签到仓库
     fun addTag(name: String) {
         viewModelScope.launch {
             tagRepository.insert(
@@ -268,17 +290,19 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // feature/home/src/main/java/com/nltimer/feature/home/ui/sheet/AddBehaviorSheet.kt
+    // 显示添加行为底部弹窗
     fun showAddSheet() {
         _uiState.update { it.copy(isAddSheetVisible = true) }
     }
 
+    // 隐藏添加行为弹窗并重置选中状态
     fun hideAddSheet() {
         _uiState.update { it.copy(isAddSheetVisible = false) }
         selectedActivityId = null
         _tagsForSelectedActivity.update { emptyList() }
     }
 
+    // 选中活动时加载其关联标签
     fun onActivitySelected(activityId: Long) {
         selectedActivityId = activityId
         viewModelScope.launch {
@@ -288,6 +312,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 添加新行为：ACTIVE 时先结束当前行为，然后插入新记录
     fun addBehavior(
         activityId: Long,
         tagIds: List<Long>,
@@ -324,6 +349,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 完成指定行为（根据空闲模式决定后续行为处理）
     fun completeBehavior(behaviorId: Long) {
         viewModelScope.launch {
             val isIdle = _uiState.value.isIdleMode
@@ -331,10 +357,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 切换空闲模式开关
     fun toggleIdleMode() {
         _uiState.update { it.copy(isIdleMode = !it.isIdleMode) }
     }
 
+    // 启动下一个待办行为
     fun startNextPending() {
         viewModelScope.launch {
             val next = behaviorRepository.getNextPending() ?: return@launch
@@ -343,22 +371,26 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // 重新排序目标列表
     fun reorderGoals(orderedIds: List<Long>) {
         viewModelScope.launch {
             behaviorRepository.reorderGoals(orderedIds)
         }
     }
 
+    // 删除指定行为
     fun deleteBehavior(id: Long) {
         viewModelScope.launch {
             behaviorRepository.delete(id)
         }
     }
 
+    // 滚动到指定小时
     fun scrollToTime(hour: Int) {
         _uiState.update { it.copy(selectedTimeHour = hour) }
     }
 
+    // 更新主题中保存的首页布局模式
     fun onHomeLayoutChange(layout: HomeLayout) {
         viewModelScope.launch {
             settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->

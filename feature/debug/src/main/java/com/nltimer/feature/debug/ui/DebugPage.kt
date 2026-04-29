@@ -51,6 +51,7 @@ fun DebugPage() {
         listOf("全部") + allComponents.map { it.group }.distinct()
     }
 
+    // 当前选中的分组和组件
     var selectedGroup by remember { mutableStateOf("全部") }
     var selectedComponentId by remember { mutableStateOf<String?>(null) }
     // 控制底部弹窗的显隐

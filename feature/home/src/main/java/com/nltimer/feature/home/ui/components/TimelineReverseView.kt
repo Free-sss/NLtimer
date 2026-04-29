@@ -48,6 +48,15 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * 时间线倒序视图 Composable。
+ * 将行为按时间排序后倒序展示，自动插入空闲时间段，支持布局切换。
+ *
+ * @param cells 所有单元格数据
+ * @param onAddClick 添加行为回调
+ * @param onLayoutChange 切换布局模式回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun TimelineReverseView(
     cells: List<GridCellUiState>,
@@ -58,14 +67,14 @@ fun TimelineReverseView(
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     var showLayoutMenu by remember { mutableStateOf(false) }
     
-    // Process behaviors and insert idle gaps
+    // 过滤出有 ID 的行为，按开始时间升序排序用于间隙计算
     val behaviors = cells.filter { it.behaviorId != null }
         .sortedBy { it.startTime } // Sort ascending for gap processing
     
     val items = mutableListOf<TimelineItemData>()
     
     if (behaviors.isNotEmpty()) {
-        // Add current "Idle" if latest behavior is not active
+        // 若最新行为已结束且当前时间在结束时间之后，插入一段空闲
         val latest = behaviors.last()
         if (latest.status != com.nltimer.core.data.model.BehaviorNature.ACTIVE && latest.endTime != null) {
             val now = LocalTime.now()
@@ -74,7 +83,7 @@ fun TimelineReverseView(
             }
         }
         
-        // Add behaviors and gaps in reverse order
+        // 倒序遍历行为：先添加行为，再检查与前一个行为之间的空闲间隙
         for (i in behaviors.indices.reversed()) {
             val behavior = behaviors[i]
             items.add(TimelineItemData.Behavior(behavior))
@@ -157,7 +166,7 @@ fun TimelineReverseView(
             }
         }
 
-        // FAB
+        // 底部悬浮添加按钮，鲜绿色圆形 FAB
         FloatingActionButton(
             onClick = onAddClick,
             containerColor = Color(0xFF00C853), // Vivid green
@@ -173,11 +182,18 @@ fun TimelineReverseView(
     }
 }
 
+/**
+ * 时间线列表项数据密封类。
+ * 包含行为项和空闲时间段项两种类型。
+ */
 sealed class TimelineItemData {
     data class Behavior(val behavior: GridCellUiState) : TimelineItemData()
     data class Idle(val start: LocalTime, val end: LocalTime) : TimelineItemData()
 }
 
+/**
+ * 空闲时间段条目 Composable，显示起止时间和空闲时长。
+ */
 @Composable
 private fun TimelineIdleItem(
     start: LocalTime,
@@ -245,6 +261,9 @@ private fun TimelineIdleItem(
     }
 }
 
+/**
+ * 时间线行为条目 Composable，左侧显示时间，右侧显示行为卡片。
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TimelineBehaviorItem(
@@ -255,7 +274,7 @@ private fun TimelineBehaviorItem(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Left: Time
+        // 左侧：显示开始和结束时间
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.width(50.dp)
@@ -275,7 +294,7 @@ private fun TimelineBehaviorItem(
             }
         }
 
-        // Right: Card
+        // 右侧：行为卡片，包含名称、时长、标签和备注
         val cardBackground = if (behavior.isCurrent) {
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
         } else {
@@ -309,7 +328,7 @@ private fun TimelineBehaviorItem(
                     modifier = Modifier.weight(1f)
                 )
                 
-                // Duration
+                // 计算并显示时长，优先使用 durationMs
                 val duration = behavior.durationMs ?: ((behavior.actualDuration ?: 0L) * 1000)
                 if (duration > 0) {
                     Text(
@@ -346,6 +365,7 @@ private fun TimelineBehaviorItem(
     }
 }
 
+// 将毫秒格式化为"X时X分X秒"的可读字符串
 private fun formatDuration(ms: Long): String {
     val hours = ms / 3600000
     val minutes = (ms % 3600000) / 60000
@@ -357,6 +377,9 @@ private fun formatDuration(ms: Long): String {
     }
 }
 
+/**
+ * 小型标签条 Composable，用于时间线视图中的行为卡片。
+ */
 @Composable
 private fun TagChipSmall(name: String) {
     Box(

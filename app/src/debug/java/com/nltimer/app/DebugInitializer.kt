@@ -16,19 +16,27 @@ import com.nltimer.feature.stats.debug.StatsDebugComponents
 import com.nltimer.feature.sub.debug.SubDebugComponents
 import com.nltimer.feature.tag_management.debug.TagManagementDebugComponents
 
+/**
+ * app 模块的调试初始化入口
+ * 在 debug 构建中注册调试路由和侧边栏菜单项，并初始化各模块的调试组件
+ */
 object DebugInitializer {
 
     @JvmStatic
     fun init() {
+        // 注册调试页面路由，可通过导航跳转到调试主页
         debugRoutes = {
             composable("debug") { DebugRoute() }
         }
 
+        // 在侧边栏菜单中追加调试入口项
         drawerMenuItems.add(
-            DrawerMenuItem("debug", "🐛 调试", Icons.Default.Build)
+            DrawerMenuItem("debug", "调试", Icons.Default.Build)
         )
 
+        // 通过聚合注册器批量注册所有模块调试组件
         FeatureDebugComponents.registerAll()
+        // 依次注册各 feature 模块的调试组件（预览数据、假路由等）
         HomeDebugComponents.registerAll()
         SubDebugComponents.registerAll()
         StatsDebugComponents.registerAll()

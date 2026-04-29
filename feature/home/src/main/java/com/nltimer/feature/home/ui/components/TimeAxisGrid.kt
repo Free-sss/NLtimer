@@ -31,6 +31,16 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.model.GridRowUiState
 
+/**
+ * 网格时间轴 Composable — 纵向滚动的网格布局。
+ * 支持布局切换菜单，并根据当前小时自动滚动到对应位置。
+ *
+ * @param modifier 修饰符
+ * @param rows 所有网格行数据
+ * @param onEmptyCellClick 点击空单元格回调
+ * @param onLayoutChange 切换布局模式回调
+ * @param currentHour 当前选中的小时
+ */
 @Composable
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
@@ -42,6 +52,7 @@ fun TimeAxisGrid(
     val listState = rememberLazyListState()
     var showLayoutMenu by remember { mutableStateOf(false) }
 
+    // 当 currentHour 变化时，自动滚动到对应时间行
     LaunchedEffect(currentHour) {
         val targetIndex = rows.indexOfFirst { it.startTime.hour >= currentHour }
         if (targetIndex >= 0) {
@@ -54,6 +65,7 @@ fun TimeAxisGrid(
         modifier = modifier.padding(start = 10.dp, end = 16.dp, top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // 标题行：显示"网格时间"且可点开布局切换菜单
         item {
             Box {
                 Row(

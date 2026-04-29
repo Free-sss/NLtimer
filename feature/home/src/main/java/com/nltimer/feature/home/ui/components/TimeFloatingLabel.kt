@@ -11,13 +11,21 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * 浮动时间标签 Composable。
+ * 当前行使用 tertiary 色，其余行使用 primary 色。
+ *
+ * @param time 时间值
+ * @param isCurrentRow 是否为当前行
+ * @param modifier 修饰符
+ */
 @Composable
 fun TimeFloatingLabel(
     time: LocalTime,
     isCurrentRow: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    // Mark-style-main
+    // 根据是否当前行选择背景色和文字色
     val backgroundColor = if (isCurrentRow) {
         MaterialTheme.colorScheme.tertiary
     } else {

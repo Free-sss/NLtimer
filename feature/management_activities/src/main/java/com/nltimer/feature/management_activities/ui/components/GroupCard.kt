@@ -32,6 +32,22 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 
+/**
+ * 分组卡片组件
+ *
+ * 展示分组名称，支持展开/折叠列表，提供添加活动、重命名、删除等操作菜单。
+ *
+ * @param group 分组数据
+ * @param activities 该分组下的活动列表
+ * @param isExpanded 卡片是否展开
+ * @param onToggleExpand 展开/折叠切换回调
+ * @param onAddActivity 添加活动回调
+ * @param onRename 重命名分组回调
+ * @param onDelete 删除分组回调
+ * @param onActivityClick 点击活动中回调
+ * @param onActivityLongClick 长按活动回调
+ * @param modifier 修饰符
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GroupCard(
@@ -46,6 +62,7 @@ fun GroupCard(
     onActivityLongClick: (Activity) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 控制三点菜单的展开状态
     var showMenu by remember { mutableStateOf(false) }
 
     Card(
@@ -53,6 +70,7 @@ fun GroupCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+            // 顶部行：分组名称 + 展开指示器 + 三点菜单按钮
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -65,12 +83,14 @@ fun GroupCard(
                     modifier = Modifier.weight(1f),
                 )
 
+                // 展开/折叠状态指示器
                 Text(
                     text = if (isExpanded) "▼" else "▶",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(end = 8.dp),
                 )
 
+                // 三点更多操作菜单
                 Box {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
@@ -105,6 +125,7 @@ fun GroupCard(
                 }
             }
 
+            // 展开时显示分组内活动列表（使用 FlowRow 自动换行）
             if (isExpanded) {
                 Spacer(modifier = Modifier.height(12.dp))
 

@@ -15,6 +15,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
 
+/**
+ * 标签多选选择器 Composable。
+ * 标签以 FlowRow 排列，选中时高亮显示颜色边框。
+ *
+ * @param tags 所有可选的标签
+ * @param selectedTagIds 当前选中的标签 ID 集合
+ * @param onTagToggle 切换标签选中状态回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun TagPicker(
     tags: List<Tag>,
@@ -30,6 +39,7 @@ fun TagPicker(
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         tags.forEach { tag ->
+            // 选中状态决定背景色、边框色和文字色
             val isSelected = tag.id in selectedTagIds
             val tagColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
             val backgroundColor = if (isSelected) {
