@@ -71,12 +71,19 @@ import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.core.designsystem.theme.toFontRes
 import com.nltimer.core.designsystem.theme.toMPaletteStyle
 
+/**
+ * 主题设置页路由入口，负责初始化ViewModel并将状态与回调绑定到UI层。
+ * @param viewModel 主题设置ViewModel，通过Hilt自动注入
+ * @param onNavigateBack 返回上一级页面的导航回调
+ */
 @Composable
 fun ThemeSettingsRoute(
     viewModel: ThemeSettingsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
 ) {
+    // 从ViewModel中收集主题状态，重组时自动订阅
     val theme by viewModel.theme.collectAsState()
+    // 将ViewModel的方法指针传入UI层，分离逻辑与视图
     ThemeSettingsScreen(
         theme = theme,
         onSeedColorChange = viewModel::onSeedColorChange,
@@ -90,6 +97,20 @@ fun ThemeSettingsRoute(
     )
 }
 
+/**
+ * 主题设置页面主界面，提供主题模式、Material You、字体、AMOLED纯黑、
+ * 种子颜色、配色方案、边框显示等设置项。
+ * @param theme 当前主题配置
+ * @param onSeedColorChange 种子颜色变更回调
+ * @param onThemeSwitch 主题模式（亮/暗/跟随系统）切换回调
+ * @param onAmoledSwitch AMOLED纯黑模式开关回调
+ * @param onPaletteChange 配色方案样式变更回调
+ * @param onMaterialYouToggle Material You动态取色开关回调
+ * @param onFontChange 字体选择变更回调
+ * @param onShowBordersToggle 网格卡片边框显示开关回调
+ * @param onNavigateBack 导航返回回调
+ * @param modifier 修饰符
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThemeSettingsScreen(
@@ -104,9 +125,12 @@ fun ThemeSettingsScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 颜色选择器弹窗显示状态，仅当用户点击主题色按钮时置为true
     var showColorPicker by remember { mutableStateOf(false) }
+    // 顶部栏滚动行为：下滑时隐藏、上滑时显示
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    // 颜色选择器弹窗：从主题色初始化，选择后立即写入，关闭后重置状态
     if (showColorPicker) {
         ColorPickerDialog(
             initialColor = theme.seedColor,
@@ -115,9 +139,11 @@ fun ThemeSettingsScreen(
         )
     }
 
+    // 页面主骨架：嵌套滚动配合顶部栏折叠效果
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
+            // 顶部应用栏：带滚动折叠行为，左侧返回按钮，标题"主题配置"
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = { Text(text = "主题配置") },
@@ -132,6 +158,7 @@ fun ThemeSettingsScreen(
             )
         },
     ) { padding ->
+        // 可纵向滚动的设置项列表
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
@@ -142,8 +169,9 @@ fun ThemeSettingsScreen(
             ),
         ) {
             item {
+                // 所有设置项纵向排列，项间距2dp
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    // AppTheme picker
+                    // 主题模式切换区：使用FilterChip选择亮/暗/跟随系统
                     Column(modifier = Modifier.clip(leadingItemShape())) {
                         ListItem(
                             headlineContent = { Text(text = "主题模式") },
@@ -189,7 +217,7 @@ fun ThemeSettingsScreen(
                         }
                     }
 
-                    // Material You toggle (API 31+)
+                    // Material You 开关：开启后使用系统壁纸动态取色（需要API 31+）
                     ListItem(
                         headlineContent = { Text(text = "Material You") },
                         supportingContent = { Text(text = "使用系统壁纸颜色") },
@@ -203,7 +231,7 @@ fun ThemeSettingsScreen(
                         modifier = Modifier.clip(middleItemShape()),
                     )
 
-                    // Font picker
+                    // 字体选择区：列出所有可用字体，选中项高亮，预览时应用实际字体
                     Column(modifier = Modifier.clip(middleItemShape())) {
                         ListItem(
                             headlineContent = { Text(text = "字体") },
@@ -241,7 +269,7 @@ fun ThemeSettingsScreen(
                         }
                     }
 
-                    // Amoled toggle
+                    // AMOLED纯黑开关：深色模式下将背景替换为纯黑以节省屏幕功耗
                     ListItem(
                         headlineContent = { Text(text = "AMOLED 纯黑") },
                         supportingContent = { Text(text = "在深色模式下使用纯黑背景") },
@@ -255,7 +283,7 @@ fun ThemeSettingsScreen(
                         modifier = Modifier.clip(middleItemShape()),
                     )
 
-                    // Seed color picker
+                    // 种子颜色选择器：仅当Material You关闭时可见，点击弹出颜色选择对话框
                     AnimatedVisibility(visible = !theme.isMaterialYou) {
                         ListItem(
                             headlineContent = { Text(text = "主题色") },

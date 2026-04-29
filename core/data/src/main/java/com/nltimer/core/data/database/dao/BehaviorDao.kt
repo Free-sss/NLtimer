@@ -9,11 +9,16 @@ import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * BehaviorDao 行为记录数据访问对象
+ * 提供 behaviors 表的基础 CRUD、计时字段更新、状态变更、统计查询及标签关联管理
+ */
 @Dao
 interface BehaviorDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(behavior: BehaviorEntity): Long
 
+    // 单字段更新方法
     @Query("UPDATE behaviors SET endTime = :endTime WHERE id = :id")
     suspend fun setEndTime(id: Long, endTime: Long)
 
@@ -38,6 +43,7 @@ interface BehaviorDao {
     @Query("DELETE FROM behaviors WHERE id = :id")
     suspend fun delete(id: Long)
 
+    /** 查询指定时间范围内的行为记录 */
     @Query(
         """
         SELECT * FROM behaviors
@@ -47,12 +53,15 @@ interface BehaviorDao {
     )
     fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<BehaviorEntity>>
 
+    /** 获取当前正在进行的活动（status=active 且未结束） */
     @Query("SELECT * FROM behaviors WHERE status = 'active' AND endTime IS NULL LIMIT 1")
     fun getCurrentBehavior(): Flow<BehaviorEntity?>
 
+    /** 结束所有当前进行中的行为 */
     @Query("UPDATE behaviors SET endTime = :endTime, status = 'completed' WHERE status = 'active' AND endTime IS NULL")
     suspend fun endCurrentBehavior(endTime: Long)
 
+    /** 获取首页展示的行为列表：今日记录 + 所有待办 */
     @Query(
         """
         SELECT * FROM behaviors
@@ -63,6 +72,7 @@ interface BehaviorDao {
     )
     fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<BehaviorEntity>>
 
+    /** 获取排序最靠前的待办行为 */
     @Query("SELECT * FROM behaviors WHERE status = 'pending' ORDER BY sequence ASC LIMIT 1")
     suspend fun getNextPending(): BehaviorEntity?
 
@@ -72,24 +82,29 @@ interface BehaviorDao {
     @Query("SELECT * FROM behaviors WHERE id = :id")
     suspend fun getById(id: Long): BehaviorEntity?
 
+    /** 获取所有待办行为（按排序） */
     @Query("SELECT * FROM behaviors WHERE status = 'pending' ORDER BY sequence ASC")
     fun getPendingBehaviors(): Flow<List<BehaviorEntity>>
 
+    // 统计查询
     @Query("SELECT COUNT(*) FROM behaviors WHERE activityId = :activityId AND status = 'completed'")
     fun getUsageCount(activityId: Long): Flow<Int>
 
+    /** 计算活动总耗时（取 actualDuration，没有则用 endTime - startTime 推算） */
     @Query("SELECT SUM(COALESCE(actualDuration, (endTime - startTime))) FROM behaviors WHERE activityId = :activityId AND status = 'completed'")
     fun getTotalDurationMs(activityId: Long): Flow<Long?>
 
     @Query("SELECT MAX(startTime) FROM behaviors WHERE activityId = :activityId AND status != 'pending'")
     fun getLastUsedTimestamp(activityId: Long): Flow<Long?>
 
+    // 标签关联操作
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTagCrossRef(crossRef: BehaviorTagCrossRefEntity)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertTagCrossRefs(crossRefs: List<BehaviorTagCrossRefEntity>)
 
+    /** 移除行为与指定标签的关联 */
     @Query(
         """
         DELETE FROM behavior_tag_cross_ref
@@ -98,6 +113,7 @@ interface BehaviorDao {
     )
     suspend fun removeTagCrossRefs(behaviorId: Long, tagIds: List<Long>)
 
+    /** 流式查询行为关联的标签 */
     @Query(
         """
         SELECT t.* FROM tags t
@@ -108,6 +124,7 @@ interface BehaviorDao {
     )
     fun getTagsForBehavior(behaviorId: Long): Flow<List<TagEntity>>
 
+    /** 批量更新行为字段 */
     @Query(
         """
         UPDATE behaviors
@@ -128,9 +145,11 @@ interface BehaviorDao {
         note: String?,
     )
 
+    /** 删除行为的所有标签关联 */
     @Query("DELETE FROM behavior_tag_cross_ref WHERE behaviorId = :behaviorId")
     suspend fun deleteTagsForBehavior(behaviorId: Long)
 
+    /** 同步查询行为关联的标签 */
     @Query(
         """
         SELECT t.* FROM tags t

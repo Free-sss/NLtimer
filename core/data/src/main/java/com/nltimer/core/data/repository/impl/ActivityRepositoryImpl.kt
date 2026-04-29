@@ -12,6 +12,13 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * ActivityRepositoryImpl 活动基础仓库实现
+ * 委托 ActivityDao 和 ActivityGroupDao 完成活动及分组的查询操作
+ *
+ * @param activityDao 活动数据访问对象
+ * @param groupDao 活动分组数据访问对象
+ */
 @Singleton
 class ActivityRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
@@ -45,6 +52,7 @@ class ActivityRepositoryImpl @Inject constructor(
     override suspend fun setArchived(id: Long, archived: Boolean) =
         activityDao.setArchived(id, archived)
 
+    // 数据库实体转领域模型
     private fun ActivityEntity.toModel() = Activity(
         id = id,
         name = name,

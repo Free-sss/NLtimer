@@ -20,6 +20,14 @@ import androidx.compose.ui.unit.dp
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * 紧凑型时间选择器 Composable。
+ * 点击显示 Material3 TimePicker 对话框，选择后更新显示。
+ *
+ * @param time 当前选择的时间
+ * @param onTimeChange 时间变更回调
+ * @param modifier 修饰符
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickerCompact(
@@ -27,8 +35,10 @@ fun TimePickerCompact(
     onTimeChange: (LocalTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 控制时间选择器对话框的显示/隐藏
     var showPicker by remember { mutableStateOf(false) }
 
+    // 弹出 Material3 TimePicker 对话框
     if (showPicker) {
         val now = LocalTime.now()
         val state = rememberTimePickerState(
@@ -52,6 +62,7 @@ fun TimePickerCompact(
         )
     }
 
+    // 显示当前时间文本，可点击打开选择器
     Text(
         text = time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "--:--",
         style = MaterialTheme.typography.bodyMedium,

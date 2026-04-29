@@ -30,6 +30,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * 时间侧边栏 Composable。
+ * 显示活跃小时和当前小时的刻度列表，支持点击和拖拽选择小时。
+ *
+ * @param activeHours 有行为记录的小时集合
+ * @param currentHour 当前选中的小时
+ * @param onHourClick 点击小时回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun TimeSideBar(
     activeHours: Set<Int>,
@@ -37,6 +46,7 @@ fun TimeSideBar(
     onHourClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 合并活跃小时和当前小时，去重排序得到显示列表
     val displayedHours = remember(activeHours, currentHour) {
         (activeHours + currentHour).sorted()
     }
@@ -46,6 +56,7 @@ fun TimeSideBar(
     var bubbleY by remember { mutableFloatStateOf(0f) }
     val density = LocalDensity.current
 
+    // 浮动气泡显示当前拖拽到的小时
     Box(modifier = modifier.width(40.dp)) {
         if (showBubble) {
             Box(
@@ -82,6 +93,7 @@ fun TimeSideBar(
                         }
                     }
                 }
+                // 垂直拖拽手势：拖动时更新气泡位置并触发 onHourClick
                 .pointerInput(displayedHours) {
                     detectVerticalDragGestures(
                         onDragStart = { offset ->
@@ -112,6 +124,7 @@ fun TimeSideBar(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
+            // 逐个渲染小时文本，区分颜色：当前、活跃、普通
             displayedHours.forEach { hour ->
                 val isActive = hour in activeHours
                 val isCurrent = hour == currentHour

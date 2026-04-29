@@ -16,6 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appBorder
 
+/**
+ * 表示被锁定、不可编辑的单元格 Composable。
+ * 以暗淡的样式显示"+"占位符。
+ *
+ * @param modifier 修饰符
+ */
 @Composable
 fun GridCellLocked(
     modifier: Modifier = Modifier,

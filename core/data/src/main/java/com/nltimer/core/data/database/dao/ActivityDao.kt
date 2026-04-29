@@ -9,6 +9,10 @@ import androidx.room.Update
 import com.nltimer.core.data.database.entity.ActivityEntity
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * ActivityDao 活动数据访问对象
+ * 提供 activities 表的基础 CRUD、搜索、分组查询及归档操作
+ */
 @Dao
 interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -38,15 +42,19 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE name LIKE '%' || :query || '%' AND isArchived = 0")
     fun search(query: String): Flow<List<ActivityEntity>>
 
+    /** 获取未分配分组的活动 */
     @Query("SELECT * FROM activities WHERE groupId IS NULL AND isArchived = 0 ORDER BY name")
     fun getUncategorized(): Flow<List<ActivityEntity>>
 
+    /** 获取指定分组下的活动 */
     @Query("SELECT * FROM activities WHERE groupId = :groupId AND isArchived = 0 ORDER BY name")
     fun getByGroup(groupId: Long): Flow<List<ActivityEntity>>
 
+    /** 获取所有预设活动 */
     @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
     fun getAllPresets(): Flow<List<ActivityEntity>>
 
+    /** 移动活动到指定分组（groupId 为 null 则取消分组） */
     @Query("UPDATE activities SET groupId = :groupId WHERE id = :activityId")
     suspend fun moveToGroup(activityId: Long, groupId: Long?)
 

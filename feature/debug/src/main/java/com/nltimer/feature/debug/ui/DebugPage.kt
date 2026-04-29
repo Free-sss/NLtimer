@@ -29,25 +29,36 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.debug.DebugComponent
 import com.nltimer.core.designsystem.debug.DebugComponentRegistry
 
+/**
+ * Debug 页面主入口。
+ * 左侧分组侧边栏、中间组件列表、右侧预览区三栏布局。
+ * 无注册组件时展示空状态引导提示。
+ */
 @Composable
 fun DebugPage() {
+    // 获取所有已注册的调试组件
     val allComponents = remember { DebugComponentRegistry.components }
+    // 提取全部分组名列表，首项固定为"全部"
     val groups = remember(allComponents) {
         listOf("全部") + allComponents.map { it.group }.distinct()
     }
 
+    // 当前选中的分组和组件
     var selectedGroup by remember { mutableStateOf("全部") }
     var selectedComponentId by remember { mutableStateOf<String?>(null) }
 
+    // 根据选中分组过滤组件列表
     val filteredComponents = remember(selectedGroup, allComponents) {
         if (selectedGroup == "全部") allComponents
         else allComponents.filter { it.group == selectedGroup }
     }
 
+    // 根据 id 找到当前选中的组件对象
     val selectedComponent = remember(selectedComponentId, allComponents) {
         allComponents.find { it.id == selectedComponentId }
     }
 
+    // 空状态：没有任何已注册组件时显示引导提示
     if (allComponents.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -72,6 +83,7 @@ fun DebugPage() {
         return
     }
 
+    // 三栏布局：分组 | 组件列表 | 预览区
     Row(modifier = Modifier.fillMaxSize()) {
         GroupSidebar(
             groups = groups,
@@ -92,6 +104,15 @@ fun DebugPage() {
     }
 }
 
+/**
+ * 分组侧边栏。
+ * 展示所有组件分组名称，点击切换选中分组以过滤组件列表。
+ *
+ * @param groups 全部分组名称列表
+ * @param selectedGroup 当前选中的分组
+ * @param onGroupSelected 分组选中回调
+ * @param modifier 修饰符
+ */
 @Composable
 private fun GroupSidebar(
     groups: List<String>,
@@ -105,6 +126,7 @@ private fun GroupSidebar(
         shadowElevation = 2.dp,
     ) {
         LazyColumn(modifier = Modifier.padding(8.dp)) {
+            // 分组列表标题
             item {
                 Text(
                     text = "分组",
@@ -113,6 +135,7 @@ private fun GroupSidebar(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
             }
+            // 遍历渲染每个分组项
             items(groups) { group ->
                 val isSelected = group == selectedGroup
                 Surface(
@@ -121,6 +144,7 @@ private fun GroupSidebar(
                         .fillMaxWidth()
                         .clickable { onGroupSelected(group) },
                     shape = RoundedCornerShape(8.dp),
+                    // 选中态使用主色容器背景，非选中态保持表面色
                     color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surfaceContainerLow,
                 ) {
@@ -139,6 +163,15 @@ private fun GroupSidebar(
     }
 }
 
+/**
+ * 组件列表。
+ * 展示当前分组过滤后的所有调试组件，点击选中后可在预览区查看。
+ *
+ * @param components 当前分组下的组件列表
+ * @param selectedComponentId 当前选中组件的 id
+ * @param onComponentSelected 组件选中回调
+ * @param modifier 修饰符
+ */
 @Composable
 private fun ComponentList(
     components: List<DebugComponent>,
@@ -151,6 +184,7 @@ private fun ComponentList(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         LazyColumn(modifier = Modifier.padding(8.dp)) {
+            // 组件列表标题
             item {
                 Text(
                     text = "组件列表",
@@ -159,6 +193,7 @@ private fun ComponentList(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
             }
+            // 遍历渲染每个组件项
             items(components) { component ->
                 val isSelected = component.id == selectedComponentId
                 Surface(
@@ -167,6 +202,7 @@ private fun ComponentList(
                         .fillMaxWidth()
                         .clickable { onComponentSelected(component) },
                     shape = RoundedCornerShape(8.dp),
+                    // 选中态使用主色容器背景高亮
                     color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surfaceContainerHigh,
                 ) {
@@ -179,6 +215,7 @@ private fun ComponentList(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
+                        // 组件描述信息，非空时才展示
                         if (component.description.isNotEmpty()) {
                             Text(
                                 text = component.description,
@@ -196,6 +233,13 @@ private fun ComponentList(
     }
 }
 
+/**
+ * 组件预览区。
+ * 选中组件时展示组件名称头栏和实际内容，未选中时显示占位提示。
+ *
+ * @param component 当前选中的组件，为 null 时显示空状态
+ * @param modifier 修饰符
+ */
 @Composable
 private fun PreviewArea(
     component: DebugComponent?,
@@ -207,6 +251,7 @@ private fun PreviewArea(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
     ) {
+        // 未选中组件时展示占位引导文字
         if (component == null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
@@ -217,6 +262,7 @@ private fun PreviewArea(
             }
         } else {
             Column(modifier = Modifier.fillMaxSize()) {
+                // 组件头栏：名称和所属分组
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -238,6 +284,7 @@ private fun PreviewArea(
                         )
                     }
                 }
+                // 渲染实际组件内容，居中展示
                 Box(
                     modifier = Modifier
                         .weight(1f)

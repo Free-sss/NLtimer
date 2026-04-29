@@ -5,6 +5,10 @@ import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.Tag
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * BehaviorRepository 行为记录仓库接口
+ * 提供行为记录的增删改查、计时控制、标签关联以及日结操作
+ */
 interface BehaviorRepository {
     fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>>
     fun getCurrentBehavior(): Flow<Behavior?>

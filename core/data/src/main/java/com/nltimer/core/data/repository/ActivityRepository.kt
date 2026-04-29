@@ -4,6 +4,10 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * ActivityRepository 活动基础仓库接口
+ * 提供活动与分组的通用查询、搜索与归档操作
+ */
 interface ActivityRepository {
     fun getAllActive(): Flow<List<Activity>>
     fun getAll(): Flow<List<Activity>>

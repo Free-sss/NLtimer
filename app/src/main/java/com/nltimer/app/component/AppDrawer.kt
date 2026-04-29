@@ -28,12 +28,20 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
+/**
+ * 抽屉侧边栏菜单项数据模型
+ *
+ * @param route 点击后导航的目标路由
+ * @param label 菜单项显示文本
+ * @param icon 菜单项图标
+ */
 internal data class DrawerMenuItem(
     val route: String,
     val label: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
 )
 
+// 抽屉侧边栏菜单项列表，debug 模块可在初始化时动态追加
 internal val drawerMenuItems = mutableListOf(
     DrawerMenuItem("home", "主页", Icons.Default.Home),
     DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
@@ -43,6 +51,14 @@ internal val drawerMenuItems = mutableListOf(
     DrawerMenuItem("settings", "设置", Icons.Default.Settings),
 )
 
+/**
+ * 抽屉侧边栏 Composable
+ * 显示应用标题和应用菜单项列表，支持导航跳转和关闭抽屉
+ *
+ * @param navController 导航控制器
+ * @param onClose 关闭抽屉的回调
+ * @param modifier Modifier 修饰符
+ */
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun AppDrawer(
@@ -50,10 +66,12 @@ fun AppDrawer(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 获取当前屏幕宽度，计算抽屉最大宽度为屏幕宽度一半，最低 280dp
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
     val maxDrawerWidth = (screenWidthDp * 0.5f).coerceAtLeast(280.dp)
 
+    // 获取当前路由，用于菜单项的高亮判断
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -63,6 +81,7 @@ fun AppDrawer(
             max = maxDrawerWidth,
         ),
     ) {
+        // 应用标题区域
         Text(
             text = "NLtimer",
             style = MaterialTheme.typography.titleLarge,
@@ -70,6 +89,7 @@ fun AppDrawer(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
+        // 遍历菜单项，生成可点击的导航项
         drawerMenuItems.forEach { item ->
             NavigationDrawerItem(
                 icon = {
@@ -81,6 +101,7 @@ fun AppDrawer(
                 label = { Text(item.label) },
                 selected = currentRoute == item.route,
                 onClick = {
+                    // 仅在非当前路由时执行导航，避免重复跳转
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) {

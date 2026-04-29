@@ -10,6 +10,13 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * CategoryMigrationValidator 分类迁移校验器
+ * 将旧版 DataStore 中保存的活动分类迁移到 activity_groups 表，迁移完成后清理旧键
+ *
+ * @param dataStore DataStore 偏好存储
+ * @param groupDao 活动分组 DAO
+ */
 @Singleton
 class CategoryMigrationValidator @Inject constructor(
     private val dataStore: DataStore<Preferences>,
@@ -18,12 +25,15 @@ class CategoryMigrationValidator @Inject constructor(
     private val savedActivityCategoriesKey = stringPreferencesKey("saved_activity_categories")
 
     suspend fun migrateIfNeeded() {
+        // 读取旧 DataStore 中保存的分类列表
         val prefs = dataStore.data.first()
         val raw = prefs[savedActivityCategoriesKey] ?: ""
         if (raw.isBlank()) return
 
         val savedCategories = raw.split(",").toSet()
+        // 获取数据库中已有的分组名称
         val existingNames = groupDao.getAll().first().map { it.name }.toSet()
+        // 过滤出尚未创建的分组，逐个插入
         savedCategories
             .filter { it !in existingNames }
             .forEach { name ->
@@ -31,6 +41,7 @@ class CategoryMigrationValidator @Inject constructor(
                 groupDao.insert(ActivityGroupEntity(name = name, sortOrder = maxOrder + 1))
             }
 
+        // 迁移完成后删除旧 DataStore 键
         dataStore.edit { it.remove(savedActivityCategoriesKey) }
     }
 }

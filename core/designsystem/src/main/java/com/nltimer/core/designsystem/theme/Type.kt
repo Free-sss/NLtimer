@@ -4,8 +4,15 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 
+/** Material3 默认排版基准 */
 private val DEFAULT_TYPOGRAPHY = Typography()
 
+/**
+ * 生成应用排版配置
+ * 使用系统默认排版作为基准，统一替换字体系列
+ *
+ * @param font 自定义字体资源 ID，为 null 时使用系统默认字体
+ */
 fun provideTypography(font: Int? = null): Typography {
     val selectedFont = font?.let { FontFamily(Font(it)) } ?: FontFamily.Default
 

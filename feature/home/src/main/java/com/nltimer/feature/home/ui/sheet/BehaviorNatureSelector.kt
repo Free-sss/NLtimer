@@ -13,6 +13,14 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.feature.home.R
 
+/**
+ * 行为类型选择器 Composable。
+ * 以 ● / ○ 单选形式展示待办、活跃、已完成三种类型。
+ *
+ * @param selected 当前选中的类型
+ * @param onSelect 选择类型回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun BehaviorNatureSelector(
     selected: BehaviorNature,

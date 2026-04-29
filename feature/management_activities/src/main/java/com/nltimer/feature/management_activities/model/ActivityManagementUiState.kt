@@ -3,6 +3,16 @@ package com.nltimer.feature.management_activities.model
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 
+/**
+ * 活动管理页面的 UI 状态
+ *
+ * @property uncategorizedActivities 未归类的活动列表
+ * @property groups 分组及其活动列表
+ * @property allGroups 全部分组的简要列表
+ * @property isLoading 是否正在加载
+ * @property expandedGroupIds 当前展开的分组 ID 集合
+ * @property dialogState 当前打开的弹窗状态，为 null 表示无弹窗
+ */
 data class ActivityManagementUiState(
     val uncategorizedActivities: List<Activity> = emptyList(),
     val groups: List<GroupWithActivities> = emptyList(),
@@ -12,11 +22,20 @@ data class ActivityManagementUiState(
     val dialogState: DialogState? = null,
 )
 
+/**
+ * 分组及其关联的活动列表
+ *
+ * @property group 分组信息
+ * @property activities 该分组下的活动列表
+ */
 data class GroupWithActivities(
     val group: ActivityGroup,
     val activities: List<Activity>,
 )
 
+/**
+ * 弹窗状态密封接口，每种弹窗类型对应一个子类
+ */
 sealed interface DialogState {
     object AddActivity : DialogState
     data class AddActivityToGroup(val group: ActivityGroup) : DialogState

@@ -2,6 +2,10 @@ package com.nltimer.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * NLtimer 全局主题配置
+ * 控制亮暗模式、AMOLED 优化、调色板风格、种子颜色、字体、边框显示和主页布局
+ */
 data class Theme(
     val appTheme: AppTheme = AppTheme.SYSTEM,
     val isAmoled: Boolean = false,

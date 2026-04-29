@@ -13,11 +13,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 新建分组弹窗
+ *
+ * 提供分组名称输入框，确认后创建新的自定义分组。
+ *
+ * @param onDismiss 关闭弹窗回调
+ * @param onConfirm 确认创建回调，参数为分组名称
+ */
 @Composable
 fun AddGroupDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
 ) {
+    // 分组名称输入状态
     var name by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -34,6 +43,7 @@ fun AddGroupDialog(
             )
         },
         confirmButton = {
+            // 名称不为空时才可确认
             TextButton(
                 onClick = { onConfirm(name.trim()) },
                 enabled = name.isNotBlank(),

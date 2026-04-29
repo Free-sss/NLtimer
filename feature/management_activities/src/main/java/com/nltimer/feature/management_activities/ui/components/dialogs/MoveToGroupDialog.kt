@@ -22,6 +22,16 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 
+/**
+ * 移动活动到分组弹窗
+ *
+ * 将指定活动移动到目标分组，支持移回"未分类"。
+ *
+ * @param activity 待移动的活动
+ * @param allGroups 全部分组列表
+ * @param onDismiss 关闭弹窗回调
+ * @param onConfirm 确认移动回调，参数为目标分组 ID（null 表示未分类）
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoveToGroupDialog(
@@ -30,6 +40,7 @@ fun MoveToGroupDialog(
     onDismiss: () -> Unit,
     onConfirm: (Long?) -> Unit,
 ) {
+    // 当前选中的目标分组，默认为活动所属分组
     var selectedGroupId by remember { mutableStateOf(activity.groupId) }
     var groupName by remember {
         mutableStateOf(
@@ -46,6 +57,7 @@ fun MoveToGroupDialog(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // 分组选择下拉框
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
@@ -66,6 +78,7 @@ fun MoveToGroupDialog(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                 ) {
+                    // 移回未分类
                     DropdownMenuItem(
                         text = { Text("未分类") },
                         onClick = {

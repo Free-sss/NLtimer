@@ -1,9 +1,5 @@
 package com.nltimer.feature.stats.ui
 
-// Mark 逻辑 - 统计数据计算、图表数据准备、用户筛选交互、数据更新
-// Mark 样式 - 统计页面布局、图表样式、数据可视化优化、动画效果
-// Mark... - 性能调优、大数据量处理、导出功能、无障碍支持等开发事项
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,31 +16,43 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * 统计功能的路由入口。
+ * 负责初始化 ViewModel 并触发统计数据加载流程。
+ * 后续可在此处注入依赖（如 StatsViewModel）并传递给 StatsScreen。
+ */
 @Composable
 fun StatsRoute() {
-    // Mark 逻辑 - 路由入口函数，负责 ViewModel 初始化和统计数据加载
     StatsScreen()
 }
 
+/**
+ * 统计页面的主体内容。
+ * 当前为占位实现，居中显示柱状图图标和"统计"标题。
+ * 后续将替换为完整的图表组件、筛选控件和数据展示区域。
+ *
+ * @param modifier 应用于根布局的 Modifier，用于外部控制布局位置和内边距
+ */
 @Composable
 fun StatsScreen(modifier: Modifier = Modifier) {
-    // Mark 样式 - 统计页内容布局，居中显示图标和标题
+    // 使用 Scaffold 提供标准页面骨架，padding 参数确保内容避开系统栏
     Scaffold(modifier = modifier) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
+            // 内容垂直水平居中，符合空状态占位页面的视觉规范
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // Mark 样式 - 统计页图标样式，后续可替换为图表相关图标
+            // 柱状图图标，64dp 尺寸确保在页面中具有足够的视觉权重
             Icon(
                 imageVector = Icons.Default.BarChart,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
-            // Mark 样式 - 统计页标题文字样式
+            // 标题文字，使用 headlineLarge 样式保持与全局排版风格一致
             Text(
                 text = "统计",
                 style = MaterialTheme.typography.headlineLarge,

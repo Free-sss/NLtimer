@@ -9,6 +9,12 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * TagRepositoryImpl 标签仓库实现
+ * 委托 TagDao 完成标签的增删改查及分类管理
+ *
+ * @param tagDao 标签数据访问对象
+ */
 @Singleton
 class TagRepositoryImpl @Inject constructor(
     private val tagDao: TagDao,
@@ -53,6 +59,7 @@ class TagRepositoryImpl @Inject constructor(
     override suspend fun resetCategory(category: String) =
         tagDao.resetCategory(category)
 
+    // 数据库实体与领域模型互转
     private fun TagEntity.toModel() = Tag(
         id = id,
         name = name,

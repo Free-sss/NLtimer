@@ -17,6 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appBorder
 
+/**
+ * 表示可点击添加行为的空单元格 Composable。
+ * 显示"+"和"添加行为"提示。
+ *
+ * @param modifier 修饰符
+ * @param onClick 点击回调
+ */
 @Composable
 fun GridCellEmpty(
     modifier: Modifier = Modifier,

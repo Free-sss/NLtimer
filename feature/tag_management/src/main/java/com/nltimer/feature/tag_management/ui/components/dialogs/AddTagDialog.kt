@@ -18,12 +18,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 添加标签对话框
+ *
+ * 输入标签名称，可选择指定归属分类。
+ *
+ * @param initialCategory 初始分类，如果非空则标签将添加到该分类
+ * @param onDismiss 关闭对话框回调
+ * @param onConfirm 确认回调，参数为标签名称和分类名
+ */
 @Composable
 fun AddTagDialog(
     initialCategory: String?,
     onDismiss: () -> Unit,
     onConfirm: (name: String, category: String?) -> Unit,
 ) {
+    // 标签名称输入状态
     var tagName by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -40,6 +50,7 @@ fun AddTagDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
+                // 如果在分类内添加，显示归属提示
                 if (!initialCategory.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -51,6 +62,7 @@ fun AddTagDialog(
             }
         },
         confirmButton = {
+            // 名称非空时才允许确认
             TextButton(
                 onClick = {
                     if (tagName.isNotBlank()) {

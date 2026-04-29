@@ -42,6 +42,10 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 
+/**
+ * RouteSettingsPopup 调试预览入口
+ * 为开发者提供当前弹窗在 home 路由下的预览快照
+ */
 @Preview(showBackground = true)
 @Composable
 fun RouteSettingsPopupPreview() {
@@ -54,6 +58,15 @@ fun RouteSettingsPopupPreview() {
     }
 }
 
+/**
+ * 页面设置弹出菜单 Composable
+ * 根据当前路由显示对应的配置项：home 路由下可切换布局，其他路由显示通用快捷操作
+ *
+ * @param currentRoute 当前路由名称，用于判定显示哪些设置项
+ * @param onDismiss 关闭弹窗的回调
+ * @param onHomeLayoutChange 主页布局变更回调
+ * @param modifier Modifier 修饰符
+ */
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun RouteSettingsPopup(
@@ -62,15 +75,18 @@ fun RouteSettingsPopup(
     onHomeLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // 根据屏幕宽度计算弹窗宽度，不超过屏幕的一半
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val popupWidth = screenWidth * 0.45f
+    // 获取当前主页布局类型
     val currentLayout = LocalTheme.current.homeLayout
+    // 控制布局选项的展开/折叠状态
     var showLayoutOptions by remember { mutableStateOf(false) }
 
     Popup(
         alignment = Alignment.TopEnd,
-        offset = IntOffset(x = 0, y = 100), // Approximate offset from top app bar
+        offset = IntOffset(x = 0, y = 100), // 相对顶栏的偏移量，使弹窗出现在顶栏下方
         onDismissRequest = onDismiss,
         properties = PopupProperties(focusable = true)
     ) {
@@ -87,6 +103,7 @@ fun RouteSettingsPopup(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
+                // 弹窗标题，显示当前页面名称
                 Text(
                     text = "页面设置: ${currentRoute ?: "未知"}",
                     style = MaterialTheme.typography.labelLarge,
@@ -96,6 +113,7 @@ fun RouteSettingsPopup(
                 
                 HorizontalDivider()
 
+                // home 路由专属：布局切换功能
                 if (currentRoute == "home") {
                     PopupItem(
                         icon = Icons.Default.Dashboard,
@@ -103,11 +121,12 @@ fun RouteSettingsPopup(
                         onClick = { showLayoutOptions = !showLayoutOptions }
                     )
                     
+                    // 展开布局选项子菜单，遍历所有布局枚举供用户选择
                     if (showLayoutOptions) {
                         HomeLayout.values().forEach { layout ->
                             val isSelected = currentLayout == layout
                             PopupItem(
-                                icon = if (isSelected) Icons.Default.Search else Icons.Default.Dashboard, // Dummy icon for selection
+                                icon = if (isSelected) Icons.Default.Search else Icons.Default.Dashboard,
                                 label = when(layout) {
                                     HomeLayout.GRID -> "网格时间"
                                     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
@@ -122,6 +141,7 @@ fun RouteSettingsPopup(
                     }
                 }
 
+                // 未展开布局选项时，显示通用快捷操作列表
                 if (!showLayoutOptions) {
                     PopupItem(
                         icon = Icons.Default.Search,
@@ -149,6 +169,15 @@ fun RouteSettingsPopup(
     }
 }
 
+/**
+ * 弹窗内单行菜单项 Composable
+ * 显示图标和文本标签，支持点击事件和自定义着色
+ *
+ * @param icon 菜单项图标
+ * @param label 菜单项文本标签
+ * @param onClick 点击回调
+ * @param tint 图标和文本的颜色
+ */
 @Composable
 private fun PopupItem(
     icon: ImageVector,

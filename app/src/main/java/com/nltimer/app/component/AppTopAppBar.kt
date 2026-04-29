@@ -12,6 +12,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 
+/**
+ * 应用顶部栏 Composable
+ * 居中显示标题，左侧菜单按钮打开侧边栏，右侧设置按钮弹出页面配置
+ *
+ * @param onMenuClick 点击菜单按钮的回调
+ * @param onSettingClick 点击设置按钮的回调
+ * @param modifier Modifier 修饰符
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopAppBar(

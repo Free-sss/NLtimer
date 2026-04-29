@@ -5,6 +5,11 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import androidx.room.Index
 
+/**
+ * BehaviorEntity 行为记录数据库实体
+ * 对应 behaviors 表，记录活动的计时起止、状态、备注、番茄钟、完成度等信息
+ * 通过 activityId 外键关联 activities 表
+ */
 @Entity(
     tableName = "behaviors",
     foreignKeys = [

@@ -25,10 +25,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+/**
+ * DataModule Hilt 数据层依赖注入模块
+ * 绑定 Repository 接口与实现，并提供 Room 数据库及其 DAO
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
 
+    // 将各 Repository 接口绑定到具体实现
     @Binds
     abstract fun bindActivityRepository(impl: ActivityRepositoryImpl): ActivityRepository
 
@@ -50,6 +55,7 @@ abstract class DataModule {
         @Provides
         @Singleton
         fun provideDatabase(@ApplicationContext context: Context): NLtimerDatabase =
+            // 构建 Room 数据库，允许迁移而非销毁重建
             Room.databaseBuilder(
                 context,
                 NLtimerDatabase::class.java,

@@ -3,6 +3,10 @@ package com.nltimer.core.data.repository
 import com.nltimer.core.data.model.Tag
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * TagRepository 标签仓库接口
+ * 提供标签的增删改查、搜索、按分类筛选以及分类管理功能
+ */
 interface TagRepository {
     fun getAllActive(): Flow<List<Tag>>
     fun getAll(): Flow<List<Tag>>

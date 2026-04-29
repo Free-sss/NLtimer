@@ -12,6 +12,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.TagUiState
 
+/**
+ * 标签条 Composable，使用标签颜色作为背景。
+ * 单行显示标签名称，超出省略。
+ *
+ * @param tag 标签 UI 状态
+ * @param modifier 修饰符
+ */
 @Composable
 fun TagChip(
     tag: TagUiState,

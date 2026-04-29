@@ -1,5 +1,9 @@
 package com.nltimer.feature.categories.model
 
+/**
+ * UI state for the categories management screen.
+ * Holds the list of activity/tag categories, current search query, loading flag, and dialog state.
+ */
 data class CategoriesUiState(
     val activityCategories: List<String> = emptyList(),
     val tagCategories: List<String> = emptyList(),
@@ -8,6 +12,9 @@ data class CategoriesUiState(
     val dialogState: DialogState? = null,
 )
 
+/**
+ * Sealed interface representing the various dialog states on the categories screen.
+ */
 sealed interface DialogState {
     data class AddActivityCategory(val sectionType: SectionType) : DialogState
     data class AddTagCategory(val sectionType: SectionType) : DialogState
@@ -29,4 +36,7 @@ sealed interface DialogState {
     ) : DialogState
 }
 
+/**
+ * Enum distinguishing the two category types: ACTIVITY and TAG.
+ */
 enum class SectionType { ACTIVITY, TAG }

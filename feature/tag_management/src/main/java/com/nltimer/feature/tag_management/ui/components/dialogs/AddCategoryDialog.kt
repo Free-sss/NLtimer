@@ -13,11 +13,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
+/**
+ * 添加分类对话框
+ *
+ * 输入分类名称，确认后创建新分类。
+ *
+ * @param onDismiss 关闭对话框回调
+ * @param onConfirm 确认回调，参数为分类名称
+ */
 @Composable
 fun AddCategoryDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String) -> Unit,
 ) {
+    // 分类名称输入状态
     var categoryName by remember { mutableStateOf("") }
 
     AlertDialog(
@@ -34,6 +43,7 @@ fun AddCategoryDialog(
             )
         },
         confirmButton = {
+            // 名称非空时才允许确认
             TextButton(
                 onClick = {
                     if (categoryName.isNotBlank()) {

@@ -22,19 +22,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/**
+ * 设置页路由入口，负责初始化设置页所需的依赖并跳转到设置界面。
+ */
 @Composable
 fun SettingsRoute(
 ) {
-    // Mark 逻辑 - 路由入口函数，负责 ViewModel 初始化和设置数据加载
+    // 路由入口：调用设置页主界面，ViewModel在此处注入初始化
     SettingsScreen()
 }
 
+/**
+ * 设置页主界面，目前为占位页面，居中显示设置图标和标题。
+ * @param modifier 修饰符
+ */
 @Composable
 fun SettingsScreen(modifier: Modifier = Modifier)
 {
-    // 拦截物理返回键
-    // Mark 样式 - 设置页内容布局，居中显示图标和标题
+    // 构建基础布局脚手架，自动处理系统栏边距
     Scaffold(modifier = modifier) { padding ->
+        // 内容区域：居中排列，水平填充屏幕宽度
         Column(
             modifier = Modifier
                 .padding(horizontal = 16.dp)
@@ -42,14 +49,14 @@ fun SettingsScreen(modifier: Modifier = Modifier)
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            // Mark 样式 - 设置页图标样式，后续可替换为设置相关图标
+            // 设置图标：使用默认设置图标，64dp大小，主色调着色
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.primary,
             )
-            // Mark 样式 - 设置页标题文字样式
+            // 标题文字：显示"设置"，大标题样式，顶部留白16dp
             Text(
                 text = "设置",
                 style = MaterialTheme.typography.headlineLarge,
@@ -57,6 +64,4 @@ fun SettingsScreen(modifier: Modifier = Modifier)
             )
         }
     }
-
-
 }
