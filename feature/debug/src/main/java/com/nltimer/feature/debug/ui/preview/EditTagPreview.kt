@@ -17,8 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.nltimer.feature.debug.model.FormRow
-import com.nltimer.feature.debug.ui.GenericFormSheet
+import com.nltimer.core.designsystem.form.FormRow
+import com.nltimer.core.designsystem.form.GenericFormSheet
 
 @Composable
 fun EditTagPreview() {

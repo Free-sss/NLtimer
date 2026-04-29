@@ -42,10 +42,10 @@ import com.nltimer.feature.management_activities.viewmodel.ActivityManagementVie
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
 import com.nltimer.feature.management_activities.ui.components.ActivityDetailSheet
 import com.nltimer.feature.management_activities.ui.components.GroupCard
-import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityDialog
+import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddGroupDialog
 import com.nltimer.feature.management_activities.ui.components.dialogs.ConfirmDialog
-import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityDialog
+import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.MoveToGroupDialog
 
 /**
@@ -195,28 +195,28 @@ fun ActivityManagementScreen(
     // 根据弹窗状态展示对应的弹窗组件
     when (val dialog = uiState.dialogState) {
         is DialogState.AddActivity -> {
-            AddActivityDialog(
+            AddActivityFormSheet(
                 allGroups = uiState.allGroups,
                 onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, emoji, groupId ->
-                    viewModel.addActivity(name, emoji, groupId)
+                onConfirm = { name, emoji, color, groupId, note ->
+                    viewModel.addActivity(name, emoji, color, groupId, note)
                 },
             )
         }
 
         is DialogState.AddActivityToGroup -> {
-            AddActivityDialog(
+            AddActivityFormSheet(
                 allGroups = uiState.allGroups,
                 initialGroupId = dialog.group.id,
                 onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, emoji, groupId ->
-                    viewModel.addActivity(name, emoji, groupId)
+                onConfirm = { name, emoji, color, groupId, note ->
+                    viewModel.addActivity(name, emoji, color, groupId, note)
                 },
             )
         }
 
         is DialogState.EditActivity -> {
-            EditActivityDialog(
+            EditActivityFormSheet(
                 activity = dialog.activity,
                 allGroups = uiState.allGroups,
                 onDismiss = { viewModel.dismissDialog() },

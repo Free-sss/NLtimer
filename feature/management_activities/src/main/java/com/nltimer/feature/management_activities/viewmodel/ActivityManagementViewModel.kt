@@ -154,16 +154,18 @@ class ActivityManagementViewModel @Inject constructor(
      * @param emoji 可选的 Emoji
      * @param groupId 可选的分组 ID，null 表示未分类
      */
-    fun addActivity(name: String, emoji: String?, groupId: Long?) {
+    fun addActivity(name: String, emoji: String?, color: Long?, groupId: Long?, note: String?) {
         viewModelScope.launch {
             val activity = Activity(
                 name = name.trim(),
                 emoji = emoji,
+                color = color,
                 groupId = groupId,
                 isPreset = false,
             )
             repository.addActivity(activity)
             dismissDialog()
+            // TODO: note field belongs to Behavior table, handle separately when creating initial behavior
         }
     }
 

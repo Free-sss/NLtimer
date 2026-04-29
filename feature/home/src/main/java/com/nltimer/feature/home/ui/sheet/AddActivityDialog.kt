@@ -1,99 +1,48 @@
 package com.nltimer.feature.home.ui.sheet
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.form.FormRow
+import com.nltimer.core.designsystem.form.FormSection
+import com.nltimer.core.designsystem.form.FormSpec
+import com.nltimer.core.designsystem.form.GenericFormDialog
 import com.nltimer.core.designsystem.theme.NLtimerTheme
-import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 
-/**
- * 添加新活动的对话框 Composable。
- * 提供 emoji 图标和名称两个输入框。
- *
- * @param onDismiss 关闭对话框回调
- * @param onConfirm 确认添加回调（名称、emoji）
- */
+private val addActivitySpec = FormSpec(
+    title = "添加活动",
+    submitLabel = "添加活动",
+    sections = listOf(
+        FormSection(
+            rows = listOf(
+                FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "📖"),
+            ),
+        ),
+        FormSection(
+            rows = listOf(
+                FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入活动名"),
+                FormRow.TextInput(key = "note", label = "备注", placeholder = "请输入"),
+            ),
+        ),
+    ),
+)
+
 @Composable
 fun AddActivityDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String, emoji: String) -> Unit,
 ) {
-    // 本地状态：活动名称和 emoji 图标
-    var name by remember { mutableStateOf("") }
-    var emoji by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(24.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        title = {
-            Text("添加活动", style = MaterialTheme.typography.titleMedium)
-        },
-        text = {
-            Row {
-                // emoji 输入框，最多 2 个字符
-                OutlinedTextField(
-                    value = emoji,
-                    onValueChange = { emoji = it.take(2) },
-                    placeholder = { Text("图标", style = MaterialTheme.typography.bodySmall) },
-                    modifier = Modifier.width(64.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = appOutlinedTextFieldColors(),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = { Text("名称（如：健身）") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = appOutlinedTextFieldColors(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                )
-            }
-        },
-        confirmButton = {
-            // 名称非空时才可确认
-            TextButton(
-                onClick = {
-                    if (name.isNotBlank()) {
-                        onConfirm(name.trim(), emoji.trim())
-                    }
-                },
-                enabled = name.isNotBlank(),
-            ) {
-                Text("确定", color = if (name.isNotBlank()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant)
+    GenericFormDialog(
+        spec = addActivitySpec,
+        initialData = null,
+        onDismiss = onDismiss,
+        onSubmit = { formState ->
+            val name = formState["name"]?.trim() ?: ""
+            val emoji = formState["icon"]?.trim() ?: ""
+            if (name.isNotBlank()) {
+                onConfirm(name, emoji)
             }
         },
     )

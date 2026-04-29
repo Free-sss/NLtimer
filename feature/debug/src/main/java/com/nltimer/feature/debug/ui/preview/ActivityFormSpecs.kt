@@ -1,8 +1,8 @@
 package com.nltimer.feature.debug.ui.preview
 
-import com.nltimer.feature.debug.model.FormRow
-import com.nltimer.feature.debug.model.FormSection
-import com.nltimer.feature.debug.model.FormSpec
+import com.nltimer.core.designsystem.form.FormRow
+import com.nltimer.core.designsystem.form.FormSection
+import com.nltimer.core.designsystem.form.FormSpec
 
 object ActivityFormSpecs {
     val create = FormSpec(
