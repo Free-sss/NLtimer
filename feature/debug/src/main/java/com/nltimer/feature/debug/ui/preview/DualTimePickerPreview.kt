@@ -1,4 +1,4 @@
-package com.nltimer.feature.debug.ui
+package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -61,13 +61,9 @@ fun DualTimePickerDebugPreview() {
  */
 @Composable
 private fun DualTimePicker() {
-    // 左侧日期选项，格式 MM/DD
     val leftDates = listOf("03/16", "03/17", "03/18", "03/19", "03/20")
-    // 右侧日期选项，使用中文相对日期
     val rightDates = listOf("前天", "昨天", "今天", "明天", "后天")
-    // 小时选项 00-23
     val hours = (0..23).map { it.toString().padStart(2, '0') }
-    // 分钟选项 00-59
     val minutes = (0..59).map { it.toString().padStart(2, '0') }
 
     var leftSelectedDate by remember { mutableStateOf("03/18") }
@@ -78,7 +74,6 @@ private fun DualTimePicker() {
     var rightSelectedHour by remember { mutableStateOf("09") }
     var rightSelectedMinute by remember { mutableStateOf("44") }
 
-    // 左右两列布局，中间用竖线分隔
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -99,7 +94,6 @@ private fun DualTimePicker() {
             modifier = Modifier.weight(1f),
         )
 
-        // 左右两列之间的分隔线
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant,
             modifier = Modifier
@@ -124,22 +118,6 @@ private fun DualTimePicker() {
     }
 }
 
-/**
- * 时间选择分段组件
- * 包含标题标签和日期/小时/分钟三个滚轮选择器，组合成一个完整的选取区
- *
- * @param title 顶部黑色标题标签的文本
- * @param dates 日期选项列表
- * @param hours 小时选项列表
- * @param minutes 分钟选项列表
- * @param selectedDate 当前选中的日期
- * @param selectedHour 当前选中的小时
- * @param selectedMinute 当前选中的分钟
- * @param onDateChanged 日期变动回调
- * @param onHourChanged 小时变动回调
- * @param onMinuteChanged 分钟变动回调
- * @param modifier 可选的修饰符
- */
 @Composable
 private fun TimePickerSection(
     title: String,
@@ -154,14 +132,12 @@ private fun TimePickerSection(
     onMinuteChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 每个选项行的高度
     val itemHeight = 40.dp
 
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // 顶部黑色标题标签
         Box(
             modifier = Modifier
                 .background(Color.Black, RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
@@ -177,14 +153,12 @@ private fun TimePickerSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 滚轮选择区域：背景高亮条 + 三个滚轮叠加
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center,
         ) {
-            // 当前选中行的浅灰色高亮背景
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -193,7 +167,6 @@ private fun TimePickerSection(
                     .background(Color(0xFFF2F2F2)),
             )
 
-            // 日期滚轮 | 小时滚轮 | 冒号分隔符 | 分钟滚轮
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -213,7 +186,6 @@ private fun TimePickerSection(
                     itemHeight = itemHeight,
                     modifier = Modifier.weight(1f),
                 )
-                // 小时和分钟之间的冒号分隔符
                 Text(
                     text = ":",
                     color = Color(0xFF0A1034),
@@ -233,17 +205,6 @@ private fun TimePickerSection(
     }
 }
 
-/**
- * 通用滚轮选择器
- * 基于 LazyColumn 实现的滚动选择器，支持吸附定位和滚动联动选中
- *
- * @param items 可选项列表
- * @param selectedItem 当前选中项
- * @param onItemSelected 选中项变化回调
- * @param itemHeight 每个选项的高度
- * @param visibleItemsCount 可视区域内的选项数量，默认为 3
- * @param modifier 可选的修饰符
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun <T> WheelPicker(
@@ -255,11 +216,9 @@ private fun <T> WheelPicker(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
-    // 吸附滚动行为，使滚动停止时精确对齐到某一项
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val paddingCount = visibleItemsCount / 2
 
-    // 在列表首尾添加空占位，使首尾选项也能居中显示
     val paddedItems = remember(items) {
         val list = mutableListOf<T?>()
         repeat(paddingCount) { list.add(null) }
@@ -268,7 +227,6 @@ private fun <T> WheelPicker(
         list
     }
 
-    // 外部选中项变化时同步滚动位置
     LaunchedEffect(selectedItem) {
         val index = items.indexOf(selectedItem)
         if (index != -1 && listState.firstVisibleItemIndex != index) {
@@ -276,7 +234,6 @@ private fun <T> WheelPicker(
         }
     }
 
-    // 监听滚动位置变化，反向同步选中状态
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .map { index -> items.getOrNull(index) }
@@ -303,7 +260,6 @@ private fun <T> WheelPicker(
                 contentAlignment = Alignment.Center,
             ) {
                 if (item != null) {
-                    // 选中项使用深色加粗字体，未选中项使用浅灰色字体
                     Text(
                         text = item.toString(),
                         style = TextStyle(

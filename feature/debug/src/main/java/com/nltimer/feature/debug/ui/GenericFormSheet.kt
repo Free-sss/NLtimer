@@ -1,0 +1,332 @@
+package com.nltimer.feature.debug.ui
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.nltimer.feature.debug.model.FormRow
+import com.nltimer.feature.debug.model.FormSection
+import com.nltimer.feature.debug.model.FormSpec
+
+/**
+ * 通用表单底部弹窗
+ * 根据 [spec] 描述的表单结构动态渲染表单行，维护内部 [formState] Map，
+ * 通过 [initialData] 区分新增/编辑模式，提交时通过 [onSubmit] 传出所有字段值。
+ *
+ * @param spec 表单结构描述
+ * @param initialData 编辑模式的初始数据，新增模式传 null
+ * @param onDismiss 弹窗关闭回调
+ * @param onSubmit 提交回调，参数为字段 key→value 映射
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GenericFormSheet(
+    spec: FormSpec,
+    initialData: Map<String, String>?,
+    onDismiss: () -> Unit,
+    onSubmit: (Map<String, String>) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // 从 spec 提取所有 key 并建立默认值，编辑模式用 initialData 覆盖
+    val formState = remember {
+        val defaults = spec.defaultValues().toMutableMap()
+        if (initialData != null) {
+            defaults.putAll(initialData)
+        }
+        mutableStateMapOf<String, String>().also { it.putAll(defaults) }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        dragHandle = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(32.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = spec.title,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            // 遍历渲染每个分组
+            spec.sections.forEachIndexed { index, section ->
+                if (index > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column {
+                        section.rows.forEach { row ->
+                            FormRowRenderer(
+                                row = row,
+                                formState = formState,
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 提交按钮
+            Button(
+                onClick = { onSubmit(formState.toMap()) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 48.dp)
+                    .height(44.dp),
+                shape = RoundedCornerShape(22.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = spec.submitLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+/**
+ * 表单行渲染器
+ * 根据 [row] 的具体类型分发到对应的渲染函数
+ */
+@Composable
+private fun FormRowRenderer(
+    row: FormRow,
+    formState: MutableMap<String, String>,
+) {
+    when (row) {
+        is FormRow.TextInput -> TextInputRenderer(
+            row = row,
+            value = formState[row.key] ?: row.initialValue,
+            onValueChange = { formState[row.key] = it },
+        )
+        is FormRow.IconColor -> IconColorRenderer(
+            row = row,
+            emoji = formState[row.iconKey] ?: row.initialEmoji,
+            colorValue = formState[row.colorKey] ?: "",
+        )
+        is FormRow.LabelAction -> LabelActionRenderer(row = row)
+    }
+}
+
+@Composable
+private fun TextInputRenderer(
+    row: FormRow.TextInput,
+    value: String,
+    onValueChange: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = row.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(52.dp),
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+            ),
+            singleLine = true,
+            decorationBox = { innerTextField ->
+                Box {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = row.placeholder,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                    }
+                    innerTextField()
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun IconColorRenderer(
+    row: FormRow.IconColor,
+    emoji: String,
+    colorValue: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                "图标",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(16.dp))
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(emoji, style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                "颜色",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(16.dp))
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LabelActionRenderer(row: FormRow.LabelAction) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = row.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (row.showHelp) {
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                imageVector = Icons.Outlined.HelpOutline,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.size(16.dp),
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+        ) {
+            Text(
+                text = row.actionText,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+        }
+    }
+}
+
+/**
+ * 从 FormSpec 提取所有行 key 的默认值
+ */
+private fun FormSpec.defaultValues(): Map<String, String> = buildMap {
+    sections.forEach { section ->
+        section.rows.forEach { row ->
+            when (row) {
+                is FormRow.TextInput -> put(row.key, row.initialValue)
+                is FormRow.IconColor -> {
+                    put(row.iconKey, row.initialEmoji)
+                    put(row.colorKey, "")
+                }
+                is FormRow.LabelAction -> {}
+            }
+        }
+    }
+}

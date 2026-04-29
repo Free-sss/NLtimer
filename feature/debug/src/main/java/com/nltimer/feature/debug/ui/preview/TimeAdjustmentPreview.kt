@@ -1,8 +1,9 @@
-package com.nltimer.feature.debug.ui
+package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +40,6 @@ fun TimeAdjustmentDebugPreview() {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        // 使用当前系统时间作为初始值
         var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
 
         Column(
@@ -48,7 +48,6 @@ fun TimeAdjustmentDebugPreview() {
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 顶部时间显示区域，格式为 yyyy-MM-dd HH:mm:ss
             Text(
                 text = currentTime.format(
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -59,7 +58,6 @@ fun TimeAdjustmentDebugPreview() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 时间调整按钮组
             TimeAdjustmentComponent(
                 currentTime = currentTime,
                 onTimeChanged = { currentTime = it },
@@ -68,22 +66,13 @@ fun TimeAdjustmentDebugPreview() {
     }
 }
 
-/**
- * 时间步进调节组件
- * 提供一系列 OutlinedButton 来快速调整时间，支持分钟级的增减操作。
- * 使用 horizontalScroll 确保小屏幕上按钮不会被截断
- *
- * @param currentTime 当前显示的时间
- * @param onTimeChanged 时间变化时的回调
- * @param modifier 可选的修饰符
- */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TimeAdjustmentComponent(
     currentTime: LocalDateTime,
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 定义时间调整选项：-30, -5, -1, 1, 5, 30 分钟
     val adjustments = listOf(-30, -5, -1, 1, 5, 30)
 
     FlowRow(
@@ -93,37 +82,25 @@ private fun TimeAdjustmentComponent(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // 遍历生成时间步进按钮
         adjustments.forEach { amount ->
-            // 正值前加 + 号，负值自带 - 号
             val text = if (amount > 0) "+$amount" else "$amount"
             TimeButton(
                 text = text,
                 onClick = {
-                    // 核心逻辑：对传入的时间进行分钟级增减
                     onTimeChanged(currentTime.plusMinutes(amount.toLong()))
                 },
             )
         }
 
-        // "现在"按钮：重置为系统当前时间
         TimeButton(
             text = "现在",
             onClick = {
-                // 核心逻辑：重置为当前最新系统时间
                 onTimeChanged(LocalDateTime.now())
             },
         )
     }
 }
 
-/**
- * 时间步进按钮组件
- * 带圆角矩形边框的 OutlinedButton，用于显示时间步进值或操作文本
- *
- * @param text 按钮上显示的文本，如 "+5"、"-1"、"现在"
- * @param onClick 按钮点击时的回调
- */
 @Composable
 private fun TimeButton(
     text: String,
@@ -131,15 +108,11 @@ private fun TimeButton(
 ) {
     OutlinedButton(
         onClick = onClick,
-        // 圆角矩形，而不是 MD3 默认的全圆角 StadiumShape，贴合截图比例
         shape = RoundedCornerShape(8.dp),
-        // 调整内边距使其更紧凑
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        // 使用 MD3 的表面文字颜色
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
-        // 使用 MD3 的边框变体颜色，让边框显得柔和
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Text(
