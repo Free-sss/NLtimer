@@ -3,6 +3,7 @@ package com.nltimer.feature.debug
 import com.nltimer.core.designsystem.debug.DebugComponent
 import com.nltimer.core.designsystem.debug.DebugComponentRegistry
 import com.nltimer.feature.debug.ui.preview.ActivityChipGridDebugPreview
+import com.nltimer.feature.debug.ui.preview.ActivityNoteBoxDebugPreview
 import com.nltimer.feature.debug.ui.preview.AddActivityPreview
 import com.nltimer.feature.debug.ui.preview.AddTagPreview
 import com.nltimer.feature.debug.ui.preview.DualTimePickerDebugPreview
@@ -80,6 +81,16 @@ object FeatureDebugComponents {
                 description = "流式布局活动选择标签网格，含管理和新增按钮",
             ) {
                 ActivityChipGridDebugPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "ActivityNoteBox",
+                name = "活动备注输入",
+                group = "Components",
+                description = "备注输入框含标签/历史/继续添加/添加按钮",
+            ) {
+                ActivityNoteBoxDebugPreview()
             }
         )
     }
