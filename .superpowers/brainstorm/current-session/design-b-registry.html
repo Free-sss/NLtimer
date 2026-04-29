@@ -1,0 +1,151 @@
+<h2>B 方案细化设计：组件注册机制 + 独立调试容器</h2>
+<p class="subtitle">核心思路：core 层定义协议 → 各 feature 自主注册 → debug 模块收集展示</p>
+
+<div class="section">
+  <h3>1. 模块依赖关系</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:2;">
+    <div style="color:#6c7086;">// 依赖方向：debug → features → core (单向，无循环)</div>
+    <div style="margin:8px 0;">&nbsp;</div>
+    <div style="color:#89b4fa;">┌──────────────────────────────┐</div>
+    <div style="color:#89b4fa;">│  <span style="color:#f38ba8;">feature/debug</span>  ← 新增模块  │</div>
+    <div style="color:#89b4fa;">│  (debugImplementation)      │</div>
+    <div style="color:#89b4fa;">└──────────┬───────────────────┘</div>
+    <div style="color:#89b4fa;">           │ 依赖</div>
+    <div style="color:#89b4fa;">┌──────────▼───────────────────┐</div>
+    <div style="color:#89b4fa;">│  <span style="color:#f9e2af;">各 feature 模块</span>            │</div>
+    <div style="color:#89b4fa;">│  home / sub / stats / ...    │</div>
+    <div style="color:#89b4fa;">│  (各自注册待调试的 Composable) │</div>
+    <div style="color:#89b4fa;">└──────────┬───────────────────┘</div>
+    <div style="color:#89b4fa;">           │ 依赖</div>
+    <div style="color:#89b4fa;">┌──────────▼───────────────────┐</div>
+    <div style="color:#89b4fa;">│  <span style="color:#cba6f7;">core/designsystem</span>           │</div>
+    <div style="color:#89b4fa;">│  (DebugComponent 接口协议)     │</div>
+    <div style="color:#89b4fa;">└──────────────────────────────┘</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. 核心接口（放在 core/designsystem）</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:1.8;">
+    <div style="color:#cba6f7;">data class</span> <span style="color:#89b4fa;">DebugComponent</span>(</div>
+    <div style="padding-left:16px;color:#f9e2af;">val id</span>: <span style="color:#89b4fa;">String</span>,        <span style="color:#6c7086;">// 唯一标识，如 "AddBehaviorSheet"</span></div>
+    <div style="padding-left:16px;color:#f9e2af;">val name</span>: <span style="color:#89b4fa;">String</span>,      <span style="color:#6c7086;">// 显示名称，如 "新增行为弹窗"</span></div>
+    <div style="padding-left:16px;color:#f9e2af;">val group</span>: <span style="color:#89b4fa;">String</span>,     <span style="color:#6c7086;">// 分组，如 "Sheets"、"Cards"、"Buttons"</span></div>
+    <div style="padding-left:16px;color:#f9e2af;">val description</span>: <span style="color:#89b4fa;">String</span>, <span style="color:#6c7086;">// 组件描述</span></div>
+    <div style="padding-left:16px;color:#f9e2af;">val content</span>: <span style="color:#89b4fa;">@Composable () -> Unit</span>, <span style="color:#6c7086;">// 组件渲染 lambda</span></div>
+    <div>)</div>
+    <div style="margin-top:12px;">&nbsp;</div>
+    <div style="color:#cba6f7;">object</span> <span style="color:#89b4fa;">DebugComponentRegistry</span> {</div>
+    <div style="padding-left:16px;color:#f9e2af;">private val _components</span> = <span style="color:#a6e3a1;">mutableListOf</span>&lt;<span style="color:#89b4fa;">DebugComponent</span>&gt;()</div>
+    <div style="padding-left:16px;color:#f9e2af;">val components</span>: <span style="color:#89b4fa;">List</span>&lt;DebugComponent&gt; <span style="color:#89b4fa;">get()</span> = _components</div>
+    <div style="margin-top:4px;">&nbsp;</div>
+    <div style="padding-left:16px;color:#f9e2af;">fun</span> <span style="color:#89b4fa;">register</span>(component: <span style="color:#89b4fa;">DebugComponent</span>) {</div>
+    <div style="padding-left:32px;color:#a6e3a1;">_components.add(component)</div>
+    <div style="padding-left:16px;">}</div>
+    <div style="padding-left:16px;color:#f9e2af;">fun</span> <span style="color:#89b4fa;">unregister</span>(id: <span style="color:#89b4fa;">String</span>) {</div>
+    <div style="padding-left:32px;color:#a6e3a1;">_components.removeAll { it.id == id }</div>
+    <div style="padding-left:16px;">}</div>
+    <div>}</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. 各 feature 注册方式</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:1.8;">
+    <div style="color:#6c7086;">// feature/home 模块 — HomeDebugComponents.kt</div>
+    <div style="color:#6c7086;">// 放在 debug 源码集 (src/debug/java) 下，release 编译时根本不存在</div>
+    <div style="margin-top:4px;">&nbsp;</div>
+    <div style="color:#cba6f7;">object</span> <span style="color:#89b4fa;">HomeDebugComponents</span> {</div>
+    <div style="padding-left:16px;color:#f9e2af;">fun</span> <span style="color:#89b4fa;">registerAll</span>() {</div>
+    <div style="padding-left:32px;color:#89b4fa;">DebugComponentRegistry</span>.<span style="color:#f9e2af;">register</span>(</div>
+    <div style="padding-left:48px;color:#a6e3a1;">DebugComponent(</div>
+    <div style="padding-left:56px;color:#a6e3a1;">id = "AddBehaviorSheet",</div>
+    <div style="padding-left:56px;color:#a6e3a1;">name = "新增行为弹窗",</div>
+    <div style="padding-left:56px;color:#a6e3a1;">group = "Sheets",</div>
+    <div style="padding-left:56px;color:#a6e3a1;">description = "添加/编辑行为记录的底部弹窗",</div>
+    <div style="padding-left:56px;color:#a6e3a1;">content = { AddBehaviorSheetDebugPreview() }</div>
+    <div style="padding-left:48px;color:#a6e3a1;">)</div>
+    <div style="padding-left:32px;color:#89b4fa;">)</div>
+    <div style="padding-left:16px;">}</div>
+    <div>}</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>4. Debug 容器页面布局</h3>
+  <div class="mockup">
+    <div class="mockup-header">DebugComponentPage 完整布局</div>
+    <div class="mockup-body">
+      <div style="display:flex;gap:12px;margin-bottom:16px;">
+        <div style="flex:1;border:1px solid #45475a;border-radius:8px;overflow:hidden;">
+          <div style="background:#45475a;padding:10px 14px;color:#cdd6f4;font-size:12px;font-weight:600;">📂 分组筛选</div>
+          <div style="padding:8px;">
+            <div style="background:#585b70;border-radius:4px;padding:6px 12px;margin:4px 0;color:#cdd6f4;font-size:12px;">🏷️ 全部 (12)</div>
+            <div style="background:#313244;border-radius:4px;padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">Sheets (3)</div>
+            <div style="background:#313244;border-radius:4px;padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">Cards (4)</div>
+            <div style="background:#313244;border-radius:4px;padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">Inputs (2)</div>
+            <div style="background:#313244;border-radius:4px;padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">Empty (3)</div>
+          </div>
+        </div>
+        <div style="flex:3;border:1px solid #45475a;border-radius:8px;overflow:hidden;">
+          <div style="background:#45475a;padding:10px 14px;color:#cdd6f4;font-size:12px;font-weight:600;">🔄 组件选择</div>
+          <div style="padding:8px;">
+            <div style="background:#a6e3a1;color:#1e1e2e;border-radius:4px;padding:6px 12px;margin:4px 0;font-size:12px;font-weight:600;">▶ AddBehaviorSheet - 新增行为弹窗</div>
+            <div style="padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">TagChip - 标签芯片</div>
+            <div style="padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">EmptyStateView - 空状态视图</div>
+            <div style="padding:6px 12px;margin:4px 0;color:#bac2de;font-size:12px;">CategoryCard - 分类卡片</div>
+          </div>
+        </div>
+      </div>
+      <div style="border:2px dashed #585b70;border-radius:8px;padding:40px 20px;text-align:center;min-height:240px;background:#1e1e2e;">
+        <div style="color:#a6e3a1;font-size:14px;margin-bottom:8px;">▼ AddBehaviorSheet 实时预览</div>
+        <div style="color:#585b70;font-size:12px;">组件在此完整渲染，支持真实交互（点击、输入、滚动等）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>5. 完整文件清单</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:#45475a;color:#cdd6f4;text-align:left;">
+        <th style="padding:10px 14px;">文件</th>
+        <th style="padding:10px 14px;">位置</th>
+        <th style="padding:10px 14px;">作用</th>
+      </tr>
+    </thead>
+    <tbody style="color:#bac2de;">
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#cba6f7;">DebugComponent.kt</td>
+        <td style="padding:8px 14px;">core/designsystem</td>
+        <td style="padding:8px 14px;">定义数据类和 Registry</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">DebugRoute.kt</td>
+        <td style="padding:8px 14px;">feature/debug</td>
+        <td style="padding:8px 14px;">导航路由入口</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">DebugPage.kt</td>
+        <td style="padding:8px 14px;">feature/debug</td>
+        <td style="padding:8px 14px;">主页面：分组 + 列表 + 预览</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#a6e3a1;">HomeDebugComponents.kt</td>
+        <td style="padding:8px 14px;">feature/home (debug)</td>
+        <td style="padding:8px 14px;">home 模块组件注册</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#a6e3a1;">SubDebugComponents.kt</td>
+        <td style="padding:8px 14px;">feature/sub (debug)</td>
+        <td style="padding:8px 14px;">sub 模块组件注册</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;color:#6c7086;">...同 pattern</td>
+        <td style="padding:8px 14px;color:#6c7086;">各 feature (debug)</td>
+        <td style="padding:8px 14px;color:#6c7086;">其他模块的组件注册</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

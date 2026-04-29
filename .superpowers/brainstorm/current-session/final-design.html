@@ -1,0 +1,193 @@
+<h2>📋 最终设计方案：UI 组件调试页面</h2>
+<p class="subtitle">汇总所有决策点，确认后进入实现</p>
+
+<div class="section">
+  <h3>一、架构概览</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:1.8;">
+    <div style="color:#6c7086;">// 依赖方向（单向）</div>
+    <div style="margin:4px 0;">&nbsp;</div>
+    <div style="color:#cba6f7;">core/designsystem</span>  ←  <span style="color:#6c7086;">定义 DebugComponent / Registry 协议</span></div>
+    <div style="color:#89b4fa;">      ↑</div>
+    <div style="color:#f9e2af;">各 feature 模块</span>  ←  <span style="color:#6c7086;">src/debug/ 下注册自己的组件</span></div>
+    <div style="color:#89b4fa;">      ↑</div>
+    <div style="color:#a6e3a1;">feature/debug</span>  ←  <span style="color:#6c7086;">新模块，收集注册组件，提供调试页面</span></div>
+    <div style="color:#89b4fa;">      ↑</div>
+    <div style="color:#f38ba8;">app (debugImplementation)</span>  ←  <span style="color:#6c7086;">debug 编译才包含，release 完全剥离</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>二、关键决策汇总</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead>
+      <tr style="background:#45475a;color:#cdd6f4;text-align:left;">
+        <th style="padding:10px 14px;">决策点</th>
+        <th style="padding:10px 14px;">选择</th>
+        <th style="padding:10px 14px;">理由</th>
+      </tr>
+    </thead>
+    <tbody style="color:#bac2de;">
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">入口控制</td>
+        <td style="padding:8px 14px;color:#a6e3a1;">Build Variant (C)</td>
+        <td style="padding:8px 14px;">debugImplementation 全自动，release 零残留</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">组件暴露方式</td>
+        <td style="padding:8px 14px;color:#a6e3a1;">注册扩展函数 (B)</td>
+        <td style="padding:8px 14px;">业务零耦合，debug 只依赖协议接口</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">注册触发时机</td>
+        <td style="padding:8px 14px;color:#a6e3a1;">Application.onCreate 显式调用 (B)</td>
+        <td style="padding:8px 14px;">组装点集中，时机可控，无魔法依赖</td>
+      </tr>
+      <tr style="border-bottom:1px solid #313244;">
+        <td style="padding:8px 14px;color:#f9e2af;">协议存放位置</td>
+        <td style="padding:8px 14px;color:#a6e3a1;">core/designsystem</td>
+        <td style="padding:8px 14px;">所有 feature 已依赖此模块</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 14px;color:#f9e2af;">注册代码位置</td>
+        <td style="padding:8px 14px;color:#a6e3a1;">各 feature 的 src/debug/java/</td>
+        <td style="padding:8px 14px;">release 编译时根本不存在</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>三、文件变更清单</h3>
+
+  <div style="margin-bottom:16px;">
+    <div style="color:#cba6f7;font-weight:700;font-size:14px;margin-bottom:8px;">📁 core/designsystem — 新增 1 个文件</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">DebugComponent.kt</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">DebugComponent 数据类 + DebugComponentRegistry 单例</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <div style="color:#f9e2af;font-weight:700;font-size:14px;margin-bottom:8px;">📁 feature/debug — 新建模块，3 个文件</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">build.gradle.kts</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">模块构建配置，依赖 core/designsystem</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">DebugRoute.kt</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">Composable 导航入口</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;">DebugPage.kt</td>
+        <td style="padding:6px 12px;color:#bac2de;">主页面：左侧分组 + 中间列表 + 右侧预览</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <div style="color:#a6e3a1;font-weight:700;font-size:14px;margin-bottom:8px;">📁 各 feature — 各新增 1 个注册文件（src/debug/java/）</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">feature/home</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">HomeDebugComponents.kt — 注册 AddBehaviorSheet 等</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">feature/sub</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">SubDebugComponents.kt</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;border-bottom:1px solid #313244;">feature/stats</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">StatsDebugComponents.kt</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#a6e3a1;">feature/...</td>
+        <td style="padding:6px 12px;color:#bac2de;">同 pattern</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom:16px;">
+    <div style="color:#f38ba8;font-weight:700;font-size:14px;margin-bottom:8px;">📁 app — 修改 3 个文件</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+      <tr>
+        <td style="padding:6px 12px;color:#f38ba8;border-bottom:1px solid #313244;">build.gradle.kts</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">+ debugImplementation(projects.feature.debug)</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#f38ba8;border-bottom:1px solid #313244;">NLtimerApplication.kt</td>
+        <td style="padding:6px 12px;color:#bac2de;border-bottom:1px solid #313244;">onCreate 中显式调用各模块注册</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 12px;color:#f38ba8;">NLtimerNavHost.kt</td>
+        <td style="padding:6px 12px;color:#bac2de;">+ composable("debug") { DebugRoute() }</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h3>四、Debug 页面 UI 布局（三段式）</h3>
+  <div class="mockup">
+    <div class="mockup-header">DebugComponentPage</div>
+    <div class="mockup-body">
+      <div style="display:flex;gap:12px;">
+        <div style="flex:1;border:1px solid #45475a;border-radius:8px;overflow:hidden;">
+          <div style="background:#45475a;padding:10px 14px;color:#cdd6f4;font-size:12px;font-weight:600;">📂 分组</div>
+          <div style="padding:8px;">
+            <div style="background:#585b70;border-radius:4px;padding:6px 12px;margin:4px 0;font-size:12px;color:#cdd6f4;">🏷️ 全部</div>
+            <div style="padding:6px 12px;margin:4px 0;font-size:12px;color:#bac2de;">Sheets</div>
+            <div style="padding:6px 12px;margin:4px 0;font-size:12px;color:#bac2de;">Cards</div>
+            <div style="padding:6px 12px;margin:4px 0;font-size:12px;color:#bac2de;">Inputs</div>
+          </div>
+        </div>
+        <div style="flex:1.5;border:1px solid #45475a;border-radius:8px;overflow:hidden;">
+          <div style="background:#45475a;padding:10px 14px;color:#cdd6f4;font-size:12px;font-weight:600;">🔄 组件列表</div>
+          <div style="padding:8px;">
+            <div style="background:#a6e3a1;color:#1e1e2e;border-radius:4px;padding:8px 12px;margin:4px 0;font-size:12px;font-weight:600;">▶ AddBehaviorSheet</div>
+            <div style="padding:8px 12px;margin:4px 0;font-size:12px;color:#bac2de;">TagChip</div>
+            <div style="padding:8px 12px;margin:4px 0;font-size:12px;color:#bac2de;">CategoryCard</div>
+          </div>
+        </div>
+        <div style="flex:3;border:2px dashed #585b70;border-radius:8px;padding:16px;text-align:center;min-height:200px;background:#1e1e2e;">
+          <div style="color:#a6e3a1;font-size:13px;margin-bottom:8px;">▼ 实时预览区域</div>
+          <div style="color:#585b70;font-size:11px;">选中组件在此完整渲染，支持真实交互</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>五、入口触发流程</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:20px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:2;">
+    <div><span style="color:#f9e2af;">App Drawer</span> → <span style="color:#a6e3a1;">🐛 调试</span> 菜单项</div>
+    <div style="color:#6c7086;">  ↓ (仅 debug 构建可见)</div>
+    <div><span style="color:#f9e2af;">navController.navigate("debug")</span></div>
+    <div style="color:#6c7086;">  ↓</div>
+    <div><span style="color:#cba6f7;">DebugRoute()</span> → <span style="color:#89b4fa;">DebugPage()</span></div>
+    <div style="color:#6c7086;">  ↓</div>
+    <div>从 Registry 读取已注册组件 → 渲染三段式布局</div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>✅ 设计保证</h4>
+    <ul>
+      <li>Release 构建：feature/debug 完全不存在，APK 零膨胀</li>
+      <li>Feature 模块：只在 src/debug/ 下多一个注册文件</li>
+      <li>业务代码：无任何 if-debug 判断，无耦合</li>
+      <li>扩展：新组件只需一行 register() 调用</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>⚠️ 约定</h4>
+    <ul>
+      <li>各 feature 需要在 src/debug/java 下提供注册文件</li>
+      <li>Application.onCreate 需维护各模块注册调用</li>
+    </ul>
+  </div>
+</div>

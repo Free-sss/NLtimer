@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增行为弹窗 - 双栏时间选择器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 26px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .phone-frame {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .sheet {
+            background: #fafafa;
+            padding: 16px;
+        }
+
+        /* 顶部分类 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-chip {
+            padding: 6px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .time-display {
+            padding: 6px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #666;
+            background: white;
+        }
+
+        /* ========== 核心组件：双栏时间选择器 ========== */
+        .dual-time-picker {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* 标题栏 */
+        .picker-header {
+            display: flex;
+            background: #1a1a1a;
+        }
+
+        .header-col {
+            flex: 1;
+            width: 80px;
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+        }
+
+        .header-divider {
+            width: 1px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* 内容区域 */
+        .picker-body {
+            display: flex;
+        }
+
+        .time-column {
+            flex: 1;
+            position: relative;
+        }
+
+        .column-divider {
+            width: 1px;
+            background: #f0f0f0;
+        }
+
+        /* 时间项 */
+        .time-item {
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .time-item:last-child {
+            border-bottom: none;
+        }
+
+        .time-item:hover {
+            background: #fafafa;
+        }
+
+        /* 未选中状态 */
+        .time-item .date-text {
+            font-size: 15px;
+            color: #bbb;
+            font-weight: 400;
+            min-width: 48px;
+        }
+
+        .time-item .hour-text {
+            font-size: 17px;
+            color: #ccc;
+            font-weight: 400;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .time-item .colon-text {
+            font-size: 17px;
+            color: #ddd;
+            font-weight: 400;
+        }
+
+        .time-item .minute-text {
+            font-size: 17px;
+            color: #ccc;
+            font-weight: 400;
+            min-width: 28px;
+        }
+
+        /* 选中状态 */
+        .time-item.selected {
+            background: #f5f5f5;
+        }
+
+        .time-item.selected .date-text {
+            color: #1a1a1a;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .time-item.selected .hour-text {
+            color: #1a1a1a;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        .time-item.selected .colon-text {
+            color: #333;
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        .time-item.selected .minute-text {
+            color: #1a1a1a;
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        /* ========== 标签区 - 紧凑版 ========== */
+        .tags-section {
+            margin-bottom: 14px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-chip {
+            padding: 6px 11px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            font-size: 12px;
+            color: #444;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tag-chip:hover {
+            border-color: #bbb;
+        }
+
+        .tag-chip.selected {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1565C0;
+            font-weight: 500;
+        }
+
+        /* ========== 备注输入 ========== */
+        .note-section {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .note-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.4;
+            background: white;
+        }
+
+        .note-input:focus {
+            border-color: #2196F3;
+        }
+
+        .note-input::placeholder {
+            color: #bbb;
+        }
+
+        .char-count {
+            position: absolute;
+            right: 12px;
+            bottom: 8px;
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .history-btn {
+            position: absolute;
+            right: 8px;
+            bottom: 40px;
+            width: 36px;
+            height: 36px;
+            background: #2196F3;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .history-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .history-label {
+            position: absolute;
+            right: 50px;
+            bottom: 46px;
+            font-size: 11px;
+            color: #2196F3;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #E3F2FD;
+        }
+
+        /* ========== 底部按钮 ========== */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid #e0e0e0;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #fafafa;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        /* 说明卡片 */
+        .description {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #FFD54F;
+            padding: 16px 18px;
+            margin-top: 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #555;
+        }
+
+        .description strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ 新增行为弹窗 v3.0</h1>
+
+        <div class="phone-frame">
+            <div class="sheet">
+                <!-- 顶部分类 + 时间显示 -->
+                <div class="top-bar">
+                    <span class="category-chip">无分类 ›</span>
+                    <span class="time-display">41天13时35分55秒 ›</span>
+                </div>
+
+                <!-- ========== 核心：双栏时间选择器 ========== -->
+                <div class="dual-time-picker">
+                    <!-- 标题栏：黑色背景 + 白色文字 -->
+                    <div class="picker-header">
+                        <div class="header-col">上尾</div>
+                        <div class="header-divider"></div>
+                        <div class="header-col">当前</div>
+                    </div>
+
+                    <!-- 内容区：左右两栏 -->
+                    <div class="picker-body">
+                        <!-- 左栏：上尾（上次结束时间） -->
+                        <div class="time-column">
+                            <div class="time-item" onclick="selectItem(this, 'left')">
+                                <span class="date-text">03/17</span>
+                                <span class="hour-text">19</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">07</span>
+                            </div>
+
+                            <div class="time-item selected" onclick="selectItem(this, 'left')">
+                                <span class="date-text">03/18</span>
+                                <span class="hour-text">20</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">08</span>
+                            </div>
+
+                            <div class="time-item" onclick="selectItem(this, 'left')">
+                                <span class="date-text">03/19</span>
+                                <span class="hour-text">21</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">09</span>
+                            </div>
+                        </div>
+
+                        <!-- 分割线 -->
+                        <div class="column-divider"></div>
+
+                        <!-- 右栏：当前（系统当前时间） -->
+                        <div class="time-column">
+                            <div class="time-item" onclick="selectItem(this, 'right')">
+                                <span class="date-text">昨天</span>
+                                <span class="hour-text">08</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">43</span>
+                            </div>
+
+                            <div class="time-item selected" onclick="selectItem(this, 'right')">
+                                <span class="date-text">今天</span>
+                                <span class="hour-text">09</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">44</span>
+                            </div>
+
+                            <div class="time-item" onclick="selectItem(this, 'right')">
+                                <span class="date-text">明天</span>
+                                <span class="hour-text">10</span>
+                                <span class="colon-text">:</span>
+                                <span class="minute-text">45</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签选择器 - 紧凑圆角 -->
+                <div class="tags-section">
+                    <div class="tags-container">
+                        <div class="tag-chip selected">学习</div>
+                        <div class="tag-chip">读书</div>
+                        <div class="tag-chip selected">英语</div>
+                        <div class="tag-chip">c语言</div>
+                        <div class="tag-chip">微积分</div>
+                        <div class="tag-chip">休息</div>
+                        <div class="tag-chip">睡觉</div>
+                        <div class="tag-chip">Take a nap</div>
+                        <div class="tag-chip">冥想</div>
+                        <div class="tag-chip selected">信息流📱</div>
+                        <div class="tag-chip">生活</div>
+                        <div class="tag-chip">厕所</div>
+                        <div class="tag-chip">金刚功</div>
+                        <div class="tag-chip">吃饭</div>
+                        <div class="tag-chip">多巴胺😈</div>
+                        <div class="tag-chip" style="border-style:dashed;">⚙️ 管理</div>
+                    </div>
+                </div>
+
+                <!-- 备注输入框 -->
+                <div class="note-section">
+                    <textarea
+                        class="note-input"
+                        rows="2"
+                        placeholder="请输入备注"
+                    ></textarea>
+                    <span class="char-count">0/5000</span>
+                    <span class="history-label">历史备注</span>
+                    <div class="history-btn">📋</div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">继续添加</button>
+                    <button class="btn btn-primary">添加</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="description">
+            <strong>🎯 设计规格说明：</strong><br><br>
+            • <strong>左右双栏对比布局</strong>：左「上尾」vs 右「当前」，中间垂直分割线<br>
+            • <strong>黑色标题栏</strong>：最高视觉层级，明确区分两栏功能<br>
+            • <strong>列表式时间项</strong>：每栏 3 行可选时间，格式为 `日期 时:分`<br>
+            • <strong>选中高亮</strong>：浅灰背景 (#f5f5f5) + 深黑加粗文字 (font-weight: 700)<br>
+            • <strong>未选中弱化</strong>：浅灰色文字 (#bbb-#ccc)，降低视觉干扰<br>
+            • <strong>左侧绝对日期</strong>：MM/DD 格式 (03/18)<br>
+            • <strong>右侧相对日期</strong>：中文格式 (昨天/今天/明天)<br>
+            • <strong>紧凑标签</strong>：圆角 6px，间距 6px，字号 12px<br>
+            • <strong>Material 3 风格</strong>：小圆角、清晰层次、柔和阴影
+        </div>
+    </div>
+
+    <script>
+        function selectItem(item, column) {
+            // 取消同列其他项的选中状态
+            const columnEl = item.parentElement;
+            columnEl.querySelectorAll('.time-item').forEach(i => {
+                i.classList.remove('selected');
+            });
+            // 选中当前项
+            item.classList.add('selected');
+        }
+
+        // 标签点击交互
+        document.querySelectorAll('.tag-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+    </script>
+</body>
+</html>

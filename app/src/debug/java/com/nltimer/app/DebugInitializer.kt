@@ -8,6 +8,7 @@ import com.nltimer.app.component.drawerMenuItems
 import com.nltimer.app.navigation.debugRoutes
 import com.nltimer.feature.categories.debug.CategoriesDebugComponents
 import com.nltimer.feature.debug.DebugRoute
+import com.nltimer.feature.debug.FeatureDebugComponents
 import com.nltimer.feature.home.debug.HomeDebugComponents
 import com.nltimer.feature.management_activities.debug.ManagementDebugComponents
 import com.nltimer.feature.settings.debug.SettingsDebugComponents
@@ -27,6 +28,7 @@ object DebugInitializer {
             DrawerMenuItem("debug", "🐛 调试", Icons.Default.Build)
         )
 
+        FeatureDebugComponents.registerAll()
         HomeDebugComponents.registerAll()
         SubDebugComponents.registerAll()
         StatsDebugComponents.registerAll()

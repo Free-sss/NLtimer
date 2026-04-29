@@ -1,0 +1,81 @@
+<h2>方案 C 详解：通过 Build Variant 控制入口</h2>
+<p class="subtitle">debug 版本自动可见调试页面，release 版本完全不存在</p>
+
+<div class="section">
+  <h3>核心机制</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:1.8;">
+    <div style="color:#f9e2af;">// build.gradle.kts — 零配置，利用 Android 内置机制</div>
+    <div style="color:#6c7086;">// debug 变体自动拥有 debugImplementation 依赖</div>
+    <div style="color:#6c7086;">// release 变体编译时完全不包含 debug 模块代码</div>
+    <div style="margin-top:8px;">&nbsp;</div>
+    <div style="color:#89b4fa;">dependencies {</div>
+    <div style="color:#a6e3a1;padding-left:20px;">debugImplementation(projects.<span style="color:#f9e2af;">feature.debug</span>)</div>
+    <div style="color:#89b4fa;">}</div>
+    <div style="margin-top:8px;">&nbsp;</div>
+    <div style="color:#6c7086;">// feature/debug 模块只在 debug 编译时存在</div>
+    <div style="color:#6c7086;">// release 时完全剥离，无任何残留</div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>模块结构</h3>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;background:#313244;border-radius:12px;padding:20px;border:2px solid #a6e3a1;">
+      <div style="color:#a6e3a1;font-weight:700;font-size:15px;margin-bottom:12px;">📦 feature/debug</div>
+      <div style="color:#bac2de;font-size:13px;line-height:2;">
+        src/main/java/<br>
+        └─ com/nltimer/feature/debug/<br>
+        &nbsp;&nbsp;&nbsp;├─ <span style="color:#f9e2af;">DebugRoute.kt</span><br>
+        &nbsp;&nbsp;&nbsp;├─ <span style="color:#f9e2af;">DebugComponentRegistry.kt</span><br>
+        &nbsp;&nbsp;&nbsp;└─ <span style="color:#f9e2af;">DebugComponentPage.kt</span>
+      </div>
+    </div>
+    <div style="flex:1;min-width:200px;background:#313244;border-radius:12px;padding:20px;border:2px solid #cba6f7;">
+      <div style="color:#cba6f7;font-weight:700;font-size:15px;margin-bottom:12px;">📱 app 模块集成</div>
+      <div style="color:#bac2de;font-size:13px;line-height:2;">
+        Drawer 菜单项<br>
+        └─ <span style="color:#f38ba8;">if (BuildConfig.DEBUG)</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;显示 "🐛 调试" 项<br>
+        &nbsp;&nbsp;&nbsp;<br>
+        NavHost 路由<br>
+        └─ <span style="color:#f38ba8;">debugImplementation</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;composable("debug")
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>组件注册机制</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:13px;line-height:1.8;">
+    <div style="color:#6c7086;">// DebugComponentRegistry — 组件只需注册即可自动出现在列表中</div>
+    <div style="margin-top:4px;color:#cba6f7;">object</span> DebugComponentRegistry {</div>
+    <div style="padding-left:16px;color:#f9e2af;">val components</span> = <span style="color:#89b4fa;">listOf</span>(</div>
+    <div style="padding-left:32px;color:#a6e3a1;">DebugComponent("AddBehaviorSheet", "新增行为弹窗") { AddBehaviorSheetPreview() },</div>
+    <div style="padding-left:32px;color:#a6e3a1;">DebugComponent("TagChip", "标签芯片") { TagChipPreview() },</div>
+    <div style="padding-left:32px;color:#a6e3a1;">DebugComponent("EmptyState", "空状态视图") { EmptyStatePreview() },</div>
+    <div style="padding-left:32px;color:#6c7086;">// 🔥 添加新组件只需加一行</div>
+    <div style="padding-left:16px;">)</div>
+    <div>}</div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>✅ 优点</h4>
+    <ul>
+      <li>Release 版本零残留，代码完全不存在</li>
+      <li>无需额外的开关逻辑，利用 Android 原生机制</li>
+      <li>调试代码可自由引用任意模块的 UI 组件</li>
+      <li>组件注册简单，一行代码加入调试列表</li>
+      <li>与现有 Gradle 约定插件体系完美契合</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>⚠️ 注意事项</h4>
+    <ul>
+      <li>切换 debug/release 需要重新构建</li>
+      <li>调试模块不能引用各 feature 的内部实现（除非暴露 Preview 函数）</li>
+    </ul>
+  </div>
+</div>

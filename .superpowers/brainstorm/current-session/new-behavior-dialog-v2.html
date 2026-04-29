@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增行为弹窗 - 滚动时间选择器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 28px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .phone-frame {
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .sheet {
+            background: #fafafa;
+            padding: 16px;
+        }
+
+        /* 分类和时间显示 */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .category-chip {
+            padding: 6px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .time-display {
+            padding: 6px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            background: white;
+        }
+
+        /* 滚动时间选择器区域 */
+        .time-picker-section {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 0;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .shortcut-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 10px;
+            padding: 0 12px;
+        }
+
+        .shortcut-tab {
+            flex: 1;
+            padding: 8px 12px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 8px 8px 0 0;
+            background: #f5f5f5;
+            color: #999;
+        }
+
+        .shortcut-tab.active {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        /* 滚轮选择器 */
+        .wheel-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+            height: 140px;
+            overflow: hidden;
+        }
+
+        .wheel-selector {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .wheel-column {
+            width: 70px;
+            height: 120px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wheel-items {
+            position: absolute;
+            width: 100%;
+            transition: transform 0.3s ease-out;
+        }
+
+        .wheel-item {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #ccc;
+            transition: all 0.2s;
+        }
+
+        .wheel-item.selected {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .wheel-item.nearby {
+            color: #999;
+            font-size: 15px;
+        }
+
+        /* 选择指示器 */
+        .selection-indicator {
+            position: absolute;
+            top: 50%;
+            left: 8px;
+            right: 8px;
+            height: 40px;
+            transform: translateY(-50%);
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .gradient-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 50px;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .gradient-top {
+            top: 0;
+            background: linear-gradient(to bottom, white, transparent);
+        }
+
+        .gradient-bottom {
+            bottom: 0;
+            background: linear-gradient(to top, white, transparent);
+        }
+
+        .separator {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            padding: 0 4px;
+        }
+
+        /* 标签选择器 - 更紧凑 */
+        .tags-section {
+            margin-bottom: 14px;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-chip {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            font-size: 12px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .tag-chip.selected {
+            background: #E3F2FD;
+            border-color: #2196F3;
+            color: #1976D2;
+        }
+
+        /* 备注输入 */
+        .note-section {
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .note-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .note-input:focus {
+            border-color: #2196F3;
+        }
+
+        .note-input::placeholder {
+            color: #bbb;
+        }
+
+        .char-count {
+            position: absolute;
+            right: 12px;
+            bottom: 8px;
+            font-size: 11px;
+            color: #ccc;
+        }
+
+        .history-btn {
+            position: absolute;
+            right: 8px;
+            bottom: 40px;
+            width: 36px;
+            height: 36px;
+            background: #2196F3;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .history-label {
+            position: absolute;
+            right: 48px;
+            bottom: 46px;
+            font-size: 11px;
+            color: #2196F3;
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* 底部按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid #e0e0e0;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .description {
+            background: rgba(255,255,255,0.95);
+            border-left: 4px solid #FFD54F;
+            padding: 16px;
+            margin-top: 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⏰ 新增行为弹窗 v2.0</h1>
+
+        <div class="phone-frame">
+            <div class="sheet">
+                <!-- 顶部分类 + 时间 -->
+                <div class="top-bar">
+                    <span class="category-chip">无分类 ›</span>
+                    <span class="time-display">41天13时35分55秒 ›</span>
+                </div>
+
+                <!-- 滚动时间选择器 -->
+                <div class="time-picker-section">
+                    <!-- 快捷按钮 -->
+                    <div class="shortcut-tabs">
+                        <div class="shortcut-tab active" onclick="selectShortcut('last')">上尾</div>
+                        <div class="shortcut-tab" onclick="selectShortcut('current')">当前</div>
+                    </div>
+
+                    <!-- 滚轮选择器 -->
+                    <div class="wheel-container">
+                        <div class="gradient-overlay gradient-top"></div>
+                        <div class="gradient-overlay gradient-bottom"></div>
+                        <div class="selection-indicator"></div>
+
+                        <!-- 月份列 -->
+                        <div class="wheel-column" id="month-wheel">
+                            <div class="wheel-items" style="transform: translateY(-40px)">
+                                <div class="wheel-item nearby">02</div>
+                                <div class="wheel-item selected">03</div>
+                                <div class="wheel-item nearby">04</div>
+                            </div>
+                        </div>
+
+                        <!-- 日期列 -->
+                        <div class="wheel-column" id="day-wheel">
+                            <div class="wheel-items" style="transform: translateY(-40px)">
+                                <div class="wheel-item nearby">17</div>
+                                <div class="wheel-item selected">18</div>
+                                <div class="wheel-item nearby">19</div>
+                            </div>
+                        </div>
+
+                        <!-- 小时列 -->
+                        <div class="wheel-column" id="hour-wheel">
+                            <div class="wheel-items" style="transform: translateY(-80px)">
+                                <div class="wheel-item nearby">18</div>
+                                <div class="wheel-item nearby">19</div>
+                                <div class="wheel-item selected">20</div>
+                                <div class="wheel-item nearby">21</div>
+                                <div class="wheel-item nearby">22</div>
+                            </div>
+                        </div>
+
+                        <span class="separator">:</span>
+
+                        <!-- 分钟列 -->
+                        <div class="wheel-column" id="minute-wheel">
+                            <div class="wheel-items" style="transform: translateY(-40px)">
+                                <div class="wheel-item nearby">07</div>
+                                <div class="wheel-item selected">08</div>
+                                <div class="wheel-item nearby">09</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签选择 - 紧凑版 -->
+                <div class="tags-section">
+                    <div class="tags-container">
+                        <div class="tag-chip selected">学习</div>
+                        <div class="tag-chip">读书</div>
+                        <div class="tag-chip selected">英语</div>
+                        <div class="tag-chip">c语言</div>
+                        <div class="tag-chip">微积分</div>
+                        <div class="tag-chip">休息</div>
+                        <div class="tag-chip">睡觉</div>
+                        <div class="tag-chip">Take a nap</div>
+                        <div class="tag-chip">冥想</div>
+                        <div class="tag-chip selected">信息流📱</div>
+                        <div class="tag-chip">生活</div>
+                        <div class="tag-chip">厕所</div>
+                        <div class="tag-chip">金刚功</div>
+                        <div class="tag-chip">吃饭</div>
+                        <div class="tag-chip">多巴胺😈</div>
+                        <div class="tag-chip" style="border-style:dashed;">⚙️ 管理</div>
+                    </div>
+                </div>
+
+                <!-- 备注输入 -->
+                <div class="note-section">
+                    <textarea
+                        class="note-input"
+                        rows="2"
+                        placeholder="请输入备注"
+                    ></textarea>
+                    <span class="char-count">0/5000</span>
+                    <span class="history-label">历史备注</span>
+                    <div class="history-btn">📋</div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary">继续添加</button>
+                    <button class="btn btn-primary">添加</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="description">
+            <strong>🎯 设计改进：</strong><br><br>
+            • <strong>滚动式时间选择器 (Wheel Picker)</strong>：类似 iOS 原生时间选择体验<br>
+            • <strong>双快捷按钮</strong>：「上尾」= 上次行为结束时间，「当前」= 系统当前时间<br>
+            • <strong>紧凑布局</strong>：移除日期选择器，标签圆角从 20px → 6px<br>
+            • <strong>Material 3 风格</strong>：小圆角、清晰层次、柔和阴影<br>
+            • <strong>历史备注入口</strong>：右下角快速访问常用备注
+        </div>
+    </div>
+
+    <script>
+        function selectShortcut(type) {
+            document.querySelectorAll('.shortcut-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (type === 'last') {
+                // 切换到上次结束时间示例
+                updateWheel('month', -40);
+                updateWheel('day', -40);
+                updateWheel('hour', -80);
+                updateWheel('minute', -40);
+            } else {
+                // 切换到当前时间示例
+                updateWheel('month', 0);
+                updateWheel('day', 0);
+                updateWheel('hour', -160);
+                updateWheel('minute', -160);
+            }
+        }
+
+        function updateWheel(wheelId, offset) {
+            const wheel = document.getElementById(wheelId + '-wheel');
+            if (wheel) {
+                const items = wheel.querySelector('.wheel-items');
+                items.style.transform = `translateY(${offset}px)`;
+            }
+        }
+
+        // 标签点击交互
+        document.querySelectorAll('.tag-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+    </script>
+</body>
+</html>

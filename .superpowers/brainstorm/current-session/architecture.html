@@ -1,117 +1,65 @@
-<h2>设计总览 — NLtimer 主题系统架构</h2>
-<p class="subtitle">方案 A：独立 core:designsystem 模块 · 完整复刻 Momentum 主题能力</p>
+<h2>UI 组件调试页面 — 整体架构</h2>
+<p class="subtitle">这是一个独立的调试容器页面，与业务代码零耦合</p>
 
 <div class="section">
-  <h3>🏗️ 模块分层</h3>
+  <h3>架构概览</h3>
+  <div style="background:#1e1e2e;border-radius:12px;padding:24px;color:#cdd6f4;font-family:monospace;font-size:14px;line-height:1.8;margin-bottom:20px;">
+    <div style="color:#89b4fa;">┌─────────────────────────────────────────┐</div>
+    <div style="color:#89b4fa;">│  <span style="color:#f9e2af;">NLtimer App</span>                          │</div>
+    <div style="color:#89b4fa;">│  ┌─────┐ ┌─────┐ ┌─────┐ ┌──────────┐ │</div>
+    <div style="color:#89b4fa;">│  │Home │ │Stats│ │Sub  │ │ <span style="color:#a6e3a1;background:#313244;padding:2px 6px;border-radius:4px;">🐛Debug</span> │ │</div>
+    <div style="color:#89b4fa;">│  └─────┘ └─────┘ └─────┘ └──────────┘ │</div>
+    <div style="color:#89b4fa;">│                       │                 │</div>
+    <div style="color:#89b4fa;">│              ┌────────▼────────┐        │</div>
+    <div style="color:#89b4fa;">│              │ <span style="color:#cba6f7;">DebugContainer</span> │        │</div>
+    <div style="color:#89b4fa;">│              │  <span style="color:#f38ba8;">· 业务零耦合</span>   │        │</div>
+    <div style="color:#89b4fa;">│              │  <span style="color:#f38ba8;">· 组件热切换</span>   │        │</div>
+    <div style="color:#89b4fa;">│              │  <span style="color:#f38ba8;">· 可手动开启</span>   │        │</div>
+    <div style="color:#89b4fa;">│              └──────────────────┘        │</div>
+    <div style="color:#89b4fa;">└─────────────────────────────────────────┘</div>
+  </div>
 </div>
 
-<div style="background:var(--surface);border-radius:16px;padding:24px;margin-bottom:20px">
-  <div style="display:flex;flex-direction:column;gap:16px">
-    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #FF5722">
-      <div style="font-weight:700;margin-bottom:8px;color:#FF5722">📱 app 模块</div>
-      <div style="font-size:13px;opacity:0.8">
-        NLtimerApplication · NLtimerTheme.kt · NLtimerScaffold<br>
-        SettingsScreen（主题设置 UI）· 各 feature 页面
-      </div>
-      <div style="margin-top:8px;background:#FFF3E0;border-radius:6px;padding:6px 10px;font-size:11px">
-        ⚡ 职责：组装 DI、提供入口 Composable、主题设置页面 v2
+<div class="section">
+  <h3>三个核心设计要点</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h3>1. 空白容器，零耦合</h3>
+        <p>DebugRoute 是一个完全干净的 Compose 容器，不依赖任何 ViewModel、Repository 或业务数据。纯 UI 渲染。</p>
       </div>
     </div>
-    <div style="display:flex;justify-content:center">
-      <span style="font-size:18px;opacity:0.3">⬆️ depends on ⬆️</span>
-    </div>
-    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #1565C0">
-      <div style="font-weight:700;margin-bottom:8px;color:#1565C0">🎨 core:designsystem 模块</div>
-      <div style="font-size:13px;opacity:0.8">
-        Theme.kt · Fonts.kt · PaletteStyle.kt · AppTheme.kt<br>
-        NLtimerTheme.kt · provideTypography.kt<br>
-        listItemExt.kt · 通用组件样式
-      </div>
-      <div style="margin-top:8px;background:#E3F2FD;border-radius:6px;padding:6px 10px;font-size:11px">
-        ⚡ 职责：主题数据模型、主题渲染引擎、组件样式规范 —— 被所有模块依赖
+    <div class="card">
+      <div class="card-body">
+        <h3>2. 快速切换组件</h3>
+        <p>通过顶部 Dropdown / Tab 选择器，即时切换不同的 UI 组件进行预览，支持实时热重载。</p>
       </div>
     </div>
-    <div style="display:flex;justify-content:center">
-      <span style="font-size:18px;opacity:0.3">⬆️ depends on ⬆️</span>
-    </div>
-    <div style="background:var(--bg);border-radius:12px;padding:16px;border-left:4px solid #4CAF50">
-      <div style="font-weight:700;margin-bottom:8px;color:#4CAF50">💾 core:data 模块</div>
-      <div style="font-size:13px;opacity:0.8">
-        SettingsPrefs.kt（接口）· SettingsPrefsImpl.kt<br>
-        DatastoreFactory.kt · ThemePreferencesKeys
-      </div>
-      <div style="margin-top:8px;background:#E8F5E9;border-radius:6px;padding:6px 10px;font-size:11px">
-        ⚡ 职责：主题配置的 DataStore 持久化，提供 Flow 流式读取和更新
+    <div class="card">
+      <div class="card-body">
+        <h3>3. 可控制入口</h3>
+        <p>通过 BuildConfig 或 DataStore 开关控制导航入口的显隐，发布版本完全隐藏。</p>
       </div>
     </div>
   </div>
 </div>
 
 <div class="section">
-  <h3>🔄 数据流</h3>
-</div>
-
-<div style="background:var(--surface);border-radius:16px;padding:20px;margin-bottom:20px">
-  <div style="font-size:13px;font-family:monospace;line-height:2">
-    👤 用户操作 (SettingsScreen)<br>
-    &nbsp;&nbsp;→ <span style="color:#FF5722">SettingsAction</span> (sealed interface)<br>
-    &nbsp;&nbsp;→ <span style="color:#1565C0">SettingsViewModel</span> (Hilt)<br>
-    &nbsp;&nbsp;→ <span style="color:#4CAF50">SettingsPrefsImpl</span>.updateXxx() → <b>DataStore</b><br>
-    &nbsp;&nbsp;→ <span style="color:#4CAF50">SettingsPrefs</span>.getXxxFlow() → StateFlow&lt;Theme&gt;<br>
-    &nbsp;&nbsp;→ <span style="color:#1565C0">MainAppViewModel</span>.state (MainAppState.theme)<br>
-    &nbsp;&nbsp;→ 🎨 <span style="color:#9C27B0">NLtimerTheme(theme)</span> → DynamicMaterialTheme<br>
-    &nbsp;&nbsp;→ 所有子 Composable 自动继承主题
+  <h3>页面布局结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">DebugComponentPage</div>
+    <div class="mockup-body">
+      <div style="background:#45475a;border-radius:8px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <div style="background:#585b70;border-radius:6px;padding:8px 16px;color:#cdd6f4;font-size:13px;">🔄 组件选择器</div>
+        <div style="color:#bac2de;font-size:12px;">▼ AddBehaviorSheet</div>
+      </div>
+      <div style="border:2px dashed #585b70;border-radius:8px;padding:32px;text-align:center;min-height:200px;display:flex;align-items:center;justify-content:center;">
+        <div>
+          <div style="font-size:48px;margin-bottom:8px;">🎨</div>
+          <div style="color:#bac2de;">当前选中组件的实时预览区域</div>
+          <div style="color:#585b70;font-size:12px;margin-top:8px;">组件在此完整渲染，支持交互</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
-<div class="section">
-  <h3>📦 对比：Momentum vs NLtimer 新架构</h3>
-</div>
-
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-  <tr style="background:var(--bg)">
-    <th style="padding:10px;text-align:left;border-radius:8px 0 0 0">维度</th>
-    <th style="padding:10px;text-align:left">Momentum</th>
-    <th style="padding:10px;text-align:left;border-radius:0 8px 0 0">NLtimer（新）</th>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">色彩引擎</td>
-    <td style="padding:10px">MaterialKolor DynamicMaterialTheme</td>
-    <td style="padding:10px">✅ 相同</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">DI 框架</td>
-    <td style="padding:10px">Koin (@KoinViewModel, @Single)</td>
-    <td style="padding:10px">Hilt (@HiltViewModel, @Singleton)</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">导航</td>
-    <td style="padding:10px">Navigation3 (NavKey sealed)</td>
-    <td style="padding:10px">Navigation Compose (routes)</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">PaletteStyle</td>
-    <td style="padding:10px">9 种</td>
-    <td style="padding:10px">✅ 9 种，相同</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">字体</td>
-    <td style="padding:10px">8 种</td>
-    <td style="padding:10px">3 种 (Figtree/Google Sans/System)</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">AppTheme</td>
-    <td style="padding:10px">LIGHT / DARK / SYSTEM</td>
-    <td style="padding:10px">✅ 相同</td>
-  </tr>
-  <tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px;font-weight:600">Amoled</td>
-    <td style="padding:10px">✅ 支持</td>
-    <td style="padding:10px">✅ 相同</td>
-  </tr>
-  <tr>
-    <td style="padding:10px;font-weight:600">Material You</td>
-    <td style="padding:10px">✅ 支持 (API 31+)</td>
-    <td style="padding:10px">✅ 相同</td>
-  </tr>
-</table>
