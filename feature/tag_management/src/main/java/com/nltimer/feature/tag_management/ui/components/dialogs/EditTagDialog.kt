@@ -1,6 +1,7 @@
 package com.nltimer.feature.tag_management.ui.components.dialogs
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,19 +23,20 @@ import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 /**
  * 编辑标签对话框
  *
- * 修改标签名称，并展示当前归属分类。
+ * 修改标签名称，展示当前归属分类，并提供删除入口。
  *
  * @param tag 要编辑的标签对象
  * @param onDismiss 关闭对话框回调
  * @param onConfirm 确认保存回调，参数为修改后的 Tag
+ * @param onDelete 删除标签回调
  */
 @Composable
 fun EditTagDialog(
     tag: Tag,
     onDismiss: () -> Unit,
     onConfirm: (Tag) -> Unit,
+    onDelete: () -> Unit = {},
 ) {
-    // 初始化输入框为标签现有名称
     var tagName by remember { mutableStateOf(tag.name) }
 
     AlertDialog(
@@ -53,16 +55,30 @@ fun EditTagDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 展示当前分类信息（只读）
                 Text(
                     text = "当前所属分类：${tag.category ?: "未分类"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    TextButton(
+                        onClick = {
+                            onDismiss()
+                            onDelete()
+                        },
+                    ) {
+                        Text(
+                            text = "删除标签",
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
-            // 名称非空时才允许保存
             TextButton(
                 onClick = {
                     if (tagName.isNotBlank()) {

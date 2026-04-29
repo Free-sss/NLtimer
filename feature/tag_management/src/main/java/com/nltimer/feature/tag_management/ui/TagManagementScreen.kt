@@ -12,19 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.tag_management.model.DialogState
@@ -54,58 +48,36 @@ import com.nltimer.feature.tag_management.ui.components.dialogs.RenameCategoryDi
  * @param onNavigateBack 返回上一页的回调
  * @param modifier 修饰符
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagManagementScreen(
     viewModel: TagManagementViewModel,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 收集 UI 状态流
     val uiState by viewModel.uiState.collectAsState()
-    // 顶部栏折叠滚动行为
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Scaffold(
-//        topBar = {
-//            LargeTopAppBar(
-//                title = { Text("标签管理") },
-//                navigationIcon = {
-//                    IconButton(onClick = onNavigateBack) {
-//                        Icon(
-//                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                            contentDescription = "返回",
-//                        )
-//                    }
-//                },
-//                scrollBehavior = scrollBehavior,
-//            )
-//        },
-        // 悬浮按钮：点击弹出添加分类对话框
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.showAddCategoryDialog() }) {
                 Icon(Icons.Default.Add, contentDescription = "更多操作")
             }
         },
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            // 加载中状态：显示圆形进度指示器
             if (uiState.isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
                 )
             } else {
-                // 使用 LazyColumn 展示所有分类卡片
                 LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    // "默认"分类：展示所有未分类标签
                     item {
                         CategoryCard(
                             categoryName = "默认",
@@ -117,9 +89,7 @@ fun TagManagementScreen(
                         )
                     }
 
-                    // 遍历所有用户自定义分类
-                    items(uiState.categories.size) { index ->
-                        val category = uiState.categories[index]
+                    items(uiState.categories, key = { it.categoryName }) { category ->
                         CategoryCard(
                             categoryName = category.categoryName,
                             tags = category.tags,
@@ -128,7 +98,10 @@ fun TagManagementScreen(
                             onTagLongClick = {
                                 viewModel.showMoveTagDialog(it, category.categoryName)
                             },
-                            onMenuClick = {
+                            onRenameCategory = {
+                                viewModel.showRenameCategoryDialog(category.categoryName)
+                            },
+                            onDeleteCategory = {
                                 viewModel.showDeleteCategoryDialog(
                                     category.categoryName,
                                     category.tags.size,
@@ -137,15 +110,14 @@ fun TagManagementScreen(
                         )
                     }
 
-                    // 底部"增加标签分类"按钮
                     item {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         OutlinedButton(
                             onClick = { viewModel.showAddCategoryDialog() },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(56.dp),
+                                .height(48.dp),
                         ) {
                             Text("+ 增加标签分类")
                         }
@@ -155,7 +127,6 @@ fun TagManagementScreen(
         }
     }
 
-    // 根据当前对话框状态弹出对应对话框
     uiState.dialogState?.let { dialog ->
         when (dialog) {
             is DialogState.AddTag -> {
@@ -172,6 +143,7 @@ fun TagManagementScreen(
                     tag = dialog.tag,
                     onDismiss = { viewModel.dismissDialog() },
                     onConfirm = { viewModel.updateTag(it) },
+                    onDelete = { viewModel.showDeleteTagDialog(dialog.tag) },
                 )
             }
             is DialogState.DeleteTag -> {
@@ -239,7 +211,6 @@ private fun MoveTagDialogWrapper(
     onDismiss: () -> Unit,
     onConfirm: (String?) -> Unit,
 ) {
-    // 当前选中的分类，初始为标签所属分类
     var selectedCategory by remember { mutableStateOf(currentCategory) }
 
     androidx.compose.material3.AlertDialog(
@@ -251,15 +222,13 @@ private fun MoveTagDialogWrapper(
                     text = "将「${tag.name}」移动到：",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // "未分类"选项
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text("未分类") },
                     onClick = { selectedCategory = null },
                 )
 
-                // 遍历所有分类供用户选择
                 categories.forEach { category ->
                     androidx.compose.material3.DropdownMenuItem(
                         text = { Text(category) },
