@@ -15,6 +15,7 @@ data class DebugComponent(
     val name: String,
     val group: String,
     val description: String = "",
+    val implemented: Boolean = false,
     val content: @Composable () -> Unit,
 )
 

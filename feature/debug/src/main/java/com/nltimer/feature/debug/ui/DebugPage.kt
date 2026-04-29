@@ -218,13 +218,29 @@ private fun ComponentPickerSheet(
                     else MaterialTheme.colorScheme.surface,
                 ) {
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                        // 组件名称
-                        Text(
-                            text = component.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurface,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // 组件名称
+                            Text(
+                                text = component.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurface,
+                            )
+                            if (component.implemented) {
+                                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                                ) {
+                                    Text(
+                                        text = "已实装",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                                    )
+                                }
+                            }
+                        }
                         // 组件描述（如果有）
                         if (component.description.isNotEmpty()) {
                             Text(

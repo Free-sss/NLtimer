@@ -39,6 +39,7 @@ object FeatureDebugComponents {
                 name = "新增活动",
                 group = "Forms",
                 description = "新增活动表单，含图标/名称/备注/标签",
+                implemented = true,
             ) {
                 AddActivityPreview()
             }
@@ -49,6 +50,7 @@ object FeatureDebugComponents {
                 name = "编辑活动",
                 group = "Forms",
                 description = "编辑活动表单，预填模拟数据",
+                implemented = true,
             ) {
                 EditActivityPreview()
             }
