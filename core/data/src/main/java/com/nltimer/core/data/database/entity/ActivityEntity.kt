@@ -17,6 +17,7 @@ data class ActivityEntity(
     val groupId: Long? = null,
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
+    val color: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )

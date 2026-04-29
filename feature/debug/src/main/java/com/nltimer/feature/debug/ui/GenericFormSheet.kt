@@ -1,10 +1,12 @@
 package com.nltimer.feature.debug.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,23 +20,33 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.component.ColorPickerDialog
 import com.nltimer.feature.debug.model.FormRow
 import com.nltimer.feature.debug.model.FormSection
 import com.nltimer.feature.debug.model.FormSpec
@@ -57,10 +69,10 @@ fun GenericFormSheet(
     initialData: Map<String, String>?,
     onDismiss: () -> Unit,
     onSubmit: (Map<String, String>) -> Unit,
+    overlay: @Composable (() -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // 从 spec 提取所有 key 并建立默认值，编辑模式用 initialData 覆盖
     val formState = remember {
         val defaults = spec.defaultValues().toMutableMap()
         if (initialData != null) {
@@ -98,65 +110,63 @@ fun GenericFormSheet(
             }
         },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            // 遍历渲染每个分组
-            spec.sections.forEachIndexed { index, section ->
-                if (index > 0) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column {
-                        section.rows.forEach { row ->
-                            FormRowRenderer(
-                                row = row,
-                                formState = formState,
-                            )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                spec.sections.forEachIndexed { index, section ->
+                    if (index > 0) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Column {
+                            section.rows.forEach { row ->
+                                FormRowRenderer(
+                                    row = row,
+                                    formState = formState,
+                                )
+                            }
                         }
                     }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = { onSubmit(formState.toMap()) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 48.dp)
+                        .height(44.dp),
+                    shape = RoundedCornerShape(22.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = spec.submitLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // 提交按钮
-            Button(
-                onClick = { onSubmit(formState.toMap()) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 48.dp)
-                    .height(44.dp),
-                shape = RoundedCornerShape(22.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = spec.submitLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            overlay?.invoke()
         }
     }
 }
 
-/**
- * 表单行渲染器
- * 根据 [row] 的具体类型分发到对应的渲染函数
- */
 @Composable
 private fun FormRowRenderer(
     row: FormRow,
@@ -172,6 +182,8 @@ private fun FormRowRenderer(
             row = row,
             emoji = formState[row.iconKey] ?: row.initialEmoji,
             colorValue = formState[row.colorKey] ?: "",
+            onEmojiChange = { formState[row.iconKey] = it },
+            onColorChange = { formState[row.colorKey] = it },
         )
         is FormRow.LabelAction -> LabelActionRenderer(row = row)
         is FormRow.Switch -> SwitchRenderer(
@@ -240,7 +252,22 @@ private fun IconColorRenderer(
     row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
+    onEmojiChange: (String) -> Unit,
+    onColorChange: (String) -> Unit,
 ) {
+    val fallbackColor = MaterialTheme.colorScheme.primary
+    val currentColor = remember(colorValue) {
+        try {
+            if (colorValue.isNotBlank()) Color(colorValue.toLong(16).or(0xFF000000.toLong()))
+            else fallbackColor
+        } catch (_: Exception) {
+            fallbackColor
+        }
+    }
+
+    var showEmojiEditor by remember { mutableStateOf(false) }
+    var showColorPicker by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -261,7 +288,8 @@ private fun IconColorRenderer(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .clickable { showEmojiEditor = true },
                 contentAlignment = Alignment.Center,
             ) {
                 Text(emoji, style = MaterialTheme.typography.titleMedium)
@@ -281,10 +309,65 @@ private fun IconColorRenderer(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
+                    .background(currentColor)
+                    .clickable { showColorPicker = true },
             )
         }
     }
+
+    if (showEmojiEditor) {
+        EmojiEditDialog(
+            current = emoji,
+            onConfirm = { newEmoji ->
+                onEmojiChange(newEmoji)
+                showEmojiEditor = false
+            },
+            onDismiss = { showEmojiEditor = false },
+        )
+    }
+
+    if (showColorPicker) {
+        ColorPickerDialog(
+            initialColor = currentColor,
+            onSelect = { color ->
+                val hex = color.toArgb().toULong().toString(16)
+                onColorChange(hex)
+                showColorPicker = false
+            },
+            onDismiss = { showColorPicker = false },
+        )
+    }
+}
+
+@Composable
+private fun EmojiEditDialog(
+    current: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var text by remember { mutableStateOf(current) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("编辑图标") },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { if (it.length <= 4) text = it },
+                label = { Text("Emoji") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(text.ifBlank { current }) }) {
+                Text("确定")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
 }
 
 @Composable
@@ -314,6 +397,7 @@ private fun LabelActionRenderer(row: FormRow.LabelAction) {
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
+                .then(if (row.onClick != null) Modifier.clickable { row.onClick() } else Modifier)
                 .padding(horizontal = 14.dp, vertical = 6.dp),
         ) {
             Text(
@@ -381,16 +465,13 @@ private fun NumberInputRenderer(
                 .padding(horizontal = 12.dp, vertical = 10.dp),
             textStyle = MaterialTheme.typography.bodyMedium.copy(
                 color = MaterialTheme.colorScheme.onSurface,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
             ),
             singleLine = true,
         )
     }
 }
 
-/**
- * 从 FormSpec 提取所有行 key 的默认值
- */
 private fun FormSpec.defaultValues(): Map<String, String> = buildMap {
     sections.forEach { section ->
         section.rows.forEach { row ->

@@ -9,6 +9,8 @@ android {
 
 dependencies {
     implementation(projects.core.designsystem)
+    implementation(projects.core.data)
+    implementation(projects.feature.home)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)

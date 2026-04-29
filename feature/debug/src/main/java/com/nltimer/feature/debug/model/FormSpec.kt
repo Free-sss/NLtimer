@@ -29,6 +29,7 @@ sealed class FormRow {
         val label: String,
         val actionText: String,
         val showHelp: Boolean = false,
+        val onClick: (() -> Unit)? = null,
     ) : FormRow()
 
     data class Switch(

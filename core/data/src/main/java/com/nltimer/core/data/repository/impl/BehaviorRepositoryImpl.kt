@@ -74,6 +74,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             groupId = activityEntity.groupId,
             isPreset = activityEntity.isPreset,
             isArchived = activityEntity.isArchived,
+            color = activityEntity.color,
         )
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
         val tags = tagEntities.map { entity ->

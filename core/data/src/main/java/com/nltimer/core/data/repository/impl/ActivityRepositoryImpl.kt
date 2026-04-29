@@ -61,6 +61,7 @@ class ActivityRepositoryImpl @Inject constructor(
         groupId = groupId,
         isPreset = isPreset,
         isArchived = isArchived,
+        color = color,
     )
 
     private fun ActivityGroupEntity.toModel() = ActivityGroup(

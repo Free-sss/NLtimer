@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -89,6 +89,12 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 db.execSQL("DROP TABLE activities")
                 db.execSQL("ALTER TABLE activities_new RENAME TO activities")
                 db.execSQL("PRAGMA foreign_keys = ON")
+            }
+        }
+
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE activities ADD COLUMN color INTEGER DEFAULT NULL")
             }
         }
     }

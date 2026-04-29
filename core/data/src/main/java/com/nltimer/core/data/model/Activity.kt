@@ -14,8 +14,8 @@ data class Activity(
     val groupId: Long? = null,
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
+    val color: Long? = null,
 ) {
-    /** 转换为数据库实体 */
     fun toEntity() = ActivityEntity(
         id = id,
         name = name,
@@ -24,10 +24,10 @@ data class Activity(
         groupId = groupId,
         isPreset = isPreset,
         isArchived = isArchived,
+        color = color,
     )
 
     companion object {
-        /** 从数据库实体构建领域模型 */
         fun fromEntity(entity: ActivityEntity) = Activity(
             id = entity.id,
             name = entity.name,
@@ -36,6 +36,7 @@ data class Activity(
             groupId = entity.groupId,
             isPreset = entity.isPreset,
             isArchived = entity.isArchived,
+            color = entity.color,
         )
     }
 }

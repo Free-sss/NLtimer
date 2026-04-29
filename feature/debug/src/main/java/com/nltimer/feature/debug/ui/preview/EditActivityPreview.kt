@@ -17,37 +17,68 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.feature.debug.model.FormRow
 import com.nltimer.feature.debug.ui.GenericFormSheet
 
 @Composable
 fun EditActivityPreview() {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface,
-    ) {
-        var showSheet by remember { mutableStateOf(true) }
+    val mockTags = remember { MockData.tags }
+    val mockGroups = remember { MockData.groups }
+    var showSheet by remember { mutableStateOf(true) }
+    var selectedTagIds by remember { mutableStateOf(setOf<Long>()) }
+    var selectedGroupId by remember { mutableStateOf<Long?>(null) }
+    var showTagPicker by remember { mutableStateOf(false) }
+    var showGroupPicker by remember { mutableStateOf(false) }
 
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "点击下方按钮打开编辑活动弹窗",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(onClick = { showSheet = true }) {
-                    Text("打开编辑活动弹窗")
-                }
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "点击下方按钮打开编辑活动弹窗",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(onClick = { showSheet = true }) {
+                Text("打开编辑活动弹窗")
             }
         }
+    }
 
-        if (showSheet) {
-            GenericFormSheet(
-                spec = ActivityFormSpecs.editActivity(),
-                initialData = mapOf("name" to "阅读", "note" to "每天30分钟", "icon" to "📖", "isArchived" to "false"),
-                onDismiss = { showSheet = false },
-                onSubmit = { showSheet = false },
-            )
-        }
+    if (showSheet) {
+        GenericFormSheet(
+            spec = ActivityFormSpecs.editActivity().copy(
+                sections = ActivityFormSpecs.editActivity().sections.map { section ->
+                    section.copy(
+                        rows = section.rows.map { row ->
+                            if (row is FormRow.LabelAction) {
+                                when (row.key) {
+                                    "tags" -> row.copy(onClick = { showTagPicker = true })
+                                    "category" -> row.copy(
+                                        actionText = mockGroups.find { it.id == selectedGroupId }?.name ?: "未分类",
+                                        onClick = { showGroupPicker = true },
+                                    )
+                                    else -> row
+                                }
+                            } else row
+                        },
+                    )
+                },
+            ),
+            initialData = mapOf("name" to "阅读", "note" to "每天30分钟", "icon" to "📖", "isArchived" to "false"),
+            onDismiss = { showSheet = false },
+            onSubmit = { showSheet = false },
+            overlay = if (showGroupPicker) {
+                { GroupPickerPopup(groups = mockGroups, selectedId = selectedGroupId, onSelected = { selectedGroupId = it }, onDismiss = { showGroupPicker = false }) }
+            } else null,
+        )
+    }
+
+    if (showTagPicker) {
+        TagPickerSheet(
+            tags = mockTags,
+            selectedIds = selectedTagIds,
+            onIdsChanged = { selectedTagIds = it },
+            onDismiss = { showTagPicker = false },
+        )
     }
 }
