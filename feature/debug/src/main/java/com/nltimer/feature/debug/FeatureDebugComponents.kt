@@ -2,6 +2,7 @@ package com.nltimer.feature.debug
 
 import com.nltimer.core.designsystem.debug.DebugComponent
 import com.nltimer.core.designsystem.debug.DebugComponentRegistry
+import com.nltimer.feature.debug.ui.AddActivityDialogPreview
 import com.nltimer.feature.debug.ui.DualTimePickerDebugPreview
 import com.nltimer.feature.debug.ui.TimeAdjustmentDebugPreview
 
@@ -30,6 +31,16 @@ object FeatureDebugComponents {
                 description = "水平步进式时间增减按钮组",
             ) {
                 TimeAdjustmentDebugPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "AddActivityDialog",
+                name = "增加活动弹窗",
+                group = "Dialogs",
+                description = "全屏活动创建对话框，含图标/名称/备注/标签等表单",
+            ) {
+                AddActivityDialogPreview()
             }
         )
     }

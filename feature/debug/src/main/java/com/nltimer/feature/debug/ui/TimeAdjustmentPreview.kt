@@ -1,17 +1,15 @@
 package com.nltimer.feature.debug.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -88,14 +86,12 @@ private fun TimeAdjustmentComponent(
     // 定义时间调整选项：-30, -5, -1, 1, 5, 30 分钟
     val adjustments = listOf(-30, -5, -1, 1, 5, 30)
 
-    // 使用 Row 和 horizontalScroll 确保在小屏幕上能够横向滑动
-    Row(
+    FlowRow(
         modifier = modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         // 遍历生成时间步进按钮
         adjustments.forEach { amount ->

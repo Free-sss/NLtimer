@@ -54,16 +54,17 @@ fun NLtimerTheme(
     ) {
         // 将完整主题配置注入 CompostionLocal，供子组件按需读取
         CompositionLocalProvider(LocalTheme provides theme) {
-        // 主题切换时以淡入淡出动画过渡，避免颜色突变
-        AnimatedContent(
-            targetState = theme.appTheme to theme.isAmoled,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(300)) togetherWith
-                    fadeOut(animationSpec = tween(300))
-            },
-            label = "theme-transition",
-        ) {
-            content()
+            // 主题切换时以淡入淡出动画过渡，避免颜色突变
+            AnimatedContent(
+                targetState = theme.appTheme to theme.isAmoled,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith
+                        fadeOut(animationSpec = tween(300))
+                },
+                label = "theme-transition",
+            ) {
+                content()
+            }
         }
     }
 }
