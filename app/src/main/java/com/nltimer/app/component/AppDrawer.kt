@@ -28,13 +28,13 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
-private data class DrawerMenuItem(
+internal data class DrawerMenuItem(
     val route: String,
     val label: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
 )
 
-private val drawerMenuItems = listOf(
+internal val drawerMenuItems = mutableListOf(
     DrawerMenuItem("home", "主页", Icons.Default.Home),
     DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem("categories", "分类管理", Icons.Default.Category),

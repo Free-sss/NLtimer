@@ -53,6 +53,7 @@ dependencies {
     implementation(projects.feature.categories)
     implementation(projects.feature.managementActivities)
     implementation(projects.feature.tagManagement)
+    debugImplementation(projects.feature.debug)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
