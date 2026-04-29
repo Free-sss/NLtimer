@@ -44,7 +44,7 @@ fun EditActivityPreview() {
         if (showSheet) {
             GenericFormSheet(
                 spec = ActivityFormSpecs.editActivity(),
-                initialData = mapOf("name" to "阅读", "note" to "每天30分钟", "emoji" to "📖"),
+                initialData = mapOf("name" to "阅读", "note" to "每天30分钟", "icon" to "📖", "isArchived" to "false"),
                 onDismiss = { showSheet = false },
                 onSubmit = { showSheet = false },
             )

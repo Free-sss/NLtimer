@@ -2,6 +2,7 @@ package com.nltimer.feature.tag_management.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.feature.tag_management.model.CategoryWithTags
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,6 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TagManagementViewModel @Inject constructor(
     private val tagRepository: TagRepository,
+    private val settingsPrefs: SettingsPrefs,
 ) : ViewModel() {
 
     // 内部可变 UI 状态流
@@ -33,7 +36,13 @@ class TagManagementViewModel @Inject constructor(
     // 对外暴露不可变状态流
     val uiState: StateFlow<TagManagementUiState> = _uiState.asStateFlow()
 
+    // 本地新增的标签分类（用户自行添加但尚无标签归属）
+    private val _addedCategories = MutableStateFlow<Set<String>>(emptySet())
+
     init {
+        viewModelScope.launch {
+            _addedCategories.value = settingsPrefs.getSavedTagCategories().first()
+        }
         loadData()
     }
 
@@ -46,19 +55,23 @@ class TagManagementViewModel @Inject constructor(
         combine(
             tagRepository.getAllActive(),
             tagRepository.getDistinctCategories(),
-        ) { allTags, categories ->
+            _addedCategories,
+        ) { allTags, dbCategories, addedCategories ->
             // 分离未分类标签
             val uncategorizedTags = allTags.filter { it.category.isNullOrBlank() }
             // 提取已分类标签
             val categorizedTags = allTags.filter { !it.category.isNullOrBlank() }
 
-            // 按分类名分组，只保留非空分类
-            val categoriesWithTags = categories.map { categoryName ->
+            // 合并数据库分类与本地新增分类，去重排序
+            val allCategories = (dbCategories.toSet() + addedCategories).toList().sorted()
+
+            // 按分类名分组
+            val categoriesWithTags = allCategories.map { categoryName ->
                 CategoryWithTags(
                     categoryName = categoryName,
                     tags = categorizedTags.filter { it.category == categoryName },
                 )
-            }.filter { it.tags.isNotEmpty() }
+            }
 
             // 更新 UI 状态，清除加载标记
             _uiState.update {
@@ -125,15 +138,6 @@ class TagManagementViewModel @Inject constructor(
      * @param icon 图标标识
      * @param category 归属分类名
      */
-    /**
-     * 添加新标签
-     *
-     * @param name 标签名称
-     * @param color 背景色 ARGB
-     * @param textColor 文字色 ARGB
-     * @param icon 图标标识
-     * @param category 归属分类名
-     */
     fun addTag(name: String, color: Long?, textColor: Long?, icon: String?, category: String?) {
         viewModelScope.launch {
             // 构造新标签对象，id 由数据库自动生成
@@ -181,15 +185,26 @@ class TagManagementViewModel @Inject constructor(
         }
     }
 
-    /** 添加空分类（分类信息存在数据库中，直接关闭对话框即可） */
+    /** 添加新分类 */
     fun addCategory(name: String) {
-        dismissDialog()
+        viewModelScope.launch {
+            val updated = _addedCategories.value + name.trim()
+            _addedCategories.value = updated
+            settingsPrefs.saveTagCategories(updated)
+            dismissDialog()
+        }
     }
 
     /** 重命名分类 */
     fun renameCategory(oldName: String, newName: String) {
         viewModelScope.launch {
             tagRepository.renameCategory(oldName, newName)
+            // 同步更新本地新增集合
+            if (oldName in _addedCategories.value) {
+                val updated = _addedCategories.value - oldName + newName
+                _addedCategories.value = updated
+                settingsPrefs.saveTagCategories(updated)
+            }
             dismissDialog()
         }
     }
@@ -198,6 +213,10 @@ class TagManagementViewModel @Inject constructor(
     fun deleteCategory(name: String) {
         viewModelScope.launch {
             tagRepository.resetCategory(name)
+            // 从本地新增集合中移除
+            val updated = _addedCategories.value - name
+            _addedCategories.value = updated
+            settingsPrefs.saveTagCategories(updated)
             dismissDialog()
         }
     }

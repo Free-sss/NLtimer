@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.feature.debug.model.FormRow
 import com.nltimer.feature.debug.model.FormSection
 import com.nltimer.feature.debug.model.FormSpec
+import kotlin.text.toBooleanStrictOrNull
 
 /**
  * 通用表单底部弹窗
@@ -172,6 +174,16 @@ private fun FormRowRenderer(
             colorValue = formState[row.colorKey] ?: "",
         )
         is FormRow.LabelAction -> LabelActionRenderer(row = row)
+        is FormRow.Switch -> SwitchRenderer(
+            row = row,
+            checked = formState[row.key]?.toBooleanStrictOrNull() ?: row.initialChecked,
+            onCheckedChange = { formState[row.key] = it.toString() },
+        )
+        is FormRow.NumberInput -> NumberInputRenderer(
+            row = row,
+            value = formState[row.key]?.toIntOrNull() ?: row.initialValue,
+            onValueChange = { formState[row.key] = it.toString() },
+        )
     }
 }
 
@@ -313,6 +325,69 @@ private fun LabelActionRenderer(row: FormRow.LabelAction) {
     }
 }
 
+@Composable
+private fun SwitchRenderer(
+    row: FormRow.Switch,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = row.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+        )
+    }
+}
+
+@Composable
+private fun NumberInputRenderer(
+    row: FormRow.NumberInput,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = row.label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        BasicTextField(
+            value = value.toString(),
+            onValueChange = { text ->
+                val num = text.filter { it.isDigit() }.take(2).toIntOrNull() ?: 0
+                onValueChange(num.coerceIn(row.range))
+            },
+            modifier = Modifier
+                .width(56.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            ),
+            singleLine = true,
+        )
+    }
+}
+
 /**
  * 从 FormSpec 提取所有行 key 的默认值
  */
@@ -326,6 +401,8 @@ private fun FormSpec.defaultValues(): Map<String, String> = buildMap {
                     put(row.colorKey, "")
                 }
                 is FormRow.LabelAction -> {}
+                is FormRow.Switch -> put(row.key, row.initialChecked.toString())
+                is FormRow.NumberInput -> put(row.key, row.initialValue.toString())
             }
         }
     }

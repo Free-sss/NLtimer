@@ -30,4 +30,17 @@ sealed class FormRow {
         val actionText: String,
         val showHelp: Boolean = false,
     ) : FormRow()
+
+    data class Switch(
+        val key: String,
+        val label: String,
+        val initialChecked: Boolean = false,
+    ) : FormRow()
+
+    data class NumberInput(
+        val key: String,
+        val label: String,
+        val initialValue: Int = 0,
+        val range: IntRange = 0..99,
+    ) : FormRow()
 }

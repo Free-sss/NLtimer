@@ -44,7 +44,7 @@ fun EditTagPreview() {
         if (showSheet) {
             GenericFormSheet(
                 spec = ActivityFormSpecs.editTag(),
-                initialData = mapOf("name" to "工作", "emoji" to "💼"),
+                initialData = mapOf("name" to "工作", "icon" to "💼", "priority" to "5", "isArchived" to "false"),
                 onDismiss = { showSheet = false },
                 onSubmit = { showSheet = false },
             )
