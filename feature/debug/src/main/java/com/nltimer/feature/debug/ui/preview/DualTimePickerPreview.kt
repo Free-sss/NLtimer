@@ -60,7 +60,7 @@ fun DualTimePickerDebugPreview() {
  * 提供左右两列日期+时间滚轮选择器，通过 LazyColumn 实现的滚轮效果进行日期和时间的选取
  */
 @Composable
-private fun DualTimePicker() {
+internal fun DualTimePicker() {
     val leftDates = listOf("03/16", "03/17", "03/18", "03/19", "03/20")
     val rightDates = listOf("前天", "昨天", "今天", "明天", "后天")
     val hours = (0..23).map { it.toString().padStart(2, '0') }

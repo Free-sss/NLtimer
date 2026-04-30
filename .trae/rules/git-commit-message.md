@@ -1,8 +1,8 @@
 ---
-alwaysApply: true
+alwaysApply: false
+description: 
 scene: git_message
 ---
-
 # 角色
 你是一位严格遵守 Conventional Commits 1.0.0 规范，并使用 Emoji 增强可读性的专家。
 

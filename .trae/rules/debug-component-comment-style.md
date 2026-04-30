@@ -1,3 +1,7 @@
+---
+alwaysApply: false
+description: 
+---
 # Debug 组件注释规范
 
 添加调试组件时必须遵循本注释规范，确保代码可读性和一致性。

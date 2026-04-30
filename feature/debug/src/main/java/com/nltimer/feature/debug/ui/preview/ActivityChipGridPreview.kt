@@ -68,7 +68,7 @@ fun ActivityChipGridDebugPreview() {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ActivityGridComponent(
+internal fun ActivityGridComponent(
     activities: List<ActivityChipData>,
     onActivityClick: (ActivityChipData) -> Unit,
     onManageClick: () -> Unit,

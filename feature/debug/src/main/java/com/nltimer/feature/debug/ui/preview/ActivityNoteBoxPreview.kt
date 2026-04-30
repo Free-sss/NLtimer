@@ -58,7 +58,7 @@ fun ActivityNoteBoxDebugPreview() {
 }
 
 @Composable
-private fun ActivityNoteComponent(
+internal fun ActivityNoteComponent(
     onLabelClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {},
     onContinueAddClick: () -> Unit = {},
@@ -108,7 +108,7 @@ private fun ActivityNoteComponent(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(160.dp)
+                    .height(144.dp)
                     .background(backgroundColor, RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {

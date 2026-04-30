@@ -4,6 +4,7 @@ import com.nltimer.core.designsystem.debug.DebugComponent
 import com.nltimer.core.designsystem.debug.DebugComponentRegistry
 import com.nltimer.feature.debug.ui.preview.ActivityChipGridDebugPreview
 import com.nltimer.feature.debug.ui.preview.ActivityNoteBoxDebugPreview
+import com.nltimer.feature.debug.ui.preview.ActivityRecordCombinedPreview
 import com.nltimer.feature.debug.ui.preview.AddActivityPreview
 import com.nltimer.feature.debug.ui.preview.AddTagPreview
 import com.nltimer.feature.debug.ui.preview.DualTimePickerDebugPreview
@@ -95,6 +96,16 @@ object FeatureDebugComponents {
                 description = "备注输入框含标签/历史/继续添加/添加按钮",
             ) {
                 ActivityNoteBoxDebugPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "ActivityRecordCombined",
+                name = "活动记录组合弹窗",
+                group = "Dialogs",
+                description = "组合双列时间选择器+步进调节+标签网格+备注输入",
+            ) {
+                ActivityRecordCombinedPreview()
             }
         )
     }

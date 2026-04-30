@@ -3,9 +3,9 @@ package com.nltimer.feature.debug.ui.preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -34,6 +35,7 @@ import java.time.format.DateTimeFormatter
  * 展示当前时间并提供一个水平步进式按钮组来调节时间，
  * 点击 +-N 按钮对时间进行分钟级增减，点击"现在"按钮重置为系统当前时间
  */
+@Preview(showBackground = true)
 @Composable
 fun TimeAdjustmentDebugPreview() {
     Surface(
@@ -50,7 +52,7 @@ fun TimeAdjustmentDebugPreview() {
 
             Text(
                 text = currentTime.format(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
                 ),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -66,50 +68,52 @@ fun TimeAdjustmentDebugPreview() {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TimeAdjustmentComponent(
+internal fun TimeAdjustmentComponent(
     currentTime: LocalDateTime,
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // 定义时间调整选项：-30, -5, -1, 1, 5, 30 分钟
     val adjustments = listOf(-30, -5, -1, 1, 5, 30)
 
-    FlowRow(
+    // 使用 Row 确保所有元素在一行内显示，紧凑布局避免遮挡
+    Row (
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        //verticalAlignment = Alignment.CenterVertically,
     ) {
+        // 遍历生成时间步进按钮
         adjustments.forEach { amount ->
-            val text = if (amount > 0) "+$amount" else "$amount"
+            val text = if (amount > 0) "+$amount" else amount.toString()
             TimeButton(
                 text = text,
-                onClick = {
-                    onTimeChanged(currentTime.plusMinutes(amount.toLong()))
-                },
-            )
+            ) {
+                onTimeChanged(currentTime.plusMinutes(amount.toLong()))
+            }
         }
 
-        TimeButton(
-            text = "现在",
-            onClick = {
-                onTimeChanged(LocalDateTime.now())
-            },
-        )
-    }
+        // "现在"按钮：重置为系统当前时间
+        TimeButton(text = "现在") {
+            onTimeChanged(LocalDateTime.now())
+        }
+    }   
 }
+
+
 
 @Composable
 private fun TimeButton(
     text: String,
     onClick: () -> Unit,
 ) {
+    // 缩小按钮尺寸和字体大小以适配单行显示
     OutlinedButton(
         onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(6.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
@@ -117,7 +121,7 @@ private fun TimeButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.titleMedium.copy(
+            style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Normal,
             ),
         )
