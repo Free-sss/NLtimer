@@ -121,9 +121,7 @@ class HomeViewModel @Inject constructor(
         val now = LocalTime.now()
         val hasActive = behaviors.any { it.status == BehaviorNature.ACTIVE }
 
-        // 无行为数据时返回一个空行含添加占位
         if (behaviors.isEmpty()) {
-        // 在末尾添加一个占位单元格用作"添加行为"入口
         val addCell = GridCellUiState(
                 behaviorId = null,
                 activityEmoji = null,
@@ -149,10 +147,12 @@ class HomeViewModel @Inject constructor(
             )
         }
 
-        // 将行为列表转为 GridCellUiState 列表
+        val allActivities = activityRepository.getAll().firstOrNull().orEmpty()
+        val activityMap = allActivities.associateBy { it.id }
+
         val rows = mutableListOf<GridRowUiState>()
         val cells = behaviors.map { behavior ->
-            val activity = activityRepository.getById(behavior.activityId)
+            val activity = activityMap[behavior.activityId]
             val tags = try {
                 behaviorRepository.getTagsForBehavior(behavior.id).firstOrNull() ?: emptyList()
             } catch (_: Exception) {
@@ -199,7 +199,6 @@ class HomeViewModel @Inject constructor(
         )
         val allCells = cells + addCell
 
-        // 按每行 4 个分块，构建 GridRowUiState
         var currentRowId: String? = null
         allCells.chunked(4).forEachIndexed { rowIndex, rowCells ->
             val rowId = "row-$rowIndex-${rowCells.firstOrNull()?.behaviorId ?: "add"}"
@@ -219,7 +218,6 @@ class HomeViewModel @Inject constructor(
                 now
             }
 
-            // 不足 4 个的用空单元格补齐
             val paddedCells = rowCells.toMutableList()
             while (paddedCells.size < 4) {
                 paddedCells.add(

@@ -12,6 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -76,21 +79,23 @@ fun HomeScreen(
     // 获取当前主题中保存的布局模式（网格或时间线）
     val layout = LocalTheme.current.homeLayout
 
+    val activeBehaviorId by remember(uiState.rows) {
+        derivedStateOf {
+            uiState.rows
+                .flatMap { it.cells }
+                .firstOrNull { it.isCurrent && it.behaviorId != null }
+                ?.behaviorId
+        }
+    }
+
     Scaffold(
         modifier = modifier,
-        // 有活跃行为且在网格模式下显示"完成当前行为"按钮
         floatingActionButton = {
             if (uiState.hasActiveBehavior && layout != HomeLayout.TIMELINE_REVERSE) {
                 FloatingActionButton(
                     modifier = Modifier.offset(y = 24.dp,x=4.dp),
                     onClick = {
-                        val activeBehaviorId = uiState.rows
-                            .flatMap { it.cells }
-                            .firstOrNull { it.isCurrent && it.behaviorId != null }
-                            ?.behaviorId
-                        if (activeBehaviorId != null) {
-                            onCompleteBehavior(activeBehaviorId)
-                        }
+                        activeBehaviorId?.let { onCompleteBehavior(it) }
                     },
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,

@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,35 +68,37 @@ fun TimelineReverseView(
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     var showLayoutMenu by remember { mutableStateOf(false) }
     
-    // 过滤出有 ID 的行为，按开始时间升序排序用于间隙计算
-    val behaviors = cells.filter { it.behaviorId != null }
-        .sortedBy { it.startTime } // Sort ascending for gap processing
+    val behaviors = remember(cells) {
+        cells.filter { it.behaviorId != null }
+            .sortedBy { it.startTime }
+    }
     
-    val items = mutableListOf<TimelineItemData>()
-    
-    if (behaviors.isNotEmpty()) {
-        // 若最新行为已结束且当前时间在结束时间之后，插入一段空闲
-        val latest = behaviors.last()
-        if (latest.status != com.nltimer.core.data.model.BehaviorNature.ACTIVE && latest.endTime != null) {
-            val now = LocalTime.now()
-            if (now.isAfter(latest.endTime)) {
-                items.add(TimelineItemData.Idle(latest.endTime, now))
-            }
-        }
+    val timelineItems = remember(behaviors) {
+        val items = mutableListOf<TimelineItemData>()
         
-        // 倒序遍历行为：先添加行为，再检查与前一个行为之间的空闲间隙
-        for (i in behaviors.indices.reversed()) {
-            val behavior = behaviors[i]
-            items.add(TimelineItemData.Behavior(behavior))
+        if (behaviors.isNotEmpty()) {
+            val latest = behaviors.last()
+            if (latest.status != com.nltimer.core.data.model.BehaviorNature.ACTIVE && latest.endTime != null) {
+                val now = LocalTime.now()
+                if (now.isAfter(latest.endTime)) {
+                    items.add(TimelineItemData.Idle(latest.endTime, now))
+                }
+            }
             
-            if (i > 0) {
-                val prevEnd = behaviors[i-1].endTime
-                val currentStart = behavior.startTime
-                if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
-                    items.add(TimelineItemData.Idle(prevEnd, currentStart))
+            for (i in behaviors.indices.reversed()) {
+                val behavior = behaviors[i]
+                items.add(TimelineItemData.Behavior(behavior))
+                
+                if (i > 0) {
+                    val prevEnd = behaviors[i-1].endTime
+                    val currentStart = behavior.startTime
+                    if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
+                        items.add(TimelineItemData.Idle(prevEnd, currentStart))
+                    }
                 }
             }
         }
+        items
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -103,7 +106,7 @@ fun TimelineReverseView(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 Box {
@@ -142,7 +145,7 @@ fun TimelineReverseView(
                 }
             }
 
-            items(items) { item ->
+            items(timelineItems) { item ->
                 when (item) {
                     is TimelineItemData.Behavior -> {
                         TimelineBehaviorItem(

@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,10 +84,9 @@ internal fun DualTimePicker(
     }
     val leftInitialIndex = 365
 
-    // 右侧：相对日期标签
     val rightDates = listOf("前天", "昨天", "今天", "明天", "后天")
-    val hours = (0..23).map { it.toString().padStart(2, '0') }
-    val minutes = (0..59).map { it.toString().padStart(2, '0') }
+    val hours = remember { (0..23).map { it.toString().padStart(2, '0') } }
+    val minutes = remember { (0..59).map { it.toString().padStart(2, '0') } }
 
     var leftSelectedDate by remember { mutableStateOf(todayStr) }
     var leftSelectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -56,12 +57,16 @@ fun TimeSideBar(
     var bubbleY by remember { mutableFloatStateOf(0f) }
     val density = LocalDensity.current
 
+    val bubbleOffsetY by remember(bubbleY) {
+        derivedStateOf { with(density) { bubbleY.toDp() } - 24.dp }
+    }
+
     // 浮动气泡显示当前拖拽到的小时
     Box(modifier = modifier.width(40.dp)) {
         if (showBubble) {
             Box(
                 modifier = Modifier
-                    .offset(x = (-52).dp, y = with(density) { bubbleY.toDp() } - 24.dp)
+                    .offset(x = (-52).dp, y = bubbleOffsetY)
                     .size(48.dp)
                     .background(
                         MaterialTheme.colorScheme.primary,
