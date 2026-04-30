@@ -3,7 +3,6 @@ package com.nltimer.feature.debug.ui.preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -74,30 +75,25 @@ internal fun TimeAdjustmentComponent(
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 定义时间调整选项：-30, -5, -1, 1, 5, 30 分钟
-    val adjustments = listOf(-30, -5, -1, 1, 5, 30)
+    // 定义时间调整选项：-30, -5, -1, 1, 5
+    val adjustments = listOf("-30", "-5", "-1", "+1", "+5", "+30")
 
-    // 使用 Row 确保所有元素在一行内显示，紧凑布局避免遮挡
+    // 使用 Row 确保所有元素在一行内显示
     Row (
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 2.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
-        //verticalAlignment = Alignment.CenterVertically,
+            .padding(horizontal = 1.dp),
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // 遍历生成时间步进按钮
-        adjustments.forEach { amount ->
-            val text = if (amount > 0) "+$amount" else amount.toString()
+        adjustments.forEach { text ->
+            val amount = text.toInt()
             TimeButton(
                 text = text,
             ) {
                 onTimeChanged(currentTime.plusMinutes(amount.toLong()))
             }
-        }
-
-        // "现在"按钮：重置为系统当前时间
-        TimeButton(text = "现在") {
-            onTimeChanged(LocalDateTime.now())
         }
     }   
 }
@@ -109,11 +105,11 @@ private fun TimeButton(
     text: String,
     onClick: () -> Unit,
 ) {
-    // 缩小按钮尺寸和字体大小以适配单行显示
     OutlinedButton(
         onClick = onClick,
-        shape = RoundedCornerShape(6.dp),
-        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 0.dp),
+        shape = RoundedCornerShape(4.dp),
+        contentPadding = PaddingValues(horizontal = 3.dp, vertical = 0.dp),
+        modifier = Modifier.width(36.dp).height(28.dp),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.onSurface,
         ),
@@ -122,6 +118,7 @@ private fun TimeButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelSmall.copy(
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Normal,
             ),
         )

@@ -40,6 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * 双列时间选择器调试预览入口
@@ -55,29 +58,48 @@ fun DualTimePickerDebugPreview() {
     }
 }
 
+private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+
 /**
  * 双列时间选择器
- * 提供左右两列日期+时间滚轮选择器，通过 LazyColumn 实现的滚轮效果进行日期和时间的选取
+ * 提供左右两列日期+时间滚轮选择器，通过 LazyColumn 实现的滚轮效果进行日期和时间的选取。
+ * 左侧为实际日期滚轮（懒加载 ±365 天），右侧为相对日期标签滚轮。
+ *
+ * @param baseTime 弹窗打开时的时间，作为两列的初始锚点
  */
 @Composable
-internal fun DualTimePicker() {
-    val leftDates = listOf("03/16", "03/17", "03/18", "03/19", "03/20")
+internal fun DualTimePicker(
+    baseTime: LocalDateTime = LocalDateTime.now(),
+) {
+    val baseDate = baseTime.toLocalDate()
+    val todayStr = baseDate.format(dateFormatter)
+
+    // 左侧：懒加载生成 ±365 天日期列表
+    val leftDates = remember(baseDate) {
+        val dateList = baseDate.plusDays(-365)
+        (0..730).map { offset ->
+            dateList.plusDays(offset.toLong()).format(dateFormatter)
+        }
+    }
+    val leftInitialIndex = 365
+
+    // 右侧：相对日期标签
     val rightDates = listOf("前天", "昨天", "今天", "明天", "后天")
     val hours = (0..23).map { it.toString().padStart(2, '0') }
     val minutes = (0..59).map { it.toString().padStart(2, '0') }
 
-    var leftSelectedDate by remember { mutableStateOf("03/18") }
-    var leftSelectedHour by remember { mutableStateOf("20") }
-    var leftSelectedMinute by remember { mutableStateOf("08") }
+    var leftSelectedDate by remember { mutableStateOf(todayStr) }
+    var leftSelectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }
+    var leftSelectedMinute by remember { mutableStateOf(baseTime.minute.toString().padStart(2, '0')) }
 
     var rightSelectedDate by remember { mutableStateOf("今天") }
-    var rightSelectedHour by remember { mutableStateOf("09") }
-    var rightSelectedMinute by remember { mutableStateOf("44") }
+    var rightSelectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }
+    var rightSelectedMinute by remember { mutableStateOf(baseTime.minute.toString().padStart(2, '0')) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp),
+            .height(160.dp),
         horizontalArrangement = Arrangement.Center,
     ) {
         TimePickerSection(
@@ -88,6 +110,7 @@ internal fun DualTimePicker() {
             selectedDate = leftSelectedDate,
             selectedHour = leftSelectedHour,
             selectedMinute = leftSelectedMinute,
+            initialDateIndex = leftInitialIndex,
             onDateChanged = { leftSelectedDate = it },
             onHourChanged = { leftSelectedHour = it },
             onMinuteChanged = { leftSelectedMinute = it },
@@ -110,6 +133,7 @@ internal fun DualTimePicker() {
             selectedDate = rightSelectedDate,
             selectedHour = rightSelectedHour,
             selectedMinute = rightSelectedMinute,
+            initialDateIndex = 2,
             onDateChanged = { rightSelectedDate = it },
             onHourChanged = { rightSelectedHour = it },
             onMinuteChanged = { rightSelectedMinute = it },
@@ -127,12 +151,13 @@ private fun TimePickerSection(
     selectedDate: String,
     selectedHour: String,
     selectedMinute: String,
+    initialDateIndex: Int = 0,
     onDateChanged: (String) -> Unit,
     onHourChanged: (String) -> Unit,
     onMinuteChanged: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val itemHeight = 40.dp
+    val itemHeight = 32.dp
 
     Column(
         modifier = modifier.fillMaxHeight(),
@@ -140,30 +165,30 @@ private fun TimePickerSection(
     ) {
         Box(
             modifier = Modifier
-                .background(Color.Black, RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .padding(horizontal = 24.dp, vertical = 6.dp),
+                .background(Color.Black, RoundedCornerShape(4.dp))
+                .padding(horizontal = 16.dp, vertical = 2.dp),
         ) {
             Text(
                 text = title,
                 color = Color.White,
-                fontSize = 12.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 4.dp),
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(itemHeight)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(4.dp))
                     .background(Color(0xFFF2F2F2)),
             )
 
@@ -177,6 +202,7 @@ private fun TimePickerSection(
                     selectedItem = selectedDate,
                     onItemSelected = onDateChanged,
                     itemHeight = itemHeight,
+                    initialScrollIndex = initialDateIndex,
                     modifier = Modifier.weight(1.5f),
                 )
                 WheelPicker(
@@ -190,8 +216,8 @@ private fun TimePickerSection(
                     text = ":",
                     color = Color(0xFF0A1034),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(bottom = 2.dp),
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(bottom = 0.dp),
                 )
                 WheelPicker(
                     items = minutes,
@@ -213,9 +239,10 @@ private fun <T> WheelPicker(
     onItemSelected: (T) -> Unit,
     itemHeight: Dp = 40.dp,
     visibleItemsCount: Int = 3,
+    initialScrollIndex: Int = 0,
     modifier: Modifier = Modifier,
 ) {
-    val listState = rememberLazyListState()
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val paddingCount = visibleItemsCount / 2
 
@@ -263,9 +290,9 @@ private fun <T> WheelPicker(
                     Text(
                         text = item.toString(),
                         style = TextStyle(
-                            fontSize = if (isSelected) 18.sp else 16.sp,
+                            fontSize = if (isSelected) 16.sp else 13.sp,
                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFF0A1034) else Color(0xFFC4C4C4),
+                            color = if (isSelected) Color(0xFF0A1034) else Color(0xFFAAAAAA),
                             textAlign = TextAlign.Center,
                         ),
                     )

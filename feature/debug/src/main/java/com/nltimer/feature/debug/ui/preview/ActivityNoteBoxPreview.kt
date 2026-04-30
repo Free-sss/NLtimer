@@ -1,5 +1,6 @@
 package com.nltimer.feature.debug.ui.preview
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -70,33 +71,48 @@ internal fun ActivityNoteComponent(
     val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
     val primaryBlue = MaterialTheme.colorScheme.tertiary
     val labelBgColor = MaterialTheme.colorScheme.secondary
-    val addButtonColor = MaterialTheme.colorScheme.primary
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
             .background(Color.Transparent)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Button(
                 onClick = onLabelClick,
                 colors = ButtonDefaults.buttonColors(containerColor = labelBgColor),
-                shape = RoundedCornerShape(8.dp),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                modifier = Modifier.height(36.dp)
+                shape = RoundedCornerShape(6.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                modifier = Modifier.height(28.dp)
             ) {
                 Text("标签", color = MaterialTheme.colorScheme.onSecondary, fontSize = 11.sp)
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(14.dp)
                 )
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${noteText.length}/$maxCharLimit",
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                fontSize = 11.sp,
+                modifier = Modifier.padding(end = 4.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -108,25 +124,16 @@ internal fun ActivityNoteComponent(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(144.dp)
-                    .background(backgroundColor, RoundedCornerShape(16.dp))
-                    .padding(16.dp)
+                    .height(100.dp)
+                    .background(backgroundColor, RoundedCornerShape(8.dp))
+                    .padding(12.dp)
             ) {
-                Text(
-                    text = "${noteText.length}/$maxCharLimit",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp,
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
-
                 BasicTextField(
                     value = noteText,
                     onValueChange = { if (it.length <= maxCharLimit) noteText = it },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 4.dp),
+                    modifier = Modifier.fillMaxSize(),
                     textStyle = TextStyle(
-                        fontSize = 18.sp,
+                        fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     ),
                     decorationBox = { innerTextField ->
@@ -142,7 +149,7 @@ internal fun ActivityNoteComponent(
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -150,8 +157,8 @@ internal fun ActivityNoteComponent(
                 Surface(
                     onClick = onHistoryClick,
                     color = primaryBlue,
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.size(56.dp)
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.size(48.dp)
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -162,12 +169,12 @@ internal fun ActivityNoteComponent(
                             imageVector = Icons.Default.Description,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onTertiary,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                         Text(
                             "历史备注",
                             color = MaterialTheme.colorScheme.onTertiary,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -179,23 +186,21 @@ internal fun ActivityNoteComponent(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             OutlinedButton(
                 onClick = onContinueAddClick,
                 modifier = Modifier
                     .weight(1f)
-                    .height(32.dp),
-                shape = RoundedCornerShape(8.dp),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    width = 1.dp
-                ),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                    .height(36.dp),
+                shape = RoundedCornerShape(6.dp),
+                border = BorderStroke(1.dp, Color.Black),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
             ) {
                 Text(
                     "继续添加",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -203,15 +208,15 @@ internal fun ActivityNoteComponent(
                 onClick = onAddClick,
                 modifier = Modifier
                     .weight(1f)
-                    .height(32.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = addButtonColor)
+                    .height(36.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
             ) {
                 Text(
                     "添加",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.onPrimary
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
         }

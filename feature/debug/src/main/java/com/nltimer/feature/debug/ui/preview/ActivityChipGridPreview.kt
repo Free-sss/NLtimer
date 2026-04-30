@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -78,9 +80,9 @@ internal fun ActivityGridComponent(
     FlowRow(
         modifier = modifier
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
-        maxItemsInEachRow = 4
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        maxItemsInEachRow = 6
     ) {
         activities.forEach { activity ->
             ActivityChip(
@@ -135,11 +137,12 @@ private fun ActivityChip(
         label = {
             Text(
                 text = activity.name,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 2.dp)
+                modifier = Modifier.padding(vertical = 0.dp)
             )
         },
+        modifier = Modifier.height(28.dp),
         colors = SuggestionChipDefaults.suggestionChipColors(
             containerColor = containerColor,
             labelColor = contentColor,
@@ -150,7 +153,7 @@ private fun ActivityChip(
             borderColor = borderColor,
             borderWidth = 1.dp
         ),
-        shape = MaterialTheme.shapes.medium
+        shape = RoundedCornerShape(6.dp)
     )
 }
 
@@ -168,12 +171,13 @@ private fun FunctionChip(
         label = {
             Text(
                 text = label,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 2.dp)
+                modifier = Modifier.padding(vertical = 0.dp)
             )
         },
         icon = icon,
+        modifier = Modifier.height(28.dp),
         colors = SuggestionChipDefaults.suggestionChipColors(
             containerColor = containerColor,
             labelColor = contentColor,
@@ -184,6 +188,6 @@ private fun FunctionChip(
             borderColor = borderColor,
             borderWidth = 1.dp
         ),
-        shape = MaterialTheme.shapes.medium
+        shape = RoundedCornerShape(6.dp)
     )
 }
