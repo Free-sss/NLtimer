@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -124,31 +125,30 @@ internal fun ActivityNoteComponent(
                         color = Color.White.copy(alpha = 0.7f)
                     ),
                     decorationBox = { innerTextField ->
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Box(modifier = Modifier.fillMaxSize()) {
                             // 右上角字数统计
                             Text(
                                 text = "${noteText.length}/$maxCharLimit",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                color = Color.White.copy(alpha = 0.3f),
                                 fontSize = 11.sp,
                                 modifier = Modifier.align(Alignment.TopEnd)
+                                    .offset(y = (-13).dp,x=4.dp)
+                        
                             )
 
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(top = 4.dp) // 给顶部的计数留一点点微小空间，但允许文字重叠如果真的很高
+                                    .padding(top = 4.dp)
                             ) {
-                                // placeholder
+                                // 输入框提示文本
                                 if (noteText.isEmpty()) {
                                     Text(
                                         "请输入备注",
                                         color = Color.White.copy(alpha = 0.3f),
-                                        fontSize = 14.sp
+                                        fontSize = 14.sp,
                                     )
                                 }
-                                // 输入框内容
                                 innerTextField()
                             }
                         }

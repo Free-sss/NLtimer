@@ -144,6 +144,7 @@ internal fun DualTimePicker(
 
 @Composable
 private fun TimePickerSection(
+    modifier: Modifier = Modifier,
     title: String,
     dates: List<String>,
     hours: List<String>,
@@ -155,7 +156,6 @@ private fun TimePickerSection(
     onDateChanged: (String) -> Unit,
     onHourChanged: (String) -> Unit,
     onMinuteChanged: (String) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val itemHeight = 32.dp
 
@@ -164,7 +164,7 @@ private fun TimePickerSection(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier
+            modifier = Modifier.align(Alignment.Start)
                 .background(Color.Black, RoundedCornerShape(4.dp))
                 .padding(horizontal = 16.dp, vertical = 2.dp),
         ) {
@@ -234,13 +234,14 @@ private fun TimePickerSection(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun <T> WheelPicker(
+    modifier: Modifier = Modifier,
+
     items: List<T>,
     selectedItem: T,
     onItemSelected: (T) -> Unit,
     itemHeight: Dp = 40.dp,
     visibleItemsCount: Int = 3,
     initialScrollIndex: Int = 0,
-    modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
