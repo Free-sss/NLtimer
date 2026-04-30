@@ -1,5 +1,6 @@
 package com.nltimer.feature.debug.ui.preview
 
+import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
@@ -41,6 +44,7 @@ import java.time.LocalDateTime
  * 四个独立调试组件组合到 ModalBottomSheet 中展示。
  * 各组件通过 fake 模拟数据独立运行，点击按钮可打开/关闭弹窗
  */
+@Preview(showBackground = true)
 @Composable
 fun ActivityRecordCombinedPreview() {
     // 控制弹窗显隐状态
@@ -124,16 +128,15 @@ private fun ActivityRecordCombinedSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 400.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .animateContentSize(),
+                .padding(horizontal = 12.dp)
+                .animateContentSize()
         ) {
             // 1. 双列时间选择器
             DualTimePicker(baseTime = baseTime)
 
             // 2. 时间步进调节器
-            SectionLabel("时间微调")
+//            SectionLabel("时间微调")
             CombinedTimeAdjustment()
 
             // 3. 活动标签网格

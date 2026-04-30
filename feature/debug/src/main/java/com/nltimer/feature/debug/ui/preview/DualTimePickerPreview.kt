@@ -99,11 +99,10 @@ internal fun DualTimePicker(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp),
+            .background(Color.Blue),
         horizontalArrangement = Arrangement.Center,
     ) {
         TimePickerSection(
-            title = "上尾",
             dates = leftDates,
             hours = hours,
             minutes = minutes,
@@ -126,7 +125,6 @@ internal fun DualTimePicker(
         )
 
         TimePickerSection(
-            title = "当前",
             dates = rightDates,
             hours = hours,
             minutes = minutes,
@@ -145,7 +143,6 @@ internal fun DualTimePicker(
 @Composable
 private fun TimePickerSection(
     modifier: Modifier = Modifier,
-    title: String,
     dates: List<String>,
     hours: List<String>,
     minutes: List<String>,
@@ -163,21 +160,6 @@ private fun TimePickerSection(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(
-            modifier = Modifier.align(Alignment.Start)
-                .background(Color.Black, RoundedCornerShape(4.dp))
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
