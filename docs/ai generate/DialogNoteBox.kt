@@ -30,8 +30,6 @@ fun ActivityNoteComponent(
     val backgroundColor = Color(0xFFF2F2F2) // 浅灰色背景
     val primaryBlue = Color(0xFF4A90E2)     // 历史备注按钮蓝色
     val labelBgColor = Color.Black          // 标签按钮黑色
-    val addButtonColor = Color.Black        // 添加按钮黑色
-    val secondaryButtonBorder = Color.Black  // 继续添加按钮边框
 
     Column(
         modifier = Modifier
@@ -66,51 +64,61 @@ fun ActivityNoteComponent(
         // 第二行：输入框区域与右侧历史按钮
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Bottom
         ) {
             // 输入框卡片
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(160.dp)
+                    .height(150.dp)
                     .background(backgroundColor, RoundedCornerShape(16.dp))
-                    .padding(16.dp)
+                    .padding(8.dp)
             ) {
-                // 字数统计（右上角）
-                Text(
-                    text = "${noteText.length}/$maxCharLimit",
-                    color = Color.Gray,
-                    fontSize = 12.sp,
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
 
                 // 核心输入框
-                BasicTextField(
-                    value = noteText,
-                    onValueChange = { if (it.length <= maxCharLimit) noteText = it },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 4.dp),
-                    textStyle = TextStyle(
-                        fontSize = 18.sp,
-                        color = Color.DarkGray
-                    ),
-                    decorationBox = { innerTextField ->
-                        if (noteText.isEmpty()) {
-                            Text(
-                                "请输入备注",
-                                color = Color.Gray,
-                                fontSize = 18.sp
-                            )
-                        }
-                        innerTextField()
-                    }
+               BasicTextField(
+    value = noteText,
+    onValueChange = { if (it.length <= maxCharLimit) noteText = it },
+    modifier = Modifier
+        .fillMaxSize()
+        .padding(top = 1.dp),
+    textStyle = TextStyle(
+        fontSize = 13.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    ),
+    decorationBox = { innerTextField ->
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // placeholder
+            if (noteText.isEmpty()) {
+                Text(
+                    "请输入备注",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    fontSize = 13.sp,   // 输入框字体大小
                 )
+            }
+            // 输入框内容
+            innerTextField()
+            
+            // 右上角字数统计
+            Text(
+                text = "${noteText.length}/$maxCharLimit",
+                color = if (noteText.length >= maxCharLimit) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 4.dp, end = 4.dp)
+            )
+        }
+    }
+)
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
             // 右侧“历史备注”小按钮
+            // 底部居中  居底部
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -122,7 +130,7 @@ fun ActivityNoteComponent(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.Bottom,
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Icon(
@@ -133,7 +141,7 @@ fun ActivityNoteComponent(
                         )
                         Text(
                             "历史备注",
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -142,49 +150,5 @@ fun ActivityNoteComponent(
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 第三行：底部双按钮
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 继续添加（描边按钮）
-            OutlinedButton(
-                onClick = onContinueAddClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    width = 2.dp
-                    // 默认黑色
-                ),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
-            ) {
-                Text(
-                    "继续添加",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-
-            // 添加（实心黑按钮）
-            Button(
-                onClick = onAddClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(64.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = addButtonColor)
-            ) {
-                Text(
-                    "添加",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-            }
-        }
     }
 }

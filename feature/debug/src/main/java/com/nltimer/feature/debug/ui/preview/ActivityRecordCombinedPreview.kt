@@ -1,11 +1,14 @@
 package com.nltimer.feature.debug.ui.preview
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
@@ -36,35 +38,58 @@ import java.time.LocalDateTime
 /**
  * 活动记录组合弹窗调试预览入口
  * 将双列时间选择器、时间步进调节器、活动标签网格、活动备注输入
- * 四个独立调试组件组合到一个 AlertDialog 中展示。
+ * 四个独立调试组件组合到 ModalBottomSheet 中展示。
  * 各组件通过 fake 模拟数据独立运行，点击按钮可打开/关闭弹窗
  */
-@Preview(showBackground = true)
 @Composable
 fun ActivityRecordCombinedPreview() {
+    // 控制弹窗显隐状态
+    var showSheet by remember { mutableStateOf(false) }
+    // 记录弹窗打开时刻作为 baseTime，避免重组时刷新
+    var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        ActivityRecordCombinedDialog { }
+        // 居中放置打开按钮
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            Button(onClick = {
+                baseTime = LocalDateTime.now()
+                showSheet = true
+            }) {
+                Text("打开活动记录组合弹窗")
+            }
+        }
+    }
+
+    if (showSheet) {
+        ActivityRecordCombinedSheet(
+            baseTime = baseTime,
+            onDismiss = { showSheet = false },
+        )
     }
 }
 
 /**
  * 活动记录组合弹窗
- * 使用半屏可拖动的 ModalBottomSheet 垂直排列四个组件：
+ * 使用半屏 ModalBottomSheet 垂直排列四个组件：
  * 双列时间选择器、时间步进调节器、活动标签网格、活动备注输入
  *
+ * @param baseTime 弹窗打开时的时间锚点
  * @param onDismiss 关闭弹窗的回调
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ActivityRecordCombinedDialog(
+private fun ActivityRecordCombinedSheet(
+    baseTime: LocalDateTime,
     onDismiss: () -> Unit,
 ) {
-    // 弹窗打开时的时间锚点，传递给 DualTimePicker
-    val baseTime = remember { LocalDateTime.now() }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    // skipPartiallyExpanded = true 避免半屏→全屏的两阶段弹跳动画
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // fake 模拟数据：活动标签网格
     val fakeActivities = listOf(
@@ -99,11 +124,12 @@ private fun ActivityRecordCombinedDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = 400.dp)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .animateContentSize(),
         ) {
             // 1. 双列时间选择器
-            SectionLabel("时间范围")
             DualTimePicker(baseTime = baseTime)
 
             // 2. 时间步进调节器
@@ -111,7 +137,6 @@ private fun ActivityRecordCombinedDialog(
             CombinedTimeAdjustment()
 
             // 3. 活动标签网格
-            SectionLabel("选择活动")
             ActivityGridComponent(
                 activities = fakeActivities,
                 onActivityClick = { },
@@ -120,7 +145,6 @@ private fun ActivityRecordCombinedDialog(
             )
 
             // 4. 活动备注输入
-            SectionLabel("活动备注")
             ActivityNoteComponent(
                 onLabelClick = { },
                 onHistoryClick = { },
@@ -128,7 +152,6 @@ private fun ActivityRecordCombinedDialog(
                 onAddClick = { },
             )
 
-            // 底部操作按钮
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),

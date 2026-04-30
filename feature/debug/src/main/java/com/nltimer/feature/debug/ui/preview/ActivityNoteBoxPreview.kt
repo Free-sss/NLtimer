@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -36,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,16 +47,14 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ActivityNoteBoxDebugPreview() {
     Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             ActivityNoteComponent(
                 onLabelClick = { },
                 onHistoryClick = { },
                 onContinueAddClick = { },
-                onAddClick = { }
-            )
+                onAddClick = { })
         }
     }
 }
@@ -68,14 +69,14 @@ internal fun ActivityNoteComponent(
     var noteText by remember { mutableStateOf("") }
     val maxCharLimit = 5000
 
-    val backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-    val primaryBlue = MaterialTheme.colorScheme.tertiary
-    val labelBgColor = MaterialTheme.colorScheme.secondary
+    val backgroundColor = Color(0xFF3B3B4D) // Dark gray/blue for the box background
+    val primaryBlue = Color(0xFFC7C7FF) // Light purple for history button
+    val labelBgColor = Color(0xFF8CD1FF) // Light blue for label button
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .background(Color.Transparent)
     ) {
         Row(
@@ -85,17 +86,19 @@ internal fun ActivityNoteComponent(
         ) {
             Button(
                 onClick = onLabelClick,
-                colors = ButtonDefaults.buttonColors(containerColor = labelBgColor),
-                shape = RoundedCornerShape(6.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = labelBgColor,
+                    contentColor = Color(0xFF1A1C1E)
+                ),
+                shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                modifier = Modifier.height(28.dp)
+                modifier = Modifier.height(32.dp)
             ) {
-                Text("标签", color = MaterialTheme.colorScheme.onSecondary, fontSize = 11.sp)
+                Text("标签", fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondary,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
@@ -103,30 +106,14 @@ internal fun ActivityNoteComponent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "${noteText.length}/$maxCharLimit",
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                fontSize = 11.sp,
-                modifier = Modifier.padding(end = 4.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom
         ) {
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(100.dp)
-                    .background(backgroundColor, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
+                    .height(110.dp)
+                    .background(backgroundColor, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 BasicTextField(
                     value = noteText,
@@ -134,91 +121,108 @@ internal fun ActivityNoteComponent(
                     modifier = Modifier.fillMaxSize(),
                     textStyle = TextStyle(
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.White.copy(alpha = 0.7f)
                     ),
                     decorationBox = { innerTextField ->
-                        if (noteText.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            // 右上角字数统计
                             Text(
-                                "请输入备注",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp
+                                text = "${noteText.length}/$maxCharLimit",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                fontSize = 11.sp,
+                                modifier = Modifier.align(Alignment.TopEnd)
                             )
+
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(top = 4.dp) // 给顶部的计数留一点点微小空间，但允许文字重叠如果真的很高
+                            ) {
+                                // placeholder
+                                if (noteText.isEmpty()) {
+                                    Text(
+                                        "请输入备注",
+                                        color = Color.White.copy(alpha = 0.3f),
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                // 输入框内容
+                                innerTextField()
+                            }
                         }
-                        innerTextField()
-                    }
-                )
+                    })
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+            Surface(
+                onClick = onHistoryClick,
+                color = primaryBlue,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.size(56.dp)
             ) {
-                Surface(
-                    onClick = onHistoryClick,
-                    color = primaryBlue,
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.size(48.dp)
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Description,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onTertiary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            "历史备注",
-                            color = MaterialTheme.colorScheme.onTertiary,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = null,
+                        tint = Color(0xFF1A1C1E),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        "历史备注",
+                        color = Color(0xFF1A1C1E),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        //Spacer(modifier = Modifier.height(12.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedButton(
-                onClick = onContinueAddClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(36.dp),
-                shape = RoundedCornerShape(6.dp),
-                border = BorderStroke(1.dp, Color.Black),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
-            ) {
-                Text(
-                    "继续添加",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        // 暂时取消添加按钮
+        // Row(
+        //     modifier = Modifier.fillMaxWidth(),
+        //     horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // ) {
+        //     OutlinedButton(
+        //         onClick = onContinueAddClick,
+        //         modifier = Modifier
+        //             .weight(1f)
+        //             .height(36.dp),
+        //         shape = RoundedCornerShape(6.dp),
+        //         border = BorderStroke(1.dp, Color.Black),
+        //         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+        //     ) {
+        //         Text(
+        //             "继续添加",
+        //             fontSize = 13.sp,
+        //             fontWeight = FontWeight.Bold
+        //         )
+        //     }
 
-            Button(
-                onClick = onAddClick,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(36.dp),
-                shape = RoundedCornerShape(6.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-            ) {
-                Text(
-                    "添加",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-        }
+        //     Button(
+        //         onClick = onAddClick,
+        //         modifier = Modifier
+        //             .weight(1f)
+        //             .height(36.dp),
+        //         shape = RoundedCornerShape(6.dp),
+        //         colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        //     ) {
+        //         Text(
+        //             "添加",
+        //             fontSize = 13.sp,
+        //             fontWeight = FontWeight.Bold,
+        //             color = Color.White
+        //         )
+        //     }
+        // }
     }
 }
