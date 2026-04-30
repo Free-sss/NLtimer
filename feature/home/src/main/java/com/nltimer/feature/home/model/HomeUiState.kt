@@ -1,9 +1,12 @@
 package com.nltimer.feature.home.model
 
+import androidx.compose.runtime.Immutable
+
 /**
  * 首页整体 UI 状态的聚合。
  * 控制加载、空闲模式、添加/详情弹窗、网格行数据等全局状态。
  */
+@Immutable
 data class HomeUiState(
     val rows: List<GridRowUiState> = emptyList(), // 所有网格行
     val currentRowId: String? = null, // 当前活跃行 ID

@@ -1,21 +1,74 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.kts.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# === NLtimer ProGuard/R8 Rules ===
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep line numbers for crash reports
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# === Hilt / Dagger ===
+-keep class dagger.hilt.** { *; }
+-keep class javax.inject.** { *; }
+-keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+-dontwarn dagger.hilt.**
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Keep Hilt generated classes
+-keep,allowobfuscation,allowshrinking class com.nltimer.**_HiltModules { *; }
+-keep,allowobfuscation,allowshrinking class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+
+# === Room ===
+-keep class com.nltimer.core.data.database.entity.** { *; }
+-keep class com.nltimer.core.data.database.dao.** { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
+-dontwarn androidx.room.**
+
+# === DataStore ===
+-keepclassmembers class * extends androidx.datastore.preferences.protobuf.GeneratedMessageLite {
+    <fields>;
+}
+
+# === Kotlin Serialization (if used) ===
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
+
+# Keep data classes used by Compose and potential serialization
+-keep class com.nltimer.core.data.model.** { *; }
+-keep class com.nltimer.feature.**.model.** { *; }
+
+# === Compose ===
+-keep class androidx.compose.** { *; }
+-dontwarn androidx.compose.**
+
+# Keep Compose tooling metadata
+-keep class * extends androidx.compose.runtime.Composable { *; }
+
+# === MaterialKolor ===
+-keep class com.materialkolor.** { *; }
+-dontwarn com.materialkolor.**
+
+# === Navigation ===
+-keep class androidx.navigation.** { *; }
+
+# === Okio ===
+-dontwarn okio.**
+-keep class okio.** { *; }
+
+# === App-specific keep rules ===
+-keep class com.nltimer.app.NLtimerApplication { *; }
+-keep class com.nltimer.app.MainActivity { *; }
+
+# Keep enums
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+
+# Keep Parcelable implementations
+-keep class * implements android.os.Parcelable {
+    public static final android.os.Parcelable$Creator *;
+}
+
+# Remove logging in release
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+}

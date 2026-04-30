@@ -1,11 +1,13 @@
 package com.nltimer.core.data.model
 
+import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.database.entity.ActivityEntity
 
 /**
  * Activity 活动领域模型
  * 表示一个可计时、可归档的活动条目，对应数据库中的 activities 表
  */
+@Immutable
 data class Activity(
     val id: Long = 0,
     val name: String,

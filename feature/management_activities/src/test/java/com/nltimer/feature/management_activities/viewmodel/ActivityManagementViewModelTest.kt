@@ -2,6 +2,7 @@ package com.nltimer.feature.management_activities.viewmodel
 
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.feature.management_activities.model.DialogState
 import kotlinx.coroutines.flow.Flow
@@ -79,6 +80,9 @@ class FakeActivityManagementRepository : ActivityManagementRepository {
     }
 
     override suspend fun initializePresets() {}
+
+    override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
+        MutableStateFlow(ActivityStats())
 }
 
 class ActivityManagementViewModelTest {
@@ -103,7 +107,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `add activity should add to uncategorized list`() = runTest {
-        viewModel.addActivity("测试活动", "📝", null)
+        viewModel.addActivity("测试活动", "📝", null, null, null)
 
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
@@ -115,7 +119,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `delete activity should remove from list`() = runTest {
-        viewModel.addActivity("待删除", "❌", null)
+        viewModel.addActivity("待删除", "❌", null, null, null)
 
         val afterAdd = viewModel.uiState.value
         assertEquals(1, afterAdd.uncategorizedActivities.size)
@@ -138,7 +142,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `move activity to group should update groupId`() = runTest {
-        viewModel.addActivity("移动测试", "🔄", null)
+        viewModel.addActivity("移动测试", "🔄", null, null, null)
         viewModel.addGroup("目标分组")
 
         val beforeMove = viewModel.uiState.value
@@ -170,7 +174,7 @@ class ActivityManagementViewModelTest {
     @Test
     fun `delete group should ungroup all activities`() = runTest {
         viewModel.addGroup("待删除组")
-        viewModel.addActivity("组内活动", "📌", null)
+        viewModel.addActivity("组内活动", "📌", null, null, null)
 
         val beforeDelete = viewModel.uiState.value
         val groupId = beforeDelete.allGroups[0].id
@@ -223,7 +227,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `update activity should modify existing activity`() = runTest {
-        viewModel.addActivity("原始名称", "✏️", null)
+        viewModel.addActivity("原始名称", "✏️", null, null, null)
 
         val beforeUpdate = viewModel.uiState.value
         val originalActivity = beforeUpdate.uncategorizedActivities[0]
@@ -257,7 +261,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `show move to group dialog should set correct dialog state`() = runTest {
-        viewModel.addActivity("移动测试", "🚀", null)
+        viewModel.addActivity("移动测试", "🚀", null, null, null)
 
         val uiState = viewModel.uiState.value
         val activity = uiState.uncategorizedActivities[0]

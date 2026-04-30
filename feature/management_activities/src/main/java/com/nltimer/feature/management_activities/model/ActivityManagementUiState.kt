@@ -1,5 +1,6 @@
 package com.nltimer.feature.management_activities.model
 
+import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 
@@ -13,6 +14,7 @@ import com.nltimer.core.data.model.ActivityGroup
  * @property expandedGroupIds 当前展开的分组 ID 集合
  * @property dialogState 当前打开的弹窗状态，为 null 表示无弹窗
  */
+@Immutable
 data class ActivityManagementUiState(
     val uncategorizedActivities: List<Activity> = emptyList(),
     val groups: List<GroupWithActivities> = emptyList(),
@@ -28,6 +30,7 @@ data class ActivityManagementUiState(
  * @property group 分组信息
  * @property activities 该分组下的活动列表
  */
+@Immutable
 data class GroupWithActivities(
     val group: ActivityGroup,
     val activities: List<Activity>,

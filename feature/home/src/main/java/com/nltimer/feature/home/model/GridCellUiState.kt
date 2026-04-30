@@ -1,5 +1,6 @@
 package com.nltimer.feature.home.model
 
+import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.BehaviorNature
 import java.time.LocalTime
 
@@ -7,6 +8,7 @@ import java.time.LocalTime
  * 网格视图中单个单元格的 UI 状态。
  * 表示一次行为记录的显示信息，或空白占位单元格。
  */
+@Immutable
 data class GridCellUiState(
     val behaviorId: Long?, // null 表示空白/占位单元格
     val activityEmoji: String?,

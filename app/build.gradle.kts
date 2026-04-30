@@ -24,7 +24,8 @@ android {
         val releaseKeyPassword = localProperties.getProperty("key.password", System.getenv("KEY_PASSWORD") ?: "")
 
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = if (releaseKeystorePath.isNotBlank()) {
                 signingConfigs.create("release") {
                     storeFile = file(releaseKeystorePath)
@@ -70,6 +71,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
+    implementation(libs.profileinstaller)
 
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)

@@ -1,0 +1,16 @@
+# Baseline Profile for NLtimer
+# Generated via Macrobenchmark or manual testing.
+# Profile rules optimize startup and runtime performance by pre-compiling
+# critical code paths at install time.
+#
+# To generate: run Macrobenchmark test on a device/emulator,
+# then copy the generated baseline-prof.txt here.
+
+HSPLandroidx/compose/runtime/ComposerImpl;->apply(Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)V
+HSPLandroidx/compose/runtime/ComposerImpl;->startRestartGroup(I)Landroidx/compose/runtime/Composer;
+HSPLandroidx/compose/runtime/ComposerImpl;->endRestartGroup()Landroidx/compose/runtime/ScopeUpdateScope;
+HSPLandroidx/compose/runtime/ComposerImpl;->$init$(ILkotlin/jvm/functions/Function1;)V
+
+SPLcom/nltimer/app/MainActivity;->onCreate(Landroid/os/Bundle;)V
+SPLcom/nltimer/app/NLtimerApplication;->onCreate()V
+SPLcom/nltimer/app/NLtimerAppKt;->NLtimerApp(Landroidx/compose/runtime/Composer;I)V

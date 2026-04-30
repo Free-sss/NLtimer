@@ -219,6 +219,9 @@ class HomeViewModelTest {
         }
         override suspend fun update(tag: Tag) {}
         override suspend fun setArchived(id: Long, archived: Boolean) {}
+        override fun getDistinctCategories(): Flow<List<String>> = flowOf(emptyList())
+        override suspend fun renameCategory(oldName: String, newName: String) {}
+        override suspend fun resetCategory(category: String) {}
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {

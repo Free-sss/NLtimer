@@ -1,9 +1,12 @@
 package com.nltimer.feature.categories.model
 
+import androidx.compose.runtime.Immutable
+
 /**
  * UI state for the categories management screen.
  * Holds the list of activity/tag categories, current search query, loading flag, and dialog state.
  */
+@Immutable
 data class CategoriesUiState(
     val activityCategories: List<String> = emptyList(),
     val tagCategories: List<String> = emptyList(),

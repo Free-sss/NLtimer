@@ -1,5 +1,6 @@
 package com.nltimer.feature.tag_management.model
 
+import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -10,6 +11,7 @@ import com.nltimer.core.data.model.Tag
  * @property isLoading 是否正在加载数据
  * @property dialogState 当前显示的对话框状态，null 表示无对话框
  */
+@Immutable
 data class TagManagementUiState(
     val uncategorizedTags: List<Tag> = emptyList(),
     val categories: List<CategoryWithTags> = emptyList(),
@@ -23,6 +25,7 @@ data class TagManagementUiState(
  * @property categoryName 分类名称
  * @property tags 该分类下的标签列表
  */
+@Immutable
 data class CategoryWithTags(
     val categoryName: String,
     val tags: List<Tag>,

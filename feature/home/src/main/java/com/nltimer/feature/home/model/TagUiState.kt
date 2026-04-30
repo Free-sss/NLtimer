@@ -1,9 +1,12 @@
 package com.nltimer.feature.home.model
 
+import androidx.compose.runtime.Immutable
+
 /**
  * 标签的 UI 展示状态。
  * 简化自领域模型 Tag，仅包含前端渲染所需字段。
  */
+@Immutable
 data class TagUiState(
     val id: Long, // 标签唯一 ID
     val name: String, // 标签显示名称
