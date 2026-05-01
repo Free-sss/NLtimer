@@ -48,6 +48,7 @@ fun ActivityRecordCombinedPreview() {
     var modeMenuExpanded by remember { mutableStateOf(false) }
     var selectedLayout by remember { mutableStateOf(GridLayoutMode.Horizontal) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
+    var selectedMaxLines by remember { mutableStateOf(2) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -183,6 +184,47 @@ fun ActivityRecordCombinedPreview() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     )
 
+                    if (selectedLayout == GridLayoutMode.Vertical) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "每列最多行数",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            Surface(
+                                onClick = { if (selectedMaxLines > 1) selectedMaxLines-- },
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ) {
+                                Text(
+                                    text = "\u2212",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                )
+                            }
+                            Text(
+                                text = "$selectedMaxLines",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            )
+                            Surface(
+                                onClick = { if (selectedMaxLines < 10) selectedMaxLines++ },
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ) {
+                                Text(
+                                    text = "+",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
@@ -205,6 +247,7 @@ fun ActivityRecordCombinedPreview() {
             baseTime = baseTime,
             displayMode = selectedMode,
             layoutMode = selectedLayout,
+            columnLines = selectedMaxLines,
             onDismiss = { showSheet = false },
         )
     }
@@ -216,10 +259,10 @@ private fun ActivityRecordCombinedSheet(
     baseTime: LocalDateTime,
     displayMode: ChipDisplayMode,
     layoutMode: GridLayoutMode,
+    columnLines: Int,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     val fakeActivities = listOf(
         ActivityChipData("学习", Color(0xFF1B5E20)),
         ActivityChipData("读书", Color(0xFF43A047)),
@@ -245,7 +288,7 @@ private fun ActivityRecordCombinedSheet(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                 ),
-                modifier = Modifier.padding(top = 12.dp),
+                modifier = Modifier.padding(top = 12.dp).fillMaxWidth(1f),
             )
         },
     ) {
@@ -265,10 +308,11 @@ private fun ActivityRecordCombinedSheet(
                 modifier = Modifier.padding(start = 10.dp),
                 activities = fakeActivities,
                 onActivityClick = { },
-                onManageClick = { },
-                onAddClick = { },
+                functionChipLabel = "标签管理",
+                functionChipOnClick = { },
                 displayMode = displayMode,
                 layoutMode = layoutMode,
+                maxLinesPerColumn = columnLines,
             )
 
             ActivityNoteComponent(

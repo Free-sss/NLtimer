@@ -103,8 +103,7 @@ fun ActivityChipGridDebugPreview() {
                 ActivityGridComponent(
                     activities = sampleActivities,
                     onActivityClick = { },
-                    onManageClick = { },
-                    onAddClick = { }
+                    functionChipOnClick = { },
                 )
             }
         }
@@ -117,14 +116,15 @@ internal fun ActivityGridComponent(
     modifier: Modifier = Modifier,
     activities: List<ActivityChipData>,
     onActivityClick: (ActivityChipData) -> Unit,
-    onManageClick: () -> Unit,
-    onAddClick: () -> Unit,
+    functionChipLabel: String = "活动管理",
+    functionChipOnClick: () -> Unit,
     displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
     layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
+    maxLinesPerColumn: Int = 2,
 ) {
     val allItems = @Composable {
         FunctionChip(
-            label = "活动管理",
+            label = functionChipLabel,
             icon = {
                 Icon(
                     Icons.Default.Settings,
@@ -135,7 +135,7 @@ internal fun ActivityGridComponent(
             containerColor = Color.Transparent,
             contentColor = Color(0xFF616161).copy(alpha = 0.9f),
             borderColor = Color.Transparent,
-            onClick = onManageClick
+            onClick = functionChipOnClick
         )
         activities.forEach { activity ->
             AdaptiveActivityChip(
@@ -150,19 +150,18 @@ internal fun ActivityGridComponent(
     if (layoutMode == GridLayoutMode.Vertical) {
         Box(modifier = modifier.fillMaxWidth()) {
             val itemSpacing = 4.dp
-            val itemsPerColumn = 2
             val columns = (listOf<@Composable () -> Unit>({ FunctionChip(
-                label = "活动管理",
+                label = functionChipLabel,
                 icon = {
                     Icon(Icons.Default.Settings, contentDescription = "管理", modifier = Modifier.size(14.dp))
                 },
                 containerColor = Color.Transparent,
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
-                onClick = onManageClick,
+                onClick = functionChipOnClick,
             ) }) + activities.map { activity ->
                 { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = true) }
-            }).chunked(itemsPerColumn)
+            }).chunked(maxLinesPerColumn)
             
             LazyRow(
                 // modifier = Modifier.height(heightDef),
@@ -184,7 +183,7 @@ internal fun ActivityGridComponent(
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             FunctionChip(
-                label = "活动管理",
+                label = functionChipLabel,
                 icon = {
                     Icon(
                         Icons.Default.Settings,
@@ -195,7 +194,7 @@ internal fun ActivityGridComponent(
                 containerColor = Color.Transparent,
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
-                onClick = onManageClick
+                onClick = functionChipOnClick
             )
             activities.forEach { activity ->
                 AdaptiveActivityChip(
