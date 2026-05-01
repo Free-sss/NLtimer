@@ -135,35 +135,17 @@ internal fun ActivityGridComponent(
         )
     }
 
+    val labelWidth = 64.dp
+    val functionChipSpacing = 4.dp
+
     if (layoutMode == GridLayoutMode.Vertical) {
-        Box(modifier = modifier.fillMaxWidth()) {
-            val itemSpacing = 4.dp
-            val columns = (listOf<@Composable () -> Unit>({ FunctionChip(
-                label = functionChipLabel,
-                icon = functionChipIcon ?: defaultIcon,
-                containerColor = Color.Transparent,
-                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
-                borderColor = Color.Transparent,
-                onClick = functionChipOnClick,
-            ) }) + activities.map { activity ->
-                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = fixedChipWidth) }
-            }).chunked(maxLinesPerColumn)
-            
-            LazyRow(
-                // modifier = Modifier.height(heightDef),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item { Spacer(modifier = Modifier.size(0.dp)) }
-                items(columns.size) { colIndex ->
-                    Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
-                        columns[colIndex].forEach { it() }
-                    }
-                }
-                item { Spacer(modifier = Modifier.size(8.dp)) }
-            }
-        }
-    } else {
-        Row(modifier = modifier.fillMaxWidth()) {
+        val itemSpacing = 4.dp
+        
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Fixed FunctionChip on the left
             FunctionChip(
                 label = functionChipLabel,
                 icon = functionChipIcon ?: defaultIcon,
@@ -171,12 +153,50 @@ internal fun ActivityGridComponent(
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
-                modifier = Modifier.padding(end = 4.dp),
+                modifier = Modifier.width(labelWidth),
             )
+            
+            Spacer(modifier = Modifier.width(functionChipSpacing))
+            
+            // Scrollable activity chips
+            val activityColumns = (listOf<@Composable () -> Unit>() + activities.map { activity ->
+                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = fixedChipWidth) }
+            }).chunked(maxLinesPerColumn)
+            
+            LazyRow(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(activityColumns.size) { colIndex ->
+                    Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
+                        for (chip in activityColumns[colIndex]) {
+                            chip()
+                        }
+                    }
+                }
+                item { Spacer(modifier = Modifier.size(8.dp)) }
+            }
+        }
+    } else {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            FunctionChip(
+                label = functionChipLabel,
+                icon = functionChipIcon ?: defaultIcon,
+                containerColor = Color.Transparent,
+                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+                borderColor = Color.Transparent,
+                onClick = functionChipOnClick,
+                modifier = Modifier.width(labelWidth),
+            )
+
+            Spacer(modifier = Modifier.width(functionChipSpacing))
 
             if (maxLinesHorizontal == Int.MAX_VALUE) {
                 FlowRow(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -347,13 +367,13 @@ private fun AdaptiveActivityChip(
 
 @Composable
 private fun FunctionChip(
+    modifier: Modifier = Modifier,
     label: String,
     icon: @Composable (() -> Unit)? = null,
     containerColor: Color,
     contentColor: Color,
     borderColor: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     Surface(
         onClick = onClick,
