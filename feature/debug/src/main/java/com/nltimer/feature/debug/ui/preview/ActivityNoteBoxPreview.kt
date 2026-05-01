@@ -31,8 +31,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -50,13 +52,51 @@ fun ActivityNoteBoxDebugPreview() {
 }
 
 @Composable
+private fun ActionIconButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = MaterialTheme.colorScheme.primary,
+    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
+) {
+    Surface(
+        onClick = onClick,
+        color = containerColor,
+        shape = RoundedCornerShape(6.dp),
+        modifier = modifier.size(48.dp),
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = contentColor,
+                modifier = Modifier.size(20.dp),
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = label,
+                color = contentColor,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
 internal fun ActivityNoteComponent(
     onHistoryClick: () -> Unit = {},
 ) {
     var noteText by remember { mutableStateOf("") }
     val maxCharLimit = 5000
 
-    val backgroundColor =  MaterialTheme.colorScheme.surface
+    val backgroundColor = MaterialTheme.colorScheme.surface
     val primaryBlue = MaterialTheme.colorScheme.primary
 
     Column(
@@ -88,11 +128,12 @@ internal fun ActivityNoteComponent(
                             // 右上角字数统计
                             Text(
                                 text = "${noteText.length}/$maxCharLimit",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), 
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 fontSize = 9.sp,
-                                modifier = Modifier.align(Alignment.TopEnd)
-                                    .offset(y = (-10).dp,x=8.dp)
-                        
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(y = (-10).dp, x = 8.dp)
+
                             )
 
                             Box(
@@ -116,51 +157,26 @@ internal fun ActivityNoteComponent(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Surface(
-                onClick = onHistoryClick,
-                color = primaryBlue,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier.size(56.dp)
+            Column(
+                modifier = Modifier.height(110.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Description,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        "高级设置",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,   
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Description,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        "占位拓展",
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                ActionIconButton(
+                    icon = Icons.Default.Description,
+                    label = "高级设置",
+                    onClick = onHistoryClick,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                )
+                ActionIconButton(
+                    icon = Icons.Default.Description,
+                    label = "占位拓展",
+                    onClick = onHistoryClick,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
             }
+
         }
     }
 }

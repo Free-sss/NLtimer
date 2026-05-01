@@ -237,12 +237,15 @@ internal fun ActivityGridComponent(
         Icon(
             Icons.Default.Settings,
             contentDescription = "管理",
-            modifier = Modifier.size(14.dp),
+            modifier = Modifier.size(14.dp),tint = MaterialTheme.colorScheme.onPrimaryContainer
         )
     }
 
     val labelWidth = 64.dp
     val functionChipSpacing = 4.dp
+
+    val onContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val contentColor = MaterialTheme.colorScheme.secondaryContainer
 
     if (layoutMode == GridLayoutMode.Vertical) {
         val sortedActivities = if (sortOrder.isEmpty()) {
@@ -265,7 +268,7 @@ internal fun ActivityGridComponent(
                 label = functionChipLabel,
                 icon = functionChipIcon ?: defaultIcon,
                 containerColor = Color.Transparent,
-                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+                contentColor = onContentColor,
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
                 modifier = Modifier.width(labelWidth),
@@ -302,7 +305,7 @@ internal fun ActivityGridComponent(
                 label = functionChipLabel,
                 icon = functionChipIcon ?: defaultIcon,
                 containerColor = Color.Transparent,
-                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+                contentColor = onContentColor,
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
                 modifier = Modifier.width(labelWidth),

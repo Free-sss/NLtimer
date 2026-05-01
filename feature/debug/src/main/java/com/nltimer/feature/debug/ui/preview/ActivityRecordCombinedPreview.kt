@@ -40,8 +40,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 
 data class GridConfig(
@@ -326,20 +328,23 @@ private fun ActivityRecordCombinedSheet(
         ActivityChipData("标签123456789", Color(0xFF81C784)),
         ActivityChipData("\u231A标", Color(0xFF757575)),
     )
+    val elapsedDuration = remember { mutableStateOf("01:23:45") }
+
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        dragHandle = {
-            Text(
-                text = "活动记录",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .padding(top = 12.dp, start = 24.dp)
-                    .fillMaxWidth(1f),
-            )
-        },
+        dragHandle = null
+        //        {
+//            Text(
+//                text = "时长：${elapsedDuration.value}",
+//                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+//                modifier = Modifier
+//                    .padding(top = 12.dp, start = 24.dp)
+//                    .fillMaxWidth(1f),
+//            )
+//        },
     ) {
         Column(
             modifier = Modifier
@@ -347,9 +352,12 @@ private fun ActivityRecordCombinedSheet(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 8.dp)
                 .animateContentSize()
+                .align(Alignment.CenterHorizontally)
         ) {
             CombinedTimeAdjustment()
+            Spacer(modifier = Modifier.height(8.dp))
             DualTimePicker(baseTime = baseTime)
+            Spacer(modifier = Modifier.height(8.dp))
             CombinedTimeAdjustment()
             Spacer(modifier = Modifier.height(16.dp))
 
