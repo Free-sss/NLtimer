@@ -21,19 +21,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+
+enum class ChipDisplayMode {
+    Filled,
+    Underline,
+    
+}
 
 data class ActivityChipData(
     val name: String,
@@ -90,7 +101,7 @@ internal fun ActivityGridComponent(
     FlowRow(
         modifier = modifier
             .fillMaxWidth(),
-//        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
 //        maxItemsInEachRow = 6
     ) {
@@ -109,8 +120,9 @@ internal fun ActivityGridComponent(
             onClick = onManageClick
         )
         activities.forEach { activity ->
-            ActivityChip(
+            AdaptiveActivityChip(
                 activity = activity,
+                displayMode = ChipDisplayMode.Underline ,
                 onClick = { onActivityClick(activity) }
             )
         }
@@ -122,33 +134,51 @@ internal fun ActivityGridComponent(
 }
 
 @Composable
-private fun ActivityChip(
+private fun AdaptiveActivityChip(
     activity: ActivityChipData,
+    displayMode: ChipDisplayMode,
     onClick: () -> Unit
 ) {
     val containerColor = activity.color.copy(alpha = 0.15f)
     val contentColor = activity.color.copy(alpha = 0.9f)
 
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .height(24.dp)
-            .widthIn(max = 100.dp)
-        ,
-        color = containerColor,
-        contentColor = contentColor,
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.padding(horizontal = 8.dp)
+    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+        Surface(
+            onClick = onClick,
+            modifier = Modifier
+                .height(24.dp)
+                .widthIn(max = 100.dp)
+                .then(
+                    if (displayMode == ChipDisplayMode.Underline) {
+                        Modifier.drawBehind {
+                            val strokeWidth = 2.dp.toPx()
+                            val y = size.height - strokeWidth / 2
+                            drawLine(
+                                color = containerColor,
+                                start = Offset(0f, y),
+                                end = Offset(size.width, y),
+                                strokeWidth = strokeWidth,
+                            )
+                        }
+                    } else {
+                        Modifier
+                    }
+                ),
+            color = if (displayMode == ChipDisplayMode.Filled) containerColor else Color.Transparent,
+            contentColor = contentColor,
+            shape = RoundedCornerShape(6.dp),
         ) {
-            Text(
-                text = activity.name,
-                fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            ) {
+                Text(
+                    text = activity.name,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }
@@ -191,8 +221,9 @@ private fun FunctionChip(
 @Composable
 fun ActivityChipPreview() {
     NLtimerTheme {
-        ActivityChip(
+        AdaptiveActivityChip(
             activity = ActivityChipData("学习", Color(0xFF1B5E20)),
+            displayMode = ChipDisplayMode.Filled,
             onClick = { }
         )
     }
