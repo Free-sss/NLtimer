@@ -272,10 +272,7 @@ private fun ActivityRecordCombinedSheet(
             )
 
             ActivityNoteComponent(
-                onLabelClick = { },
                 onHistoryClick = { },
-                onContinueAddClick = { },
-                onAddClick = { },
             )
 
             Spacer(modifier = Modifier.height(16.dp))
