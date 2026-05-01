@@ -10,6 +10,7 @@ import com.nltimer.feature.debug.ui.preview.AddTagPreview
 import com.nltimer.feature.debug.ui.preview.DualTimePickerDebugPreview
 import com.nltimer.feature.debug.ui.preview.EditActivityPreview
 import com.nltimer.feature.debug.ui.preview.EditTagPreview
+import com.nltimer.feature.debug.ui.preview.SingleTimePickerDebugPreview
 import com.nltimer.feature.debug.ui.preview.TimeAdjustmentDebugPreview
 
 object FeatureDebugComponents {
@@ -32,6 +33,16 @@ object FeatureDebugComponents {
                 description = "水平步进式时间增减按钮组",
             ) {
                 TimeAdjustmentDebugPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "SingleTimePicker",
+                name = "单列时间滚轮",
+                group = "Pickers",
+                description = "仅时:分滚轮选择器（无日期）",
+            ) {
+                SingleTimePickerDebugPreview()
             }
         )
         DebugComponentRegistry.register(

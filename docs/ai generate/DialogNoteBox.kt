@@ -27,9 +27,9 @@ fun ActivityNoteComponent(
     val maxCharLimit = 5000
 
     // MD3 风格颜色定义
-    val backgroundColor = Color(0xFFF2F2F2) // 浅灰色背景
-    val primaryBlue = Color(0xFF4A90E2)     // 历史备注按钮蓝色
-    val labelBgColor = Color.Black          // 标签按钮黑色
+    val backgroundColor =  MaterialTheme.colorScheme.surface
+    val primaryBlue = MaterialTheme.colorScheme.primary
+    val labelBgColor = MaterialTheme.colorScheme.primaryContainer
 
     Column(
         modifier = Modifier
@@ -44,16 +44,16 @@ fun ActivityNoteComponent(
         ) {
             Button(
                 onClick = onLabelClick,
-                colors = ButtonDefaults.buttonColors(containerColor = labelBgColor),
+                colors = ButtonDefaults.buttonColors(containerColor = primaryBlue),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                 modifier = Modifier.height(36.dp)
             ) {
-                Text("标签", color = Color.White, fontSize = 14.sp)
+                Text("标签", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -132,16 +132,16 @@ fun ActivityNoteComponent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom,
                         modifier = Modifier.fillMaxSize()
-                    ) {
+                                ) {
                         Icon(
                             imageVector = Icons.Default.Description,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onPrimary, // 按钮图标颜色
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
                             "历史备注",
-                            color = MaterialTheme.colorScheme.onPrimary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )

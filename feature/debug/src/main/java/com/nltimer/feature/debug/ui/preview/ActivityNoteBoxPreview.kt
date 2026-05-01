@@ -70,9 +70,9 @@ internal fun ActivityNoteComponent(
     var noteText by remember { mutableStateOf("") }
     val maxCharLimit = 5000
 
-    val backgroundColor = Color(0xFF3B3B4D) // Dark gray/blue for the box background
-    val primaryBlue = Color(0xFFC7C7FF) // Light purple for history button
-    val labelBgColor = Color(0xFF8CD1FF) // Light blue for label button
+    val backgroundColor =  MaterialTheme.colorScheme.surface
+    val primaryBlue = MaterialTheme.colorScheme.primary // Primary blue for buton
+    val labelBgColor = MaterialTheme.colorScheme.primaryContainer // Primary blue for buton
 
     Column(
         modifier = Modifier
@@ -88,9 +88,9 @@ internal fun ActivityNoteComponent(
             Button(
                 onClick = onLabelClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = labelBgColor,
-                    contentColor = Color(0xFF1A1C1E)
-                ),
+                                containerColor = labelBgColor,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
                 shape = RoundedCornerShape(8.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
                 modifier = Modifier.height(32.dp)
@@ -122,14 +122,14 @@ internal fun ActivityNoteComponent(
                     modifier = Modifier.fillMaxSize(),
                     textStyle = TextStyle(
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     ),
                     decorationBox = { innerTextField ->
                         Box(modifier = Modifier.fillMaxSize()) {
                             // 右上角字数统计
                             Text(
                                 text = "${noteText.length}/$maxCharLimit",
-                                color = Color.White.copy(alpha = 0.3f),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), 
                                 fontSize = 11.sp,
                                 modifier = Modifier.align(Alignment.TopEnd)
                                     .offset(y = (-13).dp,x=4.dp)
@@ -145,7 +145,7 @@ internal fun ActivityNoteComponent(
                                 if (noteText.isEmpty()) {
                                     Text(
                                         "请输入备注",
-                                        color = Color.White.copy(alpha = 0.3f),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                         fontSize = 14.sp,
                                     )
                                 }
@@ -171,13 +171,13 @@ internal fun ActivityNoteComponent(
                     Icon(
                         imageVector = Icons.Default.Description,
                         contentDescription = null,
-                        tint = Color(0xFF1A1C1E),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         "历史备注",
-                        color = Color(0xFF1A1C1E),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,   
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )

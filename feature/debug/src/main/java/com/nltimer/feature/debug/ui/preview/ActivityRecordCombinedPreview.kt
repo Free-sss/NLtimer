@@ -132,12 +132,16 @@ private fun ActivityRecordCombinedSheet(
                 .padding(horizontal = 12.dp)
                 .animateContentSize()
         ) {
+            // 0. 时间步进调节器
+            // 绑定前时间
+            CombinedTimeAdjustment()
             // 1. 双列时间选择器
             DualTimePicker(baseTime = baseTime)
 
             // 2. 时间步进调节器
-//            SectionLabel("时间微调")
+            // 绑定后时间
             CombinedTimeAdjustment()
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 3. 活动标签网格
             ActivityGridComponent(
@@ -165,13 +169,13 @@ private fun ActivityRecordCombinedSheet(
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
-                ) {
-                    Text("取消", color = Color.Gray, fontSize = 14.sp)
+                    ) {
+                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 }
                 Button(
                     onClick = onDismiss,
                     shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006064)),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
@@ -212,7 +216,7 @@ private fun SectionLabel(text: String) {
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Bold,
         ),
-        color = Color(0xFF0288D1),
+        color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
     )
 }

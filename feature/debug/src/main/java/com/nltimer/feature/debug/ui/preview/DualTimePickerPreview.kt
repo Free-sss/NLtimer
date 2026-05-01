@@ -59,6 +59,62 @@ fun DualTimePickerDebugPreview() {
     }
 }
 
+/**
+ * 单列时间滚轮调试预览入口
+ * 仅包含时:分滚轮（无日期），复用内部 [WheelPicker] 组件
+ */
+@Composable
+fun SingleTimePickerDebugPreview() {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        SingleTimePicker()
+    }
+}
+
+/**
+ * 单列时间滚轮 — 仅时:分，无日期
+ * @param baseTime 初始锚点时间
+ */
+@Composable
+internal fun SingleTimePicker(
+    baseTime: LocalDateTime = LocalDateTime.now(),
+) {
+    val hours = remember { (0..23).map { it.toString().padStart(2, '0') } }
+    val minutes = remember { (0..59).map { it.toString().padStart(2, '0') } }
+
+    var selectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }
+    var selectedMinute by remember { mutableStateOf(baseTime.minute.toString().padStart(2, '0')) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        WheelPicker(
+            items = hours,
+            selectedItem = selectedHour,
+            onItemSelected = { selectedHour = it },
+            itemHeight = 32.dp,
+            modifier = Modifier.width(56.dp),
+        )
+        Text(
+            text = ":",
+            color = Color(0xFF0A1034),
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+        )
+        WheelPicker(
+            items = minutes,
+            selectedItem = selectedMinute,
+            onItemSelected = { selectedMinute = it },
+            itemHeight = 32.dp,
+            modifier = Modifier.width(56.dp),
+        )
+    }
+}
+
 private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
 
 /**
@@ -99,7 +155,8 @@ internal fun DualTimePicker(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Blue),
+//            .background(MaterialTheme.colorScheme.background)
+        ,
         horizontalArrangement = Arrangement.Center,
     ) {
         TimePickerSection(
@@ -155,7 +212,7 @@ private fun TimePickerSection(
     onMinuteChanged: (String) -> Unit,
 ) {
     val itemHeight = 32.dp
-
+    val primaryColor = MaterialTheme.colorScheme.onPrimary
     Column(
         modifier = modifier.fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -171,7 +228,8 @@ private fun TimePickerSection(
                     .fillMaxWidth()
                     .height(itemHeight)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFFF2F2F2)),
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    ,
             )
 
             Row(
@@ -255,6 +313,8 @@ private fun <T> WheelPicker(
             }
     }
 
+    val textColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
     LazyColumn(
         state = listState,
         flingBehavior = flingBehavior,
@@ -273,9 +333,9 @@ private fun <T> WheelPicker(
                     Text(
                         text = item.toString(),
                         style = TextStyle(
-                            fontSize = if (isSelected) 16.sp else 13.sp,
+                            fontSize = if (isSelected) 14.sp else 9.sp,
                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-                            color = if (isSelected) Color(0xFF0A1034) else Color(0xFFAAAAAA),
+                            color = if (isSelected) selectedColor else textColor,
                             textAlign = TextAlign.Center,
                         ),
                     )

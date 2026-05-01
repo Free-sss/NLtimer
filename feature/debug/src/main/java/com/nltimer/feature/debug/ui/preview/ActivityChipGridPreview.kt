@@ -1,14 +1,19 @@
 package com.nltimer.feature.debug.ui.preview
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -17,22 +22,25 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.theme.NLtimerTheme
 
 data class ActivityChipData(
     val name: String,
     val color: Color
 )
 
+@Preview(showBackground = true)
 @Composable
 fun ActivityChipGridDebugPreview() {
     val sampleActivities = listOf(
@@ -53,17 +61,19 @@ fun ActivityChipGridDebugPreview() {
         ActivityChipData("多巴胺", Color(0xFFB8860B))
     )
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            ActivityGridComponent(
-                activities = sampleActivities,
-                onActivityClick = { },
-                onManageClick = { },
-                onAddClick = { }
-            )
+    NLtimerTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                ActivityGridComponent(
+                    activities = sampleActivities,
+                    onActivityClick = { },
+                    onManageClick = { },
+                    onAddClick = { }
+                )
+            }
         }
     }
 }
@@ -80,10 +90,24 @@ internal fun ActivityGridComponent(
     FlowRow(
         modifier = modifier
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+//        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        maxItemsInEachRow = 6
+//        maxItemsInEachRow = 6
     ) {
+        FunctionChip(
+            label = "活动管理",
+            icon = {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = "管理",
+                    modifier = Modifier.size(14.dp)
+                )
+            },
+            containerColor = Color.Transparent,
+            contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+            borderColor = Color.Transparent,
+            onClick = onManageClick
+        )
         activities.forEach { activity ->
             ActivityChip(
                 activity = activity,
@@ -91,35 +115,9 @@ internal fun ActivityGridComponent(
             )
         }
 
-        FunctionChip(
-            label = "管理",
-            icon = {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "管理",
-                    modifier = Modifier.size(18.dp)
-                )
-            },
-            containerColor = Color(0xFF616161).copy(alpha = 0.15f),
-            contentColor = Color(0xFF616161).copy(alpha = 0.9f),
-            borderColor = Color(0xFF616161).copy(alpha = 0.5f),
-            onClick = onManageClick
-        )
 
-        FunctionChip(
-            label = "新增",
-            icon = {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "新增",
-                    modifier = Modifier.size(18.dp)
-                )
-            },
-            containerColor = Color(0xFFFF5252).copy(alpha = 0.15f),
-            contentColor = Color(0xFFFF5252).copy(alpha = 0.9f),
-            borderColor = Color(0xFFFF5252).copy(alpha = 0.5f),
-            onClick = onAddClick
-        )
+
+
     }
 }
 
@@ -130,31 +128,29 @@ private fun ActivityChip(
 ) {
     val containerColor = activity.color.copy(alpha = 0.15f)
     val contentColor = activity.color.copy(alpha = 0.9f)
-    val borderColor = activity.color.copy(alpha = 0.5f)
 
-    SuggestionChip(
+    Surface(
         onClick = onClick,
-        label = {
+        modifier = Modifier
+            .height(24.dp)
+            .widthIn(max = 100.dp)
+        ,
+        color = containerColor,
+        contentColor = contentColor,
+        shape = RoundedCornerShape(6.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.padding(horizontal = 8.dp)
+        ) {
             Text(
                 text = activity.name,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 0.dp)
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-        },
-        modifier = Modifier.height(28.dp),
-        colors = SuggestionChipDefaults.suggestionChipColors(
-            containerColor = containerColor,
-            labelColor = contentColor,
-            iconContentColor = contentColor
-        ),
-        border = SuggestionChipDefaults.suggestionChipBorder(
-            enabled = true,
-            borderColor = borderColor,
-            borderWidth = 1.dp
-        ),
-        shape = RoundedCornerShape(6.dp)
-    )
+        }
+    }
 }
 
 @Composable
@@ -166,28 +162,38 @@ private fun FunctionChip(
     borderColor: Color,
     onClick: () -> Unit
 ) {
-    SuggestionChip(
+    Surface(
         onClick = onClick,
-        label = {
+        modifier = Modifier.height(24.dp),
+        color = containerColor,
+        contentColor = contentColor,
+        shape = RoundedCornerShape(6.dp),
+        border = BorderStroke(1.dp, borderColor),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (icon != null) {
+                Box(modifier = Modifier.size(16.dp)) { icon() }
+            }
+            Spacer(modifier = Modifier.padding(horizontal = 2.dp))
             Text(
                 text = label,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 0.dp)
             )
-        },
-        icon = icon,
-        modifier = Modifier.height(28.dp),
-        colors = SuggestionChipDefaults.suggestionChipColors(
-            containerColor = containerColor,
-            labelColor = contentColor,
-            iconContentColor = contentColor
-        ),
-        border = SuggestionChipDefaults.suggestionChipBorder(
-            enabled = true,
-            borderColor = borderColor,
-            borderWidth = 1.dp
-        ),
-        shape = RoundedCornerShape(6.dp)
-    )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ActivityChipPreview() {
+    NLtimerTheme {
+        ActivityChip(
+            activity = ActivityChipData("学习", Color(0xFF1B5E20)),
+            onClick = { }
+        )
+    }
 }
