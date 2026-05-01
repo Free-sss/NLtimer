@@ -1,6 +1,7 @@
 package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -104,14 +105,15 @@ internal fun ActivityGridComponent(
     onActivityClick: (ActivityChipData) -> Unit,
     onManageClick: () -> Unit,
     onAddClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
 ) {
     FlowRow(
         modifier = modifier
-            .fillMaxWidth(),
+            .fillMaxWidth().background(Color.Gray),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
-//        maxItemsInEachRow = 6
+        maxLines = 2
     ) {
         FunctionChip(
             label = "活动管理",
@@ -130,7 +132,7 @@ internal fun ActivityGridComponent(
         activities.forEach { activity ->
             AdaptiveActivityChip(
                 activity = activity,
-                displayMode = ChipDisplayMode.Underline ,
+                displayMode = displayMode,
                 onClick = { onActivityClick(activity) }
             )
         }

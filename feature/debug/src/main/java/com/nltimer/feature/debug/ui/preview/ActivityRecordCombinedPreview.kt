@@ -1,21 +1,23 @@
 package com.nltimer.feature.debug.ui.preview
 
-import androidx.compose.animation.animateBounds
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -31,41 +33,110 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
 
-/**
- * 活动记录组合弹窗调试预览入口
- * 将双列时间选择器、时间步进调节器、活动标签网格、活动备注输入
- * 四个独立调试组件组合到 ModalBottomSheet 中展示。
- * 各组件通过 fake 模拟数据独立运行，点击按钮可打开/关闭弹窗
- */
 @Preview(showBackground = true)
 @Composable
 fun ActivityRecordCombinedPreview() {
-    // 控制弹窗显隐状态
     var showSheet by remember { mutableStateOf(false) }
-    // 记录弹窗打开时刻作为 baseTime，避免重组时刷新
     var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var selectedMode by remember { mutableStateOf(ChipDisplayMode.Filled) }
+    var modeMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        // 居中放置打开按钮
-        Box(
+        Column(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Button(onClick = {
-                baseTime = LocalDateTime.now()
-                showSheet = true
-            }) {
-                Text("打开活动记录组合弹窗")
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = "活动标签样式模式",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box {
+                        Surface(
+                            onClick = { modeMenuExpanded = true },
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                        ) {
+                            Text(
+                                text = selectedMode.name,
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = modeMenuExpanded,
+                            onDismissRequest = { modeMenuExpanded = false },
+                        ) {
+                            ChipDisplayMode.entries.forEach { mode ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = mode.name,
+                                            fontWeight = if (mode == selectedMode) FontWeight.Bold else FontWeight.Normal,
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedMode = mode
+                                        modeMenuExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = when (selectedMode) {
+                            ChipDisplayMode.None -> "无样式"
+                            ChipDisplayMode.Filled -> "填充背景"
+                            ChipDisplayMode.Underline -> "底部下划线"
+                            ChipDisplayMode.Capsules -> "胶囊边框"
+                            ChipDisplayMode.RoundedCorners -> "圆角背景"
+                            ChipDisplayMode.Squares -> "直角背景"
+                            ChipDisplayMode.HandDrawn -> "手绘风格"
+                            ChipDisplayMode.DashedLines -> "虚线边框"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            baseTime = LocalDateTime.now()
+                            showSheet = true
+                        },
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    ) {
+                        Text("打开活动记录组合弹窗")
+                    }
+                }
             }
         }
     }
@@ -73,29 +144,21 @@ fun ActivityRecordCombinedPreview() {
     if (showSheet) {
         ActivityRecordCombinedSheet(
             baseTime = baseTime,
+            displayMode = selectedMode,
             onDismiss = { showSheet = false },
         )
     }
 }
 
-/**
- * 活动记录组合弹窗
- * 使用半屏 ModalBottomSheet 垂直排列四个组件：
- * 双列时间选择器、时间步进调节器、活动标签网格、活动备注输入
- *
- * @param baseTime 弹窗打开时的时间锚点
- * @param onDismiss 关闭弹窗的回调
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActivityRecordCombinedSheet(
     baseTime: LocalDateTime,
+    displayMode: ChipDisplayMode,
     onDismiss: () -> Unit,
 ) {
-    // skipPartiallyExpanded = true 避免半屏→全屏的两阶段弹跳动画
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    // fake 模拟数据：活动标签网格
     val fakeActivities = listOf(
         ActivityChipData("学习", Color(0xFF1B5E20)),
         ActivityChipData("读书", Color(0xFF43A047)),
@@ -132,26 +195,19 @@ private fun ActivityRecordCombinedSheet(
                 .padding(horizontal = 12.dp)
                 .animateContentSize()
         ) {
-            // 0. 时间步进调节器
-            // 绑定前时间
             CombinedTimeAdjustment()
-            // 1. 双列时间选择器
             DualTimePicker(baseTime = baseTime)
-
-            // 2. 时间步进调节器
-            // 绑定后时间
             CombinedTimeAdjustment()
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. 活动标签网格
             ActivityGridComponent(
                 activities = fakeActivities,
                 onActivityClick = { },
                 onManageClick = { },
                 onAddClick = { },
+                displayMode = displayMode,
             )
 
-            // 4. 活动备注输入
             ActivityNoteComponent(
                 onLabelClick = { },
                 onHistoryClick = { },
@@ -162,14 +218,14 @@ private fun ActivityRecordCombinedSheet(
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 TextButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
-                    ) {
+                ) {
                     Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 }
                 Button(
@@ -188,10 +244,6 @@ private fun ActivityRecordCombinedSheet(
     }
 }
 
-/**
- * 组合弹窗内专用的时间步进调节器包装
- * 内聚其自身的 [LocalDateTime] 状态，对外无依赖
- */
 @Composable
 private fun CombinedTimeAdjustment() {
     var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
@@ -207,16 +259,4 @@ private fun CombinedTimeAdjustment() {
             onTimeChanged = { currentTime = it },
         )
     }
-}
-
-@Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelMedium.copy(
-            fontWeight = FontWeight.Bold,
-        ),
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
-    )
 }
