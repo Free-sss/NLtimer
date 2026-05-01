@@ -1,12 +1,15 @@
 package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,8 +33,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +46,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -390,6 +396,17 @@ private fun ActivityRecordCombinedSheet(
     )
 
     val emphasisColor = MaterialTheme.colorScheme.secondary
+    var pathLength by remember { mutableFloatStateOf(0f) }
+    var targetProgress by remember { mutableFloatStateOf(0f) }
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(durationMillis = 2000),
+        label = "path_draw_progress"
+    )
+
+    LaunchedEffect(Unit) {
+        targetProgress = 1f
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -437,7 +454,7 @@ private fun ActivityRecordCombinedSheet(
                             val r = 28.dp.toPx()
                             val w = size.width
                             val h = size.height
-                            val extendedH = h * 2.5f
+                            val extendedH = h * 1.5f
                             val path = Path().apply {
                                 moveTo(halfStroke, extendedH)
                                 lineTo(halfStroke, r)
@@ -456,16 +473,30 @@ private fun ActivityRecordCombinedSheet(
                                 )
                                 lineTo(w - halfStroke, extendedH)
                             }
-                            drawPath(
-                                path = path,
-                                color = emphasisColor,
-                                style = Stroke(width = strokeWidthPx)
-                            )
+
+                            val pathMeasure = PathMeasure()
+                            pathMeasure.setPath(path, false)
+                            val totalLength = pathMeasure.length
+                            if (totalLength > 0 && pathLength == 0f) {
+                                pathLength = totalLength
+                            }
+
+                            val animatedPath = Path()
+                            if (animatedProgress > 0f) {
+                                val stopDistance = totalLength * animatedProgress
+                                pathMeasure.getSegment(0f, stopDistance, animatedPath)
+                                drawPath(
+                                    path = animatedPath,
+                                    color = emphasisColor,
+                                    style = Stroke(width = strokeWidthPx)
+                                )
+                            }
                         }
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .navigationBarsPadding() // 核心修改：在最外层 Column 应用，推高所有内容
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
                             .animateContentSize()
