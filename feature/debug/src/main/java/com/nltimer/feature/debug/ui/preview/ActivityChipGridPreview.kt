@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -154,7 +155,7 @@ internal fun ActivityGridComponent(
                 borderColor = Color.Transparent,
                 onClick = onManageClick,
             ) }) + activities.map { activity ->
-                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }) }
+                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = true) }
             }).chunked(itemsPerColumn)
             
             LazyRow(
@@ -205,7 +206,8 @@ internal fun ActivityGridComponent(
 private fun AdaptiveActivityChip(
     activity: ActivityChipData,
     displayMode: ChipDisplayMode,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    fixedWidth: Boolean = false,
 ) {
     val baseColor = activity.color
     val containerColor = baseColor.copy(alpha = 0.15f)
@@ -230,12 +232,16 @@ private fun AdaptiveActivityChip(
         else -> null
     }
 
+    val chipModifier = if (fixedWidth) {
+        Modifier.height(24.dp).width(80.dp)
+    } else {
+        Modifier.height(24.dp).widthIn(max = 80.dp)
+    }
+
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
         Surface(
             onClick = onClick,
-            modifier = Modifier
-                .height(24.dp)
-                .widthIn(max = 100.dp)
+            modifier = chipModifier
                 .then(
                     when (displayMode) {
                         ChipDisplayMode.Underline -> {
