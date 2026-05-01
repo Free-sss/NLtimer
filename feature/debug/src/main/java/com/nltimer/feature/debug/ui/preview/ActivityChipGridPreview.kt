@@ -18,12 +18,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.layout.widthIn
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.layout.Layout
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Settings
@@ -51,6 +51,84 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import kotlin.math.max
+import kotlin.math.min
+
+@Composable
+private fun HorizontalScrollView(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun StaggeredHorizontalGrid(
+    modifier: Modifier = Modifier,
+    maxLines: Int = 2,
+    horizontalSpacing: Dp = 4.dp,
+    verticalSpacing: Dp = 4.dp,
+    content: @Composable () -> Unit,
+) {
+    Layout(
+        modifier = modifier,
+        content = content,
+    ) { measurables, constraints ->
+        if (measurables.isEmpty()) {
+            return@Layout layout(0, 0) {}
+        }
+
+        val horizontalSpacingPx = horizontalSpacing.roundToPx()
+        val verticalSpacingPx = verticalSpacing.roundToPx()
+
+        val placeables = measurables.map { measurable ->
+            measurable.measure(constraints.copy(minWidth = 0))
+        }
+
+        val rowWidths = IntArray(maxLines) { 0 }
+        val rowHeights = IntArray(maxLines) { 0 }
+        val rowAssignments = List(maxLines) { mutableListOf<Int>() }
+
+        placeables.forEachIndexed { index, placeable ->
+            var targetRow = 0
+            var minTargetWidth = rowWidths[0]
+            for (row in 1 until maxLines) {
+                if (rowWidths[row] < minTargetWidth) {
+                    minTargetWidth = rowWidths[row]
+                    targetRow = row
+                }
+            }
+
+            rowAssignments[targetRow].add(index)
+            val addedWidth = if (rowAssignments[targetRow].size == 1) {
+                placeable.width
+            } else {
+                placeable.width + horizontalSpacingPx
+            }
+            rowWidths[targetRow] += addedWidth
+            rowHeights[targetRow] = max(rowHeights[targetRow], placeable.height)
+        }
+
+        val totalWidth = rowWidths.maxOrNull() ?: 0
+        val totalHeight = rowHeights.sum() + verticalSpacingPx * (maxLines - 1)
+
+        layout(totalWidth, totalHeight) {
+            var currentY = 0
+            for (row in 0 until maxLines) {
+                var currentX = 0
+                rowAssignments[row].forEach { index ->
+                    placeables[index].placeRelative(currentX, currentY)
+                    currentX += placeables[index].width + horizontalSpacingPx
+                }
+                currentY += rowHeights[row] + verticalSpacingPx
+            }
+        }
+    }
+}
 
 enum class ChipDisplayMode {
     None,
@@ -153,6 +231,7 @@ internal fun ActivityGridComponent(
     useAdaptiveWidth: Boolean = true,
     chipMaxWidth: Dp = 120.dp,
     chipFixedWidth: Dp = 80.dp,
+    sortOrder: List<String> = emptyList(),
 ) {
     val defaultIcon: @Composable () -> Unit = {
         Icon(
@@ -166,13 +245,22 @@ internal fun ActivityGridComponent(
     val functionChipSpacing = 4.dp
 
     if (layoutMode == GridLayoutMode.Vertical) {
-        val itemSpacing = 4.dp
-        
+        val sortedActivities = if (sortOrder.isEmpty()) {
+            activities
+        } else {
+            activities.sortedWith { a, b ->
+                val aPriority = sortOrder.indexOfFirst { a.name.contains(it, ignoreCase = true) }
+                    .let { if (it == -1) sortOrder.size else it }
+                val bPriority = sortOrder.indexOfFirst { b.name.contains(it, ignoreCase = true) }
+                    .let { if (it == -1) sortOrder.size else it }
+                aPriority.compareTo(bPriority)
+            }
+        }
+
         Row(
             modifier = modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            // Fixed FunctionChip on the left
             FunctionChip(
                 label = functionChipLabel,
                 icon = functionChipIcon ?: defaultIcon,
@@ -182,35 +270,27 @@ internal fun ActivityGridComponent(
                 onClick = functionChipOnClick,
                 modifier = Modifier.width(labelWidth),
             )
-            
+
             Spacer(modifier = Modifier.width(functionChipSpacing))
-            
-            // Scrollable activity chips
-            val activityColumns = activities.map { activity ->
-                val content: @Composable () -> Unit = {
-                    AdaptiveActivityChip(
-                        activity = activity,
-                        displayMode = displayMode,
-                        onClick = { onActivityClick(activity) },
-                        fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
-                        maxWidth = chipMaxWidth
-                    )
-                }
-                content
-            }.chunked(maxLinesPerColumn)
-            
-            LazyRow(
+
+            HorizontalScrollView(
                 modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(activityColumns.size) { colIndex ->
-                    Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
-                        for (chip in activityColumns[colIndex]) {
-                            chip()
-                        }
+                StaggeredHorizontalGrid(
+                    maxLines = maxLinesPerColumn,
+                    horizontalSpacing = 4.dp,
+                    verticalSpacing = 4.dp,
+                ) {
+                    sortedActivities.forEach { activity ->
+                        AdaptiveActivityChip(
+                            activity = activity,
+                            displayMode = displayMode,
+                            onClick = { onActivityClick(activity) },
+                            fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
+                            maxWidth = chipMaxWidth
+                        )
                     }
                 }
-                item { Spacer(modifier = Modifier.size(8.dp)) }
             }
         }
     } else {
