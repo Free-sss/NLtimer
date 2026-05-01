@@ -135,8 +135,27 @@ internal fun ActivityNoteComponent(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "历史备注",
+                        "高级设置",
                         color = MaterialTheme.colorScheme.onPrimaryContainer,   
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        "占位拓展",
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
