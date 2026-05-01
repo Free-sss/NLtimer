@@ -72,6 +72,10 @@ data class ActivityChipData(
     val name: String,
     val color: Color
 )
+data class TagChipData(
+    val name:String,
+    val color:Color
+)
 
 @Preview(showBackground = true)
 @Composable
@@ -93,6 +97,7 @@ fun ActivityChipGridDebugPreview() {
         ActivityChipData("吃饭", Color(0xFFD2B48C)),
         ActivityChipData("多巴胺", Color(0xFFB8860B))
     )
+
 
     NLtimerTheme {
         Surface(

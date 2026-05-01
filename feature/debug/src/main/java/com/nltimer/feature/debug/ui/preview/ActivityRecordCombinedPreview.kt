@@ -234,7 +234,7 @@ fun ActivityRecordCombinedPreview() {
                         },
                         shape = RoundedCornerShape(24.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    ) {
+                    ) { 
                         Text("打开活动记录组合弹窗")
                     }
                 }
@@ -277,6 +277,13 @@ private fun ActivityRecordCombinedSheet(
         ActivityChipData("多巴胺", Color(0xFFB8860B)),
         ActivityChipData("运动", Color(0xFFFF7043)),
     )
+    val sampleTags = listOf(
+        ActivityChipData("标签1", Color(0xFF1B5E20)),
+        ActivityChipData("标签123", Color(0xFF43A047)),
+        ActivityChipData("标签123456", Color(0xFF66BB6A)),
+        ActivityChipData("标签123456789", Color(0xFF81C784)),
+        ActivityChipData("⌚标", Color(0xFF757575)),
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -288,7 +295,7 @@ private fun ActivityRecordCombinedSheet(
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                 ),
-                modifier = Modifier.padding(top = 12.dp).fillMaxWidth(1f),
+                modifier = Modifier.padding(top = 12.dp,start = 24.dp).fillMaxWidth(1f),
             )
         },
     ) {
@@ -296,7 +303,7 @@ private fun ActivityRecordCombinedSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp)
+                .padding(horizontal = 8.dp)
                 .animateContentSize()
         ) {
             CombinedTimeAdjustment()
@@ -308,13 +315,23 @@ private fun ActivityRecordCombinedSheet(
                 modifier = Modifier.padding(start = 10.dp),
                 activities = fakeActivities,
                 onActivityClick = { },
-                functionChipLabel = "标签管理",
+                functionChipLabel = "活动",
                 functionChipOnClick = { },
                 displayMode = displayMode,
                 layoutMode = layoutMode,
                 maxLinesPerColumn = columnLines,
             )
-
+            Spacer(modifier = Modifier.height(10.dp))
+            ActivityGridComponent(
+                modifier = Modifier.padding(start = 10.dp),
+                activities = sampleTags,
+                onActivityClick = { },
+                functionChipLabel = "标签",
+                functionChipOnClick = { },
+                displayMode = displayMode,
+                layoutMode = layoutMode,
+                maxLinesPerColumn = columnLines,
+            )
             ActivityNoteComponent(
                 onHistoryClick = { },
             )
