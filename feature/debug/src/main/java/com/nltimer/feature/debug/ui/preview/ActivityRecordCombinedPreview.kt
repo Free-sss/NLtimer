@@ -46,6 +46,8 @@ fun ActivityRecordCombinedPreview() {
     var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
     var selectedMode by remember { mutableStateOf(ChipDisplayMode.Filled) }
     var modeMenuExpanded by remember { mutableStateOf(false) }
+    var selectedLayout by remember { mutableStateOf(GridLayoutMode.Horizontal) }
+    var layoutMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -126,6 +128,62 @@ fun ActivityRecordCombinedPreview() {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Text(
+                        text = "网格布局模式",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box {
+                        Surface(
+                            onClick = { layoutMenuExpanded = true },
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                        ) {
+                            Text(
+                                text = selectedLayout.name,
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = layoutMenuExpanded,
+                            onDismissRequest = { layoutMenuExpanded = false },
+                        ) {
+                            GridLayoutMode.entries.forEach { mode ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = when (mode) {
+                                                GridLayoutMode.Horizontal -> "Horizontal (横向流)"
+                                                GridLayoutMode.Vertical -> "Vertical (纵向流)"
+                                            },
+                                            fontWeight = if (mode == selectedLayout) FontWeight.Bold else FontWeight.Normal,
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedLayout = mode
+                                        layoutMenuExpanded = false
+                                    },
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = when (selectedLayout) {
+                            GridLayoutMode.Horizontal -> "水平排列，超出换行"
+                            GridLayoutMode.Vertical -> "上下排列，满列换列，支持横滑"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Button(
                         onClick = {
                             baseTime = LocalDateTime.now()
@@ -145,6 +203,7 @@ fun ActivityRecordCombinedPreview() {
         ActivityRecordCombinedSheet(
             baseTime = baseTime,
             displayMode = selectedMode,
+            layoutMode = selectedLayout,
             onDismiss = { showSheet = false },
         )
     }
@@ -155,6 +214,7 @@ fun ActivityRecordCombinedPreview() {
 private fun ActivityRecordCombinedSheet(
     baseTime: LocalDateTime,
     displayMode: ChipDisplayMode,
+    layoutMode: GridLayoutMode,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -206,6 +266,7 @@ private fun ActivityRecordCombinedSheet(
                 onManageClick = { },
                 onAddClick = { },
                 displayMode = displayMode,
+                layoutMode = layoutMode,
             )
 
             ActivityNoteComponent(

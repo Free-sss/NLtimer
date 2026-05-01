@@ -1,7 +1,6 @@
 package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -53,6 +54,11 @@ enum class ChipDisplayMode {
     Squares,
     HandDrawn,
     DashedLines,
+}
+
+enum class GridLayoutMode {
+    Horizontal,
+    Vertical,
 }
 
 data class ActivityChipData(
@@ -107,14 +113,9 @@ internal fun ActivityGridComponent(
     onAddClick: () -> Unit,
     modifier: Modifier = Modifier,
     displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
+    layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
 ) {
-    FlowRow(
-        modifier = modifier
-            .fillMaxWidth().background(Color.Gray),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        maxLines = 2
-    ) {
+    val allItems = @Composable {
         FunctionChip(
             label = "活动管理",
             icon = {
@@ -135,11 +136,68 @@ internal fun ActivityGridComponent(
                 displayMode = displayMode,
                 onClick = { onActivityClick(activity) }
             )
+            Spacer(modifier = Modifier.size(4.dp))
         }
+    }
 
-
-
-
+    if (layoutMode == GridLayoutMode.Vertical) {
+        Box(modifier = modifier.fillMaxWidth()) {
+            val itemSpacing = 4.dp
+            val itemsPerColumn = 2
+            val columns = (listOf<@Composable () -> Unit>({ FunctionChip(
+                label = "活动管理",
+                icon = {
+                    Icon(Icons.Default.Settings, contentDescription = "管理", modifier = Modifier.size(14.dp))
+                },
+                containerColor = Color.Transparent,
+                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+                borderColor = Color.Transparent,
+                onClick = onManageClick,
+            ) }) + activities.map { activity ->
+                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }) }
+            }).chunked(itemsPerColumn)
+            
+            LazyRow(
+                // modifier = Modifier.height(heightDef),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                item { Spacer(modifier = Modifier.size(0.dp)) }
+                items(columns.size) { colIndex ->
+                    Column(verticalArrangement = Arrangement.spacedBy(itemSpacing)) {
+                        columns[colIndex].forEach { it() }
+                    }
+                }
+                item { Spacer(modifier = Modifier.size(8.dp)) }
+            }
+        }
+    } else {
+        FlowRow(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            FunctionChip(
+                label = "活动管理",
+                icon = {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "管理",
+                        modifier = Modifier.size(14.dp)
+                    )
+                },
+                containerColor = Color.Transparent,
+                contentColor = Color(0xFF616161).copy(alpha = 0.9f),
+                borderColor = Color.Transparent,
+                onClick = onManageClick
+            )
+            activities.forEach { activity ->
+                AdaptiveActivityChip(
+                    activity = activity,
+                    displayMode = displayMode,
+                    onClick = { onActivityClick(activity) }
+                )
+            }
+        }
     }
 }
 
