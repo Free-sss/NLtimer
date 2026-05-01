@@ -101,11 +101,36 @@ fun ActivityChipGridDebugPreview() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text("自适应宽度 (Adaptive)", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
                 ActivityGridComponent(
                     activities = sampleActivities,
                     onActivityClick = { },
                     functionChipOnClick = { },
+                    useAdaptiveWidth = true,
+                    layoutMode = GridLayoutMode.Vertical
+                )
+
+                Text("固定宽度 (Fixed 80dp)", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                ActivityGridComponent(
+                    activities = sampleActivities,
+                    onActivityClick = { },
+                    functionChipOnClick = { },
+                    useAdaptiveWidth = false,
+                    chipFixedWidth = 80.dp,
+                    layoutMode = GridLayoutMode.Vertical
+                )
+                
+                Text("Horizontal Flow (Adaptive)", Modifier.padding(8.dp), fontWeight = FontWeight.Bold)
+                ActivityGridComponent(
+                    activities = sampleActivities,
+                    onActivityClick = { },
+                    functionChipOnClick = { },
+                    useAdaptiveWidth = true,
+                    layoutMode = GridLayoutMode.Horizontal
                 )
             }
         }
@@ -125,7 +150,9 @@ internal fun ActivityGridComponent(
     layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
     maxLinesPerColumn: Int = 2,
     maxLinesHorizontal: Int = 2,
-    fixedChipWidth: Dp = 80.dp,
+    useAdaptiveWidth: Boolean = true,
+    chipMaxWidth: Dp = 120.dp,
+    chipFixedWidth: Dp = 80.dp,
 ) {
     val defaultIcon: @Composable () -> Unit = {
         Icon(
@@ -159,9 +186,18 @@ internal fun ActivityGridComponent(
             Spacer(modifier = Modifier.width(functionChipSpacing))
             
             // Scrollable activity chips
-            val activityColumns = (listOf<@Composable () -> Unit>() + activities.map { activity ->
-                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = fixedChipWidth) }
-            }).chunked(maxLinesPerColumn)
+            val activityColumns = activities.map { activity ->
+                val content: @Composable () -> Unit = {
+                    AdaptiveActivityChip(
+                        activity = activity,
+                        displayMode = displayMode,
+                        onClick = { onActivityClick(activity) },
+                        fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
+                        maxWidth = chipMaxWidth
+                    )
+                }
+                content
+            }.chunked(maxLinesPerColumn)
             
             LazyRow(
                 modifier = Modifier.weight(1f),
@@ -204,7 +240,9 @@ internal fun ActivityGridComponent(
                         AdaptiveActivityChip(
                             activity = activity,
                             displayMode = displayMode,
-                            onClick = { onActivityClick(activity) }
+                            onClick = { onActivityClick(activity) },
+                            fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
+                            maxWidth = chipMaxWidth
                         )
                     }
                 }
@@ -225,7 +263,9 @@ internal fun ActivityGridComponent(
                             AdaptiveActivityChip(
                                 activity = activity,
                                 displayMode = displayMode,
-                                onClick = { onActivityClick(activity) }
+                                onClick = { onActivityClick(activity) },
+                                fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
+                                maxWidth = chipMaxWidth
                             )
                         }
                     }
@@ -241,6 +281,7 @@ private fun AdaptiveActivityChip(
     displayMode: ChipDisplayMode,
     onClick: () -> Unit,
     fixedWidth: Dp? = null,
+    maxWidth: Dp = 120.dp,
 ) {
     val baseColor = activity.color
     val containerColor = baseColor.copy(alpha = 0.15f)
@@ -269,7 +310,7 @@ private fun AdaptiveActivityChip(
     val chipModifier = if (fixedWidth != null) {
         Modifier.height(24.dp).width(fixedWidth)
     } else {
-        Modifier.height(24.dp).widthIn(max = 80.dp)
+        Modifier.height(24.dp).widthIn(max = maxWidth)
     }
 
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {

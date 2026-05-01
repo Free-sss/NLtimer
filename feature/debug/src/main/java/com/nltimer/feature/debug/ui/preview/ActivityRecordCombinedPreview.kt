@@ -369,7 +369,7 @@ private fun ActivityRecordCombinedSheet(
                 layoutMode = activityConfig.layoutMode.value,
                 maxLinesPerColumn = activityConfig.columnLines.value,
                 maxLinesHorizontal = horizontalLines(activityConfig),
-                fixedChipWidth = 80.dp,
+                chipFixedWidth = 80.dp,
             )
             Spacer(modifier = Modifier.height(10.dp))
             ActivityGridComponent(
@@ -388,7 +388,7 @@ private fun ActivityRecordCombinedSheet(
                 layoutMode = tagConfig.layoutMode.value,
                 maxLinesPerColumn = tagConfig.columnLines.value,
                 maxLinesHorizontal = horizontalLines(tagConfig),
-                fixedChipWidth = 50.dp,
+                chipFixedWidth = 50.dp,
             )
             ActivityNoteComponent(
                 onHistoryClick = { },
