@@ -1,6 +1,9 @@
 package com.nltimer.feature.debug.ui.preview
 
+import android.graphics.DiscretePathEffect as AndroidDiscretePathEffect
+import android.graphics.Paint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +40,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -53,6 +58,7 @@ enum class ChipDisplayMode {
     Capsules,
     RoundedCorners,
     Squares,
+    SquareBorder,
     HandDrawn,
     DashedLines,
 }
@@ -217,6 +223,7 @@ private fun AdaptiveActivityChip(
     val shape = when (displayMode) {
         ChipDisplayMode.Capsules -> RoundedCornerShape(50)
         ChipDisplayMode.Squares -> RoundedCornerShape(0)
+        ChipDisplayMode.SquareBorder -> RoundedCornerShape(0)
         ChipDisplayMode.None -> RoundedCornerShape(0)
         else -> RoundedCornerShape(6.dp)
     }
@@ -256,17 +263,39 @@ private fun AdaptiveActivityChip(
                                 )
                             }
                         }
+                        ChipDisplayMode.SquareBorder -> {
+                            Modifier.drawBehind {
+                                val sw = 1.5.dp.toPx()
+                                drawRect(
+                                    color = borderColor,
+                                    style = Stroke(
+                                        width = sw,
+                                        pathEffect = PathEffect.cornerPathEffect(2.5f),
+                                        join = StrokeJoin.Round,
+                                        cap = StrokeCap.Round,
+                                    ),
+                                )
+                            }
+                        }
                         ChipDisplayMode.HandDrawn -> {
                             Modifier.drawBehind {
                                 val sw = 1.5.dp.toPx()
-                                val r = 6.dp.toPx()
-                                drawRoundRect(
-                                    color = borderColor,
-                                    cornerRadius = CornerRadius(r, r),
-                                    style = Stroke(
-                                        width = sw,
-                                        pathEffect = PathEffect.cornerPathEffect(2f),
-                                    ),
+                                val paint = Paint().apply {
+                                    isAntiAlias = true
+                                    style = Paint.Style.STROKE
+                                    strokeWidth = sw
+                                    color = android.graphics.Color.argb(
+                                        (borderColor.alpha * 255).toInt(),
+                                        (borderColor.red * 255).toInt(),
+                                        (borderColor.green * 255).toInt(),
+                                        (borderColor.blue * 255).toInt(),
+                                    )
+                                    strokeJoin = Paint.Join.ROUND
+                                    strokeCap = Paint.Cap.ROUND
+                                    pathEffect = AndroidDiscretePathEffect(10f, 5f)
+                                }
+                                drawContext.canvas.nativeCanvas.drawRect(
+                                    0f, 0f, size.width, size.height, paint,
                                 )
                             }
                         }

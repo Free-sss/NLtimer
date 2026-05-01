@@ -119,6 +119,7 @@ fun ActivityRecordCombinedPreview() {
                             ChipDisplayMode.Capsules -> "胶囊边框"
                             ChipDisplayMode.RoundedCorners -> "圆角背景"
                             ChipDisplayMode.Squares -> "直角背景"
+                            ChipDisplayMode.SquareBorder -> "方形边框"
                             ChipDisplayMode.HandDrawn -> "手绘风格"
                             ChipDisplayMode.DashedLines -> "虚线边框"
                         },
