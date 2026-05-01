@@ -1,6 +1,5 @@
 package com.nltimer.feature.debug.ui.preview
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -84,17 +82,15 @@ internal fun TimeAdjustmentComponent(
     // 使用 Row 确保所有元素在一行内显示
     Row (
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 1.dp),
-        horizontalArrangement = Arrangement.spacedBy(1.dp),
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // 占位符
         TimeButton(
-            text = "现在",
+            text = "占位",
             onClick = { onTimeChanged(LocalDateTime.now()) },
         )
-        Spacer(modifier = Modifier.width(1.dp))
         
         // 遍历生成时间步进按钮
         adjustments.forEach { text ->
@@ -105,12 +101,12 @@ internal fun TimeAdjustmentComponent(
                 onTimeChanged(currentTime.plusMinutes(amount.toLong()))
             }
         }
-// 0. 现在按钮
+
+        // 现在按钮
         TimeButton(
             text = "现在",
             onClick = { onTimeChanged(LocalDateTime.now()) },
         )
-        Spacer(modifier = Modifier.width(1.dp))
     }   
 }
 
@@ -121,7 +117,6 @@ private fun TimeButton(
     text: String,
     onClick: () -> Unit,
 ) {
-    val underlineColor = MaterialTheme.colorScheme.tertiary
     Button(
         onClick = onClick,
         shape = RoundedCornerShape(4.dp),
