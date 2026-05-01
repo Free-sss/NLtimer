@@ -114,11 +114,11 @@ fun ActivityChipGridDebugPreview() {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun ActivityGridComponent(
+    modifier: Modifier = Modifier,
     activities: List<ActivityChipData>,
     onActivityClick: (ActivityChipData) -> Unit,
     onManageClick: () -> Unit,
     onAddClick: () -> Unit,
-    modifier: Modifier = Modifier,
     displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
     layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
 ) {

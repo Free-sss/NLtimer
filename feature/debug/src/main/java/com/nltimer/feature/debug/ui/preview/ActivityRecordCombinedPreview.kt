@@ -262,6 +262,7 @@ private fun ActivityRecordCombinedSheet(
             Spacer(modifier = Modifier.height(16.dp))
 
             ActivityGridComponent(
+                modifier = Modifier.padding(start = 10.dp),
                 activities = fakeActivities,
                 onActivityClick = { },
                 onManageClick = { },
