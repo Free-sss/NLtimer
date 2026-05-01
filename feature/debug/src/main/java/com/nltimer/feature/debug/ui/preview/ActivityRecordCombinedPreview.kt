@@ -37,10 +37,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.format.DateTimeFormatter
@@ -385,108 +388,132 @@ private fun ActivityRecordCombinedSheet(
         ActivityChipData("标签123456789", Color(0xFF81C784)),
         ActivityChipData("\u231A标", Color(0xFF757575)),
     )
-    val elapsedDuration = remember { mutableStateOf("01:23:45") }
 
+    val emphasisColor = MaterialTheme.colorScheme.secondaryContainer
 
     ModalBottomSheet(
-        modifier =  Modifier,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle = null
-        //        {
-//            Text(
-//                text = "时长：${elapsedDuration.value}",
-//                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-//                modifier = Modifier
-//                    .padding(top = 12.dp, start = 24.dp)
-//                    .fillMaxWidth(1f),
-//            )
-//        },
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp)
-                .animateContentSize()
-                .align(Alignment.CenterHorizontally)
+                .drawWithContent {
+                    drawContent()
+                    val strokeWidthPx = 3.dp.toPx()
+                    val halfStroke = strokeWidthPx / 2
+                    val r = 28.dp.toPx()
+                    val w = size.width
+                    val path = Path().apply {
+                        moveTo(halfStroke, size.height)
+                        lineTo(halfStroke, r)
+                        arcTo(
+                            rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
+                            startAngleDegrees = 180f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+                        lineTo(w - r, halfStroke)
+                        arcTo(
+                            rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
+                            startAngleDegrees = 270f,
+                            sweepAngleDegrees = 90f,
+                            forceMoveTo = false
+                        )
+                        lineTo(w - halfStroke, size.height)
+                    }
+                    drawPath(
+                        path = path,
+                        color = emphasisColor,
+                        style = Stroke(width = strokeWidthPx)
+                    )
+                }
         ) {
-            CombinedTimeAdjustment()
-            Spacer(modifier = Modifier.height(8.dp))
-            DualTimePicker(baseTime = baseTime)
-            Spacer(modifier = Modifier.height(8.dp))
-            CombinedTimeAdjustment()
-            Spacer(modifier = Modifier.height(16.dp))
-
-            ActivityGridComponent(
-                activities = fakeActivities,
-                onActivityClick = { },
-                functionChipLabel = "活动",
-                functionChipIcon = {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "活动管理",
-                        modifier = Modifier.size(14.dp),
-                    )
-                },
-                functionChipOnClick = { },
-                displayMode = activityConfig.displayMode.value,
-                layoutMode = activityConfig.layoutMode.value,
-                maxLinesPerColumn = activityConfig.columnLines.value,
-                maxLinesHorizontal = horizontalLines(activityConfig),
-                chipFixedWidth = 80.dp,
-                useActivityColorForText = activityConfig.useActivityColorForText.value,
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            ActivityGridComponent(
-                activities = sampleTags,
-                onActivityClick = { },
-                functionChipLabel = "标签",
-                functionChipIcon = {
-                    Icon(
-                        Icons.AutoMirrored.Filled.Label,
-                        contentDescription = "标签管理",
-                        modifier = Modifier.size(14.dp),
-                    )
-                },
-                functionChipOnClick = { },
-                displayMode = tagConfig.displayMode.value,
-                layoutMode = tagConfig.layoutMode.value,
-                maxLinesPerColumn = tagConfig.columnLines.value,
-                maxLinesHorizontal = horizontalLines(tagConfig),
-                chipFixedWidth = 50.dp,
-                useActivityColorForText = tagConfig.useActivityColorForText.value,
-            )
-            ActivityNoteComponent(
-                onHistoryClick = { },
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp)
+                    .animateContentSize()
             ) {
-                TextButton(
-                    onClick = onDismiss,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp),
+                CombinedTimeAdjustment()
+                Spacer(modifier = Modifier.height(8.dp))
+                DualTimePicker(baseTime = baseTime)
+                Spacer(modifier = Modifier.height(8.dp))
+                CombinedTimeAdjustment()
+                Spacer(modifier = Modifier.height(16.dp))
+
+                ActivityGridComponent(
+                    activities = fakeActivities,
+                    onActivityClick = { },
+                    functionChipLabel = "活动",
+                    functionChipIcon = {
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "活动管理",
+                            modifier = Modifier.size(14.dp),
+                        )
+                    },
+                    functionChipOnClick = { },
+                    displayMode = activityConfig.displayMode.value,
+                    layoutMode = activityConfig.layoutMode.value,
+                    maxLinesPerColumn = activityConfig.columnLines.value,
+                    maxLinesHorizontal = horizontalLines(activityConfig),
+                    chipFixedWidth = 80.dp,
+                    useActivityColorForText = activityConfig.useActivityColorForText.value,
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                ActivityGridComponent(
+                    activities = sampleTags,
+                    onActivityClick = { },
+                    functionChipLabel = "标签",
+                    functionChipIcon = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Label,
+                            contentDescription = "标签管理",
+                            modifier = Modifier.size(14.dp),
+                        )
+                    },
+                    functionChipOnClick = { },
+                    displayMode = tagConfig.displayMode.value,
+                    layoutMode = tagConfig.layoutMode.value,
+                    maxLinesPerColumn = tagConfig.columnLines.value,
+                    maxLinesHorizontal = horizontalLines(tagConfig),
+                    chipFixedWidth = 50.dp,
+                    useActivityColorForText = tagConfig.useActivityColorForText.value,
+                )
+                ActivityNoteComponent(
+                    onHistoryClick = { },
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                    ) {
+                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                    ) {
+                        Text("确认", fontSize = 14.sp)
+                    }
                 }
-                Button(
-                    onClick = onDismiss,
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp),
-                ) {
-                    Text("确认", fontSize = 14.sp)
-                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
