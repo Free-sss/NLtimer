@@ -30,8 +30,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,9 +44,14 @@ import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 
 enum class ChipDisplayMode {
+    None,
     Filled,
     Underline,
-    
+    Capsules,
+    RoundedCorners,
+    Squares,
+    HandDrawn,
+    DashedLines,
 }
 
 data class ActivityChipData(
@@ -139,8 +147,28 @@ private fun AdaptiveActivityChip(
     displayMode: ChipDisplayMode,
     onClick: () -> Unit
 ) {
-    val containerColor = activity.color.copy(alpha = 0.15f)
-    val contentColor = activity.color.copy(alpha = 0.9f)
+    val baseColor = activity.color
+    val containerColor = baseColor.copy(alpha = 0.15f)
+    val contentColor = baseColor.copy(alpha = 0.9f)
+    val borderColor = baseColor.copy(alpha = 0.5f)
+
+    val shape = when (displayMode) {
+        ChipDisplayMode.Capsules -> RoundedCornerShape(50)
+        ChipDisplayMode.Squares -> RoundedCornerShape(0)
+        ChipDisplayMode.None -> RoundedCornerShape(0)
+        else -> RoundedCornerShape(6.dp)
+    }
+
+    val surfaceColor = when (displayMode) {
+        ChipDisplayMode.Filled, ChipDisplayMode.Capsules,
+        ChipDisplayMode.RoundedCorners, ChipDisplayMode.Squares -> containerColor
+        else -> Color.Transparent
+    }
+
+    val border = when (displayMode) {
+        ChipDisplayMode.Capsules -> BorderStroke(1.dp, borderColor)
+        else -> null
+    }
 
     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
         Surface(
@@ -149,28 +177,60 @@ private fun AdaptiveActivityChip(
                 .height(24.dp)
                 .widthIn(max = 100.dp)
                 .then(
-                    if (displayMode == ChipDisplayMode.Underline) {
-                        Modifier.drawBehind {
-                            val strokeWidth = 2.dp.toPx()
-                            val y = size.height - strokeWidth / 2
-                            drawLine(
-                                color = containerColor,
-                                start = Offset(0f, y),
-                                end = Offset(size.width, y),
-                                strokeWidth = strokeWidth,
-                            )
+                    when (displayMode) {
+                        ChipDisplayMode.Underline -> {
+                            Modifier.drawBehind {
+                                val sw = 2.dp.toPx()
+                                val y = size.height - sw / 2
+                                drawLine(
+                                    color = containerColor,
+                                    start = Offset(0f, y),
+                                    end = Offset(size.width, y),
+                                    strokeWidth = sw,
+                                )
+                            }
                         }
-                    } else {
-                        Modifier
+                        ChipDisplayMode.HandDrawn -> {
+                            Modifier.drawBehind {
+                                val sw = 1.5.dp.toPx()
+                                val r = 6.dp.toPx()
+                                drawRoundRect(
+                                    color = borderColor,
+                                    cornerRadius = CornerRadius(r, r),
+                                    style = Stroke(
+                                        width = sw,
+                                        pathEffect = PathEffect.cornerPathEffect(2f),
+                                    ),
+                                )
+                            }
+                        }
+                        ChipDisplayMode.DashedLines -> {
+                            Modifier.drawBehind {
+                                val sw = 1.5.dp.toPx()
+                                val r = 6.dp.toPx()
+                                drawRoundRect(
+                                    color = borderColor,
+                                    cornerRadius = CornerRadius(r, r),
+                                    style = Stroke(
+                                        width = sw,
+                                        pathEffect = PathEffect.dashPathEffect(
+                                            floatArrayOf(8f, 4f),
+                                        ),
+                                    ),
+                                )
+                            }
+                        }
+                        else -> Modifier
                     }
                 ),
-            color = if (displayMode == ChipDisplayMode.Filled) containerColor else Color.Transparent,
+            color = surfaceColor,
             contentColor = contentColor,
-            shape = RoundedCornerShape(6.dp),
+            shape = shape,
+            border = border,
         ) {
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier.padding(horizontal = if (displayMode == ChipDisplayMode.None) 0.dp else 8.dp),
             ) {
                 Text(
                     text = activity.name,
