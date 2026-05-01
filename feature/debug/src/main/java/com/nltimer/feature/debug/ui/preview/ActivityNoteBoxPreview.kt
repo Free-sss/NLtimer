@@ -89,9 +89,9 @@ internal fun ActivityNoteComponent(
                             Text(
                                 text = "${noteText.length}/$maxCharLimit",
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), 
-                                fontSize = 11.sp,
+                                fontSize = 9.sp,
                                 modifier = Modifier.align(Alignment.TopEnd)
-                                    .offset(y = (-13).dp,x=4.dp)
+                                    .offset(y = (-10).dp,x=8.dp)
                         
                             )
 
