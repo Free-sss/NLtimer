@@ -45,7 +45,7 @@ fun ActivityNoteBoxDebugPreview() {
     ) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             ActivityNoteComponent(
-                onHistoryClick = { },
+                onTopButton = { },
             )
         }
     }
@@ -91,7 +91,8 @@ private fun ActionIconButton(
 @Preview(showBackground = true)
 @Composable
 internal fun ActivityNoteComponent(
-    onHistoryClick: () -> Unit = {},
+    onTopButton: () -> Unit = {},
+    onBottomButton:()->Unit = {}
 ) {
     var noteText by remember { mutableStateOf("") }
     val maxCharLimit = 5000
@@ -132,7 +133,7 @@ internal fun ActivityNoteComponent(
                                 fontSize = 9.sp,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .offset(y = (-10).dp, x = 8.dp)
+                                    .offset(y = (-6).dp, x = 8.dp)
 
                             )
 
@@ -164,16 +165,16 @@ internal fun ActivityNoteComponent(
                 ActionIconButton(
                     icon = Icons.Default.Description,
                     label = "高级设置",
-                    onClick = onHistoryClick,
+                    onClick = onTopButton,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
                 ActionIconButton(
                     icon = Icons.Default.Description,
                     label = "占位拓展",
-                    onClick = onHistoryClick,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    onClick = onBottomButton,
+                    containerColor= MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
 

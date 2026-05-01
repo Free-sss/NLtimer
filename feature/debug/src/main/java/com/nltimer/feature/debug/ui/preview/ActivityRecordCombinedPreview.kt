@@ -46,7 +46,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.time.format.DateTimeFormatter
 import java.time.LocalDateTime
 
 data class GridConfig(
@@ -389,7 +388,7 @@ private fun ActivityRecordCombinedSheet(
         ActivityChipData("\u231A标", Color(0xFF757575)),
     )
 
-    val emphasisColor = MaterialTheme.colorScheme.secondaryContainer
+    val emphasisColor = MaterialTheme.colorScheme.secondary
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -406,23 +405,32 @@ private fun ActivityRecordCombinedSheet(
                     val halfStroke = strokeWidthPx / 2
                     val r = 28.dp.toPx()
                     val w = size.width
+                    val h = size.height
+                    // 往下延伸 150%，确保在返回手势等缩放/平移场景下覆盖完整
+                    val extendedH = h * 2.5f
                     val path = Path().apply {
-                        moveTo(halfStroke, size.height)
+                        // 从延伸出的底部开始
+                        moveTo(halfStroke, extendedH)
+                        // 向上画到左圆角开始处
                         lineTo(halfStroke, r)
+                        // 左上角圆角
                         arcTo(
                             rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
                             startAngleDegrees = 180f,
                             sweepAngleDegrees = 90f,
                             forceMoveTo = false
                         )
+                        // 顶部水平线
                         lineTo(w - r, halfStroke)
+                        // 右上角圆角
                         arcTo(
                             rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
                             startAngleDegrees = 270f,
                             sweepAngleDegrees = 90f,
                             forceMoveTo = false
                         )
-                        lineTo(w - halfStroke, size.height)
+                        // 向下画到延伸出的底部
+                        lineTo(w - halfStroke, extendedH)
                     }
                     drawPath(
                         path = path,
@@ -438,6 +446,7 @@ private fun ActivityRecordCombinedSheet(
                     .padding(horizontal = 8.dp)
                     .animateContentSize()
             ) {
+                Spacer(modifier = Modifier.height(10.dp))
                 CombinedTimeAdjustment()
                 Spacer(modifier = Modifier.height(8.dp))
                 DualTimePicker(baseTime = baseTime)
@@ -485,10 +494,11 @@ private fun ActivityRecordCombinedSheet(
                     useActivityColorForText = tagConfig.useActivityColorForText.value,
                 )
                 ActivityNoteComponent(
-                    onHistoryClick = { },
+                    onTopButton = { },
+                    onBottomButton = { }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+//                Spacer(modifier = Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -499,7 +509,8 @@ private fun ActivityRecordCombinedSheet(
                             .weight(1f)
                             .height(40.dp),
                     ) {
-                        Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                        Text("取消",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     }
                     Button(
                         onClick = onDismiss,
@@ -512,7 +523,7 @@ private fun ActivityRecordCombinedSheet(
                         Text("确认", fontSize = 14.sp)
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+//                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
