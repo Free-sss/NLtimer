@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -394,139 +395,162 @@ private fun ActivityRecordCombinedSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        dragHandle = null
+        dragHandle = null,
+        containerColor = Color.Transparent, // 设置为透明，允许内容“溢出”
+        scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .drawWithContent {
-                    drawContent()
-                    val strokeWidthPx = 3.dp.toPx()
-                    val halfStroke = strokeWidthPx / 2
-                    val r = 28.dp.toPx()
-                    val w = size.width
-                    val h = size.height
-                    // 往下延伸 150%，确保在返回手势等缩放/平移场景下覆盖完整
-                    val extendedH = h * 2.5f
-                    val path = Path().apply {
-                        // 从延伸出的底部开始
-                        moveTo(halfStroke, extendedH)
-                        // 向上画到左圆角开始处
-                        lineTo(halfStroke, r)
-                        // 左上角圆角
-                        arcTo(
-                            rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
-                            startAngleDegrees = 180f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
-                        // 顶部水平线
-                        lineTo(w - r, halfStroke)
-                        // 右上角圆角
-                        arcTo(
-                            rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
-                            startAngleDegrees = 270f,
-                            sweepAngleDegrees = 90f,
-                            forceMoveTo = false
-                        )
-                        // 向下画到延伸出的底部
-                        lineTo(w - halfStroke, extendedH)
-                    }
-                    drawPath(
-                        path = path,
-                        color = emphasisColor,
-                        style = Stroke(width = strokeWidthPx)
-                    )
-                }
-        ) {
-            Column(
+        // 使用 Column 包装 Box，确保 Column 关闭后，外部函数能正常识别后续定义的私有函数
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 8.dp)
-                    .animateContentSize()
+                    .padding(top = 40.dp) // 为顶部悬浮文字留出空间
             ) {
-                Spacer(modifier = Modifier.height(10.dp))
-                CombinedTimeAdjustment()
-                Spacer(modifier = Modifier.height(8.dp))
-                DualTimePicker(baseTime = baseTime)
-                Spacer(modifier = Modifier.height(8.dp))
-                CombinedTimeAdjustment()
-                Spacer(modifier = Modifier.height(16.dp))
-
-                ActivityGridComponent(
-                    activities = fakeActivities,
-                    onActivityClick = { },
-                    functionChipLabel = "活动",
-                    functionChipIcon = {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "活动管理",
-                            modifier = Modifier.size(14.dp),
-                        )
-                    },
-                    functionChipOnClick = { },
-                    displayMode = activityConfig.displayMode.value,
-                    layoutMode = activityConfig.layoutMode.value,
-                    maxLinesPerColumn = activityConfig.columnLines.value,
-                    maxLinesHorizontal = horizontalLines(activityConfig),
-                    chipFixedWidth = 80.dp,
-                    useActivityColorForText = activityConfig.useActivityColorForText.value,
-                )
-                Spacer(modifier = Modifier.height(10.dp))
-                ActivityGridComponent(
-                    activities = sampleTags,
-                    onActivityClick = { },
-                    functionChipLabel = "标签",
-                    functionChipIcon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Label,
-                            contentDescription = "标签管理",
-                            modifier = Modifier.size(14.dp),
-                        )
-                    },
-                    functionChipOnClick = { },
-                    displayMode = tagConfig.displayMode.value,
-                    layoutMode = tagConfig.layoutMode.value,
-                    maxLinesPerColumn = tagConfig.columnLines.value,
-                    maxLinesHorizontal = horizontalLines(tagConfig),
-                    chipFixedWidth = 50.dp,
-                    useActivityColorForText = tagConfig.useActivityColorForText.value,
-                )
-                ActivityNoteComponent(
-                    onTopButton = { },
-                    onBottomButton = { }
+                // 悬浮文本：位于弹窗内左上角区域，通过 graphicsLayer 偏移到弹窗外
+                Text(
+                    text = "测试文本",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.surface
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 16.dp)
+                        .graphicsLayer {
+                            // 向上偏移 20.dp
+                            translationY = -20.dp.toPx()
+                        }
                 )
 
-//                Spacer(modifier = Modifier.height(16.dp))
-                Row(
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                 ) {
-                    TextButton(
-                        onClick = onDismiss,
+                    Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
-                    ) {
-                        Text("取消",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-                    }
-                    Button(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(24.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            .fillMaxWidth()
+                            .drawWithContent {
+                            drawContent()
+                            val strokeWidthPx = 3.dp.toPx()
+                            val halfStroke = strokeWidthPx / 2
+                            val r = 28.dp.toPx()
+                            val w = size.width
+                            val h = size.height
+                            val extendedH = h * 2.5f
+                            val path = Path().apply {
+                                moveTo(halfStroke, extendedH)
+                                lineTo(halfStroke, r)
+                                arcTo(
+                                    rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
+                                    startAngleDegrees = 180f,
+                                    sweepAngleDegrees = 90f,
+                                    forceMoveTo = false
+                                )
+                                lineTo(w - r, halfStroke)
+                                arcTo(
+                                    rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
+                                    startAngleDegrees = 270f,
+                                    sweepAngleDegrees = 90f,
+                                    forceMoveTo = false
+                                )
+                                lineTo(w - halfStroke, extendedH)
+                            }
+                            drawPath(
+                                path = path,
+                                color = emphasisColor,
+                                style = Stroke(width = strokeWidthPx)
+                            )
+                        }
+                ) {
+                    Column(
                         modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp),
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 8.dp)
+                            .animateContentSize()
                     ) {
-                        Text("确认", fontSize = 14.sp)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        CombinedTimeAdjustment()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DualTimePicker(baseTime = baseTime)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CombinedTimeAdjustment()
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        ActivityGridComponent(
+                            activities = fakeActivities,
+                            onActivityClick = { },
+                            functionChipLabel = "活动",
+                            functionChipIcon = {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = "活动管理",
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            },
+                            functionChipOnClick = { },
+                            displayMode = activityConfig.displayMode.value,
+                            layoutMode = activityConfig.layoutMode.value,
+                            maxLinesPerColumn = activityConfig.columnLines.value,
+                            maxLinesHorizontal = horizontalLines(activityConfig),
+                            chipFixedWidth = 80.dp,
+                            useActivityColorForText = activityConfig.useActivityColorForText.value,
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+                        ActivityGridComponent(
+                            activities = sampleTags,
+                            onActivityClick = { },
+                            functionChipLabel = "标签",
+                            functionChipIcon = {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Label,
+                                    contentDescription = "标签管理",
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            },
+                            functionChipOnClick = { },
+                            displayMode = tagConfig.displayMode.value,
+                            layoutMode = tagConfig.layoutMode.value,
+                            maxLinesPerColumn = tagConfig.columnLines.value,
+                            maxLinesHorizontal = horizontalLines(tagConfig),
+                            chipFixedWidth = 50.dp,
+                            useActivityColorForText = tagConfig.useActivityColorForText.value,
+                        )
+                        ActivityNoteComponent(
+                            onTopButton = { },
+                            onBottomButton = { }
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            TextButton(
+                                onClick = onDismiss,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp),
+                            ) {
+                                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                            }
+                            Button(
+                                onClick = onDismiss,
+                                shape = RoundedCornerShape(24.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp),
+                            ) {
+                                Text("确认", fontSize = 14.sp)
+                            }
+                        }
                     }
                 }
-//                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
+}
 }
 
 private fun horizontalLines(config: GridConfig): Int {
