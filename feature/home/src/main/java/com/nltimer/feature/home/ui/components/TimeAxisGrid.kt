@@ -75,13 +75,13 @@ fun TimeAxisGrid(
                     Text(
                         text = "网格时间",
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF4CAF50),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold
                     )
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = Color(0xFF4CAF50),
+                        tint = MaterialTheme.colorScheme.secondaryContainer,
                         modifier = Modifier.size(20.dp)
                     )
                 }

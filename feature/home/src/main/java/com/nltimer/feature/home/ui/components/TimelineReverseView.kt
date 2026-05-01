@@ -117,13 +117,13 @@ fun TimelineReverseView(
                         Text(
                             text = "时间轴",
                             style = MaterialTheme.typography.titleMedium,
-                            color = Color(0xFF4CAF50),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold
                         )
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = null,
-                            tint = Color(0xFF4CAF50),
+                            tint = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -172,8 +172,8 @@ fun TimelineReverseView(
         // 底部悬浮添加按钮，鲜绿色圆形 FAB
         FloatingActionButton(
             onClick = onAddClick,
-            containerColor = Color(0xFF00C853), // Vivid green
-            contentColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.primaryContainer, // Vivid green
+            contentColor = MaterialTheme.colorScheme.onPrimary, 
             shape = CircleShape,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -256,7 +256,7 @@ private fun TimelineIdleItem(
                 Icon(
                     Icons.Default.Add, 
                     contentDescription = null, 
-                    tint = Color(0xFF4CAF50).copy(alpha = 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
                     modifier = Modifier.size(20.dp)
                 )
             }

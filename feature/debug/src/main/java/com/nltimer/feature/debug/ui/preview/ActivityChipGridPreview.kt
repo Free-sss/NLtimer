@@ -232,6 +232,7 @@ internal fun ActivityGridComponent(
     chipMaxWidth: Dp = 120.dp,
     chipFixedWidth: Dp = 80.dp,
     sortOrder: List<String> = emptyList(),
+    useActivityColorForText: Boolean = true,
 ) {
     val defaultIcon: @Composable () -> Unit = {
         Icon(
@@ -290,7 +291,8 @@ internal fun ActivityGridComponent(
                             displayMode = displayMode,
                             onClick = { onActivityClick(activity) },
                             fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
-                            maxWidth = chipMaxWidth
+                            maxWidth = chipMaxWidth,
+                            useActivityColorForText = useActivityColorForText,
                         )
                     }
                 }
@@ -325,7 +327,8 @@ internal fun ActivityGridComponent(
                             displayMode = displayMode,
                             onClick = { onActivityClick(activity) },
                             fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
-                            maxWidth = chipMaxWidth
+                            maxWidth = chipMaxWidth,
+                            useActivityColorForText = useActivityColorForText,
                         )
                     }
                 }
@@ -343,19 +346,20 @@ internal fun ActivityGridComponent(
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         activities.forEach { activity ->
-                            AdaptiveActivityChip(
-                                activity = activity,
-                                displayMode = displayMode,
-                                onClick = { onActivityClick(activity) },
-                                fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
-                                maxWidth = chipMaxWidth
-                            )
-                        }
+                        AdaptiveActivityChip(
+                            activity = activity,
+                            displayMode = displayMode,
+                            onClick = { onActivityClick(activity) },
+                            fixedWidth = if (useAdaptiveWidth) null else chipFixedWidth,
+                            maxWidth = chipMaxWidth,
+                            useActivityColorForText = useActivityColorForText,
+                        )
                     }
                 }
             }
         }
     }
+}
 }
 
 @Composable
@@ -365,10 +369,15 @@ private fun AdaptiveActivityChip(
     onClick: () -> Unit,
     fixedWidth: Dp? = null,
     maxWidth: Dp = 120.dp,
+    useActivityColorForText: Boolean = true,
 ) {
     val baseColor = activity.color
     val containerColor = baseColor.copy(alpha = 0.15f)
-    val contentColor = baseColor.copy(alpha = 0.9f)
+    val contentColor = if (useActivityColorForText) {
+        baseColor.copy(alpha = 0.9f)
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val borderColor = baseColor.copy(alpha = 0.5f)
 
     val shape = when (displayMode) {
@@ -483,6 +492,7 @@ private fun AdaptiveActivityChip(
                     fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    color = contentColor,
                 )
             }
         }

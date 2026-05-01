@@ -51,6 +51,7 @@ data class GridConfig(
     val layoutMode: MutableState<GridLayoutMode>,
     val columnLines: MutableState<Int>,
     val horizontalLines: MutableState<Int>,
+    val useActivityColorForText: MutableState<Boolean>,
 )
 
 @Preview(showBackground = true)
@@ -65,6 +66,7 @@ fun ActivityRecordCombinedPreview() {
             layoutMode = mutableStateOf(GridLayoutMode.Horizontal),
             columnLines = mutableStateOf(2),
             horizontalLines = mutableStateOf(2),
+            useActivityColorForText = mutableStateOf(true),
         )
     }
     val tagConfig = remember {
@@ -73,6 +75,7 @@ fun ActivityRecordCombinedPreview() {
             layoutMode = mutableStateOf(GridLayoutMode.Horizontal),
             columnLines = mutableStateOf(2),
             horizontalLines = mutableStateOf(2),
+            useActivityColorForText = mutableStateOf(true),
         )
     }
 
@@ -244,6 +247,60 @@ private fun GridConfigBlock(
                     infiniteAtMin = true,
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            ToggleControl(
+                label = "文字使用活动色",
+                checked = config.useActivityColorForText.value,
+                onCheckedChange = { config.useActivityColorForText.value = it },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ToggleControl(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Surface(
+            onClick = { onCheckedChange(false) },
+            shape = RoundedCornerShape(6.dp),
+            color = if (!checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Text(
+                text = "强调色",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (!checked) FontWeight.Bold else FontWeight.Normal,
+                ),
+                color = if (!checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            )
+        }
+        Surface(
+            onClick = { onCheckedChange(true) },
+            shape = RoundedCornerShape(6.dp),
+            color = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+        ) {
+            Text(
+                text = "活动色",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = if (checked) FontWeight.Bold else FontWeight.Normal,
+                ),
+                color = if (checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            )
         }
     }
 }
@@ -332,6 +389,7 @@ private fun ActivityRecordCombinedSheet(
 
 
     ModalBottomSheet(
+        modifier =  Modifier,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
@@ -378,6 +436,7 @@ private fun ActivityRecordCombinedSheet(
                 maxLinesPerColumn = activityConfig.columnLines.value,
                 maxLinesHorizontal = horizontalLines(activityConfig),
                 chipFixedWidth = 80.dp,
+                useActivityColorForText = activityConfig.useActivityColorForText.value,
             )
             Spacer(modifier = Modifier.height(10.dp))
             ActivityGridComponent(
@@ -397,6 +456,7 @@ private fun ActivityRecordCombinedSheet(
                 maxLinesPerColumn = tagConfig.columnLines.value,
                 maxLinesHorizontal = horizontalLines(tagConfig),
                 chipFixedWidth = 50.dp,
+                useActivityColorForText = tagConfig.useActivityColorForText.value,
             )
             ActivityNoteComponent(
                 onHistoryClick = { },
