@@ -72,10 +72,6 @@ data class ActivityChipData(
     val name: String,
     val color: Color
 )
-data class TagChipData(
-    val name:String,
-    val color:Color
-)
 
 @Preview(showBackground = true)
 @Composable
@@ -122,21 +118,26 @@ internal fun ActivityGridComponent(
     activities: List<ActivityChipData>,
     onActivityClick: (ActivityChipData) -> Unit,
     functionChipLabel: String = "活动管理",
+    functionChipIcon: @Composable (() -> Unit)? = null,
     functionChipOnClick: () -> Unit,
     displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
     layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
     maxLinesPerColumn: Int = 2,
+    maxLinesHorizontal: Int = 2,
+    fixedChipWidth: Dp = 80.dp,
 ) {
+    val defaultIcon: @Composable () -> Unit = {
+        Icon(
+            Icons.Default.Settings,
+            contentDescription = "管理",
+            modifier = Modifier.size(14.dp),
+        )
+    }
+
     val allItems = @Composable {
         FunctionChip(
             label = functionChipLabel,
-            icon = {
-                Icon(
-                    Icons.Default.Settings,
-                    contentDescription = "管理",
-                    modifier = Modifier.size(14.dp)
-                )
-            },
+            icon = functionChipIcon ?: defaultIcon,
             containerColor = Color.Transparent,
             contentColor = Color(0xFF616161).copy(alpha = 0.9f),
             borderColor = Color.Transparent,
@@ -157,15 +158,13 @@ internal fun ActivityGridComponent(
             val itemSpacing = 4.dp
             val columns = (listOf<@Composable () -> Unit>({ FunctionChip(
                 label = functionChipLabel,
-                icon = {
-                    Icon(Icons.Default.Settings, contentDescription = "管理", modifier = Modifier.size(14.dp))
-                },
+                icon = functionChipIcon ?: defaultIcon,
                 containerColor = Color.Transparent,
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
             ) }) + activities.map { activity ->
-                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = true) }
+                { AdaptiveActivityChip(activity = activity, displayMode = displayMode, onClick = { onActivityClick(activity) }, fixedWidth = fixedChipWidth) }
             }).chunked(maxLinesPerColumn)
             
             LazyRow(
@@ -186,16 +185,11 @@ internal fun ActivityGridComponent(
             modifier = modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
+            maxLines = maxLinesHorizontal,
         ) {
             FunctionChip(
                 label = functionChipLabel,
-                icon = {
-                    Icon(
-                        Icons.Default.Settings,
-                        contentDescription = "管理",
-                        modifier = Modifier.size(14.dp)
-                    )
-                },
+                icon = functionChipIcon ?: defaultIcon,
                 containerColor = Color.Transparent,
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
@@ -217,7 +211,7 @@ private fun AdaptiveActivityChip(
     activity: ActivityChipData,
     displayMode: ChipDisplayMode,
     onClick: () -> Unit,
-    fixedWidth: Boolean = false,
+    fixedWidth: Dp? = null,
 ) {
     val baseColor = activity.color
     val containerColor = baseColor.copy(alpha = 0.15f)
@@ -243,8 +237,8 @@ private fun AdaptiveActivityChip(
         else -> null
     }
 
-    val chipModifier = if (fixedWidth) {
-        Modifier.height(24.dp).width(80.dp)
+    val chipModifier = if (fixedWidth != null) {
+        Modifier.height(24.dp).width(fixedWidth)
     } else {
         Modifier.height(24.dp).widthIn(max = 80.dp)
     }
