@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -134,25 +135,6 @@ internal fun ActivityGridComponent(
         )
     }
 
-    val allItems = @Composable {
-        FunctionChip(
-            label = functionChipLabel,
-            icon = functionChipIcon ?: defaultIcon,
-            containerColor = Color.Transparent,
-            contentColor = Color(0xFF616161).copy(alpha = 0.9f),
-            borderColor = Color.Transparent,
-            onClick = functionChipOnClick
-        )
-        activities.forEach { activity ->
-            AdaptiveActivityChip(
-                activity = activity,
-                displayMode = displayMode,
-                onClick = { onActivityClick(activity) }
-            )
-            Spacer(modifier = Modifier.size(4.dp))
-        }
-    }
-
     if (layoutMode == GridLayoutMode.Vertical) {
         Box(modifier = modifier.fillMaxWidth()) {
             val itemSpacing = 4.dp
@@ -181,26 +163,53 @@ internal fun ActivityGridComponent(
             }
         }
     } else {
-        FlowRow(
-            modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            maxLines = maxLinesHorizontal,
-        ) {
+        Row(modifier = modifier.fillMaxWidth()) {
             FunctionChip(
                 label = functionChipLabel,
                 icon = functionChipIcon ?: defaultIcon,
                 containerColor = Color.Transparent,
                 contentColor = Color(0xFF616161).copy(alpha = 0.9f),
                 borderColor = Color.Transparent,
-                onClick = functionChipOnClick
+                onClick = functionChipOnClick,
+                modifier = Modifier.padding(end = 4.dp),
             )
-            activities.forEach { activity ->
-                AdaptiveActivityChip(
-                    activity = activity,
-                    displayMode = displayMode,
-                    onClick = { onActivityClick(activity) }
-                )
+
+            if (maxLinesHorizontal == Int.MAX_VALUE) {
+                FlowRow(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    activities.forEach { activity ->
+                        AdaptiveActivityChip(
+                            activity = activity,
+                            displayMode = displayMode,
+                            onClick = { onActivityClick(activity) }
+                        )
+                    }
+                }
+            } else {
+                val lineHeightDp = 28.dp
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(max = lineHeightDp * maxLinesHorizontal)
+                        .verticalScroll(rememberScrollState()),
+                ) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        activities.forEach { activity ->
+                            AdaptiveActivityChip(
+                                activity = activity,
+                                displayMode = displayMode,
+                                onClick = { onActivityClick(activity) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -343,11 +352,12 @@ private fun FunctionChip(
     containerColor: Color,
     contentColor: Color,
     borderColor: Color,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.height(24.dp),
+        modifier = modifier.height(24.dp),
         color = containerColor,
         contentColor = contentColor,
         shape = RoundedCornerShape(6.dp),
