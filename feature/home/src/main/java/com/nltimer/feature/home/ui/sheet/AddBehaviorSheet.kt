@@ -41,6 +41,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -140,9 +141,14 @@ internal fun AddBehaviorSheetContent(
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(null) }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
-    var startTime by remember { mutableStateOf(LocalDateTime.now()) }
-    var endTime by remember { mutableStateOf(LocalDateTime.now()) }
-    var duration by remember { mutableStateOf(Duration.ZERO) }
+    var startTime by remember { mutableStateOf(LocalDateTime.now().withSecond(0).withNano(0)) }
+    var endTime by remember { mutableStateOf(LocalDateTime.now().withSecond(0).withNano(0)) }
+    val duration: Duration by remember {
+        derivedStateOf {
+            val d = Duration.between(startTime, endTime)
+            if (d.isNegative) Duration.ZERO else d
+        }
+    }
     var nature by remember { mutableStateOf(BehaviorNature.ACTIVE) }
     var note by remember { mutableStateOf("") }
 
@@ -355,7 +361,6 @@ internal fun AddBehaviorSheetContent(
                             .navigationBarsPadding()
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
-                            .animateContentSize()
                     ) {
                         Row(
                             modifier = Modifier
@@ -364,8 +369,16 @@ internal fun AddBehaviorSheetContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
+                            val durationText: String by remember {
+                                derivedStateOf {
+                                    val totalMinutes = duration.toMinutes()
+                                    val h = totalMinutes / 60
+                                    val m = totalMinutes % 60
+                                    "${h}时${m}分"
+                                }
+                            }
                             Text(
-                                text = "用时：{{usedTime}}",
+                                text = "用时：$durationText",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = emphasisColor,
@@ -381,7 +394,10 @@ internal fun AddBehaviorSheetContent(
                         DualTimePicker(
                             startTime = startTime,
                             endTime = endTime,
-                            onDurationChanged = { duration = it }
+                            onTimesChanged = { start, end ->
+                                if (startTime != start) startTime = start
+                                if (endTime != end) endTime = end
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         CombinedTimeAdjustment(

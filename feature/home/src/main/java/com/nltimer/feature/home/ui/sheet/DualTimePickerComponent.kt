@@ -53,11 +53,14 @@ fun DualTimePicker(
     startTime: LocalDateTime = LocalDateTime.now(),
     endTime: LocalDateTime = LocalDateTime.now(),
     onDurationChanged: (Duration) -> Unit = {},
+    onTimesChanged: (LocalDateTime, LocalDateTime) -> Unit = { _, _ -> },
 ) {
-    val today = LocalDate.now()
-    val tomorrow = today.plusDays(1)
-    val threeDaysAgo = today.minusDays(3)
+    // 抹平秒和纳秒，防止微小差异导致的无限重绘
+    val sProp = remember(startTime) { startTime.withSecond(0).withNano(0) }
+    val eProp = remember(endTime) { endTime.withSecond(0).withNano(0) }
 
+    val today = LocalDate.now()
+    val threeDaysAgo = today.minusDays(3)
     val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
 
     val sharedDates = remember(today) {
@@ -73,17 +76,37 @@ fun DualTimePicker(
     }
 
     val todayIndex = sharedDates.indexOfFirst { it.date == today }
-
     val hours = remember { (0..23).map { it.toString().padStart(2, '0') } }
     val minutes = remember { (0..59).map { it.toString().padStart(2, '0') } }
 
-    var leftSelectedDate by remember { mutableStateOf(sharedDates[todayIndex]) }
-    var leftSelectedHour by remember { mutableStateOf(startTime.hour.toString().padStart(2, '0')) }
-    var leftSelectedMinute by remember { mutableStateOf(startTime.minute.toString().padStart(2, '0')) }
+    // 内部状态
+    var leftSelectedDate by remember { mutableStateOf(sharedDates.find { it.date == sProp.toLocalDate() } ?: sharedDates[todayIndex]) }
+    var leftSelectedHour by remember { mutableStateOf(sProp.hour.toString().padStart(2, '0')) }
+    var leftSelectedMinute by remember { mutableStateOf(sProp.minute.toString().padStart(2, '0')) }
 
-    var rightSelectedDate by remember { mutableStateOf(sharedDates[todayIndex]) }
-    var rightSelectedHour by remember { mutableStateOf(endTime.hour.toString().padStart(2, '0')) }
-    var rightSelectedMinute by remember { mutableStateOf(endTime.minute.toString().padStart(2, '0')) }
+    var rightSelectedDate by remember { mutableStateOf(sharedDates.find { it.date == eProp.toLocalDate() } ?: sharedDates[todayIndex]) }
+    var rightSelectedHour by remember { mutableStateOf(eProp.hour.toString().padStart(2, '0')) }
+    var rightSelectedMinute by remember { mutableStateOf(eProp.minute.toString().padStart(2, '0')) }
+
+    // 核心：记录最后一次“对外通知”的时间，用于打破双向绑定的死循环
+    val lastNotifiedStart = remember { mutableStateOf(sProp) }
+    val lastNotifiedEnd = remember { mutableStateOf(eProp) }
+
+    // 当外部 Prop 改变时（例如通过快捷按钮），同步内部状态
+    LaunchedEffect(sProp, eProp) {
+        if (sProp != lastNotifiedStart.value) {
+            sharedDates.find { it.date == sProp.toLocalDate() }?.let { leftSelectedDate = it }
+            leftSelectedHour = sProp.hour.toString().padStart(2, '0')
+            leftSelectedMinute = sProp.minute.toString().padStart(2, '0')
+            lastNotifiedStart.value = sProp
+        }
+        if (eProp != lastNotifiedEnd.value) {
+            sharedDates.find { it.date == eProp.toLocalDate() }?.let { rightSelectedDate = it }
+            rightSelectedHour = eProp.hour.toString().padStart(2, '0')
+            rightSelectedMinute = eProp.minute.toString().padStart(2, '0')
+            lastNotifiedEnd.value = eProp
+        }
+    }
 
     val leftDateTime = remember(leftSelectedDate, leftSelectedHour, leftSelectedMinute) {
         leftSelectedDate.date.atTime(leftSelectedHour.toInt(), leftSelectedMinute.toInt())
@@ -92,9 +115,14 @@ fun DualTimePicker(
         rightSelectedDate.date.atTime(rightSelectedHour.toInt(), rightSelectedMinute.toInt())
     }
 
+    // 当内部选择改变时（滚动滚轮），通知外部
     LaunchedEffect(leftDateTime, rightDateTime) {
-        val duration = Duration.between(leftDateTime, rightDateTime)
-        onDurationChanged(duration)
+        if (leftDateTime != lastNotifiedStart.value || rightDateTime != lastNotifiedEnd.value) {
+            lastNotifiedStart.value = leftDateTime
+            lastNotifiedEnd.value = rightDateTime
+            onDurationChanged(Duration.between(leftDateTime, rightDateTime))
+            onTimesChanged(leftDateTime, rightDateTime)
+        }
     }
 
     Row(
