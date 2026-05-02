@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -59,7 +60,12 @@ fun DualTimePickerDebugPreview() {
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
     ) {
-        DualTimePicker()
+        val now = LocalDateTime.now()
+        DualTimePicker(
+            startTime = now,
+            endTime = now.plusHours(1),
+            onDurationChanged = {},
+        )
     }
 }
 
@@ -126,52 +132,68 @@ private val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
  * 提供左右两列日期+时间滚轮选择器，通过 LazyColumn 实现的滚轮效果进行日期和时间的选取。
  * 左侧为实际日期滚轮（懒加载 ±365 天），右侧为相对日期标签滚轮。
  *
- * @param baseTime 弹窗打开时的时间，作为两列的初始锚点
+ * @param startTime 左侧初始锚点时间
+ * @param endTime 右侧初始锚点时间
+ * @param onDurationChanged 时长变化回调
  */
 @Composable
 internal fun DualTimePicker(
-    baseTime: LocalDateTime = LocalDateTime.now(),
+    startTime: LocalDateTime = LocalDateTime.now(),
+    endTime: LocalDateTime = LocalDateTime.now(),
+    onDurationChanged: (Duration) -> Unit = {},
 ) {
-    val baseDate = baseTime.toLocalDate()
-    val todayStr = baseDate.format(dateFormatter)
+    val today = LocalDate.now()
+    val threeDaysAgo = today.minusDays(3)
 
-    // 左侧：懒加载生成 ±365 天日期列表
-    val leftDates = remember(baseDate) {
-        val dateList = baseDate.plusDays(-365)
-        (0..730).map { offset ->
-            dateList.plusDays(offset.toLong()).format(dateFormatter)
+    val sharedDates = remember(today) {
+        (0..6).map { offset ->
+            val date = threeDaysAgo.plusDays(offset.toLong())
+            val isToday = date == today
+            Pair(date, isToday)
         }
     }
-    val leftInitialIndex = 365
 
-    val rightDates = listOf("前天", "昨天", "今天", "明天", "后天")
+    val todayIndex = sharedDates.indexOfFirst { it.second }
+
     val hours = remember { (0..23).map { it.toString().padStart(2, '0') } }
     val minutes = remember { (0..59).map { it.toString().padStart(2, '0') } }
 
-    var leftSelectedDate by remember { mutableStateOf(todayStr) }
-    var leftSelectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }
-    var leftSelectedMinute by remember { mutableStateOf(baseTime.minute.toString().padStart(2, '0')) }
+    var leftSelectedDate by remember { mutableStateOf(sharedDates[todayIndex].first) }
+    var leftSelectedHour by remember { mutableStateOf(startTime.hour.toString().padStart(2, '0')) }
+    var leftSelectedMinute by remember { mutableStateOf(startTime.minute.toString().padStart(2, '0')) }
 
-    var rightSelectedDate by remember { mutableStateOf("今天") }
-    var rightSelectedHour by remember { mutableStateOf(baseTime.hour.toString().padStart(2, '0')) }
-    var rightSelectedMinute by remember { mutableStateOf(baseTime.minute.toString().padStart(2, '0')) }
+    var rightSelectedDate by remember { mutableStateOf(sharedDates[todayIndex].first) }
+    var rightSelectedHour by remember { mutableStateOf(endTime.hour.toString().padStart(2, '0')) }
+    var rightSelectedMinute by remember { mutableStateOf(endTime.minute.toString().padStart(2, '0')) }
+
+    val leftDateTime = remember(leftSelectedDate, leftSelectedHour, leftSelectedMinute) {
+        leftSelectedDate.atTime(leftSelectedHour.toInt(), leftSelectedMinute.toInt())
+    }
+    val rightDateTime = remember(rightSelectedDate, rightSelectedHour, rightSelectedMinute) {
+        rightSelectedDate.atTime(rightSelectedHour.toInt(), rightSelectedMinute.toInt())
+    }
+
+    LaunchedEffect(leftDateTime, rightDateTime) {
+        val duration = Duration.between(leftDateTime, rightDateTime)
+        onDurationChanged(duration)
+    }
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-//            .background(MaterialTheme.colorScheme.background)
-        ,
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         TimePickerSection(
-            dates = leftDates,
+            dates = sharedDates.map { (date, isToday) ->
+                if (isToday) "今天" else date.format(dateFormatter)
+            },
             hours = hours,
             minutes = minutes,
-            selectedDate = leftSelectedDate,
+            selectedDate = "今天",
             selectedHour = leftSelectedHour,
             selectedMinute = leftSelectedMinute,
-            initialDateIndex = leftInitialIndex,
-            onDateChanged = { leftSelectedDate = it },
+            initialDateIndex = todayIndex,
+            onDateChanged = { leftSelectedDate = sharedDates[it].first },
             onHourChanged = { leftSelectedHour = it },
             onMinuteChanged = { leftSelectedMinute = it },
             modifier = Modifier.weight(1f),
@@ -186,14 +208,16 @@ internal fun DualTimePicker(
         )
 
         TimePickerSection(
-            dates = rightDates,
+            dates = sharedDates.map { (date, isToday) ->
+                if (isToday) "今天" else date.format(dateFormatter)
+            },
             hours = hours,
             minutes = minutes,
-            selectedDate = rightSelectedDate,
+            selectedDate = "今天",
             selectedHour = rightSelectedHour,
             selectedMinute = rightSelectedMinute,
-            initialDateIndex = 2,
-            onDateChanged = { rightSelectedDate = it },
+            initialDateIndex = todayIndex,
+            onDateChanged = { rightSelectedDate = sharedDates[it].first },
             onHourChanged = { rightSelectedHour = it },
             onMinuteChanged = { rightSelectedMinute = it },
             modifier = Modifier.weight(1f),
@@ -211,7 +235,7 @@ private fun TimePickerSection(
     selectedHour: String,
     selectedMinute: String,
     initialDateIndex: Int = 0,
-    onDateChanged: (String) -> Unit,
+    onDateChanged: (Int) -> Unit,
     onHourChanged: (String) -> Unit,
     onMinuteChanged: (String) -> Unit,
 ) {
@@ -241,9 +265,9 @@ private fun TimePickerSection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                WheelPicker(
+                IndexWheelPicker(
                     items = dates,
-                    selectedItem = selectedDate,
+                    selectedIndex = dates.indexOf(selectedDate).coerceAtLeast(0),
                     onItemSelected = onDateChanged,
                     itemHeight = itemHeight,
                     initialScrollIndex = initialDateIndex,
@@ -341,13 +365,12 @@ private fun <T> WheelPicker(
                             val itemCenter = itemInfo.offset + itemInfo.size / 2f
                             val distanceFromCenter = itemCenter - viewportCenter
 
-                            // Normalized distance from center (-1 to 1 within the visible area)
                             val fraction = (distanceFromCenter / (itemHeight.toPx() * (visibleItemsCount / 2f))).coerceIn(-1f, 1f)
 
-                            rotationX = fraction * -35f // Slightly less rotation for clearer text
-                            scaleY = 1f - abs(fraction) * 0.45f // Keep high squash
-                            scaleX = 1f + abs(fraction) * 0.45f // High horizontal stretch
-                            alpha = 1f - abs(fraction) * 0.6f // Stronger fade for distance
+                            rotationX = fraction * -35f
+                            scaleY = 1f - abs(fraction) * 0.45f
+                            scaleX = 1f + abs(fraction) * 0.45f
+                            alpha = 1f - abs(fraction) * 0.6f
                         }
                     },
                 contentAlignment = Alignment.Center,
@@ -355,6 +378,96 @@ private fun <T> WheelPicker(
                 if (item != null) {
                     Text(
                         text = item.toString(),
+                        style = TextStyle(
+                            fontSize = if (isSelected) 14.sp else 12.sp,
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
+                            color = if (isSelected) selectedColor else textColor,
+                            textAlign = TextAlign.Center,
+                            letterSpacing = if (isSelected) 0.5.sp else 0.sp,
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun IndexWheelPicker(
+    modifier: Modifier = Modifier,
+    items: List<String>,
+    selectedIndex: Int,
+    onItemSelected: (Int) -> Unit,
+    itemHeight: Dp = 40.dp,
+    visibleItemsCount: Int = 3,
+    initialScrollIndex: Int = 0,
+) {
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
+    val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
+    val paddingCount = visibleItemsCount / 2
+
+    val paddedItems = remember(items) {
+        val list = mutableListOf<String?>()
+        repeat(paddingCount) { list.add(null) }
+        list.addAll(items)
+        repeat(paddingCount) { list.add(null) }
+        list
+    }
+
+    LaunchedEffect(selectedIndex) {
+        if (listState.firstVisibleItemIndex != selectedIndex) {
+            listState.scrollToItem(selectedIndex)
+        }
+    }
+
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { index ->
+                if (index in items.indices) {
+                    onItemSelected(index)
+                }
+            }
+    }
+
+    val textColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
+    LazyColumn(
+        state = listState,
+        flingBehavior = flingBehavior,
+        modifier = modifier.height(itemHeight * visibleItemsCount),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        items(paddedItems.size) { index ->
+            val item = paddedItems[index]
+            val isSelected = index - paddingCount == selectedIndex
+
+            Box(
+                modifier = Modifier
+                    .height(itemHeight)
+                    .graphicsLayer {
+                        val layoutInfo = listState.layoutInfo
+                        val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
+                        if (itemInfo != null) {
+                            val viewportCenter =
+                                (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2f
+                            val itemCenter = itemInfo.offset + itemInfo.size / 2f
+                            val distanceFromCenter = itemCenter - viewportCenter
+
+                            val fraction = (distanceFromCenter / (itemHeight.toPx() * (visibleItemsCount / 2f))).coerceIn(-1f, 1f)
+
+                            rotationX = fraction * -35f
+                            scaleY = 1f - abs(fraction) * 0.45f
+                            scaleX = 1f + abs(fraction) * 0.45f
+                            alpha = 1f - abs(fraction) * 0.6f
+                        }
+                    },
+                contentAlignment = Alignment.Center,
+            ) {
+                if (item != null) {
+                    Text(
+                        text = item,
                         style = TextStyle(
                             fontSize = if (isSelected) 14.sp else 12.sp,
                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,

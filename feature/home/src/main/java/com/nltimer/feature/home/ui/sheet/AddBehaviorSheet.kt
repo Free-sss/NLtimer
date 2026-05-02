@@ -78,6 +78,7 @@ import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.PathDrawMode
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.math.PI
@@ -139,7 +140,9 @@ internal fun AddBehaviorSheetContent(
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(null) }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
-    var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var startTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var endTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var duration by remember { mutableStateOf(Duration.ZERO) }
     var nature by remember { mutableStateOf(BehaviorNature.ACTIVE) }
     var note by remember { mutableStateOf("") }
 
@@ -371,15 +374,19 @@ internal fun AddBehaviorSheetContent(
                         }
 
                         CombinedTimeAdjustment(
-                            currentTime = baseTime,
-                            onTimeChanged = { baseTime = it }
+                            currentTime = startTime,
+                            onTimeChanged = { startTime = it }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        DualTimePicker(baseTime = baseTime)
+                        DualTimePicker(
+                            startTime = startTime,
+                            endTime = endTime,
+                            onDurationChanged = { duration = it }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         CombinedTimeAdjustment(
-                            currentTime = baseTime,
-                            onTimeChanged = { baseTime = it }
+                            currentTime = endTime,
+                            onTimeChanged = { endTime = it }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -518,7 +525,7 @@ internal fun AddBehaviorSheetContent(
                                         onConfirm(
                                             activityId,
                                             selectedTagIds.toList(),
-                                            baseTime.toLocalTime(),
+                                            startTime.toLocalTime(),
                                             nature,
                                             note.ifBlank { null }
                                         )

@@ -77,6 +77,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 import android.graphics.PathMeasure as AndroidPathMeasure
+import java.time.Duration
 import java.time.LocalDateTime
 
 enum class PathDrawMode {
@@ -99,7 +100,9 @@ data class GridConfig(
 @Composable
 fun ActivityRecordCombinedPreview() {
     var showSheet by remember { mutableStateOf(false) }
-    var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var startTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var endTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var duration by remember { mutableStateOf(Duration.ZERO) }
     var drawMode by remember { mutableStateOf(PathDrawMode.StartToEnd) }
 
     val activityConfig = remember {
@@ -163,7 +166,8 @@ fun ActivityRecordCombinedPreview() {
 
             Button(
                 onClick = {
-                    baseTime = LocalDateTime.now()
+                    startTime = LocalDateTime.now()
+                    endTime = LocalDateTime.now()
                     showSheet = true
                 },
                 shape = RoundedCornerShape(24.dp),
@@ -176,7 +180,8 @@ fun ActivityRecordCombinedPreview() {
 
     if (showSheet) {
         ActivityRecordCombinedSheet(
-            baseTime = baseTime,
+            startTime = startTime,
+            endTime = endTime,
             activityConfig = activityConfig,
             tagConfig = tagConfig,
             drawMode = drawMode,
@@ -426,7 +431,8 @@ private fun StepperControl(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ActivityRecordCombinedSheet(
-    baseTime: LocalDateTime,
+    startTime: LocalDateTime,
+    endTime: LocalDateTime,
     activityConfig: GridConfig,
     tagConfig: GridConfig,
     drawMode: PathDrawMode,
@@ -454,6 +460,10 @@ private fun ActivityRecordCombinedSheet(
         ActivityChipData("标签123456789", Color(0xFF81C784)),
         ActivityChipData("\u231A标", Color(0xFF757575)),
     )
+
+    var localStartTime by remember { mutableStateOf(startTime) }
+    var localEndTime by remember { mutableStateOf(endTime) }
+    var duration by remember { mutableStateOf(Duration.ZERO) }
 
     val emphasisColor = MaterialTheme.colorScheme.secondary
     var pathLength by remember { mutableFloatStateOf(0f) }
@@ -662,11 +672,21 @@ private fun ActivityRecordCombinedSheet(
                                 ),
                             )
                         }
-                        CombinedTimeAdjustment()
+                        CombinedTimeAdjustment(
+                            currentTime = localStartTime,
+                            onTimeChanged = { localStartTime = it }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        DualTimePicker(baseTime = baseTime)
+                        DualTimePicker(
+                            startTime = localStartTime,
+                            endTime = localEndTime,
+                            onDurationChanged = { duration = it }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
-                        CombinedTimeAdjustment()
+                        CombinedTimeAdjustment(
+                            currentTime = localEndTime,
+                            onTimeChanged = { localEndTime = it }
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
 
                         ActivityGridComponent(
@@ -857,9 +877,10 @@ private fun horizontalLines(config: GridConfig): Int {
 }
 
 @Composable
-private fun CombinedTimeAdjustment() {
-    var currentTime by remember { mutableStateOf(LocalDateTime.now()) }
-
+private fun CombinedTimeAdjustment(
+    currentTime: LocalDateTime,
+    onTimeChanged: (LocalDateTime) -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -868,7 +889,7 @@ private fun CombinedTimeAdjustment() {
     ) {
         TimeAdjustmentComponent(
             currentTime = currentTime,
-            onTimeChanged = { currentTime = it },
+            onTimeChanged = onTimeChanged,
         )
     }
 }
