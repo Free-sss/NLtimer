@@ -53,7 +53,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -74,7 +73,6 @@ enum class PathDrawMode {
     Random,
     None,
     WrigglingMaggot,
-    LinearWavy,
 }
 
 data class GridConfig(
@@ -140,7 +138,6 @@ fun ActivityRecordCombinedPreview() {
                                 PathDrawMode.Random -> "随机"
                                 PathDrawMode.None -> "无"
                                 PathDrawMode.WrigglingMaggot -> "蛆动"
-                                PathDrawMode.LinearWavy -> "波浪"
                             },
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = if (mode == drawMode) FontWeight.Bold else FontWeight.Normal,
@@ -468,7 +465,7 @@ private fun ActivityRecordCombinedSheet(
     val effectiveMode = remember(drawMode) {
         if (drawMode == PathDrawMode.Random) {
             val candidates = PathDrawMode.entries.filter {
-                it != PathDrawMode.Random && it != PathDrawMode.None 
+                it != PathDrawMode.Random && it != PathDrawMode.None && it != PathDrawMode.WrigglingMaggot
             }
             candidates.random()
         } else {
@@ -602,84 +599,6 @@ private fun ActivityRecordCombinedSheet(
                                             strokeWidth = 3.dp.toPx(),
                                             cap = StrokeCap.Round
                                         )
-                                    }
-                                }
-                                PathDrawMode.LinearWavy -> {
-                                    val strokeWidthPx = 3.dp.toPx()
-                                    val rPx = 28.dp.toPx()
-                                    val w = size.width
-                                    val h = size.height
-                                    val extendedH = h * 1.2f
-
-                                    val leftLineLen = extendedH - rPx
-                                    val arcLen = (PI.toFloat() / 2f) * rPx
-                                    val topLineLen = w - 2 * rPx
-                                    val totalLen = leftLineLen + arcLen * 2 + topLineLen
-
-                                    val segmentColors = listOf(
-                                        Color(0xFF2196F3),
-                                        Color(0xFFF44336),
-                                        Color(0xFFFF9800),
-                                        Color(0xFFE91E63),
-                                        Color(0xFF9C27B0)
-                                    )
-
-                                    val segments = listOf(
-                                        0f to leftLineLen,
-                                        leftLineLen to leftLineLen + arcLen,
-                                        leftLineLen + arcLen to leftLineLen + arcLen + topLineLen,
-                                        leftLineLen + arcLen + topLineLen to leftLineLen + arcLen * 2 + topLineLen,
-                                        leftLineLen + arcLen * 2 + topLineLen to totalLen
-                                    )
-
-                                    val trailLen = 180f
-                                    val androidPathMeasure = AndroidPathMeasure().apply {
-                                        setPath(path.asAndroidPath(), false)
-                                    }
-                                    val pos = FloatArray(2)
-                                    val drawLimit = totalLen * animatedProgress
-
-                                    for (segIdx in segments.indices) {
-                                        val (segStart, segEnd) = segments[segIdx]
-                                        if (segStart >= drawLimit) continue
-                                        
-                                        val segColor = segmentColors[segIdx % segmentColors.size]
-                                        val delayRatio = segIdx * 0.12f
-                                        val segProgress = ((jumpProgress - delayRatio) % 1f + 1f) % 1f
-
-                                        val headDist = segStart + segProgress * ((segEnd - segStart) + trailLen * 2) - trailLen
-                                        val tailDist = headDist - trailLen
-
-                                        val drawStart = tailDist.coerceAtLeast(segStart)
-                                        val drawEnd = headDist.coerceAtMost(segEnd).coerceAtMost(drawLimit)
-                                        
-                                        if (drawStart >= drawEnd) continue
-
-                                        val step = 3.dp.toPx()
-                                        var d = drawStart
-                                        while (d < drawEnd) {
-                                            if (androidPathMeasure.getPosTan(d, pos, null)) {
-                                                val x1 = pos[0]
-                                                val y1 = pos[1]
-                                                
-                                                val nextD = (d + step).coerceAtMost(drawEnd)
-                                                if (androidPathMeasure.getPosTan(nextD, pos, null)) {
-                                                    val x2 = pos[0]
-                                                    val y2 = pos[1]
-                                                    
-                                                    val alpha = (1f - (headDist - d) / trailLen).coerceIn(0f, 1f)
-                                                    
-                                                    drawLine(
-                                                        color = segColor.copy(alpha = alpha * 0.9f),
-                                                        start = androidx.compose.ui.geometry.Offset(x1, y1),
-                                                        end = androidx.compose.ui.geometry.Offset(x2, y2),
-                                                        strokeWidth = strokeWidthPx,
-                                                        cap = StrokeCap.Round
-                                                    )
-                                                }
-                                            }
-                                            d += step
-                                        }
                                     }
                                 }
                                 PathDrawMode.Random, PathDrawMode.None -> {
