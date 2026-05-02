@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -324,18 +325,20 @@ private fun <T> WheelPicker(
     }
 
     LaunchedEffect(selectedItem) {
-        val index = items.indexOf(selectedItem)
-        if (index != -1 && listState.firstVisibleItemIndex != index) {
-            listState.scrollToItem(index)
+        if (!listState.isScrollInProgress) {
+            val index = items.indexOf(selectedItem)
+            if (index != -1 && listState.firstVisibleItemIndex != index) {
+                listState.animateScrollToItem(index)
+            }
         }
     }
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
-            .map { index -> items.getOrNull(index) }
             .distinctUntilChanged()
-            .collect { item ->
-                if (item != null) {
+            .collect { index ->
+                val item = items.getOrNull(index)
+                if (item != null && item != selectedItem) {
                     onItemSelected(item)
                 }
             }
@@ -346,7 +349,9 @@ private fun <T> WheelPicker(
     LazyColumn(
         state = listState,
         flingBehavior = flingBehavior,
-        modifier = modifier.height(itemHeight * visibleItemsCount),
+        modifier = modifier
+            .height(itemHeight * visibleItemsCount)
+            .nestedScroll(remember { object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {} }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         items(paddedItems.size) { index ->
@@ -416,8 +421,10 @@ private fun IndexWheelPicker(
     }
 
     LaunchedEffect(selectedIndex) {
-        if (listState.firstVisibleItemIndex != selectedIndex) {
-            listState.scrollToItem(selectedIndex)
+        if (!listState.isScrollInProgress) {
+            if (listState.firstVisibleItemIndex != selectedIndex) {
+                listState.animateScrollToItem(selectedIndex)
+            }
         }
     }
 
@@ -425,7 +432,7 @@ private fun IndexWheelPicker(
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
             .collect { index ->
-                if (index in items.indices) {
+                if (index in items.indices && index != selectedIndex) {
                     onItemSelected(index)
                 }
             }
@@ -436,7 +443,9 @@ private fun IndexWheelPicker(
     LazyColumn(
         state = listState,
         flingBehavior = flingBehavior,
-        modifier = modifier.height(itemHeight * visibleItemsCount),
+        modifier = modifier
+            .height(itemHeight * visibleItemsCount)
+            .nestedScroll(remember { object : androidx.compose.ui.input.nestedscroll.NestedScrollConnection {} }),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         items(paddedItems.size) { index ->
