@@ -400,7 +400,7 @@ private fun ActivityRecordCombinedSheet(
     var targetProgress by remember { mutableFloatStateOf(0f) }
     val animatedProgress by animateFloatAsState(
         targetValue = targetProgress,
-        animationSpec = tween(durationMillis = 2000),
+        animationSpec = tween(durationMillis = 1500),
         label = "path_draw_progress"
     )
 
@@ -417,22 +417,19 @@ private fun ActivityRecordCombinedSheet(
         scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .drawWithContent {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 30.dp)
+                    .graphicsLayer { clip = false }
+                    .drawWithContent {
                         drawContent()
                         val strokeWidthPx = 3.dp.toPx()
                         val halfStroke = strokeWidthPx / 2
                         val r = 28.dp.toPx()
                         val w = size.width
                         val h = size.height
-                        val extendedH = h * 2.5f
+                        val extendedH = h * 1.2f
                         val path = Path().apply {
                             moveTo(halfStroke, extendedH)
                             lineTo(halfStroke, r)
@@ -470,6 +467,11 @@ private fun ActivityRecordCombinedSheet(
                             )
                         }
                     }
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                 ) {
                     Column(
                         modifier = Modifier
