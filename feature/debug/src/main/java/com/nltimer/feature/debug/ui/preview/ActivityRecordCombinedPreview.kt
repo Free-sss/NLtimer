@@ -413,95 +413,87 @@ private fun ActivityRecordCombinedSheet(
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle = null,
-        containerColor = Color.Transparent, // 设置为透明，允许内容“溢出”
+        containerColor = MaterialTheme.colorScheme.surface,
         scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     ) {
-        // 使用 Column 包装 Box，确保 Column 关闭后，外部函数能正常识别后续定义的私有函数
         Column(modifier = Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp) // 为顶部悬浮文字留出空间
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
             ) {
-                // 悬浮文本：位于弹窗内左上角区域，通过 graphicsLayer 偏移到弹窗外
-                Text(
-                    text = "测试文本",
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.surface
-                    ),
+                Box(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(start = 16.dp)
-                        .graphicsLayer {
-                            // 向上偏移 20.dp
-                            translationY = -20.dp.toPx()
+                        .fillMaxWidth()
+                        .drawWithContent {
+                        drawContent()
+                        val strokeWidthPx = 3.dp.toPx()
+                        val halfStroke = strokeWidthPx / 2
+                        val r = 28.dp.toPx()
+                        val w = size.width
+                        val h = size.height
+                        val extendedH = h * 2.5f
+                        val path = Path().apply {
+                            moveTo(halfStroke, extendedH)
+                            lineTo(halfStroke, r)
+                            arcTo(
+                                rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
+                                startAngleDegrees = 180f,
+                                sweepAngleDegrees = 90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(w - r, halfStroke)
+                            arcTo(
+                                rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
+                                startAngleDegrees = 270f,
+                                sweepAngleDegrees = 90f,
+                                forceMoveTo = false
+                            )
+                            lineTo(w - halfStroke, extendedH)
                         }
-                )
 
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .drawWithContent {
-                            drawContent()
-                            val strokeWidthPx = 3.dp.toPx()
-                            val halfStroke = strokeWidthPx / 2
-                            val r = 28.dp.toPx()
-                            val w = size.width
-                            val h = size.height
-                            val extendedH = h * 1.5f
-                            val path = Path().apply {
-                                moveTo(halfStroke, extendedH)
-                                lineTo(halfStroke, r)
-                                arcTo(
-                                    rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
-                                    startAngleDegrees = 180f,
-                                    sweepAngleDegrees = 90f,
-                                    forceMoveTo = false
-                                )
-                                lineTo(w - r, halfStroke)
-                                arcTo(
-                                    rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
-                                    startAngleDegrees = 270f,
-                                    sweepAngleDegrees = 90f,
-                                    forceMoveTo = false
-                                )
-                                lineTo(w - halfStroke, extendedH)
-                            }
-
-                            val pathMeasure = PathMeasure()
-                            pathMeasure.setPath(path, false)
-                            val totalLength = pathMeasure.length
-                            if (totalLength > 0 && pathLength == 0f) {
-                                pathLength = totalLength
-                            }
-
-                            val animatedPath = Path()
-                            if (animatedProgress > 0f) {
-                                val stopDistance = totalLength * animatedProgress
-                                pathMeasure.getSegment(0f, stopDistance, animatedPath)
-                                drawPath(
-                                    path = animatedPath,
-                                    color = emphasisColor,
-                                    style = Stroke(width = strokeWidthPx)
-                                )
-                            }
+                        val pathMeasure = PathMeasure()
+                        pathMeasure.setPath(path, false)
+                        val totalLength = pathMeasure.length
+                        if (totalLength > 0 && pathLength == 0f) {
+                            pathLength = totalLength
                         }
+
+                        val animatedPath = Path()
+                        if (animatedProgress > 0f) {
+                            val stopDistance = totalLength * animatedProgress
+                            pathMeasure.getSegment(0f, stopDistance, animatedPath)
+                            drawPath(
+                                path = animatedPath,
+                                color = emphasisColor,
+                                style = Stroke(width = strokeWidthPx)
+                            )
+                        }
+                    }
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .navigationBarsPadding() // 核心修改：在最外层 Column 应用，推高所有内容
+                            .navigationBarsPadding()
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
                             .animateContentSize()
                     ) {
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "测试文本",
+                                style = MaterialTheme.typography.labelLarge.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = emphasisColor,
+                                ),
+                            )
+                        }
                         CombinedTimeAdjustment()
                         Spacer(modifier = Modifier.height(8.dp))
                         DualTimePicker(baseTime = baseTime)
@@ -581,7 +573,6 @@ private fun ActivityRecordCombinedSheet(
             }
         }
     }
-}
 }
 
 private fun horizontalLines(config: GridConfig): Int {
