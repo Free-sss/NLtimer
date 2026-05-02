@@ -146,7 +146,7 @@ fun StaggeredHorizontalGrid(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun ActivityGridComponent(
+fun ActivityGridComponent(
     modifier: Modifier = Modifier,
     chips: List<ChipItem>,
     onChipClick: (Long) -> Unit,

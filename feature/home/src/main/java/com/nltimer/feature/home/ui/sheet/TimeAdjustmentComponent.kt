@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.sp
 import java.time.LocalDateTime
 
 @Composable
-internal fun TimeAdjustmentComponent(
+fun TimeAdjustmentComponent(
     currentTime: LocalDateTime,
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,

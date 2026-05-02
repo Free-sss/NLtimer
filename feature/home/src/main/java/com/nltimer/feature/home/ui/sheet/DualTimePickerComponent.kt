@@ -49,7 +49,7 @@ internal data class DateItem(
 )
 
 @Composable
-internal fun DualTimePicker(
+fun DualTimePicker(
     startTime: LocalDateTime = LocalDateTime.now(),
     endTime: LocalDateTime = LocalDateTime.now(),
     onDurationChanged: (Duration) -> Unit = {},
@@ -316,7 +316,7 @@ private fun DateWheelPicker(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun <T> WheelPicker(
+fun <T> WheelPicker(
     modifier: Modifier = Modifier,
     items: List<T>,
     selectedItem: T,

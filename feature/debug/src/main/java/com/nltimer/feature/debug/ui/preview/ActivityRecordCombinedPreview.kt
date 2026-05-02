@@ -43,7 +43,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -79,14 +78,14 @@ import kotlin.math.roundToInt
 import android.graphics.PathMeasure as AndroidPathMeasure
 import java.time.Duration
 import java.time.LocalDateTime
-
-enum class PathDrawMode {
-    StartToEnd,
-    BothSidesToMiddle,
-    Random,
-    None,
-    WrigglingMaggot,
-}
+import com.nltimer.core.designsystem.theme.ChipDisplayMode
+import com.nltimer.core.designsystem.theme.GridLayoutMode
+import com.nltimer.core.designsystem.theme.PathDrawMode
+import com.nltimer.feature.home.ui.sheet.ActivityGridComponent
+import com.nltimer.feature.home.ui.sheet.ChipItem
+import com.nltimer.feature.home.ui.sheet.DualTimePicker
+import com.nltimer.feature.home.ui.sheet.NoteInputComponent
+import com.nltimer.feature.home.ui.sheet.TimeAdjustmentComponent
 
 data class GridConfig(
     val displayMode: MutableState<ChipDisplayMode>,
@@ -440,25 +439,25 @@ private fun ActivityRecordCombinedSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val fakeActivities = listOf(
-        ActivityChipData("学习", Color(0xFF1B5E20)),
-        ActivityChipData("读书", Color(0xFF43A047)),
-        ActivityChipData("英语", Color(0xFF66BB6A)),
-        ActivityChipData("微积分", Color(0xFF757575)),
-        ActivityChipData("休息", Color(0xFF212121)),
-        ActivityChipData("睡觉", Color(0xFF00BFA5)),
-        ActivityChipData("冥想", Color(0xFF006064)),
-        ActivityChipData("信息流", Color(0xFFB71C1C)),
-        ActivityChipData("生活", Color(0xFF8D6E63)),
-        ActivityChipData("吃饭", Color(0xFFD2B48C)),
-        ActivityChipData("多巴胺", Color(0xFFB8860B)),
-        ActivityChipData("运动", Color(0xFFFF7043)),
+        ChipItem(id = 1, name = "学习", color = Color(0xFF1B5E20)),
+        ChipItem(id = 2, name = "读书", color = Color(0xFF43A047)),
+        ChipItem(id = 3, name = "英语", color = Color(0xFF66BB6A)),
+        ChipItem(id = 4, name = "微积分", color = Color(0xFF757575)),
+        ChipItem(id = 5, name = "休息", color = Color(0xFF212121)),
+        ChipItem(id = 6, name = "睡觉", color = Color(0xFF00BFA5)),
+        ChipItem(id = 7, name = "冥想", color = Color(0xFF006064)),
+        ChipItem(id = 8, name = "信息流", color = Color(0xFFB71C1C)),
+        ChipItem(id = 9, name = "生活", color = Color(0xFF8D6E63)),
+        ChipItem(id = 10, name = "吃饭", color = Color(0xFFD2B48C)),
+        ChipItem(id = 11, name = "多巴胺", color = Color(0xFFB8860B)),
+        ChipItem(id = 12, name = "运动", color = Color(0xFFFF7043)),
     )
     val sampleTags = listOf(
-        ActivityChipData("标签1", Color(0xFF1B5E20)),
-        ActivityChipData("标签123", Color(0xFF43A047)),
-        ActivityChipData("标签123456", Color(0xFF66BB6A)),
-        ActivityChipData("标签123456789", Color(0xFF81C784)),
-        ActivityChipData("\u231A标", Color(0xFF757575)),
+        ChipItem(id = 101, name = "标签1", color = Color(0xFF1B5E20)),
+        ChipItem(id = 102, name = "标签123", color = Color(0xFF43A047)),
+        ChipItem(id = 103, name = "标签123456", color = Color(0xFF66BB6A)),
+        ChipItem(id = 104, name = "标签123456789", color = Color(0xFF81C784)),
+        ChipItem(id = 105, name = "\u231A标", color = Color(0xFF757575)),
     )
 
     var localStartTime by remember { mutableStateOf(startTime) }
@@ -499,7 +498,7 @@ private fun ActivityRecordCombinedSheet(
     var isDragging by remember { mutableStateOf(false) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var hoveredOption by remember { mutableStateOf<String?>(null) }
-    val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
+    val optionsLayoutBounds = remember { mutableStateOf<Map<String, Rect>>(emptyMap()) }
     var boxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var buttonRowPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var optionsRowHeight by remember { mutableFloatStateOf(0f) }
@@ -672,7 +671,7 @@ private fun ActivityRecordCombinedSheet(
                                 ),
                             )
                         }
-                        CombinedTimeAdjustment(
+                        TimeAdjustmentComponent(
                             currentTime = localStartTime,
                             onTimeChanged = { localStartTime = it }
                         )
@@ -683,15 +682,15 @@ private fun ActivityRecordCombinedSheet(
                             onDurationChanged = { duration = it }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        CombinedTimeAdjustment(
+                        TimeAdjustmentComponent(
                             currentTime = localEndTime,
                             onTimeChanged = { localEndTime = it }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
                         ActivityGridComponent(
-                            activities = fakeActivities,
-                            onActivityClick = { },
+                            chips = fakeActivities,
+                            onChipClick = { },
                             functionChipLabel = "活动",
                             functionChipIcon = {
                                 Icon(
@@ -710,8 +709,8 @@ private fun ActivityRecordCombinedSheet(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         ActivityGridComponent(
-                            activities = sampleTags,
-                            onActivityClick = { },
+                            chips = sampleTags,
+                            onChipClick = { },
                             functionChipLabel = "标签",
                             functionChipIcon = {
                                 Icon(
@@ -728,7 +727,10 @@ private fun ActivityRecordCombinedSheet(
                             chipFixedWidth = 50.dp,
                             useActivityColorForText = tagConfig.useActivityColorForText.value,
                         )
-                        ActivityNoteComponent(
+                        var noteText by remember { mutableStateOf("") }
+                        NoteInputComponent(
+                            note = noteText,
+                            onNoteChange = { noteText = it },
                             onTopButton = { },
                             onBottomButton = { }
                         )
@@ -784,7 +786,7 @@ private fun ActivityRecordCombinedSheet(
                                                 val currentPointerPosition = buttonPositionInWindow + dragOffset + change.position
                                                 
                                                 // Hit detection
-                                                val hit = optionsLayoutBounds.entries.find { entry ->
+                                                val hit = optionsLayoutBounds.value.entries.find { entry ->
                                                     entry.value.contains(currentPointerPosition)
                                                 }?.key
                                                 if (hit != hoveredOption) {
@@ -826,6 +828,7 @@ private fun ActivityRecordCombinedSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
+                val currentBounds = optionsLayoutBounds.value.toMutableMap()
                 options.forEach { option ->
                     Surface(
                         modifier = Modifier
@@ -833,12 +836,13 @@ private fun ActivityRecordCombinedSheet(
                             .onGloballyPositioned { layoutCoordinates ->
                                 val position = layoutCoordinates.positionInWindow()
                                 val size = layoutCoordinates.size
-                                optionsLayoutBounds[option] = Rect(
+                                currentBounds[option] = Rect(
                                     position.x,
                                     position.y,
                                     position.x + size.width,
                                     position.y + size.height
                                 )
+                                optionsLayoutBounds.value = currentBounds.toMap()
                             },
                         shape = RoundedCornerShape(8.dp),
                         color = if (hoveredOption == option)
@@ -881,15 +885,8 @@ private fun CombinedTimeAdjustment(
     currentTime: LocalDateTime,
     onTimeChanged: (LocalDateTime) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TimeAdjustmentComponent(
-            currentTime = currentTime,
-            onTimeChanged = onTimeChanged,
-        )
-    }
+    TimeAdjustmentComponent(
+        currentTime = currentTime,
+        onTimeChanged = onTimeChanged,
+    )
 }
