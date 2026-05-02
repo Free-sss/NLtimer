@@ -606,16 +606,15 @@ private fun ActivityRecordCombinedSheet(
                                 }
                                 PathDrawMode.LinearWavy -> {
                                     val strokeWidthPx = 3.dp.toPx()
-                                    val r = 28.dp.toPx()
+                                    val rPx = 28.dp.toPx()
                                     val w = size.width
                                     val h = size.height
                                     val extendedH = h * 1.2f
 
-                                    val leftLineLen = extendedH - r
-                                    val arcLen = (PI.toFloat() / 2f) * r
-                                    val topLineLen = w - 2 * r
-                                    val rightLineLen = extendedH - r
-                                    val totalLen = leftLineLen + arcLen + topLineLen + arcLen + rightLineLen
+                                    val leftLineLen = extendedH - rPx
+                                    val arcLen = (PI.toFloat() / 2f) * rPx
+                                    val topLineLen = w - 2 * rPx
+                                    val totalLen = leftLineLen + arcLen * 2 + topLineLen
 
                                     val segmentColors = listOf(
                                         Color(0xFF2196F3),
@@ -633,55 +632,53 @@ private fun ActivityRecordCombinedSheet(
                                         leftLineLen + arcLen * 2 + topLineLen to totalLen
                                     )
 
-                                    val lineLen = 200f
-
-                                    val androidPathMeasure = AndroidPathMeasure()
-                                    androidPathMeasure.setPath(path.asAndroidPath(), false)
+                                    val trailLen = 180f
+                                    val androidPathMeasure = AndroidPathMeasure().apply {
+                                        setPath(path.asAndroidPath(), false)
+                                    }
                                     val pos = FloatArray(2)
+                                    val drawLimit = totalLen * animatedProgress
 
                                     for (segIdx in segments.indices) {
                                         val (segStart, segEnd) = segments[segIdx]
-                                        val segLen = segEnd - segStart
-                                        if (segLen <= 0f) continue
-
-                                        val delayRatio = segIdx * 0.2f
+                                        if (segStart >= drawLimit) continue
+                                        
+                                        val segColor = segmentColors[segIdx % segmentColors.size]
+                                        val delayRatio = segIdx * 0.12f
                                         val segProgress = ((jumpProgress - delayRatio) % 1f + 1f) % 1f
 
-                                        val headDist = segStart + segProgress * (segLen + lineLen * 2) - lineLen
-                                        val tailDist = headDist - lineLen
+                                        val headDist = segStart + segProgress * ((segEnd - segStart) + trailLen * 2) - trailLen
+                                        val tailDist = headDist - trailLen
 
                                         val drawStart = tailDist.coerceAtLeast(segStart)
-                                        val drawEnd = headDist.coerceAtMost(segEnd)
+                                        val drawEnd = headDist.coerceAtMost(segEnd).coerceAtMost(drawLimit)
+                                        
                                         if (drawStart >= drawEnd) continue
 
-                                        val sampleStep = 2f
-                                        val segColor = segmentColors[segIdx]
-                                        val points = mutableListOf<Pair<androidx.compose.ui.geometry.Offset, Float>>()
+                                        val step = 3.dp.toPx()
                                         var d = drawStart
-
-                                        while (d <= drawEnd) {
-                                            val distFromHead = headDist - d
-                                            val alpha = (1f - distFromHead / lineLen).coerceIn(0f, 1f)
-
+                                        while (d < drawEnd) {
                                             if (androidPathMeasure.getPosTan(d, pos, null)) {
-                                                points.add(
-                                                    androidx.compose.ui.geometry.Offset(pos[0], pos[1]) to alpha
-                                                )
+                                                val x1 = pos[0]
+                                                val y1 = pos[1]
+                                                
+                                                val nextD = (d + step).coerceAtMost(drawEnd)
+                                                if (androidPathMeasure.getPosTan(nextD, pos, null)) {
+                                                    val x2 = pos[0]
+                                                    val y2 = pos[1]
+                                                    
+                                                    val alpha = (1f - (headDist - d) / trailLen).coerceIn(0f, 1f)
+                                                    
+                                                    drawLine(
+                                                        color = segColor.copy(alpha = alpha * 0.9f),
+                                                        start = androidx.compose.ui.geometry.Offset(x1, y1),
+                                                        end = androidx.compose.ui.geometry.Offset(x2, y2),
+                                                        strokeWidth = strokeWidthPx,
+                                                        cap = StrokeCap.Round
+                                                    )
+                                                }
                                             }
-                                            d += sampleStep
-                                        }
-
-                                        for (i in 0 until points.size - 1) {
-                                            val (p1, a1) = points[i]
-                                            val (p2, a2) = points[i + 1]
-                                            val avgAlpha = (a1 + a2) / 2f
-                                            drawLine(
-                                                color = segColor.copy(alpha = avgAlpha * 0.9f),
-                                                start = p1,
-                                                end = p2,
-                                                strokeWidth = strokeWidthPx,
-                                                cap = StrokeCap.Round
-                                            )
+                                            d += step
                                         }
                                     }
                                 }
