@@ -9,8 +9,15 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility as ComposeAnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -154,6 +161,7 @@ internal fun AddBehaviorSheetContent(
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
+    var showTimeAdjustments by remember { mutableStateOf(false) }
 
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
     val tagChips = remember(allTags) { allTags.map { ChipItem(it) } }
@@ -365,7 +373,13 @@ internal fun AddBehaviorSheetContent(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    showTimeAdjustments = !showTimeAdjustments
+                                },
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -386,25 +400,54 @@ internal fun AddBehaviorSheetContent(
                             )
                         }
 
-                        CombinedTimeAdjustment(
-                            currentTime = startTime,
-                            onTimeChanged = { startTime = it }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        DualTimePicker(
-                            startTime = startTime,
-                            endTime = endTime,
-                            onTimesChanged = { start, end ->
-                                if (startTime != start) startTime = start
-                                if (endTime != end) endTime = end
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.TopCenter
+                        ) {
+                            Column {
+                                DualTimePicker(
+                                    startTime = startTime,
+                                    endTime = endTime,
+                                    animate = !showTimeAdjustments,
+                                    onTimesChanged = { start, end ->
+                                        if (startTime != start) startTime = start
+                                        if (endTime != end) endTime = end
+                                    }
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
                             }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        CombinedTimeAdjustment(
-                            currentTime = endTime,
-                            onTimeChanged = { endTime = it }
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
+
+                            androidx.compose.animation.AnimatedVisibility(
+                                visible = showTimeAdjustments,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp)
+                            ) {
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                                    tonalElevation = 6.dp,
+                                    shadowElevation = 8.dp,
+                                    modifier = Modifier.padding(top = 4.dp).offset(y=(60).dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        CombinedTimeAdjustment(
+                                            currentTime = startTime,
+                                            onTimeChanged = { startTime = it }
+                                        )
+                                        CombinedTimeAdjustment(
+                                            currentTime = endTime,
+                                            onTimeChanged = { endTime = it }
+                                        )
+                                    }
+                                }
+                            }
+                        }
 
                         ActivityGridComponent(
                             chips = activityChips,

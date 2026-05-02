@@ -52,6 +52,7 @@ internal data class DateItem(
 fun DualTimePicker(
     startTime: LocalDateTime = LocalDateTime.now(),
     endTime: LocalDateTime = LocalDateTime.now(),
+    animate: Boolean = true,
     onDurationChanged: (Duration) -> Unit = {},
     onTimesChanged: (LocalDateTime, LocalDateTime) -> Unit = { _, _ -> },
 ) {
@@ -137,6 +138,7 @@ fun DualTimePicker(
             selectedHour = leftSelectedHour,
             selectedMinute = leftSelectedMinute,
             initialDateIndex = todayIndex,
+            animate = animate,
             onDateChanged = { leftSelectedDate = it },
             onHourChanged = { leftSelectedHour = it },
             onMinuteChanged = { leftSelectedMinute = it },
@@ -159,6 +161,7 @@ fun DualTimePicker(
             selectedHour = rightSelectedHour,
             selectedMinute = rightSelectedMinute,
             initialDateIndex = todayIndex,
+            animate = animate,
             onDateChanged = { rightSelectedDate = it },
             onHourChanged = { rightSelectedHour = it },
             onMinuteChanged = { rightSelectedMinute = it },
@@ -177,6 +180,7 @@ private fun TimePickerSection(
     selectedHour: String,
     selectedMinute: String,
     initialDateIndex: Int = 0,
+    animate: Boolean = true,
     onDateChanged: (DateItem) -> Unit,
     onHourChanged: (String) -> Unit,
     onMinuteChanged: (String) -> Unit,
@@ -212,6 +216,7 @@ private fun TimePickerSection(
                     onItemSelected = onDateChanged,
                     itemHeight = itemHeight,
                     initialScrollIndex = initialDateIndex,
+                    animate = animate,
                     modifier = Modifier.weight(1.5f),
                 )
                 WheelPicker(
@@ -219,6 +224,7 @@ private fun TimePickerSection(
                     selectedItem = selectedHour,
                     onItemSelected = onHourChanged,
                     itemHeight = itemHeight,
+                    animate = animate,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
@@ -233,6 +239,7 @@ private fun TimePickerSection(
                     selectedItem = selectedMinute,
                     onItemSelected = onMinuteChanged,
                     itemHeight = itemHeight,
+                    animate = animate,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -250,6 +257,7 @@ private fun DateWheelPicker(
     itemHeight: Dp = 40.dp,
     visibleItemsCount: Int = 3,
     initialScrollIndex: Int = 0,
+    animate: Boolean = true,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
@@ -267,7 +275,11 @@ private fun DateWheelPicker(
         if (!listState.isScrollInProgress) {
             val index = items.indexOfFirst { it.date == selectedItem.date }
             if (index != -1 && listState.firstVisibleItemIndex != index) {
-                listState.animateScrollToItem(index)
+                if (animate) {
+                    listState.animateScrollToItem(index)
+                } else {
+                    listState.scrollToItem(index)
+                }
             }
         }
     }
@@ -352,6 +364,7 @@ fun <T> WheelPicker(
     itemHeight: Dp = 40.dp,
     visibleItemsCount: Int = 3,
     initialScrollIndex: Int = 0,
+    animate: Boolean = true,
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
@@ -369,7 +382,11 @@ fun <T> WheelPicker(
         if (!listState.isScrollInProgress) {
             val index = items.indexOf(selectedItem)
             if (index != -1 && listState.firstVisibleItemIndex != index) {
-                listState.animateScrollToItem(index)
+                if (animate) {
+                    listState.animateScrollToItem(index)
+                } else {
+                    listState.scrollToItem(index)
+                }
             }
         }
     }
