@@ -1,7 +1,12 @@
 package com.nltimer.feature.debug.ui.preview
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,13 +52,30 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import android.graphics.PathMeasure as AndroidPathMeasure
 import java.time.LocalDateTime
+
+enum class PathDrawMode {
+    StartToEnd,
+    BothSidesToMiddle,
+    Random,
+    None,
+    WrigglingMaggot,
+    LinearWavy,
+}
 
 data class GridConfig(
     val displayMode: MutableState<ChipDisplayMode>,
@@ -68,6 +90,7 @@ data class GridConfig(
 fun ActivityRecordCombinedPreview() {
     var showSheet by remember { mutableStateOf(false) }
     var baseTime by remember { mutableStateOf(LocalDateTime.now()) }
+    var drawMode by remember { mutableStateOf(PathDrawMode.StartToEnd) }
 
     val activityConfig = remember {
         GridConfig(
@@ -103,6 +126,32 @@ fun ActivityRecordCombinedPreview() {
             GridConfigBlock(label = "活动", config = activityConfig)
             GridConfigBlock(label = "标签", config = tagConfig)
 
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PathDrawMode.entries.forEach { mode ->
+                    Surface(
+                        onClick = { drawMode = mode },
+                        shape = RoundedCornerShape(6.dp),
+                        color = if (mode == drawMode) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+                    ) {
+                        Text(
+                            text = when (mode) {
+                                PathDrawMode.StartToEnd -> "单向"
+                                PathDrawMode.BothSidesToMiddle -> "双向"
+                                PathDrawMode.Random -> "随机"
+                                PathDrawMode.None -> "无"
+                                PathDrawMode.WrigglingMaggot -> "蛆动"
+                                PathDrawMode.LinearWavy -> "波浪"
+                            },
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                fontWeight = if (mode == drawMode) FontWeight.Bold else FontWeight.Normal,
+                            ),
+                            color = if (mode == drawMode) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        )
+                    }
+                }
+            }
+
             Button(
                 onClick = {
                     baseTime = LocalDateTime.now()
@@ -121,6 +170,7 @@ fun ActivityRecordCombinedPreview() {
             baseTime = baseTime,
             activityConfig = activityConfig,
             tagConfig = tagConfig,
+            drawMode = drawMode,
             onDismiss = { showSheet = false },
         )
     }
@@ -370,6 +420,7 @@ private fun ActivityRecordCombinedSheet(
     baseTime: LocalDateTime,
     activityConfig: GridConfig,
     tagConfig: GridConfig,
+    drawMode: PathDrawMode,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -403,8 +454,30 @@ private fun ActivityRecordCombinedSheet(
         animationSpec = tween(durationMillis = 1500),
         label = "path_draw_progress"
     )
+    val infiniteTransition = rememberInfiniteTransition(label = "jumping_transition")
+    val jumpProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "wavy_line_progress"
+    )
 
-    LaunchedEffect(Unit) {
+    val effectiveMode = remember(drawMode) {
+        if (drawMode == PathDrawMode.Random) {
+            val candidates = PathDrawMode.entries.filter {
+                it != PathDrawMode.Random && it != PathDrawMode.None 
+            }
+            candidates.random()
+        } else {
+            drawMode
+        }
+    }
+
+    LaunchedEffect(effectiveMode) {
+        targetProgress = 0f
         targetProgress = 1f
     }
 
@@ -457,14 +530,144 @@ private fun ActivityRecordCombinedSheet(
                         }
 
                         val animatedPath = Path()
-                        if (animatedProgress > 0f) {
-                            val stopDistance = totalLength * animatedProgress
-                            pathMeasure.getSegment(0f, stopDistance, animatedPath)
-                            drawPath(
-                                path = animatedPath,
-                                color = emphasisColor,
-                                style = Stroke(width = strokeWidthPx)
-                            )
+                        if (effectiveMode != PathDrawMode.None && animatedProgress > 0f) {
+                            when (effectiveMode) {
+                                PathDrawMode.StartToEnd -> {
+                                    val stopDistance = totalLength * animatedProgress
+                                    pathMeasure.getSegment(0f, stopDistance, animatedPath)
+                                    drawPath(
+                                        path = animatedPath,
+                                        color = emphasisColor,
+                                        style = Stroke(width = strokeWidthPx)
+                                    )
+                                }
+                                PathDrawMode.BothSidesToMiddle -> {
+                                    val halfLength = totalLength / 2f
+                                    val drawLength = halfLength * animatedProgress
+                                    val startSegment = Path()
+                                    pathMeasure.getSegment(0f, drawLength, startSegment)
+                                    drawPath(
+                                        path = startSegment,
+                                        color = emphasisColor,
+                                        style = Stroke(width = strokeWidthPx)
+                                    )
+                                    val endSegment = Path()
+                                    pathMeasure.getSegment(
+                                        totalLength - drawLength,
+                                        totalLength,
+                                        endSegment
+                                    )
+                                    drawPath(
+                                        path = endSegment,
+                                        color = emphasisColor,
+                                        style = Stroke(width = strokeWidthPx)
+                                    )
+                                }
+                                PathDrawMode.WrigglingMaggot -> {
+                                    val segmentCount = 24
+                                    val segmentLengthPx = 12f
+                                    val waveCount = 2
+                                    val amplitudeRatio = 0.03f
+
+                                    val androidPathMeasure = AndroidPathMeasure().apply {
+                                        setPath(path.asAndroidPath(), false)
+                                    }
+                                    val position = FloatArray(2)
+                                    val tangent = FloatArray(2)
+
+                                    for (i in 0 until segmentCount) {
+                                        val baseRatio = i.toFloat() / segmentCount
+                                        val offset = sin(
+                                            (baseRatio * waveCount + jumpProgress) * 2 * PI.toFloat()
+                                        ) * amplitudeRatio
+                                        val sampleRatio = (baseRatio + offset).coerceIn(0f, 1f)
+                                        val distance = sampleRatio * totalLength
+
+                                        androidPathMeasure.getPosTan(distance, position, tangent)
+
+                                        val angle = atan2(tangent[1].toDouble(), tangent[0].toDouble()).toFloat()
+                                        val cosA = cos(angle)
+                                        val sinA = sin(angle)
+
+                                        val halfLen = segmentLengthPx / 2f
+                                        val startX = position[0] - halfLen * cosA
+                                        val startY = position[1] - halfLen * sinA
+                                        val endX = position[0] + halfLen * cosA
+                                        val endY = position[1] + halfLen * sinA
+
+                                        drawLine(
+                                            color = emphasisColor,
+                                            start = androidx.compose.ui.geometry.Offset(startX, startY),
+                                            end = androidx.compose.ui.geometry.Offset(endX, endY),
+                                            strokeWidth = 3.dp.toPx(),
+                                            cap = StrokeCap.Round
+                                        )
+                                    }
+                                }
+                                PathDrawMode.LinearWavy -> {
+                                    val waveCount = 3f
+                                    val amplitudePx = 12.dp.toPx()
+                                    val sampleStep = 4f
+                                    val waveThickness = 2.dp.toPx()
+
+                                    val androidPathMeasure = AndroidPathMeasure().apply {
+                                        setPath(path.asAndroidPath(), false)
+                                    }
+                                    val totalLen = androidPathMeasure.length
+                                    if (totalLen > 0f) {
+                                        val offsetPoints = mutableListOf<androidx.compose.ui.geometry.Offset>()
+                                        var distance = 0f
+                                        val pos = FloatArray(2)
+                                        val tan = FloatArray(2)
+
+                                        while (distance <= totalLen) {
+                                            androidPathMeasure.getPosTan(distance, pos, tan)
+
+                                            val normalX = tan[1]
+                                            val normalY = -tan[0]
+                                            val normalLength = kotlin.math.sqrt(normalX * normalX + normalY * normalY)
+                                            if (normalLength == 0f) {
+                                                offsetPoints.add(androidx.compose.ui.geometry.Offset(pos[0], pos[1]))
+                                                distance += sampleStep
+                                                continue
+                                            }
+                                            val nx = normalX / normalLength
+                                            val ny = normalY / normalLength
+
+                                            val angle = (distance / totalLen) * waveCount * 2 * PI.toFloat() +
+                                                jumpProgress * 2 * PI.toFloat()
+                                            val offsetAmount = sin(angle) * amplitudePx
+
+                                            val px = pos[0] + nx * offsetAmount
+                                            val py = pos[1] + ny * offsetAmount
+
+                                            offsetPoints.add(androidx.compose.ui.geometry.Offset(px, py))
+                                            distance += sampleStep
+                                        }
+
+                                        if (offsetPoints.size >= 2) {
+                                            val wavyPath = Path().apply {
+                                                moveTo(offsetPoints[0].x, offsetPoints[0].y)
+                                                for (i in 1 until offsetPoints.size) {
+                                                    lineTo(offsetPoints[i].x, offsetPoints[i].y)
+                                                }
+                                            }
+
+                                            drawPath(
+                                                path = wavyPath,
+                                                color = emphasisColor,
+                                                style = Stroke(
+                                                    width = waveThickness,
+                                                    cap = StrokeCap.Round,
+                                                    join = StrokeJoin.Round
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+                                PathDrawMode.Random, PathDrawMode.None -> {
+                                }
+                            }
                         }
                     }
             ) {
