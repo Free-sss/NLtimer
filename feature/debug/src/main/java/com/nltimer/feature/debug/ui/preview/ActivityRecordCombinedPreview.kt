@@ -494,6 +494,11 @@ private fun ActivityRecordCombinedSheet(
     var buttonRowPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var optionsRowHeight by remember { mutableFloatStateOf(0f) }
 
+    LaunchedEffect(effectiveMode) {
+        targetProgress = 0f
+        targetProgress = 1f
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
