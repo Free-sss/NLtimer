@@ -74,6 +74,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.foundation.gestures.detectDragGestures
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
 import android.graphics.PathMeasure as AndroidPathMeasure
 import java.time.LocalDateTime
@@ -489,6 +490,9 @@ private fun ActivityRecordCombinedSheet(
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var hoveredOption by remember { mutableStateOf<String?>(null) }
     val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
+    var boxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var buttonRowPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var optionsRowHeight by remember { mutableFloatStateOf(0f) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -498,56 +502,12 @@ private fun ActivityRecordCombinedSheet(
         containerColor = MaterialTheme.colorScheme.surface,
         scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { boxPositionInWindow = it.positionInWindow() }
+        ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Options row that appears when dragging
-            if (isDragging) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 8.dp, end = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
-                    options.forEach { option ->
-                        Surface(
-                            modifier = Modifier
-                                .weight(1f)
-                                .onGloballyPositioned { layoutCoordinates ->
-                                    val position = layoutCoordinates.positionInWindow()
-                                    val size = layoutCoordinates.size
-                                    optionsLayoutBounds[option] = Rect(
-                                        position.x,
-                                        position.y,
-                                        position.x + size.width,
-                                        position.y + size.height
-                                    )
-                                },
-                            shape = RoundedCornerShape(8.dp),
-                            color = if (hoveredOption == option)
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.surfaceVariant,
-                            tonalElevation = 4.dp
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .padding(vertical = 12.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = option,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (hoveredOption == option)
-                                        MaterialTheme.colorScheme.onPrimary
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
-                }
-            }
 
             Box(
                 modifier = Modifier
@@ -749,7 +709,9 @@ private fun ActivityRecordCombinedSheet(
                         )
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { buttonRowPositionInWindow = it.positionInWindow() },
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
@@ -823,6 +785,63 @@ private fun ActivityRecordCombinedSheet(
                     }
                 }
             }
+        }
+        if (isDragging) {
+            val density = LocalDensity.current
+            val gapPx = with(density) { 8.dp.toPx() }
+            val optionsY = buttonRowPositionInWindow.y - boxPositionInWindow.y - optionsRowHeight - gapPx
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, end = 8.dp)
+                    .offset { IntOffset(0, optionsY.roundToInt()) }
+                    .onGloballyPositioned { coords ->
+                        optionsRowHeight = coords.size.height.toFloat()
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
+                options.forEach { option ->
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { layoutCoordinates ->
+                                val position = layoutCoordinates.positionInWindow()
+                                val size = layoutCoordinates.size
+                                optionsLayoutBounds[option] = Rect(
+                                    position.x,
+                                    position.y,
+                                    position.x + size.width,
+                                    position.y + size.height
+                                )
+                            },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (hoveredOption == option)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 4.dp
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (hoveredOption == option)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+        }
         }
     }
 }
