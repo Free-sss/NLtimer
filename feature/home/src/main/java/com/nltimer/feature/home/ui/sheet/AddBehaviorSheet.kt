@@ -161,8 +161,7 @@ internal fun AddBehaviorSheetContent(
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
-    var showStartTimeAdjustment by remember { mutableStateOf(false) }
-    var showEndTimeAdjustment by remember { mutableStateOf(false) }
+    var showTimeAdjustments by remember { mutableStateOf(false) }
 
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
     val tagChips = remember(allTags) { allTags.map { ChipItem(it) } }
@@ -396,48 +395,63 @@ internal fun AddBehaviorSheetContent(
                         }
 
                         Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.TopCenter
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Column {
                                 DualTimePicker(
                                     startTime = startTime,
                                     endTime = endTime,
-                                    animate = !(showStartTimeAdjustment || showEndTimeAdjustment),
+                                    animate = !showTimeAdjustments,
                                     onTimesChanged = { start, end ->
                                         if (startTime != start) startTime = start
                                         if (endTime != end) endTime = end
                                     },
                                     onLeftCenterClick = {
-                                        showStartTimeAdjustment = !showStartTimeAdjustment
-                                        showEndTimeAdjustment = false
+                                        showTimeAdjustments = !showTimeAdjustments
                                     },
                                     onRightCenterClick = {
-                                        showEndTimeAdjustment = !showEndTimeAdjustment
-                                        showStartTimeAdjustment = false
+                                        showTimeAdjustments = !showTimeAdjustments
                                     },
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 8.dp)
-                                    .padding(top = 4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                            ) {
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = showStartTimeAdjustment,
-                                    enter = fadeIn() + expandVertically(),
-                                    exit = fadeOut() + shrinkVertically(),
-                                    modifier = Modifier.weight(1f)
+                            if (showTimeAdjustments) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .pointerInput(Unit) {
+                                            awaitPointerEventScope {
+                                                while (true) {
+                                                    val event = awaitPointerEvent()
+                                                    if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press ||
+                                                        event.type == androidx.compose.ui.input.pointer.PointerEventType.Scroll) {
+                                                        showTimeAdjustments = false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp)
+                                        .offset(y = 60.dp)
+                                        .pointerInput(Unit) {
+                                            awaitPointerEventScope {
+                                                while (true) {
+                                                    awaitPointerEvent()
+                                                }
+                                            }
+                                        },
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     Surface(
                                         shape = RoundedCornerShape(12.dp),
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
                                         tonalElevation = 6.dp,
                                         shadowElevation = 8.dp,
+                                        modifier = Modifier.weight(1f)
                                     ) {
                                         Column(
                                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
@@ -450,19 +464,13 @@ internal fun AddBehaviorSheetContent(
                                             )
                                         }
                                     }
-                                }
 
-                                androidx.compose.animation.AnimatedVisibility(
-                                    visible = showEndTimeAdjustment,
-                                    enter = fadeIn() + expandVertically(),
-                                    exit = fadeOut() + shrinkVertically(),
-                                    modifier = Modifier.weight(1f)
-                                ) {
                                     Surface(
                                         shape = RoundedCornerShape(12.dp),
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
                                         tonalElevation = 6.dp,
                                         shadowElevation = 8.dp,
+                                        modifier = Modifier.weight(1f)
                                     ) {
                                         Column(
                                             modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
