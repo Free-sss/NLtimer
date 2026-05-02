@@ -67,6 +67,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -202,6 +204,7 @@ internal fun AddBehaviorSheetContent(
     var hoveredOption by remember { mutableStateOf<String?>(null) }
     val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
     var boxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var innerBoxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var buttonRowPositionInWindow by remember { mutableStateOf(Offset.Zero) }
     var optionsRowHeight by remember { mutableFloatStateOf(0f) }
 
@@ -369,6 +372,20 @@ internal fun AddBehaviorSheetContent(
                             .navigationBarsPadding()
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
+                            .then(
+                                if (showTimeAdjustments) {
+                                    Modifier.pointerInput(showTimeAdjustments) {
+                                        awaitPointerEventScope {
+                                            while (true) {
+                                                val event = awaitPointerEvent(PointerEventPass.Main)
+                                                if (event.type == PointerEventType.Press) {
+                                                    showTimeAdjustments = false
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else Modifier
+                            )
                     ) {
                         Row(
                             modifier = Modifier
@@ -395,7 +412,9 @@ internal fun AddBehaviorSheetContent(
                         }
 
                         Box(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { innerBoxPositionInWindow = it.positionInWindow() }
                         ) {
                             Column {
                                 DualTimePicker(
@@ -414,76 +433,6 @@ internal fun AddBehaviorSheetContent(
                                     },
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                            }
-
-                            if (showTimeAdjustments) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .pointerInput(Unit) {
-                                            awaitPointerEventScope {
-                                                while (true) {
-                                                    val event = awaitPointerEvent()
-                                                    if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press ||
-                                                        event.type == androidx.compose.ui.input.pointer.PointerEventType.Scroll) {
-                                                        showTimeAdjustments = false
-                                                    }
-                                                }
-                                            }
-                                        }
-                                )
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp)
-                                        .offset(y = 60.dp)
-                                        .pointerInput(Unit) {
-                                            awaitPointerEventScope {
-                                                while (true) {
-                                                    awaitPointerEvent()
-                                                }
-                                            }
-                                        },
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                                        tonalElevation = 6.dp,
-                                        shadowElevation = 8.dp,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                        ) {
-                                            TimeAdjustmentComponent(
-                                                currentTime = startTime,
-                                                onTimeChanged = { startTime = it }
-                                            )
-                                        }
-                                    }
-
-                                    Surface(
-                                        shape = RoundedCornerShape(12.dp),
-                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                                        tonalElevation = 6.dp,
-                                        shadowElevation = 8.dp,
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                                            horizontalAlignment = Alignment.CenterHorizontally,
-                                        ) {
-                                            TimeAdjustmentComponent(
-                                                currentTime = endTime,
-                                                onTimeChanged = { endTime = it }
-                                            )
-                                        }
-                                    }
-                                }
                             }
                         }
 
@@ -640,6 +589,59 @@ internal fun AddBehaviorSheetContent(
                             }
                         }
 //                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+            }
+        }
+
+        if (showTimeAdjustments) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+                    .offset {
+                        IntOffset(
+                            0,
+                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 60.dp.toPx()).roundToInt()
+                        )
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                    tonalElevation = 6.dp,
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        TimeAdjustmentComponent(
+                            currentTime = startTime,
+                            onTimeChanged = { startTime = it }
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                    tonalElevation = 6.dp,
+                    shadowElevation = 8.dp,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        TimeAdjustmentComponent(
+                            currentTime = endTime,
+                            onTimeChanged = { endTime = it }
+                        )
                     }
                 }
             }
