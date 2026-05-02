@@ -11,6 +11,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,6 +66,15 @@ import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.gestures.detectDragGestures
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import kotlin.math.roundToInt
 import android.graphics.PathMeasure as AndroidPathMeasure
 import java.time.LocalDateTime
 
@@ -473,10 +484,11 @@ private fun ActivityRecordCombinedSheet(
         }
     }
 
-    LaunchedEffect(effectiveMode) {
-        targetProgress = 0f
-        targetProgress = 1f
-    }
+    val context = LocalContext.current
+    var isDragging by remember { mutableStateOf(false) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var hoveredOption by remember { mutableStateOf<String?>(null) }
+    val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -487,6 +499,56 @@ private fun ActivityRecordCombinedSheet(
         scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            // Options row that appears when dragging
+            if (isDragging) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, start = 8.dp, end = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
+                    options.forEach { option ->
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .onGloballyPositioned { layoutCoordinates ->
+                                    val position = layoutCoordinates.positionInWindow()
+                                    val size = layoutCoordinates.size
+                                    optionsLayoutBounds[option] = Rect(
+                                        position.x,
+                                        position.y,
+                                        position.x + size.width,
+                                        position.y + size.height
+                                    )
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (hoveredOption == option)
+                                MaterialTheme.colorScheme.primary
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant,
+                            tonalElevation = 4.dp
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = option,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (hoveredOption == option)
+                                        MaterialTheme.colorScheme.onPrimary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -690,13 +752,62 @@ private fun ActivityRecordCombinedSheet(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
+                            var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
                             TextButton(
                                 onClick = onDismiss,
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(40.dp),
+                                    .weight(2f)
+                                    .height(40.dp)
+                                    .onGloballyPositioned { layoutCoordinates ->
+                                        buttonPositionInWindow = layoutCoordinates.positionInWindow()
+                                    }
+                                    .offset {
+                                        IntOffset(
+                                            dragOffset.x.roundToInt(),
+                                            dragOffset.y.roundToInt()
+                                        )
+                                    }
+                                    .pointerInput(Unit) {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                isDragging = true
+                                                println("Drag started")
+                                            },
+                                            onDragEnd = {
+                                                println("Drag ended at $dragOffset, hovered: $hoveredOption")
+                                                if (hoveredOption != null) {
+                                                    Toast.makeText(context, "触发功能: $hoveredOption", Toast.LENGTH_SHORT).show()
+                                                }
+                                                isDragging = false
+                                                dragOffset = Offset.Zero
+                                                hoveredOption = null
+                                            },
+                                            onDragCancel = {
+                                                isDragging = false
+                                                dragOffset = Offset.Zero
+                                                hoveredOption = null
+                                            },
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                dragOffset += dragAmount
+                                                
+                                                // Calculate current pointer position in window coordinates
+                                                // change.position is relative to the button's TOP-LEFT before offset
+                                                // So we need: buttonPositionInWindow + dragOffset + change.position
+                                                val currentPointerPosition = buttonPositionInWindow + dragOffset + change.position
+                                                
+                                                // Hit detection
+                                                val hit = optionsLayoutBounds.entries.find { entry ->
+                                                    entry.value.contains(currentPointerPosition)
+                                                }?.key
+                                                if (hit != hoveredOption) {
+                                                    hoveredOption = hit
+                                                }
+                                            }
+                                        )
+                                    },
                             ) {
-                                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                Text("拖动按钮", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             }
                             Button(
                                 onClick = onDismiss,
