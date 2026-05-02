@@ -605,62 +605,82 @@ private fun ActivityRecordCombinedSheet(
                                     }
                                 }
                                 PathDrawMode.LinearWavy -> {
-                                    val waveCount = 3f
-                                    val amplitudePx = 12.dp.toPx()
-                                    val sampleStep = 4f
-                                    val waveThickness = 2.dp.toPx()
+                                    val strokeWidthPx = 3.dp.toPx()
+                                    val r = 28.dp.toPx()
+                                    val w = size.width
+                                    val h = size.height
+                                    val extendedH = h * 1.2f
 
-                                    val androidPathMeasure = AndroidPathMeasure().apply {
-                                        setPath(path.asAndroidPath(), false)
-                                    }
-                                    val totalLen = androidPathMeasure.length
-                                    if (totalLen > 0f) {
-                                        val offsetPoints = mutableListOf<androidx.compose.ui.geometry.Offset>()
-                                        var distance = 0f
-                                        val pos = FloatArray(2)
-                                        val tan = FloatArray(2)
+                                    val leftLineLen = extendedH - r
+                                    val arcLen = (PI.toFloat() / 2f) * r
+                                    val topLineLen = w - 2 * r
+                                    val rightLineLen = extendedH - r
+                                    val totalLen = leftLineLen + arcLen + topLineLen + arcLen + rightLineLen
 
-                                        while (distance <= totalLen) {
-                                            androidPathMeasure.getPosTan(distance, pos, tan)
+                                    val segmentColors = listOf(
+                                        Color(0xFF2196F3),
+                                        Color(0xFFF44336),
+                                        Color(0xFFFF9800),
+                                        Color(0xFFE91E63),
+                                        Color(0xFF9C27B0)
+                                    )
 
-                                            val normalX = tan[1]
-                                            val normalY = -tan[0]
-                                            val normalLength = kotlin.math.sqrt(normalX * normalX + normalY * normalY)
-                                            if (normalLength == 0f) {
-                                                offsetPoints.add(androidx.compose.ui.geometry.Offset(pos[0], pos[1]))
-                                                distance += sampleStep
-                                                continue
+                                    val segments = listOf(
+                                        0f to leftLineLen,
+                                        leftLineLen to leftLineLen + arcLen,
+                                        leftLineLen + arcLen to leftLineLen + arcLen + topLineLen,
+                                        leftLineLen + arcLen + topLineLen to leftLineLen + arcLen * 2 + topLineLen,
+                                        leftLineLen + arcLen * 2 + topLineLen to totalLen
+                                    )
+
+                                    val lineLen = 200f
+
+                                    val androidPathMeasure = AndroidPathMeasure()
+                                    androidPathMeasure.setPath(path.asAndroidPath(), false)
+                                    val pos = FloatArray(2)
+
+                                    for (segIdx in segments.indices) {
+                                        val (segStart, segEnd) = segments[segIdx]
+                                        val segLen = segEnd - segStart
+                                        if (segLen <= 0f) continue
+
+                                        val delayRatio = segIdx * 0.2f
+                                        val segProgress = ((jumpProgress - delayRatio) % 1f + 1f) % 1f
+
+                                        val headDist = segStart + segProgress * (segLen + lineLen * 2) - lineLen
+                                        val tailDist = headDist - lineLen
+
+                                        val drawStart = tailDist.coerceAtLeast(segStart)
+                                        val drawEnd = headDist.coerceAtMost(segEnd)
+                                        if (drawStart >= drawEnd) continue
+
+                                        val sampleStep = 2f
+                                        val segColor = segmentColors[segIdx]
+                                        val points = mutableListOf<Pair<androidx.compose.ui.geometry.Offset, Float>>()
+                                        var d = drawStart
+
+                                        while (d <= drawEnd) {
+                                            val distFromHead = headDist - d
+                                            val alpha = (1f - distFromHead / lineLen).coerceIn(0f, 1f)
+
+                                            if (androidPathMeasure.getPosTan(d, pos, null)) {
+                                                points.add(
+                                                    androidx.compose.ui.geometry.Offset(pos[0], pos[1]) to alpha
+                                                )
                                             }
-                                            val nx = normalX / normalLength
-                                            val ny = normalY / normalLength
-
-                                            val angle = (distance / totalLen) * waveCount * 2 * PI.toFloat() +
-                                                jumpProgress * 2 * PI.toFloat()
-                                            val offsetAmount = sin(angle) * amplitudePx
-
-                                            val px = pos[0] + nx * offsetAmount
-                                            val py = pos[1] + ny * offsetAmount
-
-                                            offsetPoints.add(androidx.compose.ui.geometry.Offset(px, py))
-                                            distance += sampleStep
+                                            d += sampleStep
                                         }
 
-                                        if (offsetPoints.size >= 2) {
-                                            val wavyPath = Path().apply {
-                                                moveTo(offsetPoints[0].x, offsetPoints[0].y)
-                                                for (i in 1 until offsetPoints.size) {
-                                                    lineTo(offsetPoints[i].x, offsetPoints[i].y)
-                                                }
-                                            }
-
-                                            drawPath(
-                                                path = wavyPath,
-                                                color = emphasisColor,
-                                                style = Stroke(
-                                                    width = waveThickness,
-                                                    cap = StrokeCap.Round,
-                                                    join = StrokeJoin.Round
-                                                )
+                                        for (i in 0 until points.size - 1) {
+                                            val (p1, a1) = points[i]
+                                            val (p2, a2) = points[i + 1]
+                                            val avgAlpha = (a1 + a2) / 2f
+                                            drawLine(
+                                                color = segColor.copy(alpha = avgAlpha * 0.9f),
+                                                start = p1,
+                                                end = p2,
+                                                strokeWidth = strokeWidthPx,
+                                                cap = StrokeCap.Round
                                             )
                                         }
                                     }
