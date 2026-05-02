@@ -74,7 +74,7 @@ internal fun NoteInputComponent(
                     decorationBox = { innerTextField ->
                         Box(modifier = Modifier.fillMaxSize()) {
                             Text(
-                                text = "/",
+                                text = "${note.length}/$maxCharLimit",
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                                 fontSize = 9.sp,
                                 modifier = Modifier

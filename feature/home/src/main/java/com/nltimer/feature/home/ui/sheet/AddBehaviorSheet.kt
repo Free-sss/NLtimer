@@ -10,6 +10,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -105,7 +106,9 @@ fun AddBehaviorSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        dragHandle = null,
+        containerColor = MaterialTheme.colorScheme.surface,
+        scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f),
     ) {
         AddBehaviorSheetContent(
             modifier = modifier,
@@ -220,14 +223,24 @@ internal fun AddBehaviorSheetContent(
                             moveTo(halfStroke, extendedH)
                             lineTo(halfStroke, r)
                             arcTo(
-                                rect = Rect(halfStroke, halfStroke, r * 2 - halfStroke, r * 2 - halfStroke),
+                                rect = Rect(
+                                    halfStroke,
+                                    halfStroke,
+                                    r * 2 - halfStroke,
+                                    r * 2 - halfStroke
+                                ),
                                 startAngleDegrees = 180f,
                                 sweepAngleDegrees = 90f,
                                 forceMoveTo = false
                             )
                             lineTo(w - r, halfStroke)
                             arcTo(
-                                rect = Rect(w - r * 2 + halfStroke, halfStroke, w - halfStroke, r * 2 - halfStroke),
+                                rect = Rect(
+                                    w - r * 2 + halfStroke,
+                                    halfStroke,
+                                    w - halfStroke,
+                                    r * 2 - halfStroke
+                                ),
                                 startAngleDegrees = 270f,
                                 sweepAngleDegrees = 90f,
                                 forceMoveTo = false
@@ -254,6 +267,7 @@ internal fun AddBehaviorSheetContent(
                                         style = Stroke(width = strokeWidthPx)
                                     )
                                 }
+
                                 PathDrawMode.BothSidesToMiddle -> {
                                     val halfLength = totalLength / 2f
                                     val drawLength = halfLength * animatedProgress
@@ -276,6 +290,7 @@ internal fun AddBehaviorSheetContent(
                                         style = Stroke(width = strokeWidthPx)
                                     )
                                 }
+
                                 PathDrawMode.WrigglingMaggot -> {
                                     val segmentCount = 24
                                     val segmentLengthPx = 12f
@@ -298,7 +313,10 @@ internal fun AddBehaviorSheetContent(
 
                                         androidPathMeasure.getPosTan(distance, position, tangent)
 
-                                        val angle = atan2(tangent[1].toDouble(), tangent[0].toDouble()).toFloat()
+                                        val angle = atan2(
+                                            tangent[1].toDouble(),
+                                            tangent[0].toDouble()
+                                        ).toFloat()
                                         val cosA = cos(angle)
                                         val sinA = sin(angle)
 
@@ -317,7 +335,8 @@ internal fun AddBehaviorSheetContent(
                                         )
                                     }
                                 }
-                                PathDrawMode.Random, PathDrawMode.None -> { }
+
+                                PathDrawMode.Random, PathDrawMode.None -> {}
                             }
                         }
                     }
@@ -333,6 +352,7 @@ internal fun AddBehaviorSheetContent(
                             .navigationBarsPadding()
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
+                            .animateContentSize()
                     ) {
                         Row(
                             modifier = Modifier
@@ -342,7 +362,7 @@ internal fun AddBehaviorSheetContent(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                text = "添加行为",
+                                text = "用时：{{usedTime}}",
                                 style = MaterialTheme.typography.labelLarge.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = emphasisColor,
@@ -411,6 +431,8 @@ internal fun AddBehaviorSheetContent(
                             },
                             functionChipOnClick = { showAddTagDialog = true },
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         NoteInputComponent(
                             note = note,
                             onNoteChange = { note = it },
@@ -418,29 +440,14 @@ internal fun AddBehaviorSheetContent(
                             onBottomButton = { },
                         )
 
-                        if (dialogConfig.showBehaviorNature) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 12.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    "类型",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                BehaviorNatureSelector(
-                                    selected = nature,
-                                    onSelect = { nature = it },
-                                )
-                            }
-                        }
+
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .onGloballyPositioned { buttonRowPositionInWindow = it.positionInWindow() },
+                                .onGloballyPositioned {
+                                    buttonRowPositionInWindow = it.positionInWindow()
+                                },
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -451,7 +458,8 @@ internal fun AddBehaviorSheetContent(
                                     .weight(2f)
                                     .height(40.dp)
                                     .onGloballyPositioned { layoutCoordinates ->
-                                        buttonPositionInWindow = layoutCoordinates.positionInWindow()
+                                        buttonPositionInWindow =
+                                            layoutCoordinates.positionInWindow()
                                     }
                                     .offset {
                                         IntOffset(
@@ -466,7 +474,11 @@ internal fun AddBehaviorSheetContent(
                                             },
                                             onDragEnd = {
                                                 if (hoveredOption != null) {
-                                                    Toast.makeText(context, "触发功能: $hoveredOption", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(
+                                                        context,
+                                                        "触发功能: $hoveredOption",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                 }
                                                 isDragging = false
                                                 dragOffset = Offset.Zero
@@ -481,10 +493,12 @@ internal fun AddBehaviorSheetContent(
                                                 change.consume()
                                                 dragOffset += dragAmount
 
-                                                val currentPointerPosition = buttonPositionInWindow + dragOffset + change.position
-                                                val hit = optionsLayoutBounds.entries.find { entry ->
-                                                    entry.value.contains(currentPointerPosition)
-                                                }?.key
+                                                val currentPointerPosition =
+                                                    buttonPositionInWindow + dragOffset + change.position
+                                                val hit =
+                                                    optionsLayoutBounds.entries.find { entry ->
+                                                        entry.value.contains(currentPointerPosition)
+                                                    }?.key
                                                 if (hit != hoveredOption) {
                                                     hoveredOption = hit
                                                 }
@@ -492,7 +506,11 @@ internal fun AddBehaviorSheetContent(
                                         )
                                     },
                             ) {
-                                Text("取消", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                Text(
+                                    "取消",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 14.sp
+                                )
                             }
                             Button(
                                 onClick = {
@@ -507,16 +525,17 @@ internal fun AddBehaviorSheetContent(
                                     }
                                 },
                                 shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(40.dp),
                                 enabled = selectedActivityId != null,
                             ) {
-                                Text("确认", fontSize = 14.sp)
+                                Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+//                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
@@ -525,7 +544,8 @@ internal fun AddBehaviorSheetContent(
         if (isDragging) {
             val density = LocalDensity.current
             val gapPx = with(density) { 8.dp.toPx() }
-            val optionsY = buttonRowPositionInWindow.y - boxPositionInWindow.y - optionsRowHeight - gapPx
+            val optionsY =
+                buttonRowPositionInWindow.y - boxPositionInWindow.y - optionsRowHeight - gapPx
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

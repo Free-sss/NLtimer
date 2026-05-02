@@ -236,11 +236,12 @@ internal fun <T> WheelPicker(
                     Text(
                         text = item.toString(),
                         style = MaterialTheme.typography.labelMedium.copy(
+                            fontSize = if (item == selectedItem) 14.sp else 9.sp,
                             fontWeight = if (item == selectedItem) FontWeight.Bold else FontWeight.Normal,
                             color = if (item == selectedItem)
-                                MaterialTheme.colorScheme.onPrimary
+                                MaterialTheme.colorScheme.onSecondaryContainer
                             else
-                                MaterialTheme.colorScheme.onSurfaceVariant,
+                                MaterialTheme.colorScheme.onSurface,
                         ),
                     )
                 }
