@@ -1,5 +1,6 @@
 package com.nltimer.feature.home.ui.sheet
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
@@ -29,10 +30,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.abs
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -123,7 +129,9 @@ private fun TimePickerSection(
 ) {
     val itemHeight = 32.dp
     Column(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier
+            .fillMaxHeight()
+            .animateContentSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
@@ -212,36 +220,56 @@ internal fun <T> WheelPicker(
     LaunchedEffect(listState) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .map { index -> items.getOrNull(index) }
-            .collect { newItem ->
-                if (newItem != null && newItem != selectedItem) {
-                    onItemSelected(newItem)
+            .distinctUntilChanged()
+            .collect { item ->
+                if (item != null) {
+                    onItemSelected(item)
                 }
             }
     }
 
+    val textColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val selectedColor = MaterialTheme.colorScheme.onPrimaryContainer
     LazyColumn(
-        modifier = modifier.height(itemHeight * visibleItemsCount),
-        state = listState,
+        state = listState,  
         flingBehavior = flingBehavior,
+        modifier = modifier.height(itemHeight * visibleItemsCount),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        
     ) {
-        items(paddedItems.size, key = { it }) { index ->
+        items(paddedItems.size) { index ->
             val item = paddedItems[index]
+            val isSelected = item == selectedItem
+
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(itemHeight),
+                    .height(itemHeight)
+                    .graphicsLayer {
+                        val layoutInfo = listState.layoutInfo
+                        val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
+                        if (itemInfo != null) {
+                            val viewportCenter =
+                                (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2f
+                            val itemCenter = itemInfo.offset + itemInfo.size / 2f
+                            val distanceFromCenter = itemCenter - viewportCenter
+
+                            val fraction = (distanceFromCenter / (itemHeight.toPx() * (visibleItemsCount / 2f))).coerceIn(-1f, 1f)
+
+                            rotationX = fraction * -35f
+                            scaleY = 1f - abs(fraction) * 0.45f
+                            scaleX = 1f + abs(fraction) * 0.45f
+                            alpha = 1f - abs(fraction) * 0.6f
+                        }
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 if (item != null) {
                     Text(
                         text = item.toString(),
                         style = MaterialTheme.typography.labelMedium.copy(
-                            fontSize = if (item == selectedItem) 14.sp else 9.sp,
+                            fontSize = if (item == selectedItem) 14.sp else 1.sp,
                             fontWeight = if (item == selectedItem) FontWeight.Bold else FontWeight.Normal,
-                            color = if (item == selectedItem)
-                                MaterialTheme.colorScheme.onSecondaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurface,
+                            color = if (isSelected) selectedColor else textColor,
                         ),
                     )
                 }

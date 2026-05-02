@@ -25,6 +25,7 @@ okio = "3.9.1"
 profileinstaller = "1.4.1"
 uiautomator = "2.3.0"
 benchmark_macro_junit4 = "1.4.0"
+animation = "1.11.0"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -64,6 +65,7 @@ plugin-android = { module = "com.android.tools.build:gradle", version.ref = "agp
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-hilt = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "agp" }

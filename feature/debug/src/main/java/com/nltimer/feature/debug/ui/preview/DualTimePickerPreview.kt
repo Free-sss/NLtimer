@@ -33,12 +33,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.math.abs
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
@@ -49,6 +52,7 @@ import java.time.format.DateTimeFormatter
  * 双列时间选择器调试预览入口
  * 包裹 [DualTimePicker] 到一个全屏 Surface 中，用于在调试页面中独立渲染
  */
+@Preview
 @Composable
 fun DualTimePickerDebugPreview() {
     Surface(
@@ -326,17 +330,37 @@ private fun <T> WheelPicker(
             val isSelected = item == selectedItem
 
             Box(
-                modifier = Modifier.height(itemHeight),
+                modifier = Modifier
+                    .height(itemHeight)
+                    .graphicsLayer {
+                        val layoutInfo = listState.layoutInfo
+                        val itemInfo = layoutInfo.visibleItemsInfo.find { it.index == index }
+                        if (itemInfo != null) {
+                            val viewportCenter =
+                                (layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset) / 2f
+                            val itemCenter = itemInfo.offset + itemInfo.size / 2f
+                            val distanceFromCenter = itemCenter - viewportCenter
+
+                            // Normalized distance from center (-1 to 1 within the visible area)
+                            val fraction = (distanceFromCenter / (itemHeight.toPx() * (visibleItemsCount / 2f))).coerceIn(-1f, 1f)
+
+                            rotationX = fraction * -35f // Slightly less rotation for clearer text
+                            scaleY = 1f - abs(fraction) * 0.45f // Keep high squash
+                            scaleX = 1f + abs(fraction) * 0.45f // High horizontal stretch
+                            alpha = 1f - abs(fraction) * 0.6f // Stronger fade for distance
+                        }
+                    },
                 contentAlignment = Alignment.Center,
             ) {
                 if (item != null) {
                     Text(
                         text = item.toString(),
                         style = TextStyle(
-                            fontSize = if (isSelected) 14.sp else 9.sp,
-                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
+                            fontSize = if (isSelected) 14.sp else 12.sp,
+                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Bold,
                             color = if (isSelected) selectedColor else textColor,
                             textAlign = TextAlign.Center,
+                            letterSpacing = if (isSelected) 0.5.sp else 0.sp,
                         ),
                     )
                 }

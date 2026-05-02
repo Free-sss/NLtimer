@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.animation)
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
 
