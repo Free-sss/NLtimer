@@ -161,7 +161,8 @@ internal fun AddBehaviorSheetContent(
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
-    var showTimeAdjustments by remember { mutableStateOf(false) }
+    var showStartTimeAdjustment by remember { mutableStateOf(false) }
+    var showEndTimeAdjustment by remember { mutableStateOf(false) }
 
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
     val tagChips = remember(allTags) { allTags.map { ChipItem(it) } }
@@ -373,13 +374,7 @@ internal fun AddBehaviorSheetContent(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    showTimeAdjustments = !showTimeAdjustments
-                                },
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -408,42 +403,77 @@ internal fun AddBehaviorSheetContent(
                                 DualTimePicker(
                                     startTime = startTime,
                                     endTime = endTime,
-                                    animate = !showTimeAdjustments,
+                                    animate = !(showStartTimeAdjustment || showEndTimeAdjustment),
                                     onTimesChanged = { start, end ->
                                         if (startTime != start) startTime = start
                                         if (endTime != end) endTime = end
-                                    }
+                                    },
+                                    onLeftCenterClick = {
+                                        showStartTimeAdjustment = !showStartTimeAdjustment
+                                        showEndTimeAdjustment = false
+                                    },
+                                    onRightCenterClick = {
+                                        showEndTimeAdjustment = !showEndTimeAdjustment
+                                        showStartTimeAdjustment = false
+                                    },
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            androidx.compose.animation.AnimatedVisibility(
-                                visible = showTimeAdjustments,
-                                enter = fadeIn() + expandVertically(),
-                                exit = fadeOut() + shrinkVertically(),
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
+                                    .padding(top = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
                             ) {
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                                    tonalElevation = 6.dp,
-                                    shadowElevation = 8.dp,
-                                    modifier = Modifier.padding(top = 4.dp).offset(y=(60).dp)
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = showStartTimeAdjustment,
+                                    enter = fadeIn() + expandVertically(),
+                                    exit = fadeOut() + shrinkVertically(),
+                                    modifier = Modifier.weight(1f)
                                 ) {
-                                    Column(
-                                        modifier = Modifier.padding(vertical = 8.dp),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                                        tonalElevation = 6.dp,
+                                        shadowElevation = 8.dp,
                                     ) {
-                                        CombinedTimeAdjustment(
-                                            currentTime = startTime,
-                                            onTimeChanged = { startTime = it }
-                                        )
-                                        CombinedTimeAdjustment(
-                                            currentTime = endTime,
-                                            onTimeChanged = { endTime = it }
-                                        )
+                                        Column(
+                                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            TimeAdjustmentComponent(
+                                                currentTime = startTime,
+                                                onTimeChanged = { startTime = it }
+                                            )
+                                        }
+                                    }
+                                }
+
+                                androidx.compose.animation.AnimatedVisibility(
+                                    visible = showEndTimeAdjustment,
+                                    enter = fadeIn() + expandVertically(),
+                                    exit = fadeOut() + shrinkVertically(),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                                        tonalElevation = 6.dp,
+                                        shadowElevation = 8.dp,
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                        ) {
+                                            TimeAdjustmentComponent(
+                                                currentTime = endTime,
+                                                onTimeChanged = { endTime = it }
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -682,24 +712,6 @@ internal fun AddBehaviorSheetContent(
                 onAddTag(name)
                 showAddTagDialog = false
             },
-        )
-    }
-}
-
-@Composable
-private fun CombinedTimeAdjustment(
-    currentTime: LocalDateTime,
-    onTimeChanged: (LocalDateTime) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        TimeAdjustmentComponent(
-            currentTime = currentTime,
-            onTimeChanged = onTimeChanged,
         )
     }
 }

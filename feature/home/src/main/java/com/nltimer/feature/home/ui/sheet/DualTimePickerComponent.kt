@@ -2,7 +2,9 @@ package com.nltimer.feature.home.ui.sheet
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +57,8 @@ fun DualTimePicker(
     animate: Boolean = true,
     onDurationChanged: (Duration) -> Unit = {},
     onTimesChanged: (LocalDateTime, LocalDateTime) -> Unit = { _, _ -> },
+    onLeftCenterClick: () -> Unit = {},
+    onRightCenterClick: () -> Unit = {},
 ) {
     // 抹平秒和纳秒，防止微小差异导致的无限重绘
     val sProp = remember(startTime) { startTime.withSecond(0).withNano(0) }
@@ -143,6 +147,7 @@ fun DualTimePicker(
             onHourChanged = { leftSelectedHour = it },
             onMinuteChanged = { leftSelectedMinute = it },
             modifier = Modifier.weight(1f),
+            onCenterClick = onLeftCenterClick,
         )
 
         HorizontalDivider(
@@ -166,6 +171,7 @@ fun DualTimePicker(
             onHourChanged = { rightSelectedHour = it },
             onMinuteChanged = { rightSelectedMinute = it },
             modifier = Modifier.weight(1f),
+            onCenterClick = onRightCenterClick,
         )
     }
 }
@@ -184,6 +190,7 @@ private fun TimePickerSection(
     onDateChanged: (DateItem) -> Unit,
     onHourChanged: (String) -> Unit,
     onMinuteChanged: (String) -> Unit,
+    onCenterClick: () -> Unit = {},
 ) {
     val itemHeight = 32.dp
     Column(
@@ -218,6 +225,7 @@ private fun TimePickerSection(
                     initialScrollIndex = initialDateIndex,
                     animate = animate,
                     modifier = Modifier.weight(1.5f),
+                    onCenterClick = onCenterClick,
                 )
                 WheelPicker(
                     items = hours,
@@ -226,6 +234,7 @@ private fun TimePickerSection(
                     itemHeight = itemHeight,
                     animate = animate,
                     modifier = Modifier.weight(1f),
+                    onCenterClick = onCenterClick,
                 )
                 Text(
                     text = ":",
@@ -241,6 +250,7 @@ private fun TimePickerSection(
                     itemHeight = itemHeight,
                     animate = animate,
                     modifier = Modifier.weight(1f),
+                    onCenterClick = onCenterClick,
                 )
             }
         }
@@ -258,6 +268,7 @@ private fun DateWheelPicker(
     visibleItemsCount: Int = 3,
     initialScrollIndex: Int = 0,
     animate: Boolean = true,
+    onCenterClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
@@ -332,7 +343,11 @@ private fun DateWheelPicker(
                             scaleX = 1f + abs(fraction) * 0.45f
                             alpha = 1f - abs(fraction) * 0.6f
                         }
-                    },
+                    }
+                    .then(if (isSelected) Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onCenterClick() } else Modifier),
                 contentAlignment = Alignment.Center,
             ) {
                 if (item != null) {
@@ -365,6 +380,7 @@ fun <T> WheelPicker(
     visibleItemsCount: Int = 3,
     initialScrollIndex: Int = 0,
     animate: Boolean = true,
+    onCenterClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
@@ -438,7 +454,11 @@ fun <T> WheelPicker(
                             scaleX = 1f + abs(fraction) * 0.45f
                             alpha = 1f - abs(fraction) * 0.6f
                         }
-                    },
+                    }
+                    .then(if (isSelected) Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { onCenterClick() } else Modifier),
                 contentAlignment = Alignment.Center,
             ) {
                 if (item != null) {

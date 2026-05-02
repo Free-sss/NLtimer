@@ -1,6 +1,7 @@
 package com.nltimer.feature.home.ui.sheet
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,32 +27,29 @@ fun TimeAdjustmentComponent(
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val adjustments = listOf("-30", "-5", "-1", "+1", "+5", "+30")
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        TimeButton(
-            text = "占位",
-            onClick = { onTimeChanged(LocalDateTime.now()) },
-        )
-
-        adjustments.forEach { text ->
-            val amount = text.toInt()
-            TimeButton(
-                text = text,
-            ) {
-                onTimeChanged(currentTime.plusMinutes(amount.toLong()))
-            }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TimeButton(text = "占位", onClick = { onTimeChanged(LocalDateTime.now()) })
+            TimeButton(text = "-15") { onTimeChanged(currentTime.plusMinutes(-15)) }
+            TimeButton(text = "-5") { onTimeChanged(currentTime.plusMinutes(-5)) }
+            TimeButton(text = "-1") { onTimeChanged(currentTime.plusMinutes(-1)) }
         }
-
-        TimeButton(
-            text = "现在",
-            onClick = { onTimeChanged(LocalDateTime.now()) },
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TimeButton(text = "现在", onClick = { onTimeChanged(LocalDateTime.now()) })
+            TimeButton(text = "+15") { onTimeChanged(currentTime.plusMinutes(15)) }
+            TimeButton(text = "+5") { onTimeChanged(currentTime.plusMinutes(5)) }
+            TimeButton(text = "+1") { onTimeChanged(currentTime.plusMinutes(1)) }
+        }
     }
 }
 
