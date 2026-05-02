@@ -130,8 +130,7 @@ private fun TimePickerSection(
     val itemHeight = 32.dp
     Column(
         modifier = modifier
-            .fillMaxHeight()
-            .animateContentSize(),
+            .fillMaxHeight(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
@@ -267,8 +266,8 @@ internal fun <T> WheelPicker(
                     Text(
                         text = item.toString(),
                         style = MaterialTheme.typography.labelMedium.copy(
-                            fontSize = if (item == selectedItem) 14.sp else 1.sp,
-                            fontWeight = if (item == selectedItem) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = if (item == selectedItem) 14.sp else 12.sp,
+//                            fontWeight = if (item == selectedItem) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) selectedColor else textColor,
                         ),
                     )
