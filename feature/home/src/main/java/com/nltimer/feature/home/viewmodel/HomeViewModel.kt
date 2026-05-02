@@ -6,6 +6,7 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
@@ -64,6 +65,10 @@ class HomeViewModel @Inject constructor(
     // 全部标签流
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
+
+    // 弹窗配置流
+    val dialogConfig: StateFlow<DialogGridConfig> = settingsPrefs.getDialogConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DialogGridConfig())
 
     // 当前选中的活动 ID（用于标签过滤）
     private var selectedActivityId: Long? = null

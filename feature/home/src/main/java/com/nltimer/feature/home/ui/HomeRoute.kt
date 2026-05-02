@@ -25,6 +25,7 @@ fun HomeRoute(
     val activityGroups by viewModel.activityGroups.collectAsState()
     val tagsForSelectedActivity by viewModel.tagsForSelectedActivity.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
+    val dialogConfig by viewModel.dialogConfig.collectAsState()
 
     // 将 LocalTime 转为毫秒时间戳后再调用 ViewModel
     HomeScreen(
@@ -33,6 +34,7 @@ fun HomeRoute(
         activityGroups = activityGroups,
         tagsForSelectedActivity = tagsForSelectedActivity,
         allTags = allTags,
+        dialogConfig = dialogConfig,
         onEmptyCellClick = viewModel::showAddSheet,
         onAddBehavior = { activityId, tagIds, startTime, nature, note ->
             val epochMillis = LocalDate.now()

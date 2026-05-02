@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.home.model.HomeUiState
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +56,7 @@ import java.time.LocalTime
  * @param onAddTag 添加标签回调
  * @param onHourClick 点击小时数回调
  * @param onLayoutChange 切换布局模式回调
+ * @param dialogConfig 弹窗配置
  * @param modifier 修饰符
  */
 @Composable
@@ -64,6 +66,7 @@ fun HomeScreen(
     activityGroups: List<ActivityGroup>,
     tagsForSelectedActivity: List<Tag>,
     allTags: List<Tag>,
+    dialogConfig: DialogGridConfig = DialogGridConfig(),
     onEmptyCellClick: () -> Unit,
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onDismissSheet: () -> Unit,
@@ -163,6 +166,7 @@ fun HomeScreen(
                 activityGroups = activityGroups,
                 tagsForActivity = tagsForSelectedActivity,
                 allTags = allTags,
+                dialogConfig = dialogConfig,
                 onDismiss = onDismissSheet,
                 onConfirm = onAddBehavior,
                 onAddActivity = onAddActivity,

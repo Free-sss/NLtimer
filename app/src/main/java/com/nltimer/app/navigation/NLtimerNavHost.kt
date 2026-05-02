@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
+import com.nltimer.feature.settings.ui.DialogConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
@@ -45,9 +46,19 @@ fun NLtimerNavHost(
             )
         }
         // 注册设置页与主题设置页路由，支持返回导航
-        composable("settings") { SettingsRoute() }
+        composable("settings") {
+            SettingsRoute(
+                onNavigateToThemeSettings = { navController.navigate("theme_settings") },
+                onNavigateToDialogConfig = { navController.navigate("dialog_config") },
+            )
+        }
         composable("theme_settings") {
             ThemeSettingsRoute(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable("dialog_config") {
+            DialogConfigRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }

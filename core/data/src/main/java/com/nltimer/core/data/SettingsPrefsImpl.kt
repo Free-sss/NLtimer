@@ -8,31 +8,33 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.Fonts
+import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
+import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.designsystem.theme.Theme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 /**
  * SettingsPrefsImpl 偏好设置实现类
- * 基于 DataStore Preferences 持久化存储主题与标签分类配置
+ * 基于 DataStore Preferences 持久化存储主题、标签分类与弹窗配置
  *
  * @param dataStore DataStore 偏好存储实例
  */
 class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : SettingsPrefs {
 
     override fun getThemeFlow(): Flow<Theme> = dataStore.data.map { prefs ->
-        // 读取各主题属性，缺失时用默认值
         val seed = prefs[seedColorKey] ?: Color(0xFF1565C0).toArgb()
         val appThemeName = prefs[appThemeKey] ?: AppTheme.SYSTEM.name
         val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.TONALSPOT.name
         val fontName = prefs[fontKey] ?: Fonts.FIGTREE.name
         val homeLayoutName = prefs[homeLayoutKey] ?: HomeLayout.GRID.name
 
-        // 拼装 Theme 对象，枚举字段解析失败时回退默认值
         Theme(
             seedColor = Color(seed),
             appTheme = try { AppTheme.valueOf(appThemeName) } catch (_: Exception) { AppTheme.SYSTEM },
@@ -46,7 +48,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     override suspend fun updateTheme(theme: Theme) {
-        // 将 Theme 对象的每个属性写入 DataStore
         dataStore.edit { prefs ->
             prefs[seedColorKey] = theme.seedColor.toArgb()
             prefs[appThemeKey] = theme.appTheme.name
@@ -60,20 +61,51 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     override fun getSavedTagCategories(): Flow<Set<String>> = dataStore.data.map { prefs ->
-        // 读取逗号分隔的原始字符串，空字符串返回空集合
         val raw = prefs[savedTagCategoriesKey] ?: ""
         if (raw.isBlank()) emptySet() else raw.split(",").toSet()
     }
 
     override suspend fun saveTagCategories(categories: Set<String>) {
-        // 将集合以逗号连接后写入 DataStore
         dataStore.edit { prefs ->
             prefs[savedTagCategoriesKey] = categories.joinToString(",")
         }
     }
 
+    override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dataStore.data.map { prefs ->
+        DialogGridConfig(
+            activityDisplayMode = try { ChipDisplayMode.valueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: Exception) { ChipDisplayMode.Filled },
+            activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: Exception) { GridLayoutMode.Horizontal },
+            activityColumnLines = prefs[actColumnLinesKey] ?: 2,
+            activityHorizontalLines = prefs[actHorizontalLinesKey] ?: 2,
+            activityUseColorForText = prefs[actUseColorKey] ?: true,
+            tagDisplayMode = try { ChipDisplayMode.valueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: Exception) { ChipDisplayMode.Filled },
+            tagLayoutMode = try { GridLayoutMode.valueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: Exception) { GridLayoutMode.Horizontal },
+            tagColumnLines = prefs[tagColumnLinesKey] ?: 2,
+            tagHorizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
+            tagUseColorForText = prefs[tagUseColorKey] ?: true,
+            showBehaviorNature = prefs[showNatureKey] ?: true,
+            pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: Exception) { PathDrawMode.StartToEnd },
+        )
+    }
+
+    override suspend fun updateDialogConfig(config: DialogGridConfig) {
+        dataStore.edit { prefs ->
+            prefs[actDisplayModeKey] = config.activityDisplayMode.name
+            prefs[actLayoutModeKey] = config.activityLayoutMode.name
+            prefs[actColumnLinesKey] = config.activityColumnLines
+            prefs[actHorizontalLinesKey] = config.activityHorizontalLines
+            prefs[actUseColorKey] = config.activityUseColorForText
+            prefs[tagDisplayModeKey] = config.tagDisplayMode.name
+            prefs[tagLayoutModeKey] = config.tagLayoutMode.name
+            prefs[tagColumnLinesKey] = config.tagColumnLines
+            prefs[tagHorizontalLinesKey] = config.tagHorizontalLines
+            prefs[tagUseColorKey] = config.tagUseColorForText
+            prefs[showNatureKey] = config.showBehaviorNature
+            prefs[pathDrawModeKey] = config.pathDrawMode.name
+        }
+    }
+
     companion object {
-        // DataStore 偏好键定义
         private val seedColorKey = intPreferencesKey("seed_color")
         private val appThemeKey = stringPreferencesKey("app_theme")
         private val isAmoledKey = booleanPreferencesKey("is_amoled")
@@ -83,5 +115,18 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val showBordersKey = booleanPreferencesKey("show_borders")
         private val homeLayoutKey = stringPreferencesKey("home_layout")
         private val savedTagCategoriesKey = stringPreferencesKey("saved_tag_categories")
+
+        private val actDisplayModeKey = stringPreferencesKey("act_display_mode")
+        private val actLayoutModeKey = stringPreferencesKey("act_layout_mode")
+        private val actColumnLinesKey = intPreferencesKey("act_column_lines")
+        private val actHorizontalLinesKey = intPreferencesKey("act_horizontal_lines")
+        private val actUseColorKey = booleanPreferencesKey("act_use_color")
+        private val tagDisplayModeKey = stringPreferencesKey("tag_display_mode")
+        private val tagLayoutModeKey = stringPreferencesKey("tag_layout_mode")
+        private val tagColumnLinesKey = intPreferencesKey("tag_column_lines")
+        private val tagHorizontalLinesKey = intPreferencesKey("tag_horizontal_lines")
+        private val tagUseColorKey = booleanPreferencesKey("tag_use_color")
+        private val showNatureKey = booleanPreferencesKey("show_nature_selector")
+        private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
     }
 }

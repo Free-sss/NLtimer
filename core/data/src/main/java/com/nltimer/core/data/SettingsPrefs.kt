@@ -1,11 +1,12 @@
 package com.nltimer.core.data
 
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.Theme
 import kotlinx.coroutines.flow.Flow
 
 /**
  * SettingsPrefs 用户偏好设置接口
- * 提供主题配置和标签分类的持久化读写能力
+ * 提供主题配置、标签分类和弹窗配置的持久化读写能力
  */
 interface SettingsPrefs {
     /** 以 Flow 形式监听当前主题设置 */
@@ -17,4 +18,9 @@ interface SettingsPrefs {
     fun getSavedTagCategories(): Flow<Set<String>>
     /** 保存标签分类列表到持久化存储 */
     suspend fun saveTagCategories(categories: Set<String>)
+
+    /** 以 Flow 形式监听弹窗配置 */
+    fun getDialogConfigFlow(): Flow<DialogGridConfig>
+    /** 更新弹窗配置并持久化 */
+    suspend fun updateDialogConfig(config: DialogGridConfig)
 }
