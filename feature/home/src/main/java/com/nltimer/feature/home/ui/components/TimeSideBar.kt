@@ -6,9 +6,10 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
@@ -61,13 +63,16 @@ fun TimeSideBar(
         derivedStateOf { with(density) { bubbleY.toDp() } - 24.dp }
     }
 
+    val currentDisplayedHours by rememberUpdatedState(displayedHours)
+
     // 浮动气泡显示当前拖拽到的小时
     Box(modifier = modifier.width(20.dp)) {
         if (showBubble) {
             Box(
                 modifier = Modifier
                     .offset(x = (-52).dp, y = bubbleOffsetY)
-                    .size(48.dp)
+                    .requiredWidth(48.dp)
+                    .height(48.dp)
                     .background(
                         MaterialTheme.colorScheme.primary,
                         RoundedCornerShape(12.dp),
@@ -99,24 +104,24 @@ fun TimeSideBar(
                     }
                 }
                 // 垂直拖拽手势：拖动时更新气泡位置并触发 onHourClick
-                .pointerInput(displayedHours) {
+                .pointerInput(activeHours) {
                     detectVerticalDragGestures(
                         onDragStart = { offset ->
                             bubbleY = offset.y
-                            val index = (offset.y / size.height * displayedHours.size)
+                            val index = (offset.y / size.height * currentDisplayedHours.size)
                                 .toInt()
-                                .coerceIn(0, displayedHours.lastIndex)
-                            bubbleHour = displayedHours[index]
+                                .coerceIn(0, currentDisplayedHours.lastIndex)
+                            bubbleHour = currentDisplayedHours[index]
                             showBubble = true
                             onHourClick(bubbleHour)
                         },
                         onVerticalDrag = { change, dragAmount ->
                             change.consume()
                             bubbleY = (bubbleY + dragAmount).coerceIn(0f, size.height.toFloat())
-                            val index = (bubbleY / size.height * displayedHours.size)
+                            val index = (bubbleY / size.height * currentDisplayedHours.size)
                                 .toInt()
-                                .coerceIn(0, displayedHours.lastIndex)
-                            val hour = displayedHours[index]
+                                .coerceIn(0, currentDisplayedHours.lastIndex)
+                            val hour = currentDisplayedHours[index]
                             if (hour != bubbleHour) {
                                 bubbleHour = hour
                                 onHourClick(hour)
@@ -135,7 +140,7 @@ fun TimeSideBar(
                 val isCurrent = hour == currentHour
 
                 Text(
-                    modifier = modifier.clickable{onHourClick(hour)},
+                    modifier = Modifier.clickable { onHourClick(hour) },
                     text = hour.toString(),
                     color = when {
                         isCurrent -> MaterialTheme.colorScheme.tertiary

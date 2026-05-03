@@ -695,7 +695,7 @@ private fun ActivityRecordCombinedSheet(
                             functionChipIcon = {
                                 Icon(
                                     Icons.Default.Settings,
-                                    contentDescription = "活动管理",
+                                    contentDescription = "活动",
                                     modifier = Modifier.size(14.dp),
                                 )
                             },
@@ -715,7 +715,7 @@ private fun ActivityRecordCombinedSheet(
                             functionChipIcon = {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Label,
-                                    contentDescription = "标签管理",
+                                    contentDescription = "标签",
                                     modifier = Modifier.size(14.dp),
                                 )
                             },
