@@ -4,6 +4,7 @@ import android.graphics.PathMeasure as AndroidPathMeasure
 import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -57,6 +58,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
@@ -200,6 +202,17 @@ internal fun AddBehaviorSheetContent(
 
     val context = LocalContext.current
     var isDragging by remember { mutableStateOf(false) }
+
+    val blurRadius by animateDpAsState(
+        targetValue = if (showTimeAdjustments) 8.dp else 0.dp,
+        animationSpec = tween(durationMillis = 300),
+        label = "blur_animation"
+    )
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (showTimeAdjustments) 0.7f else 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "alpha_animation"
+    )
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var hoveredOption by remember { mutableStateOf<String?>(null) }
     val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
@@ -387,6 +400,7 @@ internal fun AddBehaviorSheetContent(
                                 } else Modifier
                             )
                     ) {
+                        // Feedback window (Clear)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -436,159 +450,166 @@ internal fun AddBehaviorSheetContent(
                             }
                         }
 
-                        ActivityGridComponent(
-                            chips = activityChips,
-                            onChipClick = { id ->
-                                selectedActivityId = id
-                            },
-                            selectedId = selectedActivityId,
-                            displayMode = dialogConfig.activityDisplayMode,
-                            layoutMode = dialogConfig.activityLayoutMode,
-                            maxLinesPerColumn = dialogConfig.activityColumnLines,
-                            maxLinesHorizontal = horizontalLinesForActivities,
-                            useActivityColorForText = dialogConfig.activityUseColorForText,
-                            functionChipLabel = "活动管理",
-                            functionChipIcon = {
-                                Icon(
-                                    Icons.Default.Settings,
-                                    contentDescription = "活动管理",
-                                    modifier = Modifier.size(14.dp),
-                                )
-                            },
-                            functionChipOnClick = { showAddActivityDialog = true },
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ActivityGridComponent(
-                            chips = tagChips,
-                            onChipClick = { tagId ->
-                                selectedTagIds = if (tagId in selectedTagIds) {
-                                    selectedTagIds - tagId
-                                } else {
-                                    selectedTagIds + tagId
-                                }
-                            },
-                            selectedIds = selectedTagIds,
-                            multiSelect = true,
-                            displayMode = dialogConfig.tagDisplayMode,
-                            layoutMode = dialogConfig.tagLayoutMode,
-                            maxLinesPerColumn = dialogConfig.tagColumnLines,
-                            maxLinesHorizontal = horizontalLinesForTags,
-                            useActivityColorForText = dialogConfig.tagUseColorForText,
-                            functionChipLabel = "标签管理",
-                            functionChipIcon = {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.Label,
-                                    contentDescription = "标签管理",
-                                    modifier = Modifier.size(14.dp),
-                                )
-                            },
-                            functionChipOnClick = { showAddTagDialog = true },
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        NoteInputComponent(
-                            note = note,
-                            onNoteChange = { note = it },
-                            onTopButton = { },
-                            onBottomButton = { },
-                        )
-
-
-
-                        Row(
+                        // Blurred Content
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .onGloballyPositioned {
-                                    buttonRowPositionInWindow = it.positionInWindow()
-                                },
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                                .blur(blurRadius)
+                                .graphicsLayer {
+                                    alpha = contentAlpha
+                                }
                         ) {
-                            var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
-                            TextButton(
-                                onClick = onDismiss,
-                                modifier = Modifier
-                                    .weight(2f)
-                                    .height(40.dp)
-                                    .onGloballyPositioned { layoutCoordinates ->
-                                        buttonPositionInWindow =
-                                            layoutCoordinates.positionInWindow()
-                                    }
-                                    .offset {
-                                        IntOffset(
-                                            dragOffset.x.roundToInt(),
-                                            dragOffset.y.roundToInt()
-                                        )
-                                    }
-                                    .pointerInput(Unit) {
-                                        detectDragGestures(
-                                            onDragStart = {
-                                                isDragging = true
-                                            },
-                                            onDragEnd = {
-                                                if (hoveredOption != null) {
-                                                    Toast.makeText(
-                                                        context,
-                                                        "触发功能: $hoveredOption",
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
-                                                isDragging = false
-                                                dragOffset = Offset.Zero
-                                                hoveredOption = null
-                                            },
-                                            onDragCancel = {
-                                                isDragging = false
-                                                dragOffset = Offset.Zero
-                                                hoveredOption = null
-                                            },
-                                            onDrag = { change, dragAmount ->
-                                                change.consume()
-                                                dragOffset += dragAmount
-
-                                                val currentPointerPosition =
-                                                    buttonPositionInWindow + dragOffset + change.position
-                                                val hit =
-                                                    optionsLayoutBounds.entries.find { entry ->
-                                                        entry.value.contains(currentPointerPosition)
-                                                    }?.key
-                                                if (hit != hoveredOption) {
-                                                    hoveredOption = hit
-                                                }
-                                            }
-                                        )
-                                    },
-                            ) {
-                                Text(
-                                    "取消",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontSize = 14.sp
-                                )
-                            }
-                            Button(
-                                onClick = {
-                                    selectedActivityId?.let { activityId ->
-                                        onConfirm(
-                                            activityId,
-                                            selectedTagIds.toList(),
-                                            startTime.toLocalTime(),
-                                            nature,
-                                            note.ifBlank { null }
-                                        )
+                            ActivityGridComponent(
+                                chips = activityChips,
+                                onChipClick = { id ->
+                                    selectedActivityId = id
+                                },
+                                selectedId = selectedActivityId,
+                                displayMode = dialogConfig.activityDisplayMode,
+                                layoutMode = dialogConfig.activityLayoutMode,
+                                maxLinesPerColumn = dialogConfig.activityColumnLines,
+                                maxLinesHorizontal = horizontalLinesForActivities,
+                                useActivityColorForText = dialogConfig.activityUseColorForText,
+                                functionChipLabel = "活动管理",
+                                functionChipIcon = {
+                                    Icon(
+                                        Icons.Default.Settings,
+                                        contentDescription = "活动管理",
+                                        modifier = Modifier.size(14.dp),
+                                    )
+                                },
+                                functionChipOnClick = { showAddActivityDialog = true },
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            ActivityGridComponent(
+                                chips = tagChips,
+                                onChipClick = { tagId ->
+                                    selectedTagIds = if (tagId in selectedTagIds) {
+                                        selectedTagIds - tagId
+                                    } else {
+                                        selectedTagIds + tagId
                                     }
                                 },
-                                shape = RoundedCornerShape(24.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                                selectedIds = selectedTagIds,
+                                multiSelect = true,
+                                displayMode = dialogConfig.tagDisplayMode,
+                                layoutMode = dialogConfig.tagLayoutMode,
+                                maxLinesPerColumn = dialogConfig.tagColumnLines,
+                                maxLinesHorizontal = horizontalLinesForTags,
+                                useActivityColorForText = dialogConfig.tagUseColorForText,
+                                functionChipLabel = "标签管理",
+                                functionChipIcon = {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.Label,
+                                        contentDescription = "标签管理",
+                                        modifier = Modifier.size(14.dp),
+                                    )
+                                },
+                                functionChipOnClick = { showAddTagDialog = true },
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
 
+                            NoteInputComponent(
+                                note = note,
+                                onNoteChange = { note = it },
+                                onTopButton = { },
+                                onBottomButton = { },
+                            )
+
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .height(40.dp),
-                                enabled = selectedActivityId != null,
+                                    .fillMaxWidth()
+                                    .onGloballyPositioned {
+                                        buttonRowPositionInWindow = it.positionInWindow()
+                                    },
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+                                TextButton(
+                                    onClick = onDismiss,
+                                    modifier = Modifier
+                                        .weight(2f)
+                                        .height(40.dp)
+                                        .onGloballyPositioned { layoutCoordinates ->
+                                            buttonPositionInWindow =
+                                                layoutCoordinates.positionInWindow()
+                                        }
+                                        .offset {
+                                            IntOffset(
+                                                dragOffset.x.roundToInt(),
+                                                dragOffset.y.roundToInt()
+                                            )
+                                        }
+                                        .pointerInput(Unit) {
+                                            detectDragGestures(
+                                                onDragStart = {
+                                                    isDragging = true
+                                                },
+                                                onDragEnd = {
+                                                    if (hoveredOption != null) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "触发功能: $hoveredOption",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+                                                    isDragging = false
+                                                    dragOffset = Offset.Zero
+                                                    hoveredOption = null
+                                                },
+                                                onDragCancel = {
+                                                    isDragging = false
+                                                    dragOffset = Offset.Zero
+                                                    hoveredOption = null
+                                                },
+                                                onDrag = { change, dragAmount ->
+                                                    change.consume()
+                                                    dragOffset += dragAmount
+
+                                                    val currentPointerPosition =
+                                                        buttonPositionInWindow + dragOffset + change.position
+                                                    val hit =
+                                                        optionsLayoutBounds.entries.find { entry ->
+                                                            entry.value.contains(currentPointerPosition)
+                                                        }?.key
+                                                    if (hit != hoveredOption) {
+                                                        hoveredOption = hit
+                                                    }
+                                                }
+                                            )
+                                        },
+                                ) {
+                                    Text(
+                                        "取消",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        selectedActivityId?.let { activityId ->
+                                            onConfirm(
+                                                activityId,
+                                                selectedTagIds.toList(),
+                                                startTime.toLocalTime(),
+                                                nature,
+                                                note.ifBlank { null }
+                                            )
+                                        }
+                                    },
+                                    shape = RoundedCornerShape(24.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(40.dp),
+                                    enabled = selectedActivityId != null,
+                                ) {
+                                    Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                }
                             }
                         }
-//                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
