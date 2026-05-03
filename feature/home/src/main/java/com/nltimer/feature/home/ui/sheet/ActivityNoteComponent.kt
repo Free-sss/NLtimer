@@ -60,7 +60,7 @@ fun NoteInputComponent(
                 modifier = Modifier
                     .weight(1f)
                     .height(110.dp)
-                    .background(backgroundColor, RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 BasicTextField(
@@ -79,19 +79,21 @@ fun NoteInputComponent(
                                 fontSize = 9.sp,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .offset(y = (-6).dp, x = 8.dp)
+                                    .offset(y = (-12).dp, x = 8.dp)
                             )
 
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(top = 4.dp)
+                                
                             ) {
                                 if (note.isEmpty()) {
                                     Text(
-                                        "请输入备注",
-                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                        text = "请输入备注",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
                                         fontSize = 14.sp,
+                                        modifier = Modifier.offset(y = (-4).dp),
                                     )
                                 }
                                 innerTextField()

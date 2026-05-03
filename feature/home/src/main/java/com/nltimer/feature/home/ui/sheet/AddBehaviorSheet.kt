@@ -459,7 +459,9 @@ internal fun AddBehaviorSheetContent(
                                     alpha = contentAlpha
                                 }
                         ) {
+                            Spacer(modifier = Modifier.height(1.dp))
                             ActivityGridComponent(
+
                                 chips = activityChips,
                                 onChipClick = { id ->
                                     selectedActivityId = id
@@ -701,6 +703,7 @@ internal fun AddBehaviorSheetContent(
     }
 
     if (showAddActivityDialog) {
+        // Todo 待完善增加活动弹窗 以及绑定数据
         AddActivityDialog(
             onDismiss = { showAddActivityDialog = false },
             onConfirm = { name, emoji ->
@@ -711,6 +714,7 @@ internal fun AddBehaviorSheetContent(
     }
 
     if (showAddTagDialog) {
+        // Todo 待完善增加标签弹窗 以及绑定数据
         AddTagDialog(
             onDismiss = { showAddTagDialog = false },
             onConfirm = { name ->

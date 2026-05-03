@@ -74,7 +74,7 @@ private fun HorizontalScrollView(
     content: @Composable () -> Unit,
 ) {
     Box(
-        modifier = modifier.horizontalScroll(rememberScrollState()),
+        modifier = modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 4.dp),
     ) {
         content()
     }
@@ -167,7 +167,7 @@ fun ActivityGridComponent(
 ) {
     val onContentColor = MaterialTheme.colorScheme.onSecondaryContainer
     val labelWidth = 64.dp
-    val functionChipSpacing = 4.dp
+    val functionChipSpacing = 3.dp
 
     if (layoutMode == GridLayoutMode.Vertical) {
         Row(
@@ -436,7 +436,7 @@ internal fun FunctionChip(
         border = BorderStroke(1.dp, borderColor),
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(start = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (icon != null) {
