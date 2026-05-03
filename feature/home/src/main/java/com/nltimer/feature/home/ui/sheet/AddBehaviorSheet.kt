@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -124,7 +125,7 @@ fun AddBehaviorSheet(
         scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f),
     ) {
         AddBehaviorSheetContent(
-            modifier = modifier,
+            modifier = modifier.imePadding(),
             activities = activities,
             allTags = allTags,
             dialogConfig = dialogConfig,
@@ -242,7 +243,7 @@ internal fun AddBehaviorSheetContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 30.dp)
+                    .padding(bottom = 0.dp)
                     .graphicsLayer { clip = false }
                     .drawWithContent {
                         drawContent()
@@ -382,7 +383,6 @@ internal fun AddBehaviorSheetContent(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .navigationBarsPadding()
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 8.dp)
                             .then(
@@ -583,7 +583,7 @@ internal fun AddBehaviorSheetContent(
                                         },
                                 ) {
                                     Text(
-                                        "取消",
+                                        "Gesture",
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontSize = 14.sp
                                     )
@@ -611,6 +611,7 @@ internal fun AddBehaviorSheetContent(
                                     Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
                                 }
                             }
+                            Spacer(modifier = Modifier.height(30.dp))
                         }
                     }
                 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,7 +60,7 @@ fun NoteInputComponent(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .height(110.dp)
+                    .height(99.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(12.dp))
                     .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
@@ -105,7 +106,7 @@ fun NoteInputComponent(
             Spacer(modifier = Modifier.width(8.dp))
 
             Column(
-                modifier = Modifier.height(110.dp),
+                modifier = Modifier.height(99.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 ActionIconButton(
