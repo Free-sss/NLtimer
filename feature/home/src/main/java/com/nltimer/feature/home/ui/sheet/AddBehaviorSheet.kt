@@ -598,14 +598,14 @@ internal fun AddBehaviorSheetContent(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = 12.dp)
                     .offset {
                         IntOffset(
                             0,
-                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 60.dp.toPx()).roundToInt()
+                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 50.dp.toPx()).roundToInt()
                         )
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 TimeAdjustmentCard(
                     currentTime = startTime,
@@ -707,15 +707,15 @@ private fun TimeAdjustmentCard(
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-        tonalElevation = 6.dp,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        tonalElevation = 4.dp,
         shadowElevation = 8.dp,
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             TimeAdjustmentComponent(
