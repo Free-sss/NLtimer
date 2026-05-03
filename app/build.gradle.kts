@@ -14,6 +14,9 @@ android {
         applicationId = APP_ID
         versionCode = APP_VERSION_CODE.toInt()
         versionName = APP_VERSION_NAME
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
     }
 
     buildTypes {
@@ -22,6 +25,10 @@ android {
         val releaseKeystorePassword = localProperties.getProperty("keystore.password", System.getenv("KEYSTORE_PASSWORD") ?: "")
         val releaseKeyAlias = localProperties.getProperty("key.alias", System.getenv("KEY_ALIAS") ?: "")
         val releaseKeyPassword = localProperties.getProperty("key.password", System.getenv("KEY_PASSWORD") ?: "")
+
+        getByName("debug") {
+            isDebuggable = true
+        }
 
         getByName("release") {
             isMinifyEnabled = true

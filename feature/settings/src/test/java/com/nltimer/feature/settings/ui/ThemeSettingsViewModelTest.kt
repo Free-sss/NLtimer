@@ -2,6 +2,7 @@ package com.nltimer.feature.settings.ui
 
 import androidx.compose.ui.graphics.Color
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.HomeLayout
@@ -128,5 +129,12 @@ class ThemeSettingsViewModelTest {
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
         override suspend fun saveTagCategories(categories: Set<String>) {}
+        override fun getDialogConfigFlow(): Flow<DialogGridConfig> {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun updateDialogConfig(config: DialogGridConfig) {
+            TODO("Not yet implemented")
+        }
     }
 }

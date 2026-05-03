@@ -1,6 +1,7 @@
 package com.nltimer.feature.categories.viewmodel
 
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.repository.CategoryRepository
 import com.nltimer.feature.categories.model.DialogState
 import com.nltimer.feature.categories.model.SectionType
@@ -306,6 +307,14 @@ class CategoriesViewModelTest {
         override suspend fun saveTagCategories(categories: Set<String>) {
             saveTagCategoriesCalled = true
             lastSavedTagCategories = categories
+        }
+
+        override fun getDialogConfigFlow(): Flow<DialogGridConfig> {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun updateDialogConfig(config: DialogGridConfig) {
+            TODO("Not yet implemented")
         }
     }
 
