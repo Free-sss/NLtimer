@@ -78,7 +78,7 @@ fun GridCell(
     ) {
         // 显示活动 emoji
         cell.activityEmoji?.let { emoji ->
-            Text(text = emoji, style = MaterialTheme.typography.headlineMedium)
+            Text(text = emoji, style = MaterialTheme.typography.labelSmall)
         }
         // 显示活动名称（单行省略）
         cell.activityName?.let { name ->

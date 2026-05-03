@@ -49,4 +49,5 @@ fun AppTheme.toDisplayString(): String = when (this) {
 fun HomeLayout.toDisplayString(): String = when (this) {
     HomeLayout.GRID -> "网格时间"
     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
+    HomeLayout.LOG -> "行为日志"
 }

@@ -190,6 +190,7 @@ class HomeViewModel @Inject constructor(
                 startTime = startLocal,
                 endTime = endLocal,
                 note = behavior.note,
+                pomodoroCount = behavior.pomodoroCount,
             )
         }
 

@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.feature.home.ui.components.BehaviorLogView
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.TagUiState
@@ -129,32 +130,41 @@ fun HomeScreen(
                 ,
             ) {
                 // 网格模式：左侧时间轴网格 + 右侧小时侧边栏
-                if (layout == HomeLayout.GRID) {
-                    Row(modifier = Modifier.weight(1f)) {
-                        TimeAxisGrid(
-                            rows = uiState.rows,
-                            onEmptyCellClick = onEmptyCellClick,
-                            currentHour = uiState.selectedTimeHour,
+                when (layout) {
+                    HomeLayout.GRID -> {
+                        Row(modifier = Modifier.weight(1f)) {
+                            TimeAxisGrid(
+                                rows = uiState.rows,
+                                onEmptyCellClick = onEmptyCellClick,
+                                currentHour = uiState.selectedTimeHour,
+                                onLayoutChange = onLayoutChange,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TimeSideBar(
+                                activeHours = uiState.rows
+                                    .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
+                                    .map { it.startTime.hour }
+                                    .toSet(),
+                                currentHour = uiState.selectedTimeHour,
+                                onHourClick = onHourClick,
+                            )
+                        }
+                    }
+                    HomeLayout.TIMELINE_REVERSE -> {
+                        TimelineReverseView(
+                            cells = uiState.rows.flatMap { it.cells },
+                            onAddClick = onEmptyCellClick,
                             onLayoutChange = onLayoutChange,
-                            modifier = Modifier.weight(1f),
-                        )
-                        TimeSideBar(
-                            activeHours = uiState.rows
-                                .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
-                                .map { it.startTime.hour }
-                                .toSet(),
-                            currentHour = uiState.selectedTimeHour,
-                            onHourClick = onHourClick,
+                            modifier = Modifier.weight(1f)
                         )
                     }
-                // 时间线倒序模式：纵向时间线展示
-                } else {
-                    TimelineReverseView(
-                        cells = uiState.rows.flatMap { it.cells },
-                        onAddClick = onEmptyCellClick,
-                        onLayoutChange = onLayoutChange,
-                        modifier = Modifier.weight(1f)
-                    )
+                    HomeLayout.LOG -> {
+                        BehaviorLogView(
+                            cells = uiState.rows.flatMap { it.cells },
+                            onLayoutChange = onLayoutChange,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
