@@ -62,7 +62,7 @@ fun TimeSideBar(
     }
 
     // 浮动气泡显示当前拖拽到的小时
-    Box(modifier = modifier.width(40.dp)) {
+    Box(modifier = modifier.width(20.dp)) {
         if (showBubble) {
             Box(
                 modifier = Modifier
@@ -77,8 +77,8 @@ fun TimeSideBar(
                 Text(
                     text = "${bubbleHour}:00",
                     color = MaterialTheme.colorScheme.onPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal,
                 )
             }
         }

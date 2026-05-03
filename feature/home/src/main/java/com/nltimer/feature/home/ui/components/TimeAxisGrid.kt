@@ -62,7 +62,7 @@ fun TimeAxisGrid(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.padding(start = 10.dp, end = 16.dp, top = 16.dp),
+        modifier = modifier.padding(start = 10.dp, end = 0.dp, top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         // 标题行：显示"网格时间"且可点开布局切换菜单

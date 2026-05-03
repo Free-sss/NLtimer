@@ -611,7 +611,7 @@ internal fun AddBehaviorSheetContent(
                                     Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
                                 }
                             }
-                            Spacer(modifier = Modifier.height(30.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                         }
                     }
                 }
