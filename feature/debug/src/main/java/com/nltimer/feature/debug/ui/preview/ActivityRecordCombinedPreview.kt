@@ -671,10 +671,10 @@ private fun ActivityRecordCombinedSheet(
                                 ),
                             )
                         }
-                        TimeAdjustmentComponent(
-                            currentTime = localStartTime,
-                            onTimeChanged = { localStartTime = it }
-                        )
+//                        TimeAdjustmentComponent(
+//                            currentTime = localStartTime,
+//                            onTimeChanged = { localStartTime = it }
+//                        )
                         Spacer(modifier = Modifier.height(8.dp))
                         DualTimePicker(
                             startTime = localStartTime,
@@ -682,10 +682,10 @@ private fun ActivityRecordCombinedSheet(
                             onDurationChanged = { duration = it }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        TimeAdjustmentComponent(
-                            currentTime = localEndTime,
-                            onTimeChanged = { localEndTime = it }
-                        )
+//                        TimeAdjustmentComponent(
+//                            currentTime = localEndTime,
+//                            onTimeChanged = { localEndTime = it }
+//                        )
                         Spacer(modifier = Modifier.height(16.dp))
 
                         ActivityGridComponent(

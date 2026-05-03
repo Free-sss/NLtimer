@@ -37,18 +37,18 @@ fun TimeAdjustmentComponent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TimeButton(text = "占位", onClick = { onTimeChanged(LocalDateTime.now()) })
-            TimeButton(text = "-15") { onTimeChanged(currentTime.plusMinutes(-15)) }
-            TimeButton(text = "-5") { onTimeChanged(currentTime.plusMinutes(-5)) }
             TimeButton(text = "-1") { onTimeChanged(currentTime.plusMinutes(-1)) }
+            TimeButton(text = "-5") { onTimeChanged(currentTime.plusMinutes(-5)) }
+            TimeButton(text = "-15") { onTimeChanged(currentTime.plusMinutes(-15)) }
         }
         Row(
             horizontalArrangement = Arrangement.spacedBy(1.dp, Alignment.CenterHorizontally),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             TimeButton(text = "现在", onClick = { onTimeChanged(LocalDateTime.now()) })
-            TimeButton(text = "+15") { onTimeChanged(currentTime.plusMinutes(15)) }
-            TimeButton(text = "+5") { onTimeChanged(currentTime.plusMinutes(5)) }
             TimeButton(text = "+1") { onTimeChanged(currentTime.plusMinutes(1)) }
+            TimeButton(text = "+5") { onTimeChanged(currentTime.plusMinutes(5)) }
+            TimeButton(text = "+15") { onTimeChanged(currentTime.plusMinutes(15)) }
         }
     }
 }

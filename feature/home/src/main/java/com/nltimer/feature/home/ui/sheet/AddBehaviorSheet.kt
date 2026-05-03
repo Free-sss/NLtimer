@@ -607,43 +607,17 @@ internal fun AddBehaviorSheetContent(
                     },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
+                TimeAdjustmentCard(
+                    currentTime = startTime,
+                    onTimeChanged = { startTime = it },
                     modifier = Modifier.weight(1f)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        TimeAdjustmentComponent(
-                            currentTime = startTime,
-                            onTimeChanged = { startTime = it }
-                        )
-                    }
-                }
+                )
 
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
+                TimeAdjustmentCard(
+                    currentTime = endTime,
+                    onTimeChanged = { endTime = it },
                     modifier = Modifier.weight(1f)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        TimeAdjustmentComponent(
-                            currentTime = endTime,
-                            onTimeChanged = { endTime = it }
-                        )
-                    }
-                }
+                )
             }
         }
 
@@ -723,6 +697,32 @@ internal fun AddBehaviorSheetContent(
                 showAddTagDialog = false
             },
         )
+    }
+}
+
+@Composable
+private fun TimeAdjustmentCard(
+    currentTime: LocalDateTime,
+    onTimeChanged: (LocalDateTime) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+        tonalElevation = 6.dp,
+        shadowElevation = 8.dp,
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            TimeAdjustmentComponent(
+                currentTime = currentTime,
+                onTimeChanged = onTimeChanged
+            )
+        }
     }
 }
 
