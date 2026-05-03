@@ -165,7 +165,7 @@ fun ActivityGridComponent(
     useActivityColorForText: Boolean = true,
     multiSelect: Boolean = false,
 ) {
-    val onContentColor = MaterialTheme.colorScheme.onSecondaryContainer
+    val onContentColor = MaterialTheme.colorScheme.secondary
     val labelWidth = 64.dp
     val functionChipSpacing = 3.dp
 

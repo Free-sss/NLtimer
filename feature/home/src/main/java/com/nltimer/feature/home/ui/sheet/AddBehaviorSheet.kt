@@ -472,7 +472,7 @@ internal fun AddBehaviorSheetContent(
                                 maxLinesPerColumn = dialogConfig.activityColumnLines,
                                 maxLinesHorizontal = horizontalLinesForActivities,
                                 useActivityColorForText = dialogConfig.activityUseColorForText,
-                                functionChipLabel = "活动管理",
+                                functionChipLabel = "活动",
                                 functionChipIcon = {
                                     Icon(
                                         Icons.Default.Settings,
@@ -499,7 +499,7 @@ internal fun AddBehaviorSheetContent(
                                 maxLinesPerColumn = dialogConfig.tagColumnLines,
                                 maxLinesHorizontal = horizontalLinesForTags,
                                 useActivityColorForText = dialogConfig.tagUseColorForText,
-                                functionChipLabel = "标签管理",
+                                functionChipLabel = "标签",
                                 functionChipIcon = {
                                     Icon(
                                         Icons.AutoMirrored.Filled.Label,

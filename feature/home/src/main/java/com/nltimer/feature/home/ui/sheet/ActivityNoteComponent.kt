@@ -121,7 +121,7 @@ fun NoteInputComponent(
                     label = "占位拓展",
                     onClick = onBottomButton,
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                 )
             }
         }
