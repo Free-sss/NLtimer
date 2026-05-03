@@ -602,7 +602,7 @@ internal fun AddBehaviorSheetContent(
                     .offset {
                         IntOffset(
                             0,
-                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 50.dp.toPx()).roundToInt()
+                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 90.dp.toPx()).roundToInt()
                         )
                     },
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
