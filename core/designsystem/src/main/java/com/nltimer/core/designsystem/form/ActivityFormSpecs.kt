@@ -1,11 +1,7 @@
-package com.nltimer.feature.debug.ui.preview
-
-import com.nltimer.core.designsystem.form.FormRow
-import com.nltimer.core.designsystem.form.FormSection
-import com.nltimer.core.designsystem.form.FormSpec
+package com.nltimer.core.designsystem.form
 
 object ActivityFormSpecs {
-    val create = FormSpec(
+    val createActivity = FormSpec(
         title = "增加活动",
         submitLabel = "增加活动",
         sections = listOf(
@@ -36,7 +32,7 @@ object ActivityFormSpecs {
     fun editActivity() = FormSpec(
         title = "编辑活动",
         submitLabel = "保存",
-        sections = create.sections + FormSection(
+        sections = createActivity.sections + FormSection(
             rows = listOf(
                 FormRow.Switch(key = "isArchived", label = "归档"),
             ),

@@ -7,48 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
-import com.nltimer.core.designsystem.form.FormSection
-import com.nltimer.core.designsystem.form.FormSpec
 import com.nltimer.core.designsystem.form.GenericFormSheet
-
-private val createSpec = FormSpec(
-    title = "增加活动",
-    submitLabel = "增加活动",
-    sections = listOf(
-        FormSection(
-            rows = listOf(
-                FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "📖"),
-            ),
-        ),
-        FormSection(
-            rows = listOf(
-                FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入"),
-                FormRow.TextInput(key = "note", label = "备注", placeholder = "请输入"),
-            ),
-        ),
-        FormSection(
-            rows = listOf(
-                FormRow.LabelAction(key = "tags", label = "关联标签", actionText = "+ 增加"),
-            ),
-        ),
-        FormSection(
-            rows = listOf(
-                FormRow.LabelAction(key = "category", label = "所属分类", actionText = "未分类"),
-            ),
-        ),
-    ),
-)
-
-private fun editSpec() = FormSpec(
-    title = "编辑活动",
-    submitLabel = "保存",
-    sections = createSpec.sections + FormSection(
-        rows = listOf(
-            FormRow.Switch(key = "isArchived", label = "归档"),
-        ),
-    ),
-)
 
 @Composable
 fun AddActivityFormSheet(
@@ -62,8 +23,8 @@ fun AddActivityFormSheet(
 
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
 
-    val specWithCategory = createSpec.copy(
-        sections = createSpec.sections.map { section ->
+    val specWithCategory = ActivityFormSpecs.createActivity.copy(
+        sections = ActivityFormSpecs.createActivity.sections.map { section ->
             section.copy(
                 rows = section.rows.map { row ->
                     if (row is FormRow.LabelAction && row.key == "category") {
@@ -116,8 +77,8 @@ fun EditActivityFormSheet(
 
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
 
-    val specWithCategory = editSpec().copy(
-        sections = editSpec().sections.map { section ->
+    val specWithCategory = ActivityFormSpecs.editActivity().copy(
+        sections = ActivityFormSpecs.editActivity().sections.map { section ->
             section.copy(
                 rows = section.rows.map { row ->
                     if (row is FormRow.LabelAction && row.key == "category") {

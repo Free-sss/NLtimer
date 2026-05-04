@@ -1,33 +1,9 @@
 package com.nltimer.feature.tag_management.ui.components.dialogs
 
 import androidx.compose.runtime.Composable
+import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
-import com.nltimer.core.designsystem.form.FormSection
-import com.nltimer.core.designsystem.form.FormSpec
 import com.nltimer.core.designsystem.form.GenericFormDialog
-
-private val createTagSpec = FormSpec(
-    title = "新增标签",
-    submitLabel = "新增标签",
-    sections = listOf(
-        FormSection(
-            rows = listOf(
-                FormRow.IconColor(iconKey = "icon", colorKey = "color", initialEmoji = "🏷️"),
-            ),
-        ),
-        FormSection(
-            rows = listOf(
-                FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入标签名"),
-                FormRow.NumberInput(key = "priority", label = "优先级", initialValue = 0, range = 0..99),
-            ),
-        ),
-        FormSection(
-            rows = listOf(
-                FormRow.LabelAction(key = "category", label = "所属分类", actionText = "未分类"),
-            ),
-        ),
-    ),
-)
 
 @Composable
 fun AddTagDialog(
@@ -37,8 +13,8 @@ fun AddTagDialog(
 ) {
     val categoryName = initialCategory ?: "未分类"
 
-    val specWithCategory = createTagSpec.copy(
-        sections = createTagSpec.sections.map { section ->
+    val specWithCategory = ActivityFormSpecs.createTag.copy(
+        sections = ActivityFormSpecs.createTag.sections.map { section ->
             section.copy(
                 rows = section.rows.map { row ->
                     if (row is FormRow.LabelAction && row.key == "category") {

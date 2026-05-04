@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
 
@@ -46,8 +47,8 @@ fun AddActivityPreview() {
 
     if (showSheet) {
         GenericFormSheet(
-            spec = ActivityFormSpecs.create.copy(
-                sections = ActivityFormSpecs.create.sections.map { section ->
+            spec = ActivityFormSpecs.createActivity.copy(
+                sections = ActivityFormSpecs.createActivity.sections.map { section ->
                     section.copy(
                         rows = section.rows.map { row ->
                             if (row is FormRow.LabelAction) {
