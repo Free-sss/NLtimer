@@ -39,4 +39,7 @@ interface ActivityGroupDao {
 
     @Query("DELETE FROM activity_groups WHERE name = :name")
     suspend fun deleteByName(name: String)
+
+    @Query("DELETE FROM activity_groups")
+    suspend fun deleteAll()
 }

@@ -1,24 +1,24 @@
 package com.nltimer.feature.home.ui
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -107,6 +107,7 @@ fun HomeScreen(
 
     Scaffold(
         modifier = modifier,
+        floatingActionButtonPosition = FabPosition.End,
         floatingActionButton = {
             MorphingFab(
                 hasActiveBehavior = uiState.hasActiveBehavior,
@@ -226,36 +227,32 @@ private fun MorphingFab(
     )
 
     Surface(
-        modifier = Modifier
-            .offset(y = 24.dp, x = 4.dp)
-            .animateContentSize(
-                animationSpec = tween(300, easing = FastOutSlowInEasing),
-                alignment = Alignment.CenterEnd,
-            ),
+        modifier = Modifier.animateContentSize(
+            animationSpec = tween(300, easing = FastOutSlowInEasing),
+            alignment = Alignment.CenterEnd,
+        ),
         shape = RoundedCornerShape(cornerRadius),
         color = containerColor,
         contentColor = contentColor,
         shadowElevation = 0.dp,
         onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
     ) {
-        AnimatedContent(
-            targetState = hasActiveBehavior,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(200, delayMillis = 100)) togetherWith
-                    fadeOut(animationSpec = tween(100))
-            },
-            label = "fabContent",
-        ) { hasActive ->
-            if (hasActive) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                imageVector = if (hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+                contentDescription = null,
+            )
+
+            if (hasActiveBehavior) {
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "完成当前行为",
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "添加行为",
-                    modifier = Modifier.padding(16.dp),
+                    text = "完成行为",
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
         }

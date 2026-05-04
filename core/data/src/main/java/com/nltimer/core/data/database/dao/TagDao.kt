@@ -75,4 +75,7 @@ interface TagDao {
 
     @Query("UPDATE tags SET category = NULL WHERE category = :category")
     suspend fun resetCategory(category: String)
+
+    @Query("DELETE FROM tags")
+    suspend fun deleteAll()
 }

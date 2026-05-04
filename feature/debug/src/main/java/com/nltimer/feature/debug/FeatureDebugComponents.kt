@@ -7,6 +7,7 @@ import com.nltimer.feature.debug.ui.preview.ActivityNoteBoxDebugPreview
 import com.nltimer.feature.debug.ui.preview.ActivityRecordCombinedPreview
 import com.nltimer.feature.debug.ui.preview.AddActivityPreview
 import com.nltimer.feature.debug.ui.preview.AddTagPreview
+import com.nltimer.feature.debug.ui.preview.DatabaseToolsPreview
 import com.nltimer.feature.debug.ui.preview.DualTimePickerDebugPreview
 import com.nltimer.feature.debug.ui.preview.EditActivityPreview
 import com.nltimer.feature.debug.ui.preview.EditTagPreview
@@ -117,6 +118,17 @@ object FeatureDebugComponents {
                 description = "组合双列时间选择器+步进调节+标签网格+备注输入",
             ) {
                 ActivityRecordCombinedPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "DatabaseTools",
+                name = "数据库工具",
+                group = "Database",
+                description = "清除/插入/查询数据库数据",
+                implemented = true,
+            ) {
+                DatabaseToolsPreview()
             }
         )
     }

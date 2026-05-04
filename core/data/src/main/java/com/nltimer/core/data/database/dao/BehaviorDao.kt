@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
@@ -159,4 +160,22 @@ interface BehaviorDao {
         """
     )
     suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity>
+
+    @Query("DELETE FROM behaviors")
+    suspend fun deleteAll()
+
+    @Query("DELETE FROM behavior_tag_cross_ref")
+    suspend fun deleteAllTagCrossRefs()
+
+    @Query("DELETE FROM activity_tag_binding")
+    suspend fun deleteAllActivityTagBindings()
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
+
+    @Query("SELECT * FROM behavior_tag_cross_ref")
+    suspend fun getAllCrossRefsSync(): List<BehaviorTagCrossRefEntity>
+
+    @Query("SELECT * FROM activity_tag_binding")
+    suspend fun getAllActivityTagBindingsSync(): List<ActivityTagBindingEntity>
 }
