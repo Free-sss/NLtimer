@@ -5,7 +5,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import android.widget.Toast
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -197,6 +215,22 @@ private fun MorphingFab(
     onAddClick: () -> Unit,
     onCompleteClick: () -> Unit,
 ) {
+    val context = LocalContext.current
+    var isDragging by remember { mutableStateOf(false) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var dragStartOffset by remember { mutableStateOf(Offset.Zero) }
+    var hoveredOption by remember { mutableStateOf<String?>(null) }
+    val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
+    var fabLayoutPosition by remember { mutableStateOf(Offset.Zero) }
+    var fabSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+    var optionsRowHeight by remember { mutableFloatStateOf(0f) }
+
+    val options = if (hasActiveBehavior) {
+        listOf("完成", "放弃", "特记", "+自定义")
+    } else {
+        listOf("完成", "目标", "当前", "+自定义")
+    }
+
     val cornerRadius = if (hasActiveBehavior) 16.dp else 28.dp
     val containerColor = if (hasActiveBehavior) {
         MaterialTheme.colorScheme.primary
@@ -209,31 +243,160 @@ private fun MorphingFab(
         MaterialTheme.colorScheme.onPrimaryContainer
     }
 
-    Surface(
-        modifier = Modifier,
-        shape = RoundedCornerShape(cornerRadius),
-        color = containerColor,
-        contentColor = contentColor,
-        shadowElevation = 4.dp,
-        onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                imageVector = if (hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
-                contentDescription = null,
-            )
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp.toPx() }
 
-            if (hasActiveBehavior) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "完成行为",
-                    maxLines = 1,
-                    softWrap = false,
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+        Surface(
+            modifier = Modifier
+                .onGloballyPositioned { layoutCoordinates ->
+                    fabLayoutPosition = layoutCoordinates.positionInWindow()
+                    fabSize = layoutCoordinates.size
+                }
+                .offset {
+                    IntOffset(
+                        dragOffset.x.roundToInt(),
+                        dragOffset.y.roundToInt()
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { startOffset ->
+                            isDragging = true
+                            dragStartOffset = startOffset
+                        },
+                        onDragEnd = {
+                            if (hoveredOption != null) {
+                                when (hoveredOption) {
+                                    "完成" -> {
+                                        if (hasActiveBehavior) {
+                                            onCompleteClick()
+                                        } else {
+                                            onAddClick()
+                                        }
+                                    }
+                                    else -> {
+                                        Toast.makeText(
+                                            context,
+                                            "触发功能: $hoveredOption",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                            isDragging = false
+                            dragOffset = Offset.Zero
+                            dragStartOffset = Offset.Zero
+                            hoveredOption = null
+                        },
+                        onDragCancel = {
+                            isDragging = false
+                            dragOffset = Offset.Zero
+                            dragStartOffset = Offset.Zero
+                            hoveredOption = null
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            dragOffset += dragAmount
+                            val fabW = fabSize.width.toFloat()
+                            val fabH = fabSize.height.toFloat()
+                            dragOffset = Offset(
+                                x = dragOffset.x.coerceIn(-fabLayoutPosition.x, screenWidthPx - fabLayoutPosition.x - fabW),
+                                y = dragOffset.y.coerceIn(-fabLayoutPosition.y, screenHeightPx - fabLayoutPosition.y - fabH)
+                            )
+                            val currentPointerPosition =
+                                fabLayoutPosition + dragOffset + dragStartOffset
+                            val hit =
+                                optionsLayoutBounds.entries.find { entry ->
+                                    entry.value.contains(currentPointerPosition)
+                                }?.key
+                            if (hit != hoveredOption) {
+                                hoveredOption = hit
+                            }
+                        }
+                    )
+                },
+            shape = RoundedCornerShape(cornerRadius),
+            color = containerColor,
+            contentColor = contentColor,
+            shadowElevation = 4.dp,
+            onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Icon(
+                    imageVector = if (hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+                    contentDescription = null,
                 )
+
+                if (hasActiveBehavior) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "完成行为",
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                }
+            }
+        }
+
+        if (isDragging) {
+            val gapPx = with(density) { 8.dp.toPx() }
+            val optionsY = -optionsRowHeight - gapPx
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset { IntOffset(0, optionsY.roundToInt()) }
+                    .onGloballyPositioned { coords ->
+                        optionsRowHeight = coords.size.height.toFloat()
+                    },
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                options.forEach { option ->
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .onGloballyPositioned { layoutCoordinates ->
+                                val position = layoutCoordinates.positionInWindow()
+                                val size = layoutCoordinates.size
+                                optionsLayoutBounds[option] = Rect(
+                                    position.x,
+                                    position.y,
+                                    position.x + size.width,
+                                    position.y + size.height
+                                )
+                            },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (hoveredOption == option)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 4.dp,
+                        shadowElevation = 4.dp
+                    ) {
+                        Box(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = option,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = if (hoveredOption == option)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
             }
         }
     }

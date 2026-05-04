@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1777893315745,
+  "projectRoot": "D:\\2026Code\\Group_android\\NLtimer",
+  "techStack": {
+    "languages": [
+      {
+        "name": "Kotlin",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "build.gradle.kts"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "gradle",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "andrej-karpathy-skills": {
+      "path": "andrej-karpathy-skills",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1777893315704,
+      "keyFiles": [
+        "CLAUDE.md",
+        "CURSOR.md",
+        "EXAMPLES.md",
+        "README.md",
+        "README.zh.md"
+      ]
+    },
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 3,
+      "lastAccessed": 1777893315705,
+      "keyFiles": [
+        "build.gradle.kts",
+        "proguard-rules.pro",
+        "release-key.jks"
+      ]
+    },
+    "build": {
+      "path": "build",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1777893315706,
+      "keyFiles": []
+    },
+    "buildSrc": {
+      "path": "buildSrc",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1777893315707,
+      "keyFiles": [
+        "build.gradle.kts"
+      ]
+    },
+    "config": {
+      "path": "config",
+      "purpose": "Configuration files",
+      "fileCount": 0,
+      "lastAccessed": 1777893315708,
+      "keyFiles": []
+    },
+    "core": {
+      "path": "core",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777893315709,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 0,
+      "lastAccessed": 1777893315709,
+      "keyFiles": []
+    },
+    "feature": {
+      "path": "feature",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777893315710,
+      "keyFiles": []
+    },
+    "gradle": {
+      "path": "gradle",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1777893315711,
+      "keyFiles": [
+        "libs.versions.toml"
+      ]
+    },
+    "__pycache__": {
+      "path": "__pycache__",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777893315711,
+      "keyFiles": []
+    },
+    "app\\build": {
+      "path": "app\\build",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1777893315713,
+      "keyFiles": []
+    },
+    "app\\src": {
+      "path": "app\\src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1777893315714,
+      "keyFiles": []
+    },
+    "buildSrc\\build": {
+      "path": "buildSrc\\build",
+      "purpose": "Build output",
+      "fileCount": 0,
+      "lastAccessed": 1777893315716,
+      "keyFiles": []
+    },
+    "buildSrc\\src": {
+      "path": "buildSrc\\src",
+      "purpose": "Source code",
+      "fileCount": 0,
+      "lastAccessed": 1777893315716,
+      "keyFiles": []
+    },
+    "core\\data": {
+      "path": "core\\data",
+      "purpose": "Data files",
+      "fileCount": 2,
+      "lastAccessed": 1777893315717,
+      "keyFiles": [
+        "build.gradle.kts",
+        "build.gradle.kts.bak"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
