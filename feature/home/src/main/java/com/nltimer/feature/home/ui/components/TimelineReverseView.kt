@@ -168,20 +168,6 @@ fun TimelineReverseView(
                 Spacer(modifier = Modifier.height(80.dp))
             }
         }
-
-        // 底部悬浮添加按钮，鲜绿色圆形 FAB
-        FloatingActionButton(
-            onClick = onAddClick,
-            containerColor = MaterialTheme.colorScheme.primaryContainer, // Vivid green
-            contentColor = MaterialTheme.colorScheme.onPrimary, 
-            shape = CircleShape,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .size(64.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(32.dp))
-        }
     }
 }
 

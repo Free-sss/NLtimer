@@ -1,294 +1,53 @@
 package com.nltimer.feature.home.ui.components
 
-import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupProperties
 import com.nltimer.core.designsystem.theme.appBorder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-/**
- * 表示可点击添加行为的空单元格 Composable。
- * 短按打开添加行为弹窗，长按弹出行为模式选择菜单。
- *
- * @param modifier 修饰符
- * @param onClick 点击回调（完成模式）
- */
 @Composable
 fun GridCellEmpty(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    val context = LocalContext.current
-    val density = LocalDensity.current
-
-    var showMenu by remember { mutableStateOf(false) }
-    var popupDirection by remember { mutableStateOf(PopupDirection.DOWN) }
-    var hoveredIndex by remember { mutableIntStateOf(-1) }
-    var cellOffset by remember { mutableStateOf(Offset.Zero) }
-    var cellSize by remember { mutableStateOf(Size.Zero) }
-
-    // 菜单选项定义
-    val options = remember {
-        listOf(
-            MenuOption("当前") {
-                Toast.makeText(context, "当前模式开发中", Toast.LENGTH_SHORT).show()
-            },
-            MenuOption("完成") {
-                onClick()
-            },
-            MenuOption("目标") {
-                Toast.makeText(context, "目标模式开发中", Toast.LENGTH_SHORT).show()
-            },
-        )
-    }
-
-    Box(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .onGloballyPositioned { coordinates ->
-                cellOffset = Offset(
-                    coordinates.positionInWindow().x,
-                    coordinates.positionInWindow().y,
-                )
-                cellSize = coordinates.size.toSize()
-            }
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val down = awaitFirstDown()
-                        val downPosition = down.position
-
-                        // 检测长按
-                        var longPressTriggered = false
-                        val longPressJob = CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                            delay(100)
-                            longPressTriggered = true
-
-                            // 计算弹出方向
-                            val screenHeight = size.height
-                            val cellCenterY = cellOffset.y + cellSize.height / 2
-                            popupDirection = if (cellCenterY < screenHeight / 2) {
-                                PopupDirection.DOWN
-                            } else {
-                                PopupDirection.UP
-                            }
-
-                            showMenu = true
-                            hoveredIndex = -1
-                        }
-
-                        // 等待手指抬起或移动
-                        var upTriggered = false
-
-                        while (!upTriggered) {
-                            val event = awaitPointerEvent()
-                            when (event.type) {
-                                PointerEventType.Move -> {
-                                    if (longPressTriggered && showMenu) {
-                                        // pointer 是 Box 内的本地坐标，需要转换为窗口坐标
-                                        val pointerLocal = event.changes.first().position
-                                        val pointerWindowX = cellOffset.x + pointerLocal.x
-                                        val pointerWindowY = cellOffset.y + pointerLocal.y
-
-                                        // 计算菜单在窗口中的位置
-                                        val menuWidth = 160.dp.toPx()
-                                        val menuHeight = (options.size * 48 + (options.size - 1)).dp.toPx()
-                                        val menuX = cellOffset.x + cellSize.width / 2 - menuWidth / 2
-                                        val menuY = if (popupDirection == PopupDirection.DOWN) {
-                                            cellOffset.y + cellSize.height + 8.dp.toPx()
-                                        } else {
-                                            cellOffset.y - menuHeight - 8.dp.toPx()
-                                        }
-
-                                        // 计算手指相对于菜单的位置
-                                        val relativeX = pointerWindowX - menuX
-                                        val relativeY = pointerWindowY - menuY
-
-                                        // 检测落在哪个选项上
-                                        val optionHeight = 48.dp.toPx()
-                                        val optionIndex = (relativeY / optionHeight).toInt()
-
-                                        hoveredIndex = if (optionIndex in options.indices &&
-                                            relativeX in 0f..menuWidth &&
-                                            relativeY in 0f..menuHeight
-                                        ) {
-                                            optionIndex
-                                        } else {
-                                            -1
-                                        }
-                                    }
-                                }
-
-                                PointerEventType.Release -> {
-                                    upTriggered = true
-                                    longPressJob.cancel()
-
-                                    if (longPressTriggered) {
-                                        // 长按后抬起
-                                        showMenu = false
-                                        if (hoveredIndex in options.indices) {
-                                            options[hoveredIndex].onSelect()
-                                        }
-                                    } else {
-                                        // 短按
-                                        onClick()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    RoundedCornerShape(16.dp),
-                )
-                .appBorder(
-                    borderProducer = {
-                        BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    },
-                    shape = RoundedCornerShape(16.dp)
-                )
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = "+",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                RoundedCornerShape(16.dp),
             )
-            Text(
-                text = "添加行为",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-
-        // 弹出菜单
-        if (showMenu) {
-            val popupAlignment = if (popupDirection == PopupDirection.DOWN) {
-                Alignment.TopCenter
-            } else {
-                Alignment.BottomCenter
-            }
-
-            Popup(
-                alignment = popupAlignment,
-                offset = with(density) {
-                    androidx.compose.ui.unit.IntOffset(
-                        x = 0,
-                        y = if (popupDirection == PopupDirection.DOWN) {
-                            cellSize.height.toInt() + 8.dp.roundToPx()
-                        } else {
-                            -(cellSize.height.toInt() + 8.dp.roundToPx())
-                        },
-                    )
+            .appBorder(
+                borderProducer = {
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 },
-                properties = PopupProperties(
-                    focusable = false,
-                    dismissOnClickOutside = true,
-                    dismissOnBackPress = true,
-                ),
-                onDismissRequest = { showMenu = false },
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    tonalElevation = 4.dp,
-                    shadowElevation = 4.dp,
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier.width(160.dp),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        options.forEachIndexed { index, option ->
-                            val isHovered = index == hoveredIndex
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(48.dp)
-                                    .background(
-                                        if (isHovered) {
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                        } else {
-                                            MaterialTheme.colorScheme.surface
-                                        }
-                                    )
-                                    .padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondaryContainer),
-                                    contentAlignment = Alignment.Center,
-                                ){
-                                Text(
-                                    text = option.label,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                }
-                               
-                            }
-
-                        }
-                    }
-                }
-            }
-        }
+                shape = RoundedCornerShape(16.dp)
+            )
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = "+",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = "添加行为",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
-
-private enum class PopupDirection {
-    UP, DOWN
-}
-
-private data class MenuOption(
-    val label: String,
-    val onSelect: () -> Unit,
-)

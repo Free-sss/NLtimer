@@ -1,15 +1,28 @@
 package com.nltimer.feature.home.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -95,21 +108,13 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            if (uiState.hasActiveBehavior && layout != HomeLayout.TIMELINE_REVERSE) {
-                FloatingActionButton(
-                    modifier = Modifier.offset(y = 24.dp,x=4.dp),
-                    onClick = {
-                        activeBehaviorId?.let { onCompleteBehavior(it) }
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                ) {
-                    Text(
-                        text = "完成当前行为",
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
-            }
+            MorphingFab(
+                hasActiveBehavior = uiState.hasActiveBehavior,
+                onAddClick = onEmptyCellClick,
+                onCompleteClick = {
+                    activeBehaviorId?.let { onCompleteBehavior(it) }
+                },
+            )
         }
     ) { padding ->
         // 加载中显示转圈指示器，否则渲染主内容
@@ -182,6 +187,70 @@ fun HomeScreen(
                 onAddActivity = onAddActivity,
                 onAddTag = onAddTag,
             )
+        }
+    }
+}
+
+@Composable
+private fun MorphingFab(
+    hasActiveBehavior: Boolean,
+    onAddClick: () -> Unit,
+    onCompleteClick: () -> Unit,
+) {
+    val cornerRadius by animateDpAsState(
+        targetValue = if (hasActiveBehavior) 16.dp else 28.dp,
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "fabCorner",
+    )
+    val containerColor by animateColorAsState(
+        targetValue = if (hasActiveBehavior) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.primaryContainer
+        },
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "fabContainerColor",
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (hasActiveBehavior) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        },
+        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        label = "fabContentColor",
+    )
+
+    Surface(
+        modifier = Modifier
+            .offset(y = 24.dp, x = 4.dp)
+            .animateContentSize(animationSpec = tween(300, easing = FastOutSlowInEasing)),
+        shape = RoundedCornerShape(cornerRadius),
+        color = containerColor,
+        contentColor = contentColor,
+        shadowElevation = 0.dp,
+        onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
+    ) {
+        AnimatedContent(
+            targetState = hasActiveBehavior,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(200, delayMillis = 100)) togetherWith
+                    fadeOut(animationSpec = tween(100))
+            },
+            label = "fabContent",
+        ) { hasActive ->
+            if (hasActive) {
+                Text(
+                    text = "完成当前行为",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "添加行为",
+                    modifier = Modifier.padding(16.dp),
+                )
+            }
         }
     }
 }
