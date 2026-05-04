@@ -118,19 +118,148 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier,
-        floatingActionButtonPosition = FabPosition.End,
-        floatingActionButton = {
-            MorphingFab(
-                hasActiveBehavior = uiState.hasActiveBehavior,
-                onAddClick = onEmptyCellClick,
-                onCompleteClick = {
-                    activeBehaviorId?.let { onCompleteBehavior(it) }
-                },
-            )
-        }
-    ) { padding ->
+    val context = LocalContext.current
+    var isDragging by remember { mutableStateOf(false) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var dragStartOffset by remember { mutableStateOf(Offset.Zero) }
+    var hoveredOption by remember { mutableStateOf<String?>(null) }
+    val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
+    var fabLayoutPosition by remember { mutableStateOf(Offset.Zero) }
+    var fabSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+    var optionsRowHeight by remember { mutableFloatStateOf(0f) }
+    var boxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+
+    val dragOptions = if (uiState.hasActiveBehavior) {
+        listOf("完成", "放弃", "特记", "+自定义")
+    } else {
+        listOf("完成", "目标", "当前", "+自定义")
+    }
+
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { LocalConfiguration.current.screenHeightDp.dp.toPx() }
+
+    Box(
+        modifier = modifier.onGloballyPositioned { boxPositionInWindow = it.positionInWindow() }
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            floatingActionButtonPosition = FabPosition.End,
+            floatingActionButton = {
+                val cornerRadius = if (uiState.hasActiveBehavior) 16.dp else 28.dp
+                val containerColor = if (uiState.hasActiveBehavior) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.primaryContainer
+                }
+                val contentColor = if (uiState.hasActiveBehavior) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .onGloballyPositioned { layoutCoordinates ->
+                            fabLayoutPosition = layoutCoordinates.positionInWindow()
+                            fabSize = layoutCoordinates.size
+                        }
+                        .offset {
+                            IntOffset(
+                                dragOffset.x.roundToInt(),
+                                dragOffset.y.roundToInt()
+                            )
+                        }
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { startOffset ->
+                                    isDragging = true
+                                    dragStartOffset = startOffset
+                                    optionsLayoutBounds.clear()
+                                },
+                                onDragEnd = {
+                                    if (hoveredOption != null) {
+                                        when (hoveredOption) {
+                                            "完成" -> {
+                                                if (uiState.hasActiveBehavior) {
+                                                    activeBehaviorId?.let { onCompleteBehavior(it) }
+                                                } else {
+                                                    onEmptyCellClick()
+                                                }
+                                            }
+                                            else -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    "触发功能: $hoveredOption",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                    isDragging = false
+                                    dragOffset = Offset.Zero
+                                    dragStartOffset = Offset.Zero
+                                    hoveredOption = null
+                                },
+                                onDragCancel = {
+                                    isDragging = false
+                                    dragOffset = Offset.Zero
+                                    dragStartOffset = Offset.Zero
+                                    hoveredOption = null
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    dragOffset += dragAmount
+                                    val fabW = fabSize.width.toFloat()
+                                    val fabH = fabSize.height.toFloat()
+                                    dragOffset = Offset(
+                                        x = dragOffset.x.coerceIn(-fabLayoutPosition.x, screenWidthPx - fabLayoutPosition.x - fabW),
+                                        y = dragOffset.y.coerceIn(-fabLayoutPosition.y, screenHeightPx - fabLayoutPosition.y - fabH)
+                                    )
+                                    val currentPointerPosition =
+                                        fabLayoutPosition + dragOffset + dragStartOffset
+                                    val hit =
+                                        optionsLayoutBounds.entries.find { entry ->
+                                            entry.value.contains(currentPointerPosition)
+                                        }?.key
+                                    if (hit != hoveredOption) {
+                                        hoveredOption = hit
+                                    }
+                                }
+                            )
+                        },
+                    shape = RoundedCornerShape(cornerRadius),
+                    color = containerColor,
+                    contentColor = contentColor,
+                    shadowElevation = 4.dp,
+                    onClick = if (uiState.hasActiveBehavior) {
+                        { activeBehaviorId?.let { onCompleteBehavior(it) }; Unit }
+                    } else {
+                        onEmptyCellClick
+                    },
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Icon(
+                            imageVector = if (uiState.hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+                            contentDescription = null,
+                        )
+
+                        if (uiState.hasActiveBehavior) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "完成行为",
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                        }
+                    }
+                }
+            }
+        ) { padding ->
         // 加载中显示转圈指示器，否则渲染主内容
         if (uiState.isLoading) {
             Box(
@@ -207,159 +336,22 @@ fun HomeScreen(
             )
         }
     }
-}
-
-@Composable
-private fun MorphingFab(
-    hasActiveBehavior: Boolean,
-    onAddClick: () -> Unit,
-    onCompleteClick: () -> Unit,
-) {
-    val context = LocalContext.current
-    var isDragging by remember { mutableStateOf(false) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
-    var dragStartOffset by remember { mutableStateOf(Offset.Zero) }
-    var hoveredOption by remember { mutableStateOf<String?>(null) }
-    val optionsLayoutBounds = remember { mutableStateMapOf<String, Rect>() }
-    var fabLayoutPosition by remember { mutableStateOf(Offset.Zero) }
-    var fabSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
-    var optionsRowHeight by remember { mutableFloatStateOf(0f) }
-
-    val options = if (hasActiveBehavior) {
-        listOf("完成", "放弃", "特记", "+自定义")
-    } else {
-        listOf("完成", "目标", "当前", "+自定义")
-    }
-
-    val cornerRadius = if (hasActiveBehavior) 16.dp else 28.dp
-    val containerColor = if (hasActiveBehavior) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.primaryContainer
-    }
-    val contentColor = if (hasActiveBehavior) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    }
-
-    val density = LocalDensity.current
-    val screenWidthPx = with(density) { androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp.toPx() }
-    val screenHeightPx = with(density) { androidx.compose.ui.platform.LocalConfiguration.current.screenHeightDp.dp.toPx() }
-
-    Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-        Surface(
-            modifier = Modifier
-                .onGloballyPositioned { layoutCoordinates ->
-                    fabLayoutPosition = layoutCoordinates.positionInWindow()
-                    fabSize = layoutCoordinates.size
-                }
-                .offset {
-                    IntOffset(
-                        dragOffset.x.roundToInt(),
-                        dragOffset.y.roundToInt()
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { startOffset ->
-                            isDragging = true
-                            dragStartOffset = startOffset
-                        },
-                        onDragEnd = {
-                            if (hoveredOption != null) {
-                                when (hoveredOption) {
-                                    "完成" -> {
-                                        if (hasActiveBehavior) {
-                                            onCompleteClick()
-                                        } else {
-                                            onAddClick()
-                                        }
-                                    }
-                                    else -> {
-                                        Toast.makeText(
-                                            context,
-                                            "触发功能: $hoveredOption",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            }
-                            isDragging = false
-                            dragOffset = Offset.Zero
-                            dragStartOffset = Offset.Zero
-                            hoveredOption = null
-                        },
-                        onDragCancel = {
-                            isDragging = false
-                            dragOffset = Offset.Zero
-                            dragStartOffset = Offset.Zero
-                            hoveredOption = null
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            dragOffset += dragAmount
-                            val fabW = fabSize.width.toFloat()
-                            val fabH = fabSize.height.toFloat()
-                            dragOffset = Offset(
-                                x = dragOffset.x.coerceIn(-fabLayoutPosition.x, screenWidthPx - fabLayoutPosition.x - fabW),
-                                y = dragOffset.y.coerceIn(-fabLayoutPosition.y, screenHeightPx - fabLayoutPosition.y - fabH)
-                            )
-                            val currentPointerPosition =
-                                fabLayoutPosition + dragOffset + dragStartOffset
-                            val hit =
-                                optionsLayoutBounds.entries.find { entry ->
-                                    entry.value.contains(currentPointerPosition)
-                                }?.key
-                            if (hit != hoveredOption) {
-                                hoveredOption = hit
-                            }
-                        }
-                    )
-                },
-            shape = RoundedCornerShape(cornerRadius),
-            color = containerColor,
-            contentColor = contentColor,
-            shadowElevation = 4.dp,
-            onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                Icon(
-                    imageVector = if (hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
-                    contentDescription = null,
-                )
-
-                if (hasActiveBehavior) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "完成行为",
-                        maxLines = 1,
-                        softWrap = false,
-                    )
-                }
-            }
-        }
 
         if (isDragging) {
             val gapPx = with(density) { 8.dp.toPx() }
-            val optionsY = -optionsRowHeight - gapPx
+            val fabBottomPx = fabLayoutPosition.y + fabSize.height
+            val optionsY = fabBottomPx - optionsRowHeight - gapPx - boxPositionInWindow.y
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
                     .offset { IntOffset(0, optionsY.roundToInt()) }
                     .onGloballyPositioned { coords ->
                         optionsRowHeight = coords.size.height.toFloat()
                     },
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                options.forEach { option ->
+                dragOptions.forEach { option ->
                     Surface(
                         modifier = Modifier
                             .weight(1f)
