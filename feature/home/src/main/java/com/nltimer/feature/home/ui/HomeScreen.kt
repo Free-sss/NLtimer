@@ -137,15 +137,17 @@ fun HomeScreen(
                 // 网格模式：左侧时间轴网格 + 右侧小时侧边栏
                 when (layout) {
                     HomeLayout.GRID -> {
+                        val showSideBar = LocalTheme.current.showTimeSideBar
                         Row(modifier = Modifier.weight(1f)) {
                             TimeAxisGrid(
                                 rows = uiState.rows,
                                 onEmptyCellClick = onEmptyCellClick,
                                 currentHour = uiState.selectedTimeHour,
                                 onLayoutChange = onLayoutChange,
+                                showTimeSideBar = showSideBar,
                                 modifier = Modifier.weight(1f),
                             )
-                            if (LocalTheme.current.showTimeSideBar) {
+                            if (showSideBar) {
                                 TimeSideBar(
                                     activeHours = uiState.rows
                                         .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
