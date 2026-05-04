@@ -13,6 +13,7 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
@@ -70,6 +71,9 @@ class HomeViewModel @Inject constructor(
     // 弹窗配置流
     val dialogConfig: StateFlow<DialogGridConfig> = settingsPrefs.getDialogConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DialogGridConfig())
+
+    val timeLabelConfig: StateFlow<TimeLabelConfig> = settingsPrefs.getTimeLabelConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimeLabelConfig())
 
     // 当前选中的活动 ID（用于标签过滤）
     private var selectedActivityId: Long? = null
@@ -399,6 +403,12 @@ class HomeViewModel @Inject constructor(
             settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->
                 settingsPrefs.updateTheme(theme.copy(homeLayout = layout))
             }
+        }
+    }
+
+    fun onTimeLabelConfigChange(config: TimeLabelConfig) {
+        viewModelScope.launch {
+            settingsPrefs.updateTimeLabelConfig(config)
         }
     }
 }

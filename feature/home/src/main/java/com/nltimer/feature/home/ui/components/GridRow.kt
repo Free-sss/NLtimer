@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import java.time.format.DateTimeFormatter
 
 /**
@@ -36,6 +37,7 @@ import java.time.format.DateTimeFormatter
 fun GridRow(
     row: GridRowUiState,
     onEmptyCellClick: () -> Unit,
+    timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
 ) {
     // 记录当前点击的详情单元格，用于弹出对话框
@@ -44,10 +46,11 @@ fun GridRow(
     val gridMinHeight  = 90.dp
     Box(modifier = modifier.fillMaxWidth()) {
         Column {
-            if (row.cells.isNotEmpty()) {
+            if (row.cells.isNotEmpty() && timeLabelConfig.visible) {
                 TimeFloatingLabel(
                     time = row.startTime,
                     isCurrentRow = row.isCurrentRow,
+                    config = timeLabelConfig,
                     modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
                 )
             }

@@ -20,6 +20,7 @@ fun HomeRoute(
     val tagsForSelectedActivity by viewModel.tagsForSelectedActivity.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
     val dialogConfig by viewModel.dialogConfig.collectAsState()
+    val timeLabelConfig by viewModel.timeLabelConfig.collectAsState()
 
     HomeScreen(
         uiState = uiState,
@@ -46,5 +47,7 @@ fun HomeRoute(
         onAddTag = { name -> viewModel.addTag(name) },
         onHourClick = viewModel::scrollToTime,
         onLayoutChange = viewModel::onHomeLayoutChange,
+        timeLabelConfig = timeLabelConfig,
+        onTimeLabelConfigChange = viewModel::onTimeLabelConfigChange,
     )
 }

@@ -17,6 +17,9 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.designsystem.theme.TimeLabelFormat
+import com.nltimer.core.designsystem.theme.TimeLabelStyle
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -107,6 +110,35 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = dataStore.data.map { prefs ->
+        val raw = prefs[timeLabelConfigKey]
+        if (raw.isNullOrBlank()) {
+            TimeLabelConfig()
+        } else {
+            parseTimeLabelConfig(raw)
+        }
+    }
+
+    override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {
+        dataStore.edit { prefs ->
+            prefs[timeLabelConfigKey] = serializeTimeLabelConfig(config)
+        }
+    }
+
+    private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
+        return "${config.visible}|${config.style.name}|${config.format.name}"
+    }
+
+    private fun parseTimeLabelConfig(raw: String): TimeLabelConfig {
+        val parts = raw.split("|")
+        if (parts.size != 3) return TimeLabelConfig()
+        return TimeLabelConfig(
+            visible = parts[0].toBooleanStrictOrNull() ?: true,
+            style = try { TimeLabelStyle.valueOf(parts[1]) } catch (_: Exception) { TimeLabelStyle.PILL },
+            format = try { TimeLabelFormat.valueOf(parts[2]) } catch (_: Exception) { TimeLabelFormat.HH_MM },
+        )
+    }
+
     companion object {
         private val seedColorKey = intPreferencesKey("seed_color")
         private val appThemeKey = stringPreferencesKey("app_theme")
@@ -131,5 +163,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val tagUseColorKey = booleanPreferencesKey("tag_use_color")
         private val showNatureKey = booleanPreferencesKey("show_nature_selector")
         private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
+        private val timeLabelConfigKey = stringPreferencesKey("time_label_config")
     }
 }

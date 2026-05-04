@@ -2,6 +2,7 @@ package com.nltimer.core.data
 
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -23,4 +24,9 @@ interface SettingsPrefs {
     fun getDialogConfigFlow(): Flow<DialogGridConfig>
     /** 更新弹窗配置并持久化 */
     suspend fun updateDialogConfig(config: DialogGridConfig)
+
+    /** 以 Flow 形式监听时间标签配置 */
+    fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig>
+    /** 更新时间标签配置并持久化 */
+    suspend fun updateTimeLabelConfig(config: TimeLabelConfig)
 }

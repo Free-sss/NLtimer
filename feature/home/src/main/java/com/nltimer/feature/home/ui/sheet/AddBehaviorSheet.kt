@@ -689,12 +689,11 @@ internal fun AddBehaviorSheetContent(
                                 Button(
                                     onClick = {
                                         if (mode == BehaviorNature.COMPLETED
-                                            && startTime.toLocalTime() == LocalTime.MIDNIGHT
-                                            && endTime.toLocalTime() == LocalTime.MIDNIGHT
+                                            && !startTime.toLocalTime().isBefore(endTime.toLocalTime())
                                         ) {
                                             Toast.makeText(
                                                 context,
-                                                "开始和结束时间不能同时为00:00",
+                                                "开始时间必须早于结束时间",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             return@Button

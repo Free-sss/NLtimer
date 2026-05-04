@@ -54,12 +54,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.ui.components.BehaviorLogView
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
+import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
@@ -86,9 +88,13 @@ fun HomeScreen(
     onAddTag: (name: String) -> Unit,
     onHourClick: (Int) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
+    timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
+    onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val layout = LocalTheme.current.homeLayout
+
+    var showTimeLabelSettings by remember { mutableStateOf(false) }
 
     val activeBehaviorId by remember(uiState.rows) {
         derivedStateOf {
@@ -275,6 +281,8 @@ fun HomeScreen(
                                 currentHour = uiState.selectedTimeHour,
                                 onLayoutChange = onLayoutChange,
                                 showTimeSideBar = showSideBar,
+                                timeLabelConfig = timeLabelConfig,
+                                onTimeLabelSettingsClick = { showTimeLabelSettings = true },
                                 modifier = Modifier.weight(1f),
                             )
                             if (showSideBar) {
@@ -405,6 +413,14 @@ fun HomeScreen(
                     }
                 }
             }
+        }
+
+        if (showTimeLabelSettings) {
+            TimeLabelSettingsDialog(
+                config = timeLabelConfig,
+                onConfigChange = onTimeLabelConfigChange,
+                onDismiss = { showTimeLabelSettings = false },
+            )
         }
     }
 }
