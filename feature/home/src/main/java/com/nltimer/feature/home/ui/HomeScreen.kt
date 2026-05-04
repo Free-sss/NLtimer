@@ -1,10 +1,5 @@
 package com.nltimer.feature.home.ui
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -202,39 +197,24 @@ private fun MorphingFab(
     onAddClick: () -> Unit,
     onCompleteClick: () -> Unit,
 ) {
-    val cornerRadius by animateDpAsState(
-        targetValue = if (hasActiveBehavior) 16.dp else 28.dp,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "fabCorner",
-    )
-    val containerColor by animateColorAsState(
-        targetValue = if (hasActiveBehavior) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.primaryContainer
-        },
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "fabContainerColor",
-    )
-    val contentColor by animateColorAsState(
-        targetValue = if (hasActiveBehavior) {
-            MaterialTheme.colorScheme.onPrimary
-        } else {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        },
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
-        label = "fabContentColor",
-    )
+    val cornerRadius = if (hasActiveBehavior) 16.dp else 28.dp
+    val containerColor = if (hasActiveBehavior) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        MaterialTheme.colorScheme.primaryContainer
+    }
+    val contentColor = if (hasActiveBehavior) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    }
 
     Surface(
-        modifier = Modifier.animateContentSize(
-            animationSpec = tween(300, easing = FastOutSlowInEasing),
-            alignment = Alignment.CenterEnd,
-        ),
+        modifier = Modifier,
         shape = RoundedCornerShape(cornerRadius),
         color = containerColor,
         contentColor = contentColor,
-        shadowElevation = 0.dp,
+        shadowElevation = 4.dp,
         onClick = if (hasActiveBehavior) onCompleteClick else onAddClick,
     ) {
         Row(

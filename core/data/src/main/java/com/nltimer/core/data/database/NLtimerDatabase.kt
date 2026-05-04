@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -95,6 +95,93 @@ abstract class NLtimerDatabase : RoomDatabase() {
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE activities ADD COLUMN color INTEGER DEFAULT NULL")
+            }
+        }
+
+        // 数据库从版本 5 到 6 的迁移：为 activities、activity_groups、tags 的 name 字段添加唯一索引
+        // 先处理重复数据（保留 id 最小的记录），再创建唯一索引
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 关闭外键约束，避免删除重复记录时触发级联限制
+                db.execSQL("PRAGMA foreign_keys = OFF")
+
+                // 将 behaviors 中引用了重复 activity 的记录指向保留的 activity
+                db.execSQL(
+                    """
+                    UPDATE behaviors SET activityId = (
+                        SELECT MIN(a2.id) FROM activities a2
+                        WHERE a2.name = (SELECT a1.name FROM activities a1 WHERE a1.id = behaviors.activityId)
+                    )
+                    """.trimIndent()
+                )
+                // 将 activity_tag_binding 中引用了重复 activity 的记录指向保留的 activity
+                db.execSQL(
+                    """
+                    UPDATE activity_tag_binding SET activityId = (
+                        SELECT MIN(a2.id) FROM activities a2
+                        WHERE a2.name = (SELECT a1.name FROM activities a1 WHERE a1.id = activity_tag_binding.activityId)
+                    )
+                    """.trimIndent()
+                )
+                // 删除 activities 中的重复 name 记录，保留 id 最小的
+                db.execSQL(
+                    """
+                    DELETE FROM activities WHERE id NOT IN (
+                        SELECT MIN(id) FROM activities GROUP BY name
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_activities_name ON activities(name)")
+
+                // 将 activities 中引用了重复 group 的记录指向保留的 group
+                db.execSQL(
+                    """
+                    UPDATE activities SET groupId = (
+                        SELECT MIN(g2.id) FROM activity_groups g2
+                        WHERE g2.name = (SELECT g1.name FROM activity_groups g1 WHERE g1.id = activities.groupId)
+                    ) WHERE groupId IS NOT NULL
+                    """.trimIndent()
+                )
+                // 删除 activity_groups 中的重复 name 记录，保留 id 最小的
+                db.execSQL(
+                    """
+                    DELETE FROM activity_groups WHERE id NOT IN (
+                        SELECT MIN(id) FROM activity_groups GROUP BY name
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_activity_groups_name ON activity_groups(name)")
+
+                // 将 activity_tag_binding 中引用了重复 tag 的记录指向保留的 tag
+                db.execSQL(
+                    """
+                    UPDATE activity_tag_binding SET tagId = (
+                        SELECT MIN(t2.id) FROM tags t2
+                        WHERE t2.name = (SELECT t1.name FROM tags t1 WHERE t1.id = activity_tag_binding.tagId)
+                    )
+                    """.trimIndent()
+                )
+                // 将 behavior_tag_cross_ref 中引用了重复 tag 的记录指向保留的 tag
+                db.execSQL(
+                    """
+                    UPDATE behavior_tag_cross_ref SET tagId = (
+                        SELECT MIN(t2.id) FROM tags t2
+                        WHERE t2.name = (SELECT t1.name FROM tags t1 WHERE t1.id = behavior_tag_cross_ref.tagId)
+                    )
+                    """.trimIndent()
+                )
+                // 删除 tags 中的重复 name 记录，保留 id 最小的
+                db.execSQL(
+                    """
+                    DELETE FROM tags WHERE id NOT IN (
+                        SELECT MIN(id) FROM tags GROUP BY name
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_tags_name ON tags(name)")
+
+                // 重新开启外键约束
+                db.execSQL("PRAGMA foreign_keys = ON")
             }
         }
     }

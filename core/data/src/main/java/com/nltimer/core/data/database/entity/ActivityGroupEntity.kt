@@ -1,13 +1,14 @@
 package com.nltimer.core.data.database.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
  * ActivityGroupEntity 活动分组数据库实体
  * 对应 activity_groups 表，存储分组名称、排序序号和创建时间
  */
-@Entity(tableName = "activity_groups")
+@Entity(tableName = "activity_groups", indices = [Index(value = ["name"], unique = true)])
 data class ActivityGroupEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

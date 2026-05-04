@@ -18,7 +18,7 @@ interface ActivityGroupDao {
     @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
     fun getAll(): Flow<List<ActivityGroupEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(group: ActivityGroupEntity): Long
 
     @Update
