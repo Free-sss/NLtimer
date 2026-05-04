@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
+import java.time.format.DateTimeFormatter
 
 /**
  * 网格单行 Composable，包含时间标签和最多 4 个单元格。
@@ -121,6 +122,8 @@ private fun BehaviorDetailDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
                 if (cell.tags.isNotEmpty()) {
                     Text(
                         text = "标签: ${cell.tags.joinToString("、") { it.name }}",
@@ -131,6 +134,30 @@ private fun BehaviorDetailDialog(
                     text = "状态: ${cell.status?.name ?: "未知"}",
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                if (cell.isCurrent) {
+                    Text(
+                        text = "正在进行",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                if (cell.wasPlanned) {
+                    Text(
+                        text = "计划行为",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (cell.startTime != null) {
+                    val timeText = if (cell.endTime != null) {
+                        "时间: ${cell.startTime.format(timeFormatter)} - ${cell.endTime.format(timeFormatter)}"
+                    } else {
+                        "开始: ${cell.startTime.format(timeFormatter)}"
+                    }
+                    Text(
+                        text = timeText,
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 if (cell.estimatedDuration != null) {
                     Text(
                         text = "预计时长: ${cell.estimatedDuration / 60000} 分钟",
@@ -147,6 +174,24 @@ private fun BehaviorDetailDialog(
                     val minutes = cell.durationMs / 60000
                     Text(
                         text = "已进行: $minutes 分钟",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (cell.achievementLevel != null) {
+                    Text(
+                        text = "成就等级: ${cell.achievementLevel}",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (cell.pomodoroCount > 0) {
+                    Text(
+                        text = "番茄钟: ${cell.pomodoroCount} 个",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+                if (!cell.note.isNullOrBlank()) {
+                    Text(
+                        text = "备注: ${cell.note}",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
