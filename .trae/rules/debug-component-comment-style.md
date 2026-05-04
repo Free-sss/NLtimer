@@ -1,6 +1,6 @@
 ---
 alwaysApply: false
-description: 
+description: 调试debug模块以及更新debug模块时
 ---
 # Debug 组件注释规范
 

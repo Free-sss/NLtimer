@@ -5,6 +5,7 @@ import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
+import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
@@ -41,21 +42,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
-            // TagEntity 转换为领域模型
-            list.map { entity ->
-                Tag(
-                    id = entity.id,
-                    name = entity.name,
-                    color = entity.color,
-                    textColor = entity.textColor,
-                    icon = entity.icon,
-                    category = entity.category,
-                    priority = entity.priority,
-                    usageCount = entity.usageCount,
-                    sortOrder = entity.sortOrder,
-                    isArchived = entity.isArchived,
-                )
-            }
+            list.map { it.toModel() }
         }
 
     override fun getPendingBehaviors(): Flow<List<Behavior>> =
@@ -77,20 +64,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             color = activityEntity.color,
         )
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
-        val tags = tagEntities.map { entity ->
-            Tag(
-                id = entity.id,
-                name = entity.name,
-                color = entity.color,
-                textColor = entity.textColor,
-                icon = entity.icon,
-                category = entity.category,
-                priority = entity.priority,
-                usageCount = entity.usageCount,
-                sortOrder = entity.sortOrder,
-                isArchived = entity.isArchived,
-            )
-        }
+        val tags = tagEntities.map { it.toModel() }
         return BehaviorWithDetails(
             behavior = behavior,
             activity = activity,
@@ -229,6 +203,19 @@ class BehaviorRepositoryImpl @Inject constructor(
         actualDuration = actualDuration,
         achievementLevel = achievementLevel,
         wasPlanned = wasPlanned,
+    )
+
+    private fun TagEntity.toModel() = Tag(
+        id = id,
+        name = name,
+        color = color,
+        textColor = textColor,
+        icon = icon,
+        category = category,
+        priority = priority,
+        usageCount = usageCount,
+        sortOrder = sortOrder,
+        isArchived = isArchived,
     )
 
     override suspend fun updateBehavior(

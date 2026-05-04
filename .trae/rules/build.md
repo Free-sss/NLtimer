@@ -1,3 +1,7 @@
+---
+alwaysApply: false
+description: 构建安装安卓应用时
+---
 构建测试 使用这个命令
 
 ```

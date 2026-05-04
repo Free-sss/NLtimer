@@ -1,6 +1,6 @@
 ---
 alwaysApply: false
-description: 
+description: 提交git信息
 scene: git_message
 ---
 # 角色
