@@ -4,22 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.viewmodel.HomeViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
-/**
- * 首页路由入口 Composable。
- * 负责从 [HomeViewModel] 收集状态并转发给 [HomeScreen]。
- *
- * @param viewModel Hilt 注入的首页 ViewModel
- */
 @Composable
 fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    // 收集 ViewModel 中的各类状态流
     val uiState by viewModel.uiState.collectAsState()
     val activities by viewModel.activities.collectAsState()
     val activityGroups by viewModel.activityGroups.collectAsState()
@@ -27,7 +21,6 @@ fun HomeRoute(
     val allTags by viewModel.allTags.collectAsState()
     val dialogConfig by viewModel.dialogConfig.collectAsState()
 
-    // 将 LocalTime 转为毫秒时间戳后再调用 ViewModel
     HomeScreen(
         uiState = uiState,
         activities = activities,
@@ -35,7 +28,8 @@ fun HomeRoute(
         tagsForSelectedActivity = tagsForSelectedActivity,
         allTags = allTags,
         dialogConfig = dialogConfig,
-        onEmptyCellClick = viewModel::showAddSheet,
+        onEmptyCellClick = { viewModel.showAddSheet(AddSheetMode.COMPLETED) },
+        onShowAddSheet = { viewModel.showAddSheet(it) },
         onAddBehavior = { activityId, tagIds, startTime, nature, note ->
             val epochMillis = LocalDate.now()
                 .atTime(startTime)

@@ -1,6 +1,6 @@
 ---
 alwaysApply: false
-description: 修改代码后同步更新 AI 上下文文档
+description: 第一次的对话窗口以及修改代码后同步更新 AI 上下文文档
 scene: code_change
 ---
 # AI 上下文文档同步规则

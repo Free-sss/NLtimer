@@ -114,6 +114,86 @@ fun AddBehaviorSheet(
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
+    BehaviorSheetWrapper(
+        modifier = modifier,
+        mode = BehaviorNature.COMPLETED,
+        activities = activities,
+        allTags = allTags,
+        dialogConfig = dialogConfig,
+        onDismiss = onDismiss,
+        onConfirm = onConfirm,
+        onAddActivity = onAddActivity,
+        onAddTag = onAddTag,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddCurrentBehaviorSheet(
+    modifier: Modifier = Modifier,
+    activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
+    tagsForActivity: List<Tag>,
+    allTags: List<Tag> = emptyList(),
+    dialogConfig: DialogGridConfig = DialogGridConfig(),
+    onDismiss: () -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddTag: (name: String) -> Unit = {},
+) {
+    BehaviorSheetWrapper(
+        modifier = modifier,
+        mode = BehaviorNature.ACTIVE,
+        activities = activities,
+        allTags = allTags,
+        dialogConfig = dialogConfig,
+        onDismiss = onDismiss,
+        onConfirm = onConfirm,
+        onAddActivity = onAddActivity,
+        onAddTag = onAddTag,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddTargetBehaviorSheet(
+    modifier: Modifier = Modifier,
+    activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
+    tagsForActivity: List<Tag>,
+    allTags: List<Tag> = emptyList(),
+    dialogConfig: DialogGridConfig = DialogGridConfig(),
+    onDismiss: () -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddTag: (name: String) -> Unit = {},
+) {
+    BehaviorSheetWrapper(
+        modifier = modifier,
+        mode = BehaviorNature.PENDING,
+        activities = activities,
+        allTags = allTags,
+        dialogConfig = dialogConfig,
+        onDismiss = onDismiss,
+        onConfirm = onConfirm,
+        onAddActivity = onAddActivity,
+        onAddTag = onAddTag,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BehaviorSheetWrapper(
+    modifier: Modifier,
+    mode: BehaviorNature,
+    activities: List<Activity>,
+    allTags: List<Tag>,
+    dialogConfig: DialogGridConfig,
+    onDismiss: () -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onAddActivity: (name: String, emoji: String) -> Unit,
+    onAddTag: (name: String) -> Unit,
+) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -126,6 +206,7 @@ fun AddBehaviorSheet(
     ) {
         AddBehaviorSheetContent(
             modifier = modifier.imePadding(),
+            mode = mode,
             activities = activities,
             allTags = allTags,
             dialogConfig = dialogConfig,
@@ -143,6 +224,7 @@ fun AddBehaviorSheet(
 @Composable
 internal fun AddBehaviorSheetContent(
     modifier: Modifier = Modifier,
+    mode: BehaviorNature = BehaviorNature.COMPLETED,
     activities: List<Activity>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
@@ -161,7 +243,7 @@ internal fun AddBehaviorSheetContent(
             if (d.isNegative) Duration.ZERO else d
         }
     }
-    var nature by remember { mutableStateOf(BehaviorNature.ACTIVE) }
+    val nature = mode
     var note by remember { mutableStateOf("") }
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
@@ -400,29 +482,30 @@ internal fun AddBehaviorSheetContent(
                                 } else Modifier
                             )
                     ) {
-                        // Feedback window (Clear)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            val durationText: String by remember {
-                                derivedStateOf {
-                                    val totalMinutes = duration.toMinutes()
-                                    val h = totalMinutes / 60
-                                    val m = totalMinutes % 60
-                                    "${h}时${m}分"
+                        if (mode == BehaviorNature.COMPLETED) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                val durationText: String by remember {
+                                    derivedStateOf {
+                                        val totalMinutes = duration.toMinutes()
+                                        val h = totalMinutes / 60
+                                        val m = totalMinutes % 60
+                                        "${h}时${m}分"
+                                    }
                                 }
+                                Text(
+                                    text = "用时：$durationText",
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = emphasisColor,
+                                    ),
+                                )
                             }
-                            Text(
-                                text = "用时：$durationText",
-                                style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    color = emphasisColor,
-                                ),
-                            )
                         }
 
                         Box(
@@ -431,21 +514,36 @@ internal fun AddBehaviorSheetContent(
                                 .onGloballyPositioned { innerBoxPositionInWindow = it.positionInWindow() }
                         ) {
                             Column {
-                                DualTimePicker(
-                                    startTime = startTime,
-                                    endTime = endTime,
-                                    animate = !showTimeAdjustments,
-                                    onTimesChanged = { start, end ->
-                                        if (startTime != start) startTime = start
-                                        if (endTime != end) endTime = end
-                                    },
-                                    onLeftCenterClick = {
-                                        showTimeAdjustments = !showTimeAdjustments
-                                    },
-                                    onRightCenterClick = {
-                                        showTimeAdjustments = !showTimeAdjustments
-                                    },
-                                )
+                                when (mode) {
+                                    BehaviorNature.COMPLETED -> {
+                                        DualTimePicker(
+                                            startTime = startTime,
+                                            endTime = endTime,
+                                            animate = !showTimeAdjustments,
+                                            onTimesChanged = { start, end ->
+                                                if (startTime != start) startTime = start
+                                                if (endTime != end) endTime = end
+                                            },
+                                            onLeftCenterClick = {
+                                                showTimeAdjustments = !showTimeAdjustments
+                                            },
+                                            onRightCenterClick = {
+                                                showTimeAdjustments = !showTimeAdjustments
+                                            },
+                                        )
+                                    }
+                                    BehaviorNature.ACTIVE -> {
+                                        SingleTimePicker(
+                                            startTime = startTime,
+                                            animate = !showTimeAdjustments,
+                                            onTimeChanged = { startTime = it },
+                                            onCenterClick = {
+                                                showTimeAdjustments = !showTimeAdjustments
+                                            },
+                                        )
+                                    }
+                                    BehaviorNature.PENDING -> {}
+                                }
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                         }
@@ -590,6 +688,17 @@ internal fun AddBehaviorSheetContent(
                                 }
                                 Button(
                                     onClick = {
+                                        if (mode == BehaviorNature.COMPLETED
+                                            && startTime.toLocalTime() == LocalTime.MIDNIGHT
+                                            && endTime.toLocalTime() == LocalTime.MIDNIGHT
+                                        ) {
+                                            Toast.makeText(
+                                                context,
+                                                "开始和结束时间不能同时为00:00",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
                                         selectedActivityId?.let { activityId ->
                                             onConfirm(
                                                 activityId,
@@ -618,30 +727,54 @@ internal fun AddBehaviorSheetContent(
             }
         }
 
-        if (showTimeAdjustments) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-                    .offset {
-                        IntOffset(
-                            0,
-                            (innerBoxPositionInWindow.y - boxPositionInWindow.y + 90.dp.toPx()).roundToInt()
+        if (showTimeAdjustments && mode != BehaviorNature.PENDING) {
+            when (mode) {
+                BehaviorNature.COMPLETED -> {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .offset {
+                                IntOffset(
+                                    0,
+                                    (innerBoxPositionInWindow.y - boxPositionInWindow.y + 90.dp.toPx()).roundToInt()
+                                )
+                            },
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        TimeAdjustmentCard(
+                            currentTime = startTime,
+                            onTimeChanged = { startTime = it },
+                            modifier = Modifier.weight(1f)
                         )
-                    },
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                TimeAdjustmentCard(
-                    currentTime = startTime,
-                    onTimeChanged = { startTime = it },
-                    modifier = Modifier.weight(1f)
-                )
-
-                TimeAdjustmentCard(
-                    currentTime = endTime,
-                    onTimeChanged = { endTime = it },
-                    modifier = Modifier.weight(1f)
-                )
+                        TimeAdjustmentCard(
+                            currentTime = endTime,
+                            onTimeChanged = { endTime = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+                BehaviorNature.ACTIVE -> {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .offset {
+                                IntOffset(
+                                    0,
+                                    (innerBoxPositionInWindow.y - boxPositionInWindow.y + 90.dp.toPx()).roundToInt()
+                                )
+                            },
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        TimeAdjustmentCard(
+                            currentTime = startTime,
+                            onTimeChanged = { startTime = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+                BehaviorNature.PENDING -> {}
             }
         }
 

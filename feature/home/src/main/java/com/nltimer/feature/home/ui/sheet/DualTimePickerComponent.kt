@@ -177,7 +177,84 @@ fun DualTimePicker(
 }
 
 @Composable
-private fun TimePickerSection(
+fun SingleTimePicker(
+    startTime: LocalDateTime = LocalDateTime.now(),
+    animate: Boolean = true,
+    onTimeChanged: (LocalDateTime) -> Unit = {},
+    onCenterClick: () -> Unit = {},
+) {
+    val sProp = remember(startTime) { startTime.withSecond(0).withNano(0) }
+
+    val today = LocalDate.now()
+    val threeDaysAgo = today.minusDays(3)
+    val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+
+    val sharedDates = remember(today) {
+        (0..6).map { offset ->
+            val date = threeDaysAgo.plusDays(offset.toLong())
+            val isToday = date == today
+            DateItem(
+                displayText = if (isToday) "今天" else date.format(dateFormatter),
+                date = date,
+                isSpecial = isToday,
+            )
+        }
+    }
+
+    val todayIndex = sharedDates.indexOfFirst { it.date == today }
+    val hours = remember { (0..23).map { it.toString().padStart(2, '0') } }
+    val minutes = remember { (0..59).map { it.toString().padStart(2, '0') } }
+
+    var selectedDate by remember { mutableStateOf(sharedDates.find { it.date == sProp.toLocalDate() } ?: sharedDates[todayIndex]) }
+    var selectedHour by remember { mutableStateOf(sProp.hour.toString().padStart(2, '0')) }
+    var selectedMinute by remember { mutableStateOf(sProp.minute.toString().padStart(2, '0')) }
+
+    val lastNotifiedTime = remember { mutableStateOf(sProp) }
+
+    LaunchedEffect(sProp) {
+        if (sProp != lastNotifiedTime.value) {
+            sharedDates.find { it.date == sProp.toLocalDate() }?.let { selectedDate = it }
+            selectedHour = sProp.hour.toString().padStart(2, '0')
+            selectedMinute = sProp.minute.toString().padStart(2, '0')
+            lastNotifiedTime.value = sProp
+        }
+    }
+
+    val currentDateTime = remember(selectedDate, selectedHour, selectedMinute) {
+        selectedDate.date.atTime(selectedHour.toInt(), selectedMinute.toInt())
+    }
+
+    LaunchedEffect(currentDateTime) {
+        if (currentDateTime != lastNotifiedTime.value) {
+            lastNotifiedTime.value = currentDateTime
+            onTimeChanged(currentDateTime)
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        TimePickerSection(
+            dates = sharedDates,
+            hours = hours,
+            minutes = minutes,
+            selectedDate = selectedDate,
+            selectedHour = selectedHour,
+            selectedMinute = selectedMinute,
+            initialDateIndex = todayIndex,
+            animate = animate,
+            onDateChanged = { selectedDate = it },
+            onHourChanged = { selectedHour = it },
+            onMinuteChanged = { selectedMinute = it },
+            modifier = Modifier.weight(1f),
+            onCenterClick = onCenterClick,
+        )
+    }
+}
+
+@Composable
+internal fun TimePickerSection(
     modifier: Modifier = Modifier,
     dates: List<DateItem>,
     hours: List<String>,

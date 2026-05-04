@@ -57,35 +57,16 @@ import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.feature.home.ui.components.BehaviorLogView
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
+import com.nltimer.feature.home.ui.sheet.AddCurrentBehaviorSheet
+import com.nltimer.feature.home.ui.sheet.AddTargetBehaviorSheet
 import java.time.LocalTime
 
-/**
- * 首页主屏幕 Composable。
- * 根据当前布局模式渲染网格时间轴或时间线倒序视图。
- *
- * @param uiState 聚合的首页 UI 状态
- * @param activities 可选活动列表
- * @param activityGroups 活动分组列表
- * @param tagsForSelectedActivity 当前选中活动关联的标签
- * @param allTags 全部可用标签
- * @param onEmptyCellClick 点击空白单元格回调
- * @param onAddBehavior 添加行为回调
- * @param onDismissSheet 关闭底部弹窗回调
- * @param onCompleteBehavior 完成行为回调
- * @param onToggleIdleMode 切换空闲模式回调
- * @param onStartNextPending 开始下一个待办行为回调
- * @param onAddActivity 添加活动回调
- * @param onAddTag 添加标签回调
- * @param onHourClick 点击小时数回调
- * @param onLayoutChange 切换布局模式回调
- * @param dialogConfig 弹窗配置
- * @param modifier 修饰符
- */
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
@@ -95,6 +76,7 @@ fun HomeScreen(
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     onEmptyCellClick: () -> Unit,
+    onShowAddSheet: (AddSheetMode) -> Unit,
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onDismissSheet: () -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -106,7 +88,6 @@ fun HomeScreen(
     onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 获取当前主题中保存的布局模式（网格或时间线）
     val layout = LocalTheme.current.homeLayout
 
     val activeBehaviorId by remember(uiState.rows) {
@@ -184,8 +165,14 @@ fun HomeScreen(
                                                 if (uiState.hasActiveBehavior) {
                                                     activeBehaviorId?.let { onCompleteBehavior(it) }
                                                 } else {
-                                                    onEmptyCellClick()
+                                                    onShowAddSheet(AddSheetMode.COMPLETED)
                                                 }
+                                            }
+                                            "当前" -> {
+                                                onShowAddSheet(AddSheetMode.CURRENT)
+                                            }
+                                            "目标" -> {
+                                                onShowAddSheet(AddSheetMode.TARGET)
                                             }
                                             else -> {
                                                 Toast.makeText(
@@ -321,19 +308,47 @@ fun HomeScreen(
             }
         }
 
-        // 显示添加行为的底部弹窗
-        if (uiState.isAddSheetVisible) {
-            AddBehaviorSheet(
-                activities = activities,
-                activityGroups = activityGroups,
-                tagsForActivity = tagsForSelectedActivity,
-                allTags = allTags,
-                dialogConfig = dialogConfig,
-                onDismiss = onDismissSheet,
-                onConfirm = onAddBehavior,
-                onAddActivity = onAddActivity,
-                onAddTag = onAddTag,
-            )
+        when (uiState.addSheetMode) {
+            AddSheetMode.COMPLETED -> {
+                AddBehaviorSheet(
+                    activities = activities,
+                    activityGroups = activityGroups,
+                    tagsForActivity = tagsForSelectedActivity,
+                    allTags = allTags,
+                    dialogConfig = dialogConfig,
+                    onDismiss = onDismissSheet,
+                    onConfirm = onAddBehavior,
+                    onAddActivity = onAddActivity,
+                    onAddTag = onAddTag,
+                )
+            }
+            AddSheetMode.CURRENT -> {
+                AddCurrentBehaviorSheet(
+                    activities = activities,
+                    activityGroups = activityGroups,
+                    tagsForActivity = tagsForSelectedActivity,
+                    allTags = allTags,
+                    dialogConfig = dialogConfig,
+                    onDismiss = onDismissSheet,
+                    onConfirm = onAddBehavior,
+                    onAddActivity = onAddActivity,
+                    onAddTag = onAddTag,
+                )
+            }
+            AddSheetMode.TARGET -> {
+                AddTargetBehaviorSheet(
+                    activities = activities,
+                    activityGroups = activityGroups,
+                    tagsForActivity = tagsForSelectedActivity,
+                    allTags = allTags,
+                    dialogConfig = dialogConfig,
+                    onDismiss = onDismissSheet,
+                    onConfirm = onAddBehavior,
+                    onAddActivity = onAddActivity,
+                    onAddTag = onAddTag,
+                )
+            }
+            null -> {}
         }
     }
 
@@ -437,6 +452,7 @@ private fun HomeScreenPreview() {
             tagsForSelectedActivity = sampleTags,
             allTags = sampleTags,
             onEmptyCellClick = {},
+            onShowAddSheet = {},
             onAddBehavior = { _, _, _, _, _ -> },
             onDismissSheet = {},
             onCompleteBehavior = {},

@@ -90,14 +90,14 @@ class HomeViewModelTest {
     @Test
     fun `showAddSheet updates uiState`() = runTest {
         viewModel.showAddSheet()
-        assertTrue(viewModel.uiState.value.isAddSheetVisible)
+        assertNotNull(viewModel.uiState.value.addSheetMode)
     }
 
     @Test
     fun `hideAddSheet updates uiState`() = runTest {
         viewModel.showAddSheet()
         viewModel.hideAddSheet()
-        assertFalse(viewModel.uiState.value.isAddSheetVisible)
+        assertEquals(null, viewModel.uiState.value.addSheetMode)
     }
 
     @Test
@@ -120,7 +120,7 @@ class HomeViewModelTest {
         assertTrue(behaviorRepository.endCurrentBehaviorCalled)
         assertEquals(1, behaviorRepository.insertedBehaviors.size)
         assertEquals(1L, behaviorRepository.insertedBehaviors[0].activityId)
-        assertFalse(viewModel.uiState.value.isAddSheetVisible)
+        assertEquals(null, viewModel.uiState.value.addSheetMode)
     }
 
     @Test

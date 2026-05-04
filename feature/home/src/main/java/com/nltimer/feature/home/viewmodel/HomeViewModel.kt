@@ -14,6 +14,7 @@ import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.match.MatchStrategy
+import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
@@ -294,14 +295,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 显示添加行为底部弹窗
-    fun showAddSheet() {
-        _uiState.update { it.copy(isAddSheetVisible = true) }
+    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED) {
+        _uiState.update { it.copy(addSheetMode = mode) }
     }
 
-    // 隐藏添加行为弹窗并重置选中状态
     fun hideAddSheet() {
-        _uiState.update { it.copy(isAddSheetVisible = false) }
+        _uiState.update { it.copy(addSheetMode = null) }
         selectedActivityId = null
         _tagsForSelectedActivity.update { emptyList() }
     }
