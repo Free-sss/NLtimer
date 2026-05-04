@@ -254,12 +254,23 @@ class HomeViewModel @Inject constructor(
             )
         }
 
+        // 获取最后一个已完成行为的结束时间
+        val lastBehaviorEndTime = behaviors
+            .filter { it.endTime != null }
+            .maxByOrNull { it.endTime ?: 0 }
+            ?.let {
+                java.time.Instant.ofEpochMilli(it.endTime!!)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
+
         return HomeUiState(
             rows = rows,
             currentRowId = currentRowId,
             isLoading = false,
             selectedTimeHour = now.hour,
             hasActiveBehavior = hasActive,
+            lastBehaviorEndTime = lastBehaviorEndTime,
         )
     }
 

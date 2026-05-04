@@ -2,6 +2,7 @@ package com.nltimer.feature.home.model
 
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.BehaviorNature
+import java.time.LocalTime
 
 enum class AddSheetMode(val nature: BehaviorNature) {
     COMPLETED(BehaviorNature.COMPLETED),
@@ -22,4 +23,5 @@ data class HomeUiState(
     val detailBehavior: BehaviorDetailUiState? = null,
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
+    val lastBehaviorEndTime: LocalTime? = null,
 )

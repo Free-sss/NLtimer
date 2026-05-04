@@ -109,6 +109,8 @@ fun AddBehaviorSheet(
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
+    initialStartTime: LocalTime? = null,
+    initialEndTime: LocalTime? = null,
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -120,6 +122,8 @@ fun AddBehaviorSheet(
         activities = activities,
         allTags = allTags,
         dialogConfig = dialogConfig,
+        initialStartTime = initialStartTime,
+        initialEndTime = initialEndTime,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
@@ -136,6 +140,7 @@ fun AddCurrentBehaviorSheet(
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
+    initialStartTime: LocalTime? = null,
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -147,6 +152,7 @@ fun AddCurrentBehaviorSheet(
         activities = activities,
         allTags = allTags,
         dialogConfig = dialogConfig,
+        initialStartTime = initialStartTime,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
@@ -189,6 +195,8 @@ private fun BehaviorSheetWrapper(
     activities: List<Activity>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
+    initialStartTime: LocalTime? = null,
+    initialEndTime: LocalTime? = null,
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit,
@@ -210,6 +218,8 @@ private fun BehaviorSheetWrapper(
             activities = activities,
             allTags = allTags,
             dialogConfig = dialogConfig,
+            initialStartTime = initialStartTime,
+            initialEndTime = initialEndTime,
             onConfirm = { activityId, tagIds, startTime, nature, note ->
                 onConfirm(activityId, tagIds, startTime, nature, note)
                 onDismiss()
@@ -228,6 +238,8 @@ internal fun AddBehaviorSheetContent(
     activities: List<Activity>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
+    initialStartTime: LocalTime? = null,
+    initialEndTime: LocalTime? = null,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -235,8 +247,17 @@ internal fun AddBehaviorSheetContent(
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(null) }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
-    var startTime by remember { mutableStateOf(LocalDateTime.now().withSecond(0).withNano(0)) }
-    var endTime by remember { mutableStateOf(LocalDateTime.now().withSecond(0).withNano(0)) }
+    val now = LocalDateTime.now().withSecond(0).withNano(0)
+    var startTime by remember {
+        mutableStateOf(
+            initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute) } ?: now
+        )
+    }
+    var endTime by remember {
+        mutableStateOf(
+            initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute) } ?: now
+        )
+    }
     val duration: Duration by remember {
         derivedStateOf {
             val d = Duration.between(startTime, endTime)

@@ -347,7 +347,10 @@ private fun DateWheelPicker(
     animate: Boolean = true,
     onCenterClick: () -> Unit = {},
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
+    val effectiveInitialIndex = remember {
+        items.indexOfFirst { it.date == selectedItem.date }.takeIf { it >= 0 } ?: initialScrollIndex
+    }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = effectiveInitialIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val paddingCount = visibleItemsCount / 2
 
@@ -459,7 +462,10 @@ fun <T> WheelPicker(
     animate: Boolean = true,
     onCenterClick: () -> Unit = {},
 ) {
-    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialScrollIndex)
+    val effectiveInitialIndex = remember {
+        items.indexOf(selectedItem).takeIf { it >= 0 } ?: initialScrollIndex
+    }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = effectiveInitialIndex)
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val paddingCount = visibleItemsCount / 2
 
