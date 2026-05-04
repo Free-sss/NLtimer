@@ -145,14 +145,16 @@ fun HomeScreen(
                                 onLayoutChange = onLayoutChange,
                                 modifier = Modifier.weight(1f),
                             )
-                            TimeSideBar(
-                                activeHours = uiState.rows
-                                    .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
-                                    .map { it.startTime.hour }
-                                    .toSet(),
-                                currentHour = uiState.selectedTimeHour,
-                                onHourClick = onHourClick,
-                            )
+                            if (LocalTheme.current.showTimeSideBar) {
+                                TimeSideBar(
+                                    activeHours = uiState.rows
+                                        .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
+                                        .map { it.startTime.hour }
+                                        .toSet(),
+                                    currentHour = uiState.selectedTimeHour,
+                                    onHourClick = onHourClick,
+                                )
+                            }
                         }
                     }
                     HomeLayout.TIMELINE_REVERSE -> {
@@ -224,7 +226,10 @@ private fun MorphingFab(
     Surface(
         modifier = Modifier
             .offset(y = 24.dp, x = 4.dp)
-            .animateContentSize(animationSpec = tween(300, easing = FastOutSlowInEasing)),
+            .animateContentSize(
+                animationSpec = tween(300, easing = FastOutSlowInEasing),
+                alignment = Alignment.CenterEnd,
+            ),
         shape = RoundedCornerShape(cornerRadius),
         color = containerColor,
         contentColor = contentColor,

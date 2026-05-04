@@ -18,10 +18,12 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -53,7 +55,8 @@ fun RouteSettingsPopupPreview() {
         RouteSettingsPopup(
             currentRoute = "home",
             onDismiss = {},
-            onHomeLayoutChange = {}
+            onHomeLayoutChange = {},
+            onShowTimeSideBarChange = {}
         )
     }
 }
@@ -73,6 +76,7 @@ fun RouteSettingsPopup(
     currentRoute: String?,
     onDismiss: () -> Unit,
     onHomeLayoutChange: (HomeLayout) -> Unit,
+    onShowTimeSideBarChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // 根据屏幕宽度计算弹窗宽度，不超过屏幕的一半
@@ -140,6 +144,18 @@ fun RouteSettingsPopup(
                             )
                         }
                     }
+
+                    // 侧边时间轴开关，仅在 GRID 布局下显示
+                    if (!showLayoutOptions && currentLayout == HomeLayout.GRID) {
+                        PopupSwitchItem(
+                            icon = Icons.Default.Timelapse,
+                            label = "侧边时间轴",
+                            checked = LocalTheme.current.showTimeSideBar,
+                            onCheckedChange = {
+                                onShowTimeSideBarChange(it)
+                            }
+                        )
+                    }
                 }
 
                 // 未展开布局选项时，显示通用快捷操作列表
@@ -203,6 +219,39 @@ private fun PopupItem(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = tint
+        )
+    }
+}
+
+@Composable
+private fun PopupSwitchItem(
+    icon: ImageVector,
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = label,
+            modifier = Modifier.padding(end = 12.dp),
+            tint = tint
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = tint,
+            modifier = Modifier.weight(1f)
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
         )
     }
 }

@@ -17,4 +17,5 @@ data class Theme(
     val font: Fonts = Fonts.FIGTREE,
     val showBorders: Boolean = true,
     val homeLayout: HomeLayout = HomeLayout.GRID,
+    val showTimeSideBar: Boolean = true,
 )

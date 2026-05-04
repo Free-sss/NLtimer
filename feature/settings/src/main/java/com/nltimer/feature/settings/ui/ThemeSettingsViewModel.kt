@@ -12,6 +12,7 @@ import com.nltimer.core.designsystem.theme.Theme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,56 +33,63 @@ class ThemeSettingsViewModel @Inject constructor(
     /** 更新种子颜色 */
     fun onSeedColorChange(color: Color) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(seedColor = color))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(seedColor = color))
         }
     }
 
     /** 切换亮暗模式 */
     fun onThemeSwitch(appTheme: AppTheme) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(appTheme = appTheme))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(appTheme = appTheme))
         }
     }
 
     /** 切换 AMOLED 纯黑模式 */
     fun onAmoledSwitch(isAmoled: Boolean) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(isAmoled = isAmoled))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(isAmoled = isAmoled))
         }
     }
 
     /** 更改调色板风格 */
     fun onPaletteChange(style: PaletteStyle) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(paletteStyle = style))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(paletteStyle = style))
         }
     }
 
     /** 切换 Material You 动态取色 */
     fun onMaterialYouToggle(enabled: Boolean) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(isMaterialYou = enabled))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(isMaterialYou = enabled))
         }
     }
 
     /** 切换全局字体 */
     fun onFontChange(font: Fonts) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(font = font))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(font = font))
         }
     }
 
     /** 切换组件边框显示 */
     fun onShowBordersToggle(enabled: Boolean) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(showBorders = enabled))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(showBorders = enabled))
         }
     }
 
     /** 切换主页布局（网格/时间轴） */
     fun onHomeLayoutChange(layout: HomeLayout) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(theme.value.copy(homeLayout = layout))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(homeLayout = layout))
+        }
+    }
+
+    /** 切换侧边滑动时间轴显示 */
+    fun onShowTimeSideBarToggle(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(showTimeSideBar = enabled))
         }
     }
 }

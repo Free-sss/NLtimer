@@ -85,7 +85,8 @@ fun NLtimerScaffold(
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
                     onDismiss = { showSettingsPopup = false },
-                    onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) }
+                    onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) },
+                    onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) }
                 )
             }
         }

@@ -44,6 +44,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             font = try { Fonts.valueOf(fontName) } catch (_: Exception) { Fonts.FIGTREE },
             showBorders = prefs[showBordersKey] != false,
             homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: Exception) { HomeLayout.GRID },
+            showTimeSideBar = prefs[showTimeSideBarKey] != false,
         )
     }
 
@@ -57,6 +58,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[fontKey] = theme.font.name
             prefs[showBordersKey] = theme.showBorders
             prefs[homeLayoutKey] = theme.homeLayout.name
+            prefs[showTimeSideBarKey] = theme.showTimeSideBar
         }
     }
 
@@ -114,6 +116,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val fontKey = stringPreferencesKey("font")
         private val showBordersKey = booleanPreferencesKey("show_borders")
         private val homeLayoutKey = stringPreferencesKey("home_layout")
+        private val showTimeSideBarKey = booleanPreferencesKey("show_time_side_bar")
         private val savedTagCategoriesKey = stringPreferencesKey("saved_tag_categories")
 
         private val actDisplayModeKey = stringPreferencesKey("act_display_mode")
