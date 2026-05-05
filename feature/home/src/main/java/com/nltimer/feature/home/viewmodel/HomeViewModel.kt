@@ -161,8 +161,21 @@ class HomeViewModel @Inject constructor(
         val allActivities = activityRepository.getAll().firstOrNull().orEmpty()
         val activityMap = allActivities.associateBy { it.id }
 
+        // 排序规则：COMPLETED + ACTIVE 按 startTime 升序在前；
+        // PENDING 目标按 sequence 升序（FIFO）追加在后。
+        // 不再依赖 DAO 默认 ORDER BY startTime（PENDING 的 startTime=0 会被错误地排到最前）。
+        val sortedBehaviors = run {
+            val nonPending = behaviors
+                .filter { it.status != BehaviorNature.PENDING }
+                .sortedBy { it.startTime }
+            val pending = behaviors
+                .filter { it.status == BehaviorNature.PENDING }
+                .sortedBy { it.sequence }
+            nonPending + pending
+        }
+
         val rows = mutableListOf<GridRowUiState>()
-        val cells = behaviors.map { behavior ->
+        val cells = sortedBehaviors.map { behavior ->
             val activity = activityMap[behavior.activityId]
             val tags = try {
                 behaviorRepository.getTagsForBehavior(behavior.id).firstOrNull() ?: emptyList()
@@ -170,9 +183,17 @@ class HomeViewModel @Inject constructor(
                 emptyList()
             }
             val isActive = behavior.status == BehaviorNature.ACTIVE
-            val startLocal = java.time.Instant.ofEpochMilli(behavior.startTime)
-                .atZone(ZoneId.systemDefault())
-                .toLocalTime()
+            val isPending = behavior.status == BehaviorNature.PENDING
+            // PENDING 的 startTime 在数据库里是 0L，用 Instant.ofEpochMilli(0) 在 UTC+N 时区下
+            // 会被解析成 08:00 之类的幽灵值（中国时区 UTC+8 → 1970-01-01 08:00）。
+            // 因此这里直接置 null，避免详情弹窗里出现伪造的开始时间。
+            val startLocal = if (isPending || behavior.startTime <= 0L) {
+                null
+            } else {
+                java.time.Instant.ofEpochMilli(behavior.startTime)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
             val endLocal = behavior.endTime?.let {
                 java.time.Instant.ofEpochMilli(it)
                     .atZone(ZoneId.systemDefault())
@@ -218,8 +239,11 @@ class HomeViewModel @Inject constructor(
             if (hasCurrentInRow) currentRowId = rowId
 
             val timeForRow = if (rowIndex < allCells.size / 4) {
-                val behavior = behaviors.getOrNull(rowIndex * 4)
-                if (behavior != null) {
+                val behavior = sortedBehaviors.getOrNull(rowIndex * 4)
+                if (behavior != null
+                    && behavior.status != BehaviorNature.PENDING
+                    && behavior.startTime > 0L
+                ) {
                     java.time.Instant.ofEpochMilli(behavior.startTime)
                         .atZone(ZoneId.systemDefault())
                         .toLocalTime()

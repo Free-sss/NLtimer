@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -36,8 +37,8 @@ fun GridCell(
     modifier: Modifier = Modifier,
 ) {
     // 判断是否为已完成且达到白金成就等级的行为
-    val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED && cell.achievementLevel != null
-    val platinumStrength = if (isPlatinum) cell.achievementLevel / 100f else 0f
+    val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
+    val platinumStrength = cell.achievementLevel?.let { it / 100f } ?: 0f
 
     // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
@@ -51,7 +52,7 @@ fun GridCell(
             .fillMaxSize()
             .heightIn(max = 140.dp)
             .clipToBounds()
-            .background(backgroundColor, RoundedCornerShape(16.dp))
+            .background(backgroundColor, RoundedCornerShape(12.dp))
             .appBorder(
                 borderProducer = {
                     val borderColor = when {
@@ -70,25 +71,28 @@ fun GridCell(
                     val borderWidth = if (cell.isCurrent || isPlatinum) 2.dp else 1.dp
                     BorderStroke(borderWidth, borderColor)
                 },
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             )
             .padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // 显示活动 emoji
-        cell.activityEmoji?.let { emoji ->
-            Text(text = emoji, style = MaterialTheme.typography.labelSmall)
-        }
-        // 显示活动名称（单行省略）
-        cell.activityName?.let { name ->
-            Text(
-                text = name,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+        Row(){
+            // 显示活动 emoji
+            cell.activityEmoji?.let { emoji ->
+                Text(text = emoji, style = MaterialTheme.typography.labelSmall)
+            }
+
+            // 显示活动名称（单行省略）
+            cell.activityName?.let { name ->
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         // 渲染标签列表为 FlowRow 标签条
         if (cell.tags.isNotEmpty()) {
@@ -98,6 +102,13 @@ fun GridCell(
             ) {
                 cell.tags.forEach { tag -> TagChip(tag = tag) }
             }
+        }
+        cell.note?.let { note ->
+            Text(
+                text = note,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
         }
     }
 }

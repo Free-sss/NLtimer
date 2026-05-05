@@ -43,7 +43,7 @@ fun GridRow(
     // 记录当前点击的详情单元格，用于弹出对话框
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val gridMinHeight  = 90.dp
+    val gridMinHeight  = 100.dp
     Box(modifier = modifier.fillMaxWidth()) {
         Column {
             if (row.cells.isNotEmpty() && timeLabelConfig.visible) {
@@ -57,7 +57,7 @@ fun GridRow(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 // 确定唯一的空单元格位置：优先用添加占位，其次第一个空位
                 val addPlaceholderIndex = row.cells.indexOfFirst { it.isAddPlaceholder }
