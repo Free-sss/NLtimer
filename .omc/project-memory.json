@@ -167,6 +167,295 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "",
+      "accessCount": 10,
+      "lastAccessed": 1777950232636,
+      "type": "directory"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\management_activities\\src\\test\\java\\com\\nltimer\\feature\\management_activities\\viewmodel\\ActivityManagementViewModelTest.kt",
+      "accessCount": 7,
+      "lastAccessed": 1777943850524,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\categories\\src\\test\\java\\com\\nltimer\\feature\\categories\\viewmodel\\CategoriesViewModelTest.kt",
+      "accessCount": 5,
+      "lastAccessed": 1777943060331,
+      "type": "file"
+    },
+    {
+      "path": "feature\\categories\\src\\test\\java\\com\\nltimer\\feature\\categories\\viewmodel\\CategoriesViewModelTest.kt",
+      "accessCount": 5,
+      "lastAccessed": 1777949988403,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\settings\\src\\test\\java\\com\\nltimer\\feature\\settings\\ui\\ThemeSettingsViewModelTest.kt",
+      "accessCount": 3,
+      "lastAccessed": 1777942473437,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\home\\src\\test\\java\\com\\nltimer\\feature\\home\\viewmodel\\HomeViewModelTest.kt",
+      "accessCount": 3,
+      "lastAccessed": 1777942766227,
+      "type": "file"
+    },
+    {
+      "path": "feature\\home\\src\\test\\java\\com\\nltimer\\feature\\home\\viewmodel\\HomeViewModelTest.kt",
+      "accessCount": 3,
+      "lastAccessed": 1777949988494,
+      "type": "file"
+    },
+    {
+      "path": "docs\\UNIT_TEST_AUDIT.md",
+      "accessCount": 2,
+      "lastAccessed": 1777950407070,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\docs\\superpowers\\plans\\2026-05-05-batch-test-generation.md",
+      "accessCount": 1,
+      "lastAccessed": 1777941688914,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\test\\java\\com\\nltimer\\core\\data\\mock\\TestDataFactory.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941740806,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\test\\java\\com\\nltimer\\core\\data\\mock\\MockData.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941740872,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\gradle\\libs.versions.toml",
+      "accessCount": 1,
+      "lastAccessed": 1777941742231,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\TagRepository.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941742378,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\test\\java\\com\\nltimer\\core\\data\\repository\\CategoryRepositoryTest.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941742541,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\ActivityRepository.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941742606,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\BehaviorRepository.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777941742709,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\claude\\D--2026Code-Group-android-NLtimer\\c39a7440-f14d-4e15-9edd-490c461d412c\\tasks\\bj40vpoat.output",
+      "accessCount": 1,
+      "lastAccessed": 1777942111853,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\model\\Activity.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942148825,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\model\\Behavior.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942149462,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\model\\ActivityGroup.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942149604,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\model\\BehaviorWithDetails.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942150627,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\claude\\D--2026Code-Group-android-NLtimer\\c39a7440-f14d-4e15-9edd-490c461d412c\\tasks\\be3sp5w46.output",
+      "accessCount": 1,
+      "lastAccessed": 1777942208193,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\viewmodel\\HomeViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942297243,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\claude\\D--2026Code-Group-android-NLtimer\\c39a7440-f14d-4e15-9edd-490c461d412c\\tasks\\bgh8lt0f4.output",
+      "accessCount": 1,
+      "lastAccessed": 1777942405316,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees/test-generation",
+      "accessCount": 1,
+      "lastAccessed": 1777942419520,
+      "type": "directory"
+    },
+    {
+      "path": ".worktrees/test-generation/core/data/src/main/java/com/nltimer/core/data",
+      "accessCount": 1,
+      "lastAccessed": 1777942419585,
+      "type": "directory"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\designsystem\\src\\main\\java\\com\\nltimer\\core\\designsystem\\theme\\TimeLabelConfig.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942428503,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\SettingsPrefs.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777942428541,
+      "type": "file"
+    },
+    {
+      "path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\claude\\D--2026Code-Group-android-NLtimer\\c39a7440-f14d-4e15-9edd-490c461d412c\\tasks\\b99h2u56n.output",
+      "accessCount": 1,
+      "lastAccessed": 1777943036998,
+      "type": "file"
+    },
+    {
+      "path": ".worktrees\\test-generation\\feature\\management_activities\\src\\main\\java\\com\\nltimer\\feature\\management_activities\\viewmodel\\ActivityManagementViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777943168839,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\database\\dao\\BehaviorDao.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777948840707,
+      "type": "file"
+    },
+    {
+      "path": "feature\\management_activities\\src\\test\\java\\com\\nltimer\\feature\\management_activities\\viewmodel\\ActivityManagementViewModelTest.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777949987610,
+      "type": "file"
+    },
+    {
+      "path": "feature\\settings\\src\\test\\java\\com\\nltimer\\feature\\settings\\ui\\ThemeSettingsViewModelTest.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777949988835,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\test\\java\\com\\nltimer\\core\\data\\repository\\CategoryRepositoryTest.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777949988932,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\test\\java\\com\\nltimer\\core\\data\\util\\TimeConflictUtilsTest.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777949989031,
+      "type": "file"
+    },
+    {
+      "path": "feature\\settings\\src\\main\\java\\com\\nltimer\\feature\\settings\\ui\\DialogConfigViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950014605,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\impl\\ActivityRepositoryImpl.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950015180,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\impl\\BehaviorRepositoryImpl.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950016064,
+      "type": "file"
+    },
+    {
+      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\match\\MatchStrategy.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950016130,
+      "type": "file"
+    },
+    {
+      "path": "feature\\tag_management\\src\\main\\java\\com\\nltimer\\feature\\tag_management\\viewmodel\\TagManagementViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950016185,
+      "type": "file"
+    },
+    {
+      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\match\\KeywordMatchStrategy.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950016240,
+      "type": "file"
+    },
+    {
+      "path": "feature\\categories\\src\\main\\java\\com\\nltimer\\feature\\categories\\viewmodel\\CategoriesViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950041903,
+      "type": "file"
+    },
+    {
+      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\viewmodel\\HomeViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950042702,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\impl\\TagRepositoryImpl.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950043154,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\repository\\impl\\ActivityManagementRepositoryImpl.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950043360,
+      "type": "file"
+    },
+    {
+      "path": "feature\\management_activities\\src\\main\\java\\com\\nltimer\\feature\\management_activities\\viewmodel\\ActivityManagementViewModel.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950043431,
+      "type": "file"
+    },
+    {
+      "path": "core\\data\\src\\main\\java\\com\\nltimer\\core\\data\\migration\\CategoryMigrationValidator.kt",
+      "accessCount": 1,
+      "lastAccessed": 1777950043533,
+      "type": "file"
+    },
+    {
+      "path": "docs",
+      "accessCount": 1,
+      "lastAccessed": 1777950407238,
+      "type": "directory"
+    }
+  ],
   "userDirectives": []
 }

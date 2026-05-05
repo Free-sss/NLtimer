@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew :core:data:test --tests \"com.nltimer.core.data.repository.CategoryRepositoryTest\")",
+      "Bash(./gradlew :core:data:test --no-daemon)",
+      "Bash(./gradlew testDebugUnitTest)",
+      "Bash(git -C .worktrees/test-generation status --short)",
+      "Bash(git merge *)",
+      "Bash(./gradlew :core:data:testDebugUnitTest :feature:home:testDebugUnitTest :feature:categories:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)",
+      "Bash(./gradlew :core:data:testDebugUnitTest :feature:home:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)",
+      "Bash(./gradlew :feature:categories:testDebugUnitTest :feature:home:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)"
+    ]
+  }
+}
