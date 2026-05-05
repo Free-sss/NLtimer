@@ -390,7 +390,7 @@ fun HomeScreen(
                     allTags = allTags,
                     dialogConfig = dialogConfig,
                     initialStartTime = LocalTime.now(),
-                    existingBehaviors = existingBehaviors,
+                    existingBehaviors = existingBehaviors.filter { it.status != BehaviorNature.ACTIVE },
                     onDismiss = onDismissSheet,
                     onConfirm = onAddBehavior,
                     onAddActivity = onAddActivity,

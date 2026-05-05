@@ -364,9 +364,36 @@ class HomeViewModel @Inject constructor(
         note: String?,
     ) {
         viewModelScope.launch {
+            // 时间约束校验：结束/开始时间不能大于当前时间
+            val now = System.currentTimeMillis()
+            when (status) {
+                BehaviorNature.COMPLETED -> {
+                    if (endTime != null && endTime > now) {
+                        _uiState.update {
+                            it.copy(errorMessage = "结束时间不能大于当前时间")
+                        }
+                        return@launch
+                    }
+                }
+                BehaviorNature.ACTIVE -> {
+                    if (startTime > now) {
+                        _uiState.update {
+                            it.copy(errorMessage = "开始时间不能大于当前时间")
+                        }
+                        return@launch
+                    }
+                }
+                BehaviorNature.PENDING -> {} // 无时间约束
+            }
+
+            // 先结束当前行为，再进行冲突检测
+            // 否则 ACTIVE 行为的 endTime=null 会被视为 [+∞)，导致边界相接也被误判为冲突
+            if (status == BehaviorNature.ACTIVE) {
+                behaviorRepository.endCurrentBehavior(startTime)
+            }
+
             // 非 PENDING 行为进行时间冲突检测
             if (status != BehaviorNature.PENDING) {
-                val now = System.currentTimeMillis()
                 val effectiveNewEnd = when (status) {
                     BehaviorNature.ACTIVE -> Long.MAX_VALUE
                     BehaviorNature.COMPLETED -> endTime ?: startTime
@@ -393,32 +420,6 @@ class HomeViewModel @Inject constructor(
                         return@launch
                     }
                 }
-            }
-
-            // 时间约束校验：结束/开始时间不能大于当前时间
-            val now = System.currentTimeMillis()
-            when (status) {
-                BehaviorNature.COMPLETED -> {
-                    if (endTime != null && endTime > now) {
-                        _uiState.update {
-                            it.copy(errorMessage = "结束时间不能大于当前时间")
-                        }
-                        return@launch
-                    }
-                }
-                BehaviorNature.ACTIVE -> {
-                    if (startTime > now) {
-                        _uiState.update {
-                            it.copy(errorMessage = "开始时间不能大于当前时间")
-                        }
-                        return@launch
-                    }
-                }
-                BehaviorNature.PENDING -> {} // 无时间约束
-            }
-
-            if (status == BehaviorNature.ACTIVE) {
-                behaviorRepository.endCurrentBehavior(startTime)
             }
 
             // 计算新行为的 sequence（按时间排序插入）
