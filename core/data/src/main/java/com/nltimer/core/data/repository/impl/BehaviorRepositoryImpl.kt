@@ -228,4 +228,9 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.deleteTagsForBehavior(behaviorId)
         behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
     }
+
+    override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> =
+        behaviorDao.getBehaviorsOverlappingRange(rangeStart, rangeEnd).map { list ->
+            list.map { it.toModel() }
+        }
 }

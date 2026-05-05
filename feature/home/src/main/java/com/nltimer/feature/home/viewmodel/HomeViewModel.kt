@@ -12,6 +12,7 @@ import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
@@ -339,6 +340,37 @@ class HomeViewModel @Inject constructor(
         note: String?,
     ) {
         viewModelScope.launch {
+            // 非 PENDING 行为进行时间冲突检测
+            if (status != BehaviorNature.PENDING) {
+                val now = System.currentTimeMillis()
+                val effectiveNewEnd = when (status) {
+                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
+                    BehaviorNature.COMPLETED -> endTime ?: startTime
+                    BehaviorNature.PENDING -> null
+                }
+
+                if (effectiveNewEnd != null && effectiveNewEnd > startTime) {
+                    val overlappingBehaviors = behaviorRepository
+                        .getBehaviorsOverlappingRange(startTime, effectiveNewEnd)
+                        .firstOrNull()
+                        .orEmpty()
+
+                    if (hasTimeConflict(
+                            newStart = startTime,
+                            newEnd = endTime,
+                            newStatus = status,
+                            existingBehaviors = overlappingBehaviors,
+                            currentTime = now,
+                        )
+                    ) {
+                        _uiState.update {
+                            it.copy(errorMessage = "该时间段与已有行为记录冲突")
+                        }
+                        return@launch
+                    }
+                }
+            }
+
             if (status == BehaviorNature.ACTIVE) {
                 behaviorRepository.endCurrentBehavior(startTime)
             }

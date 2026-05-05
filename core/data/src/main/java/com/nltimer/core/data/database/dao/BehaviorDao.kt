@@ -178,4 +178,29 @@ interface BehaviorDao {
 
     @Query("SELECT * FROM activity_tag_binding")
     suspend fun getAllActivityTagBindingsSync(): List<ActivityTagBindingEntity>
+
+    /**
+     * 查询与指定时间范围重叠的行为记录
+     *
+     * 重叠判断条件（半开区间）：
+     * - 已有行为的 startTime < 查询范围的 end
+     * - 已有行为的 endTime 为 NULL（ACTIVE 状态）或 endTime > 查询范围的 start
+     * - 排除 PENDING 状态和无效 startTime
+     */
+    @Query(
+        """
+        SELECT * FROM behaviors
+        WHERE startTime < :rangeEnd
+          AND (
+              endTime IS NULL
+              OR endTime > :rangeStart
+          )
+          AND status != 'pending'
+          AND startTime > 0
+        """
+    )
+    fun getBehaviorsOverlappingRange(
+        rangeStart: Long,
+        rangeEnd: Long,
+    ): Flow<List<BehaviorEntity>>
 }

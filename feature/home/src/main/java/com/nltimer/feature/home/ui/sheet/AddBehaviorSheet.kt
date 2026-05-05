@@ -84,9 +84,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -94,6 +96,7 @@ import com.nltimer.core.designsystem.theme.PathDrawMode
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -111,6 +114,7 @@ fun AddBehaviorSheet(
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -124,6 +128,7 @@ fun AddBehaviorSheet(
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
         initialEndTime = initialEndTime,
+        existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
@@ -141,6 +146,7 @@ fun AddCurrentBehaviorSheet(
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     initialStartTime: LocalTime? = null,
+    existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -153,6 +159,7 @@ fun AddCurrentBehaviorSheet(
         allTags = allTags,
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
+        existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
@@ -169,6 +176,7 @@ fun AddTargetBehaviorSheet(
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
+    existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -180,6 +188,7 @@ fun AddTargetBehaviorSheet(
         activities = activities,
         allTags = allTags,
         dialogConfig = dialogConfig,
+        existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
@@ -197,6 +206,7 @@ private fun BehaviorSheetWrapper(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit,
@@ -220,6 +230,7 @@ private fun BehaviorSheetWrapper(
             dialogConfig = dialogConfig,
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,
+            existingBehaviors = existingBehaviors,
             onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
                 onConfirm(activityId, tagIds, startTime, endTime, nature, note)
                 onDismiss()
@@ -240,6 +251,7 @@ internal fun AddBehaviorSheetContent(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    existingBehaviors: List<Behavior> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
@@ -266,6 +278,31 @@ internal fun AddBehaviorSheetContent(
     }
     val nature = mode
     var note by remember { mutableStateOf("") }
+
+    val today = remember { LocalDateTime.now().toLocalDate() }
+    val hasTimeConflict by remember(startTime, endTime, mode, existingBehaviors) {
+        derivedStateOf {
+            if (mode == BehaviorNature.PENDING) return@derivedStateOf false
+            val nowEpoch = System.currentTimeMillis()
+            val startEpoch = today.atTime(startTime.toLocalTime())
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+            val endEpoch = if (mode == BehaviorNature.COMPLETED) {
+                today.atTime(endTime.toLocalTime())
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            } else null
+            hasTimeConflict(
+                newStart = startEpoch,
+                newEnd = endEpoch,
+                newStatus = mode,
+                existingBehaviors = existingBehaviors,
+                currentTime = nowEpoch,
+            )
+        }
+    }
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
@@ -719,6 +756,14 @@ internal fun AddBehaviorSheetContent(
                                             ).show()
                                             return@Button
                                         }
+                                        if (hasTimeConflict) {
+                                            Toast.makeText(
+                                                context,
+                                                "该时间段与已有行为记录冲突",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
                                         selectedActivityId?.let { activityId ->
                                             onConfirm(
                                                 activityId,
@@ -731,14 +776,26 @@ internal fun AddBehaviorSheetContent(
                                         }
                                     },
                                     shape = RoundedCornerShape(24.dp),
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (hasTimeConflict)
+                                            MaterialTheme.colorScheme.error
+                                        else
+                                            MaterialTheme.colorScheme.primaryContainer
+                                    ),
 
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(40.dp),
                                     enabled = selectedActivityId != null,
                                 ) {
-                                    Text("确认", fontSize = 14.sp,color = MaterialTheme.colorScheme.onPrimaryContainer)
+                                    Text(
+                                        text = if (hasTimeConflict) "时间冲突" else "确认",
+                                        fontSize = 14.sp,
+                                        color = if (hasTimeConflict)
+                                            MaterialTheme.colorScheme.onError
+                                        else
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
@@ -925,6 +982,7 @@ private fun AddBehaviorSheetPreview() {
                 activities = sampleActivities,
                 allTags = sampleTags,
                 dialogConfig = DialogGridConfig(),
+                existingBehaviors = emptyList(),
                 onConfirm = { _, _, _, _, _, _ -> },
                 onDismiss = { },
             )

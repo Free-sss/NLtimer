@@ -60,6 +60,11 @@ class CategoryRepositoryTest {
             groupEntities.removeAll { it.name == name }
             groupFlow.value = groupEntities.toList()
         }
+
+        override suspend fun deleteAll() {
+            groupEntities.clear()
+            groupFlow.value = emptyList()
+        }
     }
 
     private val fakeTagDao = object : TagDao {
@@ -110,6 +115,11 @@ class CategoryRepositoryTest {
                 if (it.category == category) it.copy(category = null) else it
             }
             tagFlow.value = tagEntities.toList()
+        }
+
+        override suspend fun deleteAll() {
+            tagEntities.clear()
+            tagFlow.value = emptyList()
         }
     }
 

@@ -35,9 +35,14 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
@@ -67,7 +73,9 @@ import com.nltimer.feature.home.ui.components.TimelineReverseView
 import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
 import com.nltimer.feature.home.ui.sheet.AddCurrentBehaviorSheet
 import com.nltimer.feature.home.ui.sheet.AddTargetBehaviorSheet
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 
 @Composable
 fun HomeScreen(
@@ -106,6 +114,17 @@ fun HomeScreen(
     }
 
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { message ->
+            snackbarHostState.showSnackbar(
+                message = message,
+                duration = SnackbarDuration.Short,
+            )
+        }
+    }
+
     var isDragging by remember { mutableStateOf(false) }
     var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var dragStartOffset by remember { mutableStateOf(Offset.Zero) }
@@ -131,6 +150,7 @@ fun HomeScreen(
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             floatingActionButtonPosition = FabPosition.End,
             floatingActionButton = {
                 val cornerRadius = if (uiState.hasActiveBehavior) 16.dp else 28.dp
@@ -316,6 +336,35 @@ fun HomeScreen(
             }
         }
 
+        val existingBehaviors = remember(uiState.rows) {
+            uiState.rows.flatMap { it.cells }
+                .filter { it.behaviorId != null && it.status != null }
+                .map { cell ->
+                    Behavior(
+                        id = cell.behaviorId!!,
+                        activityId = 0,
+                        startTime = cell.startTime
+                            ?.atDate(LocalDate.now())
+                            ?.atZone(ZoneId.systemDefault())
+                            ?.toInstant()
+                            ?.toEpochMilli() ?: 0,
+                        endTime = cell.endTime
+                            ?.atDate(LocalDate.now())
+                            ?.atZone(ZoneId.systemDefault())
+                            ?.toInstant()
+                            ?.toEpochMilli(),
+                        status = cell.status!!,
+                        note = cell.note,
+                        pomodoroCount = cell.pomodoroCount,
+                        sequence = 0,
+                        estimatedDuration = cell.estimatedDuration,
+                        actualDuration = cell.actualDuration,
+                        achievementLevel = cell.achievementLevel,
+                        wasPlanned = cell.wasPlanned,
+                    )
+                }
+        }
+
         when (uiState.addSheetMode) {
             AddSheetMode.COMPLETED -> {
                 AddBehaviorSheet(
@@ -326,6 +375,7 @@ fun HomeScreen(
                     dialogConfig = dialogConfig,
                     initialStartTime = uiState.lastBehaviorEndTime,
                     initialEndTime = LocalTime.now(),
+                    existingBehaviors = existingBehaviors,
                     onDismiss = onDismissSheet,
                     onConfirm = onAddBehavior,
                     onAddActivity = onAddActivity,
@@ -340,6 +390,7 @@ fun HomeScreen(
                     allTags = allTags,
                     dialogConfig = dialogConfig,
                     initialStartTime = LocalTime.now(),
+                    existingBehaviors = existingBehaviors,
                     onDismiss = onDismissSheet,
                     onConfirm = onAddBehavior,
                     onAddActivity = onAddActivity,
@@ -353,6 +404,7 @@ fun HomeScreen(
                     tagsForActivity = tagsForSelectedActivity,
                     allTags = allTags,
                     dialogConfig = dialogConfig,
+                    existingBehaviors = existingBehaviors,
                     onDismiss = onDismissSheet,
                     onConfirm = onAddBehavior,
                     onAddActivity = onAddActivity,
