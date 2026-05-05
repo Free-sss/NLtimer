@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,9 +74,11 @@ fun GridCell(
                 },
                 shape = RoundedCornerShape(12.dp)
             )
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .padding(4.dp)
+            ,
+            
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Top,
     ) {
         Row(){
             // 显示活动 emoji
@@ -94,9 +97,10 @@ fun GridCell(
                 )
             }
         }
-        // 渲染标签列表为 FlowRow 标签条
+        // 渲染标签列表为 FlowRow 标签条（整体缩小 10%）
         if (cell.tags.isNotEmpty()) {
             FlowRow(
+                modifier = Modifier.scale(0.85f),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
