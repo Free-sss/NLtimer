@@ -71,7 +71,7 @@ class CategoriesViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.Eagerly,
+        started = SharingStarted.WhileSubscribed(5_000),
         initialValue = CategoriesUiState(),
     )
 

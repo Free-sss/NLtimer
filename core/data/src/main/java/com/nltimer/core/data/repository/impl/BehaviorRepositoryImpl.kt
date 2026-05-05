@@ -12,6 +12,7 @@ import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -119,14 +120,12 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.endCurrentBehavior(endTime)
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
-        // 1. 结束当前行为：设置结束时间和实际耗时
         val now = System.currentTimeMillis()
-        val clampedEndTime = if (now < now) now else now
-        behaviorDao.setEndTime(currentId, clampedEndTime)
+        val currentEntity = behaviorDao.getById(currentId) ?: return null
+        val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
 
-        // 2. 计算实际耗时并评估完成度
-        val currentEntity = behaviorDao.getById(currentId)
-        if (currentEntity != null && currentEntity.startTime > 0) {
+        // 计算实际耗时并评估完成度
+        if (currentEntity.startTime > 0) {
             val duration = clampedEndTime - currentEntity.startTime
             behaviorDao.setActualDuration(currentId, duration)
 
@@ -140,22 +139,22 @@ class BehaviorRepositoryImpl @Inject constructor(
             }
         }
 
-        // 3. 标记为已完成
-        behaviorDao.setStatus(currentId, "completed")
+        // 结束当前行为：设置结束时间和状态
+        behaviorDao.setEndTime(currentId, clampedEndTime)
+        behaviorDao.setStatus(currentId, BehaviorNature.COMPLETED.key)
 
-        // 4. 空闲模式不启动下一个
+        // 空闲模式不启动下一个
         if (idleMode) return null
 
-        // 5. 自动启动下一个待办行为
+        // 自动启动下一个待办行为
         val nextPending = behaviorDao.getNextPending() ?: return null
         val nextNow = System.currentTimeMillis()
-        behaviorDao.setStatus(nextPending.id, "active")
+        behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
         behaviorDao.setStartTime(nextPending.id, nextNow)
         return nextPending.toModel()
     }
 
     override suspend fun reorderGoals(orderedIds: List<Long>) {
-        // 根据传入的 ID 顺序重新设置 sequence
         orderedIds.forEachIndexed { index, id ->
             behaviorDao.setSequence(id, index)
         }
@@ -164,11 +163,6 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun delete(id: Long) {
         val toDelete = behaviorDao.getById(id) ?: return
         behaviorDao.delete(id)
-
-        // 刷新待办列表快照（用于 UI 更新通知）
-        val pendingList = behaviorDao.getPendingBehaviors()
-        val pendingEntities = mutableListOf<BehaviorEntity>()
-        pendingList.collect { pendingEntities.addAll(it) }
     }
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {

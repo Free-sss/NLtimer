@@ -1,6 +1,7 @@
 package com.nltimer.app
 
 import android.app.Application
+import android.util.Log
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -27,8 +28,8 @@ class NLtimerApplication : Application() {
                 .invoke(null)
         } catch (_: ClassNotFoundException) {
             // release 构建无 DebugInitializer 类，预期异常
-        } catch (_: Exception) {
-            // 其他异常静默忽略
+        } catch (e: Exception) {
+            Log.w("NLtimerApplication", "DebugInitializer init failed", e)
         }
     }
 }

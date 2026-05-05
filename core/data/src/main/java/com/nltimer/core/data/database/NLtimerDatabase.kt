@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -63,32 +63,35 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 )
                 // 关闭外键约束后重建表，移除 category 列
                 db.execSQL("PRAGMA foreign_keys = OFF")
-                db.execSQL(
-                    """
-                    CREATE TABLE activities_new (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        name TEXT NOT NULL,
-                        emoji TEXT,
-                        iconKey TEXT,
-                        groupId INTEGER,
-                        isPreset INTEGER NOT NULL DEFAULT 0,
-                        isArchived INTEGER NOT NULL DEFAULT 0,
-                        createdAt INTEGER NOT NULL,
-                        updatedAt INTEGER NOT NULL
+                try {
+                    db.execSQL(
+                        """
+                        CREATE TABLE activities_new (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            name TEXT NOT NULL,
+                            emoji TEXT,
+                            iconKey TEXT,
+                            groupId INTEGER,
+                            isPreset INTEGER NOT NULL DEFAULT 0,
+                            isArchived INTEGER NOT NULL DEFAULT 0,
+                            createdAt INTEGER NOT NULL,
+                            updatedAt INTEGER NOT NULL
+                        )
+                        """.trimIndent()
                     )
-                    """.trimIndent()
-                )
-                // 迁移所有数据到新表
-                db.execSQL(
-                    """
-                    INSERT INTO activities_new (id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt)
-                    SELECT id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt
-                    FROM activities
-                    """.trimIndent()
-                )
-                db.execSQL("DROP TABLE activities")
-                db.execSQL("ALTER TABLE activities_new RENAME TO activities")
-                db.execSQL("PRAGMA foreign_keys = ON")
+                    // 迁移所有数据到新表
+                    db.execSQL(
+                        """
+                        INSERT INTO activities_new (id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt)
+                        SELECT id, name, emoji, iconKey, groupId, isPreset, isArchived, createdAt, updatedAt
+                        FROM activities
+                        """.trimIndent()
+                    )
+                    db.execSQL("DROP TABLE activities")
+                    db.execSQL("ALTER TABLE activities_new RENAME TO activities")
+                } finally {
+                    db.execSQL("PRAGMA foreign_keys = ON")
+                }
             }
         }
 
@@ -104,6 +107,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // 关闭外键约束，避免删除重复记录时触发级联限制
                 db.execSQL("PRAGMA foreign_keys = OFF")
+                try {
 
                 // 将 behaviors 中引用了重复 activity 的记录指向保留的 activity
                 db.execSQL(
@@ -180,8 +184,10 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_tags_name ON tags(name)")
 
-                // 重新开启外键约束
-                db.execSQL("PRAGMA foreign_keys = ON")
+                } finally {
+                    // 重新开启外键约束
+                    db.execSQL("PRAGMA foreign_keys = ON")
+                }
             }
         }
     }

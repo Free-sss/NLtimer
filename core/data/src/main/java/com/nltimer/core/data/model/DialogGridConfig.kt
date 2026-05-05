@@ -1,9 +1,11 @@
 package com.nltimer.core.data.model
 
+import androidx.compose.runtime.Immutable
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
 
+@Immutable
 data class DialogGridConfig(
     val activityDisplayMode: ChipDisplayMode = ChipDisplayMode.Filled,
     val activityLayoutMode: GridLayoutMode = GridLayoutMode.Horizontal,

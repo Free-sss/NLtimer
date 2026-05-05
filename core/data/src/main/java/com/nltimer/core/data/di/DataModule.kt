@@ -61,7 +61,7 @@ abstract class DataModule {
                 NLtimerDatabase::class.java,
                 "nltimer-database",
             )
-                .fallbackToDestructiveMigration(false)
+                .fallbackToDestructiveMigration(true)
                 .addMigrations(NLtimerDatabase.MIGRATION_3_4, NLtimerDatabase.MIGRATION_4_5, NLtimerDatabase.MIGRATION_5_6)
                 .build()
 

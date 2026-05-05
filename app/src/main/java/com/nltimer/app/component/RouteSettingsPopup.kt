@@ -15,8 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.Accessible
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Dashboard
-import androidx.compose.material.icons.filled.Label
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.HorizontalDivider
@@ -127,7 +125,7 @@ fun RouteSettingsPopup(
                     
                     // 展开布局选项子菜单，遍历所有布局枚举供用户选择
                     if (showLayoutOptions) {
-                        HomeLayout.values().forEach { layout ->
+                        HomeLayout.entries.forEach { layout ->
                             val isSelected = currentLayout == layout
                             PopupItem(
                                 icon = if (isSelected) Icons.Default.Search else Icons.Default.Dashboard,

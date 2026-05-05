@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * 抽屉侧边栏菜单项数据模型
@@ -42,14 +43,14 @@ internal data class DrawerMenuItem(
 )
 
 // 抽屉侧边栏菜单项列表，debug 模块可在初始化时动态追加
-internal val drawerMenuItems = mutableListOf(
+internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
     DrawerMenuItem("home", "主页", Icons.Default.Home),
     DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem("categories", "分类管理", Icons.Default.Category),
     DrawerMenuItem("management_activities", "活动管理", Icons.Default.List),
     DrawerMenuItem("tag_management", "标签管理", Icons.Default.Label),
     DrawerMenuItem("settings", "设置", Icons.Default.Settings),
-)
+))
 
 /**
  * 抽屉侧边栏 Composable

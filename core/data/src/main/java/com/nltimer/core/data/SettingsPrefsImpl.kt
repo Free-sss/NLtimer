@@ -40,13 +40,13 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
 
         Theme(
             seedColor = Color(seed),
-            appTheme = try { AppTheme.valueOf(appThemeName) } catch (_: Exception) { AppTheme.SYSTEM },
+            appTheme = try { AppTheme.valueOf(appThemeName) } catch (_: IllegalArgumentException) { AppTheme.SYSTEM },
             isAmoled = prefs[isAmoledKey] == true,
-            paletteStyle = try { PaletteStyle.valueOf(paletteStyleName) } catch (_: Exception) { PaletteStyle.TONALSPOT },
+            paletteStyle = try { PaletteStyle.valueOf(paletteStyleName) } catch (_: IllegalArgumentException) { PaletteStyle.TONALSPOT },
             isMaterialYou = prefs[isMaterialYouKey] == true,
-            font = try { Fonts.valueOf(fontName) } catch (_: Exception) { Fonts.FIGTREE },
+            font = try { Fonts.valueOf(fontName) } catch (_: IllegalArgumentException) { Fonts.FIGTREE },
             showBorders = prefs[showBordersKey] != false,
-            homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: Exception) { HomeLayout.GRID },
+            homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: IllegalArgumentException) { HomeLayout.GRID },
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
         )
     }
@@ -78,18 +78,18 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
 
     override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dataStore.data.map { prefs ->
         DialogGridConfig(
-            activityDisplayMode = try { ChipDisplayMode.valueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: Exception) { ChipDisplayMode.Filled },
-            activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: Exception) { GridLayoutMode.Horizontal },
+            activityDisplayMode = try { ChipDisplayMode.valueOf(prefs[actDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
+            activityLayoutMode = try { GridLayoutMode.valueOf(prefs[actLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
             activityColumnLines = prefs[actColumnLinesKey] ?: 2,
             activityHorizontalLines = prefs[actHorizontalLinesKey] ?: 2,
             activityUseColorForText = prefs[actUseColorKey] ?: true,
-            tagDisplayMode = try { ChipDisplayMode.valueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: Exception) { ChipDisplayMode.Filled },
-            tagLayoutMode = try { GridLayoutMode.valueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: Exception) { GridLayoutMode.Horizontal },
+            tagDisplayMode = try { ChipDisplayMode.valueOf(prefs[tagDisplayModeKey] ?: ChipDisplayMode.Filled.name) } catch (_: IllegalArgumentException) { ChipDisplayMode.Filled },
+            tagLayoutMode = try { GridLayoutMode.valueOf(prefs[tagLayoutModeKey] ?: GridLayoutMode.Horizontal.name) } catch (_: IllegalArgumentException) { GridLayoutMode.Horizontal },
             tagColumnLines = prefs[tagColumnLinesKey] ?: 2,
             tagHorizontalLines = prefs[tagHorizontalLinesKey] ?: 2,
             tagUseColorForText = prefs[tagUseColorKey] ?: true,
             showBehaviorNature = prefs[showNatureKey] ?: true,
-            pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: Exception) { PathDrawMode.StartToEnd },
+            pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
         )
     }
 
@@ -134,8 +134,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         if (parts.size != 3) return TimeLabelConfig()
         return TimeLabelConfig(
             visible = parts[0].toBooleanStrictOrNull() ?: true,
-            style = try { TimeLabelStyle.valueOf(parts[1]) } catch (_: Exception) { TimeLabelStyle.PILL },
-            format = try { TimeLabelFormat.valueOf(parts[2]) } catch (_: Exception) { TimeLabelFormat.HH_MM },
+            style = try { TimeLabelStyle.valueOf(parts[1]) } catch (_: IllegalArgumentException) { TimeLabelStyle.PILL },
+            format = try { TimeLabelFormat.valueOf(parts[2]) } catch (_: IllegalArgumentException) { TimeLabelFormat.HH_MM },
         )
     }
 

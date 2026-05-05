@@ -283,7 +283,6 @@ class HomeViewModel @Inject constructor(
                     name = name,
                     emoji = emoji.ifBlank { null },
                     iconKey = null,
-//                    category = null,
                     isArchived = false,
                 )
             )
@@ -384,7 +383,7 @@ class HomeViewModel @Inject constructor(
     fun startNextPending() {
         viewModelScope.launch {
             val next = behaviorRepository.getNextPending() ?: return@launch
-            behaviorRepository.setStatus(next.id, "active")
+            behaviorRepository.setStatus(next.id, BehaviorNature.ACTIVE.key)
             behaviorRepository.setStartTime(next.id, System.currentTimeMillis())
         }
     }

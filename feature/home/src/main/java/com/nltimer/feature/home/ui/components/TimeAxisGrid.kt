@@ -95,7 +95,7 @@ fun TimeAxisGrid(
                     expanded = showLayoutMenu,
                     onDismissRequest = { showLayoutMenu = false }
                 ) {
-                    HomeLayout.values().forEach { layout ->
+                    HomeLayout.entries.forEach { layout ->
                         DropdownMenuItem(
                             text = { Text(layout.toDisplayString()) },
                             onClick = {

@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.toDisplayString
@@ -78,7 +79,7 @@ fun TimelineReverseView(
         
         if (behaviors.isNotEmpty()) {
             val latest = behaviors.last()
-            if (latest.status != com.nltimer.core.data.model.BehaviorNature.ACTIVE && latest.endTime != null) {
+            if (latest.status != BehaviorNature.ACTIVE && latest.endTime != null) {
                 val now = LocalTime.now()
                 if (now.isAfter(latest.endTime)) {
                     items.add(TimelineItemData.Idle(latest.endTime, now))
@@ -132,7 +133,7 @@ fun TimelineReverseView(
                         expanded = showLayoutMenu,
                         onDismissRequest = { showLayoutMenu = false }
                     ) {
-                        HomeLayout.values().forEach { layout ->
+                        HomeLayout.entries.forEach { layout ->
                             DropdownMenuItem(
                                 text = { Text(layout.toDisplayString()) },
                                 onClick = {

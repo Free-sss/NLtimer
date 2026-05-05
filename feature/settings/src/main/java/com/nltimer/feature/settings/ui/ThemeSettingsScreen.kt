@@ -197,7 +197,7 @@ fun ThemeSettingsScreen(
                                 .background(listItemColors().containerColor)
                                 .padding(start = 52.dp, end = 16.dp, bottom = 8.dp),
                         ) {
-                            AppTheme.values().toList().forEach { appTheme ->
+                            AppTheme.entries.toList().forEach { appTheme ->
                                 FilterChip(
                                     selected = appTheme == theme.appTheme,
                                     onClick = { onThemeSwitch(appTheme) },
@@ -250,7 +250,7 @@ fun ThemeSettingsScreen(
                                 .padding(start = 52.dp, end = 16.dp, bottom = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
-                            Fonts.values().toList().forEach { font ->
+                            Fonts.entries.toList().forEach { font ->
                                 FilterChip(
                                     selected = theme.font == font,
                                     onClick = { onFontChange(font) },
@@ -327,7 +327,7 @@ fun ThemeSettingsScreen(
                                 .padding(start = 52.dp, end = 16.dp, bottom = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            PaletteStyle.values().toList().forEach { style ->
+                            PaletteStyle.entries.toList().forEach { style ->
                                 val scheme = rememberDynamicColorScheme(
                                     primary = theme.seedColor,
                                     isDark = when (theme.appTheme) {

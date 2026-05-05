@@ -80,7 +80,7 @@ fun GenericFormDialog(
                     ) {
                         Column {
                             section.rows.forEach { row ->
-                                DialogFormRowRenderer(row = row, formState = formState)
+                                dialogFormRowRenderer(row = row, formState = formState)
                             }
                         }
                     }
@@ -106,30 +106,30 @@ fun GenericFormDialog(
 }
 
 @Composable
-private fun DialogFormRowRenderer(
+private fun dialogFormRowRenderer(
     row: FormRow,
     formState: MutableMap<String, String>,
 ) {
     when (row) {
-        is FormRow.TextInput -> DialogTextInputRenderer(
+        is FormRow.TextInput -> dialogTextInputRenderer(
             row = row,
             value = formState[row.key] ?: row.initialValue,
             onValueChange = { formState[row.key] = it },
         )
-        is FormRow.IconColor -> DialogIconColorRenderer(
+        is FormRow.IconColor -> dialogIconColorRenderer(
             row = row,
             emoji = formState[row.iconKey] ?: row.initialEmoji,
             colorValue = formState[row.colorKey] ?: "",
             onEmojiChange = { formState[row.iconKey] = it },
             onColorChange = { formState[row.colorKey] = it },
         )
-        is FormRow.LabelAction -> DialogLabelActionRenderer(row = row)
-        is FormRow.Switch -> DialogSwitchRenderer(
+        is FormRow.LabelAction -> dialogLabelActionRenderer(row = row)
+        is FormRow.Switch -> dialogSwitchRenderer(
             row = row,
             checked = formState[row.key]?.toBooleanStrictOrNull() ?: row.initialChecked,
             onCheckedChange = { formState[row.key] = it.toString() },
         )
-        is FormRow.NumberInput -> DialogNumberInputRenderer(
+        is FormRow.NumberInput -> dialogNumberInputRenderer(
             row = row,
             value = formState[row.key]?.toIntOrNull() ?: row.initialValue,
             onValueChange = { formState[row.key] = it.toString() },
@@ -138,7 +138,7 @@ private fun DialogFormRowRenderer(
 }
 
 @Composable
-private fun DialogTextInputRenderer(
+private fun dialogTextInputRenderer(
     row: FormRow.TextInput,
     value: String,
     onValueChange: (String) -> Unit,
@@ -185,7 +185,7 @@ private fun DialogTextInputRenderer(
 }
 
 @Composable
-private fun DialogIconColorRenderer(
+private fun dialogIconColorRenderer(
     row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
@@ -253,7 +253,7 @@ private fun DialogIconColorRenderer(
     }
 
     if (showEmojiEditor) {
-        DialogEmojiEditDialog(
+        dialogEmojiEditDialog(
             current = emoji,
             onConfirm = { newEmoji ->
                 onEmojiChange(newEmoji)
@@ -277,7 +277,7 @@ private fun DialogIconColorRenderer(
 }
 
 @Composable
-private fun DialogEmojiEditDialog(
+private fun dialogEmojiEditDialog(
     current: String,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -308,7 +308,7 @@ private fun DialogEmojiEditDialog(
 }
 
 @Composable
-private fun DialogLabelActionRenderer(row: FormRow.LabelAction) {
+private fun dialogLabelActionRenderer(row: FormRow.LabelAction) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,7 +347,7 @@ private fun DialogLabelActionRenderer(row: FormRow.LabelAction) {
 }
 
 @Composable
-private fun DialogSwitchRenderer(
+private fun dialogSwitchRenderer(
     row: FormRow.Switch,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -369,7 +369,7 @@ private fun DialogSwitchRenderer(
 }
 
 @Composable
-private fun DialogNumberInputRenderer(
+private fun dialogNumberInputRenderer(
     row: FormRow.NumberInput,
     value: Int,
     onValueChange: (Int) -> Unit,

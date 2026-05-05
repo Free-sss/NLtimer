@@ -116,7 +116,7 @@ fun GenericFormSheet(
                     ) {
                         Column {
                             section.rows.forEach { row ->
-                                FormRowRenderer(
+                                formRowRenderer(
                                     row = row,
                                     formState = formState,
                                 )
@@ -156,30 +156,30 @@ fun GenericFormSheet(
 }
 
 @Composable
-private fun FormRowRenderer(
+private fun formRowRenderer(
     row: FormRow,
     formState: MutableMap<String, String>,
 ) {
     when (row) {
-        is FormRow.TextInput -> TextInputRenderer(
+        is FormRow.TextInput -> textInputRenderer(
             row = row,
             value = formState[row.key] ?: row.initialValue,
             onValueChange = { formState[row.key] = it },
         )
-        is FormRow.IconColor -> IconColorRenderer(
+        is FormRow.IconColor -> iconColorRenderer(
             row = row,
             emoji = formState[row.iconKey] ?: row.initialEmoji,
             colorValue = formState[row.colorKey] ?: "",
             onEmojiChange = { formState[row.iconKey] = it },
             onColorChange = { formState[row.colorKey] = it },
         )
-        is FormRow.LabelAction -> LabelActionRenderer(row = row)
-        is FormRow.Switch -> SwitchRenderer(
+        is FormRow.LabelAction -> labelActionRenderer(row = row)
+        is FormRow.Switch -> switchRenderer(
             row = row,
             checked = formState[row.key]?.toBooleanStrictOrNull() ?: row.initialChecked,
             onCheckedChange = { formState[row.key] = it.toString() },
         )
-        is FormRow.NumberInput -> NumberInputRenderer(
+        is FormRow.NumberInput -> numberInputRenderer(
             row = row,
             value = formState[row.key]?.toIntOrNull() ?: row.initialValue,
             onValueChange = { formState[row.key] = it.toString() },
@@ -188,7 +188,7 @@ private fun FormRowRenderer(
 }
 
 @Composable
-private fun TextInputRenderer(
+private fun textInputRenderer(
     row: FormRow.TextInput,
     value: String,
     onValueChange: (String) -> Unit,
@@ -236,7 +236,7 @@ private fun TextInputRenderer(
 }
 
 @Composable
-private fun IconColorRenderer(
+private fun iconColorRenderer(
     row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
@@ -304,7 +304,7 @@ private fun IconColorRenderer(
     }
 
     if (showEmojiEditor) {
-        EmojiEditDialog(
+        emojiEditDialog(
             current = emoji,
             onConfirm = { newEmoji ->
                 onEmojiChange(newEmoji)
@@ -328,7 +328,7 @@ private fun IconColorRenderer(
 }
 
 @Composable
-private fun EmojiEditDialog(
+private fun emojiEditDialog(
     current: String,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -359,7 +359,7 @@ private fun EmojiEditDialog(
 }
 
 @Composable
-private fun LabelActionRenderer(row: FormRow.LabelAction) {
+private fun labelActionRenderer(row: FormRow.LabelAction) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -398,7 +398,7 @@ private fun LabelActionRenderer(row: FormRow.LabelAction) {
 }
 
 @Composable
-private fun SwitchRenderer(
+private fun switchRenderer(
     row: FormRow.Switch,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -423,7 +423,7 @@ private fun SwitchRenderer(
 }
 
 @Composable
-private fun NumberInputRenderer(
+private fun numberInputRenderer(
     row: FormRow.NumberInput,
     value: Int,
     onValueChange: (Int) -> Unit,

@@ -2,13 +2,11 @@ package com.nltimer.core.designsystem.theme
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
-//import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -20,7 +18,6 @@ import com.materialkolor.DynamicMaterialTheme
  */
 val LocalTheme = staticCompositionLocalOf { Theme() }
 
-//@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 /**
  * NLtimer 全局主题入口
  * 根据 [theme] 配置决定亮暗模式、调色板风格、字体，并通过 [DynamicMaterialTheme] 注入 Material3 主题，

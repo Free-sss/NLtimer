@@ -92,6 +92,11 @@ class ActivityManagementViewModel @Inject constructor(
         // 为每个分组单独监听其内部活动列表的变化
         viewModelScope.launch {
             repository.getAllGroups().collect { groups ->
+                val currentGroupIds = groups.map { it.id }.toSet()
+                // 清理已删除分组的 UI 数据
+                _uiState.update { state ->
+                    state.copy(groups = state.groups.filter { it.group.id in currentGroupIds })
+                }
                 groups.forEach { group ->
                     repository.getActivitiesByGroup(group.id)
                         .onEach { activities ->

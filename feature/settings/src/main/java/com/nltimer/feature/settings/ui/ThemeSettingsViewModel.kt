@@ -30,66 +30,36 @@ class ThemeSettingsViewModel @Inject constructor(
     val theme: StateFlow<Theme> = settingsPrefs.getThemeFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Theme())
 
-    /** 更新种子颜色 */
-    fun onSeedColorChange(color: Color) {
+    private fun updateTheme(transform: Theme.() -> Theme) {
         viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(seedColor = color))
+            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().transform())
         }
     }
+
+    /** 更新种子颜色 */
+    fun onSeedColorChange(color: Color) = updateTheme { copy(seedColor = color) }
 
     /** 切换亮暗模式 */
-    fun onThemeSwitch(appTheme: AppTheme) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(appTheme = appTheme))
-        }
-    }
+    fun onThemeSwitch(appTheme: AppTheme) = updateTheme { copy(appTheme = appTheme) }
 
     /** 切换 AMOLED 纯黑模式 */
-    fun onAmoledSwitch(isAmoled: Boolean) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(isAmoled = isAmoled))
-        }
-    }
+    fun onAmoledSwitch(isAmoled: Boolean) = updateTheme { copy(isAmoled = isAmoled) }
 
     /** 更改调色板风格 */
-    fun onPaletteChange(style: PaletteStyle) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(paletteStyle = style))
-        }
-    }
+    fun onPaletteChange(style: PaletteStyle) = updateTheme { copy(paletteStyle = style) }
 
     /** 切换 Material You 动态取色 */
-    fun onMaterialYouToggle(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(isMaterialYou = enabled))
-        }
-    }
+    fun onMaterialYouToggle(enabled: Boolean) = updateTheme { copy(isMaterialYou = enabled) }
 
     /** 切换全局字体 */
-    fun onFontChange(font: Fonts) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(font = font))
-        }
-    }
+    fun onFontChange(font: Fonts) = updateTheme { copy(font = font) }
 
     /** 切换组件边框显示 */
-    fun onShowBordersToggle(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(showBorders = enabled))
-        }
-    }
+    fun onShowBordersToggle(enabled: Boolean) = updateTheme { copy(showBorders = enabled) }
 
     /** 切换主页布局（网格/时间轴） */
-    fun onHomeLayoutChange(layout: HomeLayout) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(homeLayout = layout))
-        }
-    }
+    fun onHomeLayoutChange(layout: HomeLayout) = updateTheme { copy(homeLayout = layout) }
 
     /** 切换侧边滑动时间轴显示 */
-    fun onShowTimeSideBarToggle(enabled: Boolean) {
-        viewModelScope.launch {
-            settingsPrefs.updateTheme(settingsPrefs.getThemeFlow().first().copy(showTimeSideBar = enabled))
-        }
-    }
+    fun onShowTimeSideBarToggle(enabled: Boolean) = updateTheme { copy(showTimeSideBar = enabled) }
 }
