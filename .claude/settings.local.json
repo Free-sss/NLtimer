@@ -12,7 +12,10 @@
       "Bash(dir D:2026CodeGroup_androidNLtimer *)",
       "Read(//d D:/2026Code/Group_android/**)",
       "Bash(gradlew.bat :feature:home:compileDebugKotlin --console=plain)",
-      "Bash(D:/2026Code/Group_android/NLtimer/gradlew.bat *)"
+      "Bash(D:/2026Code/Group_android/NLtimer/gradlew.bat *)",
+      "Bash(cd /d \"d:\\\\2026Code\\\\Group_android\\\\NLtimer\")",
+      "Bash(gradlew.bat :feature:home:compileDebugKotlin)",
+      "Bash(./gradlew.bat :feature:home:compileDebugKotlin)"
     ]
   }
 }

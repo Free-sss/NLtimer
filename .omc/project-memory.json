@@ -169,6 +169,12 @@
   },
   "hotPaths": [
     {
+      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\ui\\components\\GridCell.kt",
+      "accessCount": 14,
+      "lastAccessed": 1777963422472,
+      "type": "file"
+    },
+    {
       "path": "",
       "accessCount": 12,
       "lastAccessed": 1777951931438,
@@ -211,15 +217,15 @@
       "type": "file"
     },
     {
-      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\ui\\components\\GridCell.kt",
-      "accessCount": 3,
-      "lastAccessed": 1777952230386,
-      "type": "file"
-    },
-    {
       "path": "docs\\UNIT_TEST_AUDIT.md",
       "accessCount": 2,
       "lastAccessed": 1777950407070,
+      "type": "file"
+    },
+    {
+      "path": "docs\\myNote\\剪贴板图片.jpg",
+      "accessCount": 2,
+      "lastAccessed": 1777959712142,
       "type": "file"
     },
     {
@@ -461,12 +467,6 @@
       "accessCount": 1,
       "lastAccessed": 1777950407238,
       "type": "directory"
-    },
-    {
-      "path": "docs\\myNote\\剪贴板图片.jpg",
-      "accessCount": 1,
-      "lastAccessed": 1777951889642,
-      "type": "file"
     }
   ],
   "userDirectives": []
