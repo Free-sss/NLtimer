@@ -199,4 +199,56 @@ class CategoryRepositoryTest {
         val categories = repository.getDistinctTagCategories().first()
         assertTrue(categories.isEmpty())
     }
+
+    @Test
+    fun addActivityCategory_setsSortOrderToMaxPlusOne() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "第一", sortOrder = 0))
+        fakeGroupDao.insert(ActivityGroupEntity(name = "第二", sortOrder = 5))
+
+        repository.addActivityCategory("第三")
+
+        val categories = repository.getDistinctActivityCategories().first()
+        assertEquals(listOf("第一", "第三", "第二"), categories)
+        val newGroup = groupEntities.find { it.name == "第三" }
+        assertEquals(6, newGroup?.sortOrder)
+    }
+
+    @Test
+    fun resetActivityCategory_ungroupsActivitiesBeforeDelete() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "运动"))
+        var ungroupCalled = false
+        val trackingGroupDao = object : ActivityGroupDao by fakeGroupDao {
+            override suspend fun ungroupAllActivities(groupId: Long) {
+                ungroupCalled = true
+                assertEquals(1L, groupId)
+            }
+        }
+        val trackingRepository = CategoryRepositoryImpl(trackingGroupDao, fakeTagDao)
+
+        trackingRepository.resetActivityCategory("运动")
+
+        assertTrue(ungroupCalled)
+    }
+
+    @Test
+    fun renameActivityCategory_withParent_callsRename() = runTest {
+        fakeGroupDao.insert(ActivityGroupEntity(name = "运动"))
+
+        repository.renameActivityCategory("运动", "体育", parent = "父分类")
+
+        val categories = repository.getDistinctActivityCategories().first()
+        assertEquals(listOf("体育"), categories)
+    }
+
+    @Test
+    fun getDistinctTagCategories_withEmptyAndBlankCategories_filtersOut() = runTest {
+        fakeTagDao.insert(TagEntity(name = "标签A", category = "有效"))
+        fakeTagDao.insert(TagEntity(name = "标签B", category = ""))
+        fakeTagDao.insert(TagEntity(name = "标签C", category = "  "))
+        fakeTagDao.insert(TagEntity(name = "标签D", category = null))
+
+        val categories = repository.getDistinctTagCategories().first()
+
+        assertEquals(listOf("有效"), categories)
+    }
 }

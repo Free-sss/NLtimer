@@ -8,7 +8,11 @@
       "Bash(git merge *)",
       "Bash(./gradlew :core:data:testDebugUnitTest :feature:home:testDebugUnitTest :feature:categories:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)",
       "Bash(./gradlew :core:data:testDebugUnitTest :feature:home:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)",
-      "Bash(./gradlew :feature:categories:testDebugUnitTest :feature:home:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)"
+      "Bash(./gradlew :feature:categories:testDebugUnitTest :feature:home:testDebugUnitTest :feature:settings:testDebugUnitTest :feature:management_activities:testDebugUnitTest --console=plain)",
+      "Bash(dir D:2026CodeGroup_androidNLtimer *)",
+      "Read(//d D:/2026Code/Group_android/**)",
+      "Bash(gradlew.bat :feature:home:compileDebugKotlin --console=plain)",
+      "Bash(D:/2026Code/Group_android/NLtimer/gradlew.bat *)"
     ]
   }
 }

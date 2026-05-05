@@ -121,6 +121,21 @@ class ThemeSettingsViewModelTest {
         assertEquals(HomeLayout.TIMELINE_REVERSE, settingsPrefs.currentTheme.value.homeLayout)
     }
 
+    @Test
+    fun `onShowTimeSideBarToggle updates theme`() = runTest {
+        viewModel.onShowTimeSideBarToggle(true)
+        advanceUntilIdle()
+        assertEquals(true, settingsPrefs.currentTheme.value.showTimeSideBar)
+    }
+
+    @Test
+    fun `theme state initial value is default Theme`() = runTest {
+        val job = launch(UnconfinedTestDispatcher()) { viewModel.theme.collect() }
+        advanceUntilIdle()
+        assertEquals(Theme(), viewModel.theme.value)
+        job.cancel()
+    }
+
     private class FakeSettingsPrefs : SettingsPrefs {
         val currentTheme = MutableStateFlow(Theme())
 

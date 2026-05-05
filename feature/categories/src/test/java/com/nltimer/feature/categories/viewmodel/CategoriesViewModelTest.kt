@@ -312,6 +312,63 @@ class CategoriesViewModelTest {
         assertEquals(setOf("保留"), settingsPrefs.lastSavedTagCategories)
     }
 
+    @Test
+    fun onDeleteCategory_showsDeleteDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+
+        viewModel.onDeleteCategory(SectionType.ACTIVITY, "运动")
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.dialogState is DialogState.DeleteActivityCategory)
+        assertEquals("运动", (state.dialogState as DialogState.DeleteActivityCategory).category)
+    }
+
+    @Test
+    fun confirmAdd_emptyName_dismissesDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+
+        viewModel.onAddCategory(SectionType.ACTIVITY)
+        advanceUntilIdle()
+        viewModel.confirmAddCategory(SectionType.ACTIVITY, "  ")
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.dialogState)
+        assertFalse(repository.addActivityCategoryCalled)
+    }
+
+    @Test
+    fun confirmRenameTagCategory_withLocalTag_updatesLocalSet() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        settingsPrefs.savedTagCategories = setOf("本地标签")
+        viewModel = CategoriesViewModel(repository, settingsPrefs)
+        advanceUntilIdle()
+
+        viewModel.onRenameCategory(SectionType.TAG, "本地标签")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "本地标签", "重命名后")
+        advanceUntilIdle()
+
+        assertTrue(settingsPrefs.saveTagCategoriesCalled)
+        assertEquals(setOf("重命名后"), settingsPrefs.lastSavedTagCategories)
+    }
+
+    @Test
+    fun confirmRenameTagCategory_conflict_setsConflictFlag() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        tagCategoriesFlow.value = listOf("标签A", "标签B")
+        advanceUntilIdle()
+
+        viewModel.onRenameCategory(SectionType.TAG, "标签A")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "标签B")
+        advanceUntilIdle()
+
+        assertEquals("标签B", viewModel.renameConflict.value)
+    }
+
     private class FakeSettingsPrefs : SettingsPrefs {
 
         var savedTagCategories: Set<String> = emptySet()

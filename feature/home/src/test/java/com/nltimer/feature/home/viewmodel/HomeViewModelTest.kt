@@ -232,32 +232,170 @@ class HomeViewModelTest {
         assertTrue(behaviorRepository.deleteCalled)
     }
 
+    @Test
+    fun `startNextPending calls repository`() = runTest {
+        val pending = Behavior(
+            id = 1L,
+            activityId = 1L,
+            startTime = 0L,
+            endTime = null,
+            status = BehaviorNature.PENDING,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 0,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.nextPending = pending
+        viewModel.startNextPending()
+        advanceUntilIdle()
+        assertTrue(behaviorRepository.setStatusCalled)
+        assertTrue(behaviorRepository.setStartTimeCalled)
+    }
+
+    @Test
+    fun `reorderGoals calls repository`() = runTest {
+        val orderedIds = listOf(3L, 1L, 2L)
+        viewModel.reorderGoals(orderedIds)
+        advanceUntilIdle()
+        assertEquals(orderedIds, behaviorRepository.reorderedIds)
+    }
+
+    @Test
+    fun `toggleIdleMode toggles state`() = runTest {
+        val initial = viewModel.uiState.value.isIdleMode
+        viewModel.toggleIdleMode()
+        assertEquals(!initial, viewModel.uiState.value.isIdleMode)
+        viewModel.toggleIdleMode()
+        assertEquals(initial, viewModel.uiState.value.isIdleMode)
+    }
+
+    @Test
+    fun `scrollToTime updates selectedTimeHour`() = runTest {
+        viewModel.scrollToTime(14)
+        assertEquals(14, viewModel.uiState.value.selectedTimeHour)
+    }
+
+    @Test
+    fun `onHomeLayoutChange updates theme`() = runTest {
+        viewModel.onHomeLayoutChange(com.nltimer.core.designsystem.theme.HomeLayout.GRID)
+        advanceUntilIdle()
+        assertTrue(settingsPrefs.updateThemeCalled)
+    }
+
+    @Test
+    fun `onTimeLabelConfigChange updates config`() = runTest {
+        val config = TimeLabelConfig()
+        viewModel.onTimeLabelConfigChange(config)
+        advanceUntilIdle()
+        assertTrue(settingsPrefs.updateTimeLabelConfigCalled)
+    }
+
+    @Test
+    fun `addBehavior with time conflict shows error`() = runTest {
+        val now = System.currentTimeMillis()
+        val startTime = now - 3600_000
+        val endTime = now - 1800_000
+        val overlapping = Behavior(
+            id = 1L,
+            activityId = 1L,
+            startTime = startTime - 1800_000,
+            endTime = endTime + 1800_000,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 0,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.overlappingBehaviors.add(overlapping)
+
+        viewModel.addBehavior(
+            activityId = 1L,
+            tagIds = emptyList(),
+            startTime = startTime,
+            endTime = endTime,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals("该时间段与已有行为记录冲突", viewModel.uiState.value.errorMessage)
+        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+    }
+
+    @Test
+    fun `addBehavior PENDING status does not check time conflict`() = runTest {
+        val startTime = System.currentTimeMillis()
+        val overlapping = Behavior(
+            id = 1L,
+            activityId = 1L,
+            startTime = startTime - 3600_000,
+            endTime = startTime + 3600_000,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 0,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.overlappingBehaviors.add(overlapping)
+
+        viewModel.addBehavior(
+            activityId = 1L,
+            tagIds = emptyList(),
+            startTime = startTime,
+            endTime = null,
+            status = BehaviorNature.PENDING,
+            note = null,
+        )
+        advanceUntilIdle()
+
+        assertEquals(1, behaviorRepository.insertedBehaviors.size)
+        assertEquals(BehaviorNature.PENDING, behaviorRepository.insertedBehaviors[0].status)
+    }
+
     private class FakeBehaviorRepository : BehaviorRepository {
         val insertedBehaviors = mutableListOf<Behavior>()
         val dayRangeBehaviors = mutableListOf<Behavior>()
         val updatedSequences = mutableMapOf<Long, Int>()
+        val overlappingBehaviors = mutableListOf<Behavior>()
         var endCurrentBehaviorCalled = false
         var completeCurrentAndStartNextCalled = false
         var deleteCalled = false
+        var nextPending: Behavior? = null
+        var setStatusCalled = false
+        var setStartTimeCalled = false
+        var reorderedIds: List<Long>? = null
 
         override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(
             dayRangeBehaviors.filter { it.startTime in dayStart until dayEnd }
         )
         override fun getCurrentBehavior(): Flow<Behavior?> = flowOf(null)
         override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
-        override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
+        override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> = flowOf(overlappingBehaviors)
         override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> = flowOf(emptyList())
         override fun getPendingBehaviors(): Flow<List<Behavior>> = flowOf(emptyList())
         override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? = null
-        override suspend fun getNextPending(): Behavior? = null
+        override suspend fun getNextPending(): Behavior? = nextPending
         override suspend fun getMaxSequence(): Int = 0
         override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
             insertedBehaviors.add(behavior)
             return 1L
         }
         override suspend fun setEndTime(id: Long, endTime: Long) {}
-        override suspend fun setStatus(id: Long, status: String) {}
-        override suspend fun setStartTime(id: Long, startTime: Long) {}
+        override suspend fun setStatus(id: Long, status: String) {
+            setStatusCalled = true
+        }
+        override suspend fun setStartTime(id: Long, startTime: Long) {
+            setStartTimeCalled = true
+        }
         override suspend fun setActualDuration(id: Long, duration: Long) {}
         override suspend fun setAchievementLevel(id: Long, level: Int) {}
         override suspend fun setSequence(id: Long, sequence: Int) {
@@ -271,7 +409,9 @@ class HomeViewModelTest {
             completeCurrentAndStartNextCalled = true
             return null
         }
-        override suspend fun reorderGoals(orderedIds: List<Long>) {}
+        override suspend fun reorderGoals(orderedIds: List<Long>) {
+            this.reorderedIds = orderedIds
+        }
         override suspend fun delete(id: Long) {
             deleteCalled = true
         }
@@ -321,8 +461,12 @@ class HomeViewModelTest {
 
     private class FakeSettingsPrefs : SettingsPrefs {
         private val _theme = MutableStateFlow(Theme())
+        var updateThemeCalled = false
+        var updateTimeLabelConfigCalled = false
+
         override fun getThemeFlow(): Flow<Theme> = _theme
         override suspend fun updateTheme(theme: Theme) {
+            updateThemeCalled = true
             _theme.value = theme
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
@@ -330,6 +474,8 @@ class HomeViewModelTest {
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
         override suspend fun updateDialogConfig(config: DialogGridConfig) {}
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
-        override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
+        override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {
+            updateTimeLabelConfigCalled = true
+        }
     }
 }

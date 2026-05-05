@@ -170,8 +170,8 @@
   "hotPaths": [
     {
       "path": "",
-      "accessCount": 10,
-      "lastAccessed": 1777950232636,
+      "accessCount": 12,
+      "lastAccessed": 1777951931438,
       "type": "directory"
     },
     {
@@ -208,6 +208,12 @@
       "path": "feature\\home\\src\\test\\java\\com\\nltimer\\feature\\home\\viewmodel\\HomeViewModelTest.kt",
       "accessCount": 3,
       "lastAccessed": 1777949988494,
+      "type": "file"
+    },
+    {
+      "path": "feature\\home\\src\\main\\java\\com\\nltimer\\feature\\home\\ui\\components\\GridCell.kt",
+      "accessCount": 3,
+      "lastAccessed": 1777952230386,
       "type": "file"
     },
     {
@@ -455,6 +461,12 @@
       "accessCount": 1,
       "lastAccessed": 1777950407238,
       "type": "directory"
+    },
+    {
+      "path": "docs\\myNote\\剪贴板图片.jpg",
+      "accessCount": 1,
+      "lastAccessed": 1777951889642,
+      "type": "file"
     }
   ],
   "userDirectives": []

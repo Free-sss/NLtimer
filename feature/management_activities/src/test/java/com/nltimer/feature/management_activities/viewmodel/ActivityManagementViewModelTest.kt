@@ -9,9 +9,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -24,77 +24,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
-class FakeActivityManagementRepository : ActivityManagementRepository {
-
-    private val _activities = MutableStateFlow<List<Activity>>(emptyList())
-    private val _groups = MutableStateFlow<List<ActivityGroup>>(emptyList())
-
-    override fun getAllActivities(): Flow<List<Activity>> = _activities
-
-    override fun getUncategorizedActivities(): Flow<List<Activity>> =
-        _activities.map { activities -> activities.filter { it.groupId == null } }
-
-    override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> =
-        _activities.map { activities -> activities.filter { it.groupId == groupId } }
-
-    override fun getAllGroups(): Flow<List<ActivityGroup>> = _groups
-
-    private var nextActivityId = 1L
-    private var nextGroupId = 1L
-
-    override suspend fun addActivity(activity: Activity): Long {
-        val newId = nextActivityId++
-        val newActivity = activity.copy(id = newId)
-        _activities.value = _activities.value + newActivity
-        return newId
-    }
-
-    override suspend fun updateActivity(activity: Activity) {
-        _activities.value = _activities.value.map {
-            if (it.id == activity.id) activity else it
-        }
-    }
-
-    override suspend fun deleteActivity(id: Long) {
-        _activities.value = _activities.value.filter { it.id != id }
-    }
-
-    override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {
-        _activities.value = _activities.value.map {
-            if (it.id == activityId) it.copy(groupId = groupId) else it
-        }
-    }
-
-    override suspend fun addGroup(name: String): Long {
-        val newId = nextGroupId++
-        val newGroup = ActivityGroup(id = newId, name = name, sortOrder = _groups.value.size)
-        _groups.value = _groups.value + newGroup
-        return newId
-    }
-
-    override suspend fun renameGroup(id: Long, newName: String) {
-        _groups.value = _groups.value.map {
-            if (it.id == id) it.copy(name = newName) else it
-        }
-    }
-
-    override suspend fun deleteGroup(id: Long) {
-        _groups.value = _groups.value.filter { it.id != id }
-        _activities.value = _activities.value.map {
-            if (it.groupId == id) it.copy(groupId = null) else it
-        }
-    }
-
-    override suspend fun initializePresets() {}
-
-    override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
-        MutableStateFlow(ActivityStats())
-}
-
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActivityManagementViewModelTest {
 
-    private val testDispatcher = UnconfinedTestDispatcher()
+    private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var repository: FakeActivityManagementRepository
     private lateinit var viewModel: ActivityManagementViewModel
@@ -112,182 +45,249 @@ class ActivityManagementViewModelTest {
     }
 
     @Test
-    fun `initial state should be empty`() = runTest {
+    fun `initial state is loading`() = runTest {
         val uiState = viewModel.uiState.value
-        assertFalse(uiState.isLoading)
+        assertTrue(uiState.isLoading)
         assertTrue(uiState.uncategorizedActivities.isEmpty())
         assertTrue(uiState.groups.isEmpty())
         assertNull(uiState.dialogState)
     }
 
     @Test
-    fun `add activity should add to uncategorized list`() = runTest {
-        viewModel.addActivity("测试活动", "📝", null, null, null)
+    fun `loadData updates uiState with uncategorized activities and groups`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        val group = ActivityGroup(id = 1L, name = "分组A")
+        repository.emitUncategorized(listOf(activity))
+        repository.emitGroups(listOf(group))
+
+        advanceUntilIdle()
 
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
         assertEquals(1, uiState.uncategorizedActivities.size)
-        assertEquals("测试活动", uiState.uncategorizedActivities[0].name)
-        assertEquals("📝", uiState.uncategorizedActivities[0].emoji)
-        assertNull(uiState.uncategorizedActivities[0].groupId)
+        assertEquals("活动A", uiState.uncategorizedActivities[0].name)
+        assertEquals(1, uiState.groups.size)
+        assertEquals("分组A", uiState.groups[0].group.name)
     }
 
     @Test
-    fun `delete activity should remove from list`() = runTest {
-        viewModel.addActivity("待删除", "❌", null, null, null)
-
-        val afterAdd = viewModel.uiState.value
-        assertEquals(1, afterAdd.uncategorizedActivities.size)
-
-        val activityId = afterAdd.uncategorizedActivities[0].id
-        viewModel.deleteActivity(activityId)
-
-        val afterDelete = viewModel.uiState.value
-        assertEquals(0, afterDelete.uncategorizedActivities.size)
+    fun `initializePresets called in init`() = runTest {
+        advanceUntilIdle()
+        assertTrue(repository.initializePresetsCalled)
     }
 
     @Test
-    fun `add group should create group`() = runTest {
-        viewModel.addGroup("我的分组")
-
-        val uiState = viewModel.uiState.value
-        assertEquals(1, uiState.allGroups.size)
-        assertEquals("我的分组", uiState.allGroups[0].name)
+    fun `toggleGroupExpand adds groupId`() = runTest {
+        viewModel.toggleGroupExpand(1L)
+        assertTrue(viewModel.uiState.value.expandedGroupIds.contains(1L))
     }
 
     @Test
-    fun `move activity to group should update groupId`() = runTest {
-        viewModel.addActivity("移动测试", "🔄", null, null, null)
-        viewModel.addGroup("目标分组")
-
-        val beforeMove = viewModel.uiState.value
-        val activityId = beforeMove.uncategorizedActivities[0].id
-        val groupId = beforeMove.allGroups[0].id
-
-        viewModel.moveActivityToGroup(activityId, groupId)
-
-        val afterMove = viewModel.uiState.value
-        // 验证活动已从未分类列表移出（确定性结果）
-        assertEquals(0, afterMove.uncategorizedActivities.size)
-        // 通过仓库直接确认 activity 已绑定目标分组（避免 ViewModel 内部 combine/分组活动收集器的竞态）
-        val movedActivity = repository.getAllActivities().first().firstOrNull { it.id == activityId }
-        assertNotNull(movedActivity)
-        assertEquals(groupId, movedActivity?.groupId)
+    fun `toggleGroupExpand removes groupId`() = runTest {
+        viewModel.toggleGroupExpand(1L)
+        viewModel.toggleGroupExpand(1L)
+        assertFalse(viewModel.uiState.value.expandedGroupIds.contains(1L))
     }
 
     @Test
-    fun `rename group should update group name`() = runTest {
-        viewModel.addGroup("旧名称")
-
-        val beforeRename = viewModel.uiState.value
-        val groupId = beforeRename.allGroups[0].id
-
-        viewModel.renameGroup(groupId, "新名称")
-
-        val afterRename = viewModel.uiState.value
-        assertEquals("新名称", afterRename.allGroups[0].name)
-    }
-
-    @Test
-    fun `delete group should ungroup all activities`() = runTest {
-        viewModel.addGroup("待删除组")
-        viewModel.addActivity("组内活动", "📌", null, null, null)
-
-        val beforeDelete = viewModel.uiState.value
-        val groupId = beforeDelete.allGroups[0].id
-        val activityId = beforeDelete.uncategorizedActivities[0].id
-
-        viewModel.moveActivityToGroup(activityId, groupId)
-        viewModel.deleteGroup(groupId)
-
-        val afterDelete = viewModel.uiState.value
-        assertEquals(0, afterDelete.allGroups.size)
-        assertEquals(1, afterDelete.uncategorizedActivities.size)
-        assertNull(afterDelete.uncategorizedActivities[0].groupId)
-    }
-
-    @Test
-    fun `show add activity dialog should set dialog state`() = runTest {
+    fun `showAddActivityDialog updates dialogState`() = runTest {
         viewModel.showAddActivityDialog()
-
-        val uiState = viewModel.uiState.value
-        assertNotNull(uiState.dialogState)
-        assertTrue(uiState.dialogState is DialogState.AddActivity)
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.AddActivity)
     }
 
     @Test
-    fun `dismiss dialog should clear dialog state`() = runTest {
-        viewModel.showAddActivityDialog()
-        
-        val withDialog = viewModel.uiState.value
-        assertNotNull(withDialog.dialogState)
+    fun `showAddActivityToGroupDialog updates dialogState`() = runTest {
+        val group = ActivityGroup(id = 1L, name = "分组A")
+        viewModel.showAddActivityToGroupDialog(group)
+        val state = viewModel.uiState.value.dialogState as? DialogState.AddActivityToGroup
+        assertNotNull(state)
+        assertEquals("分组A", state?.group?.name)
+    }
+
+    @Test
+    fun `showActivityDetail updates dialogState and selectedActivityId`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showActivityDetail(activity)
+        val state = viewModel.uiState.value.dialogState as? DialogState.ActivityDetail
+        assertNotNull(state)
+        assertEquals("活动A", state?.activity?.name)
+    }
+
+    @Test
+    fun `showEditActivityDialog updates dialogState`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showEditActivityDialog(activity)
+        val state = viewModel.uiState.value.dialogState as? DialogState.EditActivity
+        assertNotNull(state)
+        assertEquals("活动A", state?.activity?.name)
+    }
+
+    @Test
+    fun `addActivity calls repository with trimmed name`() = runTest {
+        viewModel.addActivity("  新活动  ", "emoji", 0xFF0000FF, null, null)
+        advanceUntilIdle()
+
+        assertEquals(1, repository.addedActivities.size)
+        assertEquals("新活动", repository.addedActivities[0].name)
+        assertEquals("emoji", repository.addedActivities[0].emoji)
+        assertNull(repository.addedActivities[0].groupId)
+    }
+
+    @Test
+    fun `addActivity with groupId passes groupId`() = runTest {
+        viewModel.addActivity("新活动", null, null, 2L, null)
+        advanceUntilIdle()
+
+        assertEquals(2L, repository.addedActivities[0].groupId)
+    }
+
+    @Test
+    fun `updateActivity calls repository`() = runTest {
+        val activity = Activity(id = 1L, name = "更新后")
+        viewModel.updateActivity(activity)
+        advanceUntilIdle()
+
+        assertEquals(1, repository.updatedActivities.size)
+        assertEquals("更新后", repository.updatedActivities[0].name)
+    }
+
+    @Test
+    fun `deleteActivity calls repository`() = runTest {
+        viewModel.deleteActivity(1L)
+        advanceUntilIdle()
+
+        assertEquals(1L, repository.deletedActivityId)
+    }
+
+    @Test
+    fun `moveActivityToGroup calls repository`() = runTest {
+        viewModel.moveActivityToGroup(1L, 2L)
+        advanceUntilIdle()
+
+        assertEquals(1L to 2L, repository.lastMoveToGroup)
+    }
+
+    @Test
+    fun `moveActivityToGroup with null groupId passes null`() = runTest {
+        viewModel.moveActivityToGroup(1L, null)
+        advanceUntilIdle()
+
+        assertEquals(1L to null, repository.lastMoveToGroup)
+    }
+
+    @Test
+    fun `addGroup calls repository with trimmed name`() = runTest {
+        viewModel.addGroup("  新分组  ")
+        advanceUntilIdle()
+
+        assertEquals("新分组", repository.addedGroupName)
+    }
+
+    @Test
+    fun `renameGroup calls repository`() = runTest {
+        viewModel.renameGroup(1L, "  新名称  ")
+        advanceUntilIdle()
+
+        assertEquals(1L to "新名称", repository.lastRenameGroup)
+    }
+
+    @Test
+    fun `deleteGroup calls repository`() = runTest {
+        viewModel.deleteGroup(1L)
+        advanceUntilIdle()
+
+        assertEquals(1L, repository.deletedGroupId)
+    }
+
+    @Test
+    fun `showDeleteGroupDialog updates dialogState`() = runTest {
+        val group = ActivityGroup(id = 1L, name = "分组A")
+        viewModel.showDeleteGroupDialog(group)
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.DeleteGroup)
+    }
+
+    @Test
+    fun `showRenameGroupDialog updates dialogState`() = runTest {
+        val group = ActivityGroup(id = 1L, name = "分组A")
+        viewModel.showRenameGroupDialog(group)
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.RenameGroup)
+    }
+
+    @Test
+    fun `showDeleteActivityDialog updates dialogState`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showDeleteActivityDialog(activity)
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.DeleteActivity)
+    }
+
+    @Test
+    fun `showMoveToGroupDialog updates dialogState`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showMoveToGroupDialog(activity)
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.MoveToGroup)
+    }
+
+    @Test
+    fun `dismissDialog clears dialogState and selectedActivityId`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showActivityDetail(activity)
+        assertNotNull(viewModel.uiState.value.dialogState)
 
         viewModel.dismissDialog()
-
-        val withoutDialog = viewModel.uiState.value
-        assertNull(withoutDialog.dialogState)
+        assertNull(viewModel.uiState.value.dialogState)
     }
 
-    @Test
-    fun `toggle group expand should toggle expanded state`() = runTest {
-        viewModel.addGroup("可展开组")
+    private class FakeActivityManagementRepository : ActivityManagementRepository {
+        private val _uncategorized = MutableStateFlow<List<Activity>>(emptyList())
+        private val _groups = MutableStateFlow<List<ActivityGroup>>(emptyList())
 
-        val beforeToggle = viewModel.uiState.value
-        val groupId = beforeToggle.allGroups[0].id
-        assertFalse(beforeToggle.expandedGroupIds.contains(groupId))
+        var initializePresetsCalled = false
+        val addedActivities = mutableListOf<Activity>()
+        val updatedActivities = mutableListOf<Activity>()
+        var deletedActivityId: Long? = null
+        var lastMoveToGroup: Pair<Long, Long?>? = null
+        var addedGroupName: String? = null
+        var lastRenameGroup: Pair<Long, String>? = null
+        var deletedGroupId: Long? = null
 
-        viewModel.toggleGroupExpand(groupId)
+        fun emitUncategorized(activities: List<Activity>) {
+            _uncategorized.value = activities
+        }
 
-        val afterToggle = viewModel.uiState.value
-        assertTrue(afterToggle.expandedGroupIds.contains(groupId))
-    }
+        fun emitGroups(groups: List<ActivityGroup>) {
+            _groups.value = groups
+        }
 
-    @Test
-    fun `update activity should modify existing activity`() = runTest {
-        viewModel.addActivity("原始名称", "✏️", null, null, null)
-
-        val beforeUpdate = viewModel.uiState.value
-        val originalActivity = beforeUpdate.uncategorizedActivities[0]
-
-        val updatedActivity = originalActivity.copy(
-            name = "修改后名称",
-            emoji = "📝"
-        )
-        viewModel.updateActivity(updatedActivity)
-
-        val afterUpdate = viewModel.uiState.value
-        assertEquals(1, afterUpdate.uncategorizedActivities.size)
-        assertEquals("修改后名称", afterUpdate.uncategorizedActivities[0].name)
-        assertEquals("📝", afterUpdate.uncategorizedActivities[0].emoji)
-    }
-
-    @Test
-    fun `show delete group dialog should set correct dialog state`() = runTest {
-        viewModel.addGroup("测试组")
-
-        val uiState = viewModel.uiState.value
-        val group = uiState.allGroups[0]
-
-        viewModel.showDeleteGroupDialog(group)
-
-        val withDialog = viewModel.uiState.value
-        assertNotNull(withDialog.dialogState)
-        assertTrue(withDialog.dialogState is DialogState.DeleteGroup)
-        assertEquals(group, (withDialog.dialogState as DialogState.DeleteGroup).group)
-    }
-
-    @Test
-    fun `show move to group dialog should set correct dialog state`() = runTest {
-        viewModel.addActivity("移动测试", "🚀", null, null, null)
-
-        val uiState = viewModel.uiState.value
-        val activity = uiState.uncategorizedActivities[0]
-
-        viewModel.showMoveToGroupDialog(activity)
-
-        val withDialog = viewModel.uiState.value
-        assertNotNull(withDialog.dialogState)
-        assertTrue(withDialog.dialogState is DialogState.MoveToGroup)
-        assertEquals(activity, (withDialog.dialogState as DialogState.MoveToGroup).activity)
+        override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getUncategorizedActivities(): Flow<List<Activity>> = _uncategorized
+        override fun getAllGroups(): Flow<List<ActivityGroup>> = _groups
+        override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getActivityStats(activityId: Long): Flow<ActivityStats> = flowOf(ActivityStats())
+        override suspend fun addActivity(activity: Activity): Long {
+            addedActivities.add(activity)
+            return 1L
+        }
+        override suspend fun updateActivity(activity: Activity) {
+            updatedActivities.add(activity)
+        }
+        override suspend fun deleteActivity(id: Long) {
+            deletedActivityId = id
+        }
+        override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {
+            lastMoveToGroup = activityId to groupId
+        }
+        override suspend fun addGroup(name: String): Long {
+            addedGroupName = name
+            return 1L
+        }
+        override suspend fun renameGroup(id: Long, newName: String) {
+            lastRenameGroup = id to newName
+        }
+        override suspend fun deleteGroup(id: Long) {
+            deletedGroupId = id
+        }
+        override suspend fun initializePresets() {
+            initializePresetsCalled = true
+        }
     }
 }
