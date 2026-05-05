@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -188,6 +188,17 @@ abstract class NLtimerDatabase : RoomDatabase() {
                     // 重新开启外键约束
                     db.execSQL("PRAGMA foreign_keys = ON")
                 }
+            }
+        }
+
+        // 数据库从版本 7 到 8 的迁移：重建 behaviors 表索引
+        // 将单列索引 index_behaviors_startTime 替换为复合索引 (startTime, sequence)
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 删除旧索引
+                db.execSQL("DROP INDEX IF EXISTS index_behaviors_startTime")
+                // 创建新的复合索引
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_startTime_sequence ON behaviors(startTime, sequence)")
             }
         }
     }

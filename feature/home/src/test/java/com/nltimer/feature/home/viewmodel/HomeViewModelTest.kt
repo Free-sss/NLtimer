@@ -126,6 +126,92 @@ class HomeViewModelTest {
     }
 
     @Test
+    fun `addBehavior with COMPLETED endTime in future should show error`() = runTest {
+        val futureTime = System.currentTimeMillis() + 3600_000 // 1小时后
+        val startTime = System.currentTimeMillis() - 7200_000 // 2小时前
+
+        viewModel.addBehavior(
+            activityId = 1L,
+            tagIds = emptyList(),
+            startTime = startTime,
+            endTime = futureTime,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+        )
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals("结束时间不能大于当前时间", uiState.errorMessage)
+        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+    }
+
+    @Test
+    fun `addBehavior with ACTIVE startTime in future should show error`() = runTest {
+        val futureTime = System.currentTimeMillis() + 3600_000 // 1小时后
+
+        viewModel.addBehavior(
+            activityId = 1L,
+            tagIds = emptyList(),
+            startTime = futureTime,
+            endTime = null,
+            status = BehaviorNature.ACTIVE,
+            note = null,
+        )
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.value
+        assertEquals("开始时间不能大于当前时间", uiState.errorMessage)
+        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+    }
+
+    @Test
+    fun `addBehavior should insert at correct sequence based on startTime`() = runTest {
+        // Given: 已有 08:00-09:00 的记录
+        val existingBehavior = Behavior(
+            id = 1L,
+            activityId = 1L,
+            startTime = getTodayAt(8, 0),
+            endTime = getTodayAt(9, 0),
+            status = BehaviorNature.COMPLETED,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 0,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.dayRangeBehaviors.add(existingBehavior)
+
+        // When: 插入 06:00-07:00
+        val newStartTime = getTodayAt(6, 0)
+        val newEndTime = getTodayAt(7, 0)
+        viewModel.addBehavior(
+            activityId = 2L,
+            tagIds = emptyList(),
+            startTime = newStartTime,
+            endTime = newEndTime,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+        )
+        advanceUntilIdle()
+
+        // Then: 新行为的 sequence 应该是 0（排在前面）
+        assertEquals(1, behaviorRepository.insertedBehaviors.size)
+        assertEquals(0, behaviorRepository.insertedBehaviors[0].sequence)
+        // 原有行为的 sequence 应该更新为 1
+        assertEquals(1, behaviorRepository.updatedSequences[1L])
+    }
+
+    private fun getTodayAt(hour: Int, minute: Int): Long {
+        return java.time.LocalDate.now()
+            .atTime(hour, minute)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
+
+    @Test
     fun `completeBehavior calls repository`() = runTest {
         viewModel.completeBehavior(1L)
         advanceUntilIdle()
@@ -148,13 +234,18 @@ class HomeViewModelTest {
 
     private class FakeBehaviorRepository : BehaviorRepository {
         val insertedBehaviors = mutableListOf<Behavior>()
+        val dayRangeBehaviors = mutableListOf<Behavior>()
+        val updatedSequences = mutableMapOf<Long, Int>()
         var endCurrentBehaviorCalled = false
         var completeCurrentAndStartNextCalled = false
         var deleteCalled = false
 
-        override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
+        override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(
+            dayRangeBehaviors.filter { it.startTime in dayStart until dayEnd }
+        )
         override fun getCurrentBehavior(): Flow<Behavior?> = flowOf(null)
         override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
+        override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
         override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> = flowOf(emptyList())
         override fun getPendingBehaviors(): Flow<List<Behavior>> = flowOf(emptyList())
         override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? = null
@@ -169,7 +260,9 @@ class HomeViewModelTest {
         override suspend fun setStartTime(id: Long, startTime: Long) {}
         override suspend fun setActualDuration(id: Long, duration: Long) {}
         override suspend fun setAchievementLevel(id: Long, level: Int) {}
-        override suspend fun setSequence(id: Long, sequence: Int) {}
+        override suspend fun setSequence(id: Long, sequence: Int) {
+            updatedSequences[id] = sequence
+        }
         override suspend fun setNote(id: Long, note: String?) {}
         override suspend fun endCurrentBehavior(endTime: Long) {
             endCurrentBehaviorCalled = true

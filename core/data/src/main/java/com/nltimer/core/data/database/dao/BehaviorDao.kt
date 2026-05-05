@@ -49,7 +49,7 @@ interface BehaviorDao {
         """
         SELECT * FROM behaviors
         WHERE startTime >= :dayStart AND startTime < :dayEnd
-        ORDER BY sequence ASC, startTime ASC
+        ORDER BY startTime ASC
         """
     )
     fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<BehaviorEntity>>
@@ -68,7 +68,7 @@ interface BehaviorDao {
         SELECT * FROM behaviors
         WHERE (startTime >= :dayStart AND startTime < :dayEnd)
            OR status = 'pending'
-        ORDER BY sequence ASC
+        ORDER BY startTime ASC
         """
     )
     fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<BehaviorEntity>>

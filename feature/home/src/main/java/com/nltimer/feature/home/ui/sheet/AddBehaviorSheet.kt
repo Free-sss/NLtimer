@@ -828,7 +828,8 @@ internal fun AddBehaviorSheetContent(
                         TimeAdjustmentCard(
                             currentTime = endTime,
                             onTimeChanged = { endTime = it },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            maxTime = LocalDateTime.now(),
                         )
                     }
                 }
@@ -848,7 +849,8 @@ internal fun AddBehaviorSheetContent(
                         TimeAdjustmentCard(
                             currentTime = startTime,
                             onTimeChanged = { startTime = it },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            maxTime = LocalDateTime.now(),
                         )
                     }
                 }
@@ -942,6 +944,7 @@ private fun TimeAdjustmentCard(
     currentTime: LocalDateTime,
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
+    maxTime: LocalDateTime? = null,
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -957,7 +960,8 @@ private fun TimeAdjustmentCard(
         ) {
             TimeAdjustmentComponent(
                 currentTime = currentTime,
-                onTimeChanged = onTimeChanged
+                onTimeChanged = onTimeChanged,
+                maxTime = maxTime,
             )
         }
     }

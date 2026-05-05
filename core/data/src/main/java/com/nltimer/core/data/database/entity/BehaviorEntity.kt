@@ -20,7 +20,11 @@ import androidx.room.Index
             onDelete = ForeignKey.RESTRICT,
         ),
     ],
-    indices = [Index("activityId"), Index("startTime"), Index("status"), Index("sequence")],
+    indices = [
+        Index("activityId"),
+        Index(value = ["startTime", "sequence"]),
+        Index("status"),
+    ],
 )
 data class BehaviorEntity(
     @PrimaryKey(autoGenerate = true)

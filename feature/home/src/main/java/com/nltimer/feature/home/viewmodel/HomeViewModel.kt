@@ -371,12 +371,67 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+            // 时间约束校验：结束/开始时间不能大于当前时间
+            val now = System.currentTimeMillis()
+            when (status) {
+                BehaviorNature.COMPLETED -> {
+                    if (endTime != null && endTime > now) {
+                        _uiState.update {
+                            it.copy(errorMessage = "结束时间不能大于当前时间")
+                        }
+                        return@launch
+                    }
+                }
+                BehaviorNature.ACTIVE -> {
+                    if (startTime > now) {
+                        _uiState.update {
+                            it.copy(errorMessage = "开始时间不能大于当前时间")
+                        }
+                        return@launch
+                    }
+                }
+                BehaviorNature.PENDING -> {} // 无时间约束
+            }
+
             if (status == BehaviorNature.ACTIVE) {
                 behaviorRepository.endCurrentBehavior(startTime)
             }
 
-            val maxSeq = behaviorRepository.getMaxSequence()
+            // 计算新行为的 sequence（按时间排序插入）
             val wasPlanned = status == BehaviorNature.PENDING
+            val newSequence = if (status == BehaviorNature.PENDING) {
+                behaviorRepository.getMaxSequence() + 1
+            } else {
+                val dayStart = getDayStartMillis(startTime)
+                val dayEnd = dayStart + 24 * 60 * 60 * 1000
+                val dayBehaviors = behaviorRepository
+                    .getByDayRange(dayStart, dayEnd)
+                    .firstOrNull()
+                    .orEmpty()
+                    .filter { it.status != BehaviorNature.PENDING }
+                    .sortedBy { it.startTime }
+
+                val insertIndex = dayBehaviors.indexOfFirst { it.startTime > startTime }
+                if (insertIndex == -1) dayBehaviors.size else insertIndex
+            }
+
+            // 更新后续行为的 sequence
+            if (status != BehaviorNature.PENDING) {
+                val dayStart = getDayStartMillis(startTime)
+                val dayEnd = dayStart + 24 * 60 * 60 * 1000
+                val dayBehaviors = behaviorRepository
+                    .getByDayRange(dayStart, dayEnd)
+                    .firstOrNull()
+                    .orEmpty()
+                    .filter { it.status != BehaviorNature.PENDING }
+                    .sortedBy { it.startTime }
+
+                dayBehaviors.forEachIndexed { index, behavior ->
+                    if (index >= newSequence) {
+                        behaviorRepository.setSequence(behavior.id, index + 1)
+                    }
+                }
+            }
 
             behaviorRepository.insert(
                 Behavior(
@@ -387,7 +442,7 @@ class HomeViewModel @Inject constructor(
                     status = status,
                     note = note,
                     pomodoroCount = 0,
-                    sequence = maxSeq + 1,
+                    sequence = newSequence,
                     estimatedDuration = null,
                     actualDuration = null,
                     achievementLevel = null,
@@ -453,5 +508,13 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPrefs.updateTimeLabelConfig(config)
         }
+    }
+
+    private fun getDayStartMillis(timestamp: Long): Long {
+        val instant = java.time.Instant.ofEpochMilli(timestamp)
+        val zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault())
+        val startOfDay = zonedDateTime.toLocalDate()
+            .atStartOfDay(java.time.ZoneId.systemDefault())
+        return startOfDay.toInstant().toEpochMilli()
     }
 }

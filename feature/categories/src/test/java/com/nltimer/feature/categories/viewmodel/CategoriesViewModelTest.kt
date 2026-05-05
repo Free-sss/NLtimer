@@ -11,6 +11,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -54,6 +55,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun initialState_hasEmptyCategories() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
@@ -64,6 +66,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun searchQuery_filtersCategories() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         tagCategoriesFlow.value = listOf("优先级", "状态")
         advanceUntilIdle()
@@ -78,6 +81,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun searchQuery_emptyShowsAll() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         tagCategoriesFlow.value = listOf("优先级", "状态")
         advanceUntilIdle()
@@ -95,6 +99,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun addCategoryDialog_showsForActivity() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.onAddCategory(SectionType.ACTIVITY)
@@ -106,6 +111,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun addCategoryDialog_showsForTag() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.onAddCategory(SectionType.TAG)
@@ -117,6 +123,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun renameCategory_showsDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
@@ -131,6 +138,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmRename_withConflict_setsConflictFlag() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
 
@@ -144,6 +152,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmRename_noConflict_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
@@ -158,6 +167,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmRename_sameName_dismissesDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
@@ -172,6 +182,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmDelete_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
 
@@ -184,6 +195,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmDeleteTag_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.confirmDeleteCategory(SectionType.TAG, "优先级")
@@ -195,6 +207,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun dismissDialog_clearsDialogState() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.onAddCategory(SectionType.ACTIVITY)
@@ -209,6 +222,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun dismissDialog_clearsConflict() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
 
@@ -226,6 +240,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmAddActivityCategory_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.confirmAddCategory(SectionType.ACTIVITY, "新分类")
@@ -238,6 +253,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmAddTagCategory_updatesSettingsPrefs() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
 
         viewModel.confirmAddCategory(SectionType.TAG, "我的标签")
@@ -250,6 +266,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun clearConflict_resetsToNull() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
 
@@ -267,6 +284,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmRenameTagCategory_updatesSettingsPrefs() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         settingsPrefs.savedTagCategories = setOf("旧标签")
         viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
@@ -282,6 +300,7 @@ class CategoriesViewModelTest {
 
     @Test
     fun confirmDeleteTagCategory_removesFromSettingsPrefs() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
         settingsPrefs.savedTagCategories = setOf("待删除", "保留")
         viewModel = CategoriesViewModel(repository, settingsPrefs)
         advanceUntilIdle()
