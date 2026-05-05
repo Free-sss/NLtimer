@@ -32,6 +32,7 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.model.GridRowUiState
+import java.time.LocalTime
 
 /**
  * 网格时间轴 Composable — 纵向滚动的网格布局。
@@ -47,7 +48,7 @@ import com.nltimer.feature.home.model.GridRowUiState
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
     rows: List<GridRowUiState>,
-    onEmptyCellClick: () -> Unit,
+    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
     currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
@@ -119,7 +120,7 @@ fun TimeAxisGrid(
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(
                 row = row,
-                onEmptyCellClick = onEmptyCellClick,
+                onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
                 timeLabelConfig = timeLabelConfig,
             )
         }

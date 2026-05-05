@@ -63,7 +63,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun TimelineReverseView(
     cells: List<GridCellUiState>,
-    onAddClick: () -> Unit,
+    onAddClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -160,7 +160,7 @@ fun TimelineReverseView(
                             start = item.start,
                             end = item.end,
                             timeFormatter = timeFormatter,
-                            onAddClick = onAddClick
+                            onAddClick = { onAddClick(item.start, item.end) }
                         )
                     }
                 }

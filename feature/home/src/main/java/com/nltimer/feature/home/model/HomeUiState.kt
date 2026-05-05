@@ -24,4 +24,6 @@ data class HomeUiState(
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
     val lastBehaviorEndTime: LocalTime? = null,
+    val idleStartTime: LocalTime? = null,
+    val idleEndTime: LocalTime? = null,
 )

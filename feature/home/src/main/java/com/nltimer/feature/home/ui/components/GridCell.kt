@@ -83,7 +83,7 @@ fun GridCell(
         Row(){
             // 显示活动 emoji
             cell.activityEmoji?.let { emoji ->
-                Text(text = emoji, style = MaterialTheme.typography.labelSmall)
+                Text(text = emoji, style = MaterialTheme.typography.bodyMedium)
             }
 
             // 显示活动名称（单行省略）
@@ -100,9 +100,10 @@ fun GridCell(
         // 渲染标签列表为 FlowRow 标签条（整体缩小 10%）
         if (cell.tags.isNotEmpty()) {
             FlowRow(
-                modifier = Modifier.scale(0.85f),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.scale(0.8f),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
+                maxLines = 2,
             ) {
                 cell.tags.forEach { tag -> TagChip(tag = tag) }
             }

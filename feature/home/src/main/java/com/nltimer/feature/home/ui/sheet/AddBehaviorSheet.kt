@@ -124,6 +124,7 @@ fun AddBehaviorSheet(
         modifier = modifier,
         mode = BehaviorNature.COMPLETED,
         activities = activities,
+        activityGroups = activityGroups,
         allTags = allTags,
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
@@ -156,6 +157,7 @@ fun AddCurrentBehaviorSheet(
         modifier = modifier,
         mode = BehaviorNature.ACTIVE,
         activities = activities,
+        activityGroups = activityGroups,
         allTags = allTags,
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
@@ -186,6 +188,7 @@ fun AddTargetBehaviorSheet(
         modifier = modifier,
         mode = BehaviorNature.PENDING,
         activities = activities,
+        activityGroups = activityGroups,
         allTags = allTags,
         dialogConfig = dialogConfig,
         existingBehaviors = existingBehaviors,
@@ -202,6 +205,7 @@ private fun BehaviorSheetWrapper(
     modifier: Modifier,
     mode: BehaviorNature,
     activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
@@ -226,6 +230,7 @@ private fun BehaviorSheetWrapper(
             modifier = modifier.imePadding(),
             mode = mode,
             activities = activities,
+            activityGroups = activityGroups,
             allTags = allTags,
             dialogConfig = dialogConfig,
             initialStartTime = initialStartTime,
@@ -247,6 +252,7 @@ internal fun AddBehaviorSheetContent(
     modifier: Modifier = Modifier,
     mode: BehaviorNature = BehaviorNature.COMPLETED,
     activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
@@ -306,6 +312,8 @@ internal fun AddBehaviorSheetContent(
 
     var showAddActivityDialog by remember { mutableStateOf(false) }
     var showAddTagDialog by remember { mutableStateOf(false) }
+    var showActivityPicker by remember { mutableStateOf(false) }
+    var showTagPicker by remember { mutableStateOf(false) }
     var showTimeAdjustments by remember { mutableStateOf(false) }
 
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
@@ -636,7 +644,7 @@ internal fun AddBehaviorSheetContent(
                                         modifier = Modifier.size(14.dp),
                                     )
                                 },
-                                functionChipOnClick = {},
+                                functionChipOnClick = { showActivityPicker = true },
                                 functionChipOnLongClick = { showAddActivityDialog = true },
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -664,7 +672,7 @@ internal fun AddBehaviorSheetContent(
                                         modifier = Modifier.size(14.dp),
                                     )
                                 },
-                                functionChipOnClick = {},
+                                functionChipOnClick = { showTagPicker = true },
                                 functionChipOnLongClick = { showAddTagDialog = true },
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -939,6 +947,74 @@ internal fun AddBehaviorSheetContent(
             },
         )
     }
+
+    // 活动分类选择弹窗
+    if (showActivityPicker) {
+        val activityGroupsMap = remember(activityGroups) {
+            activityGroups.associateBy { it.id }
+        }
+        val groupedActivities = remember(activities, activityGroups) {
+            val groups = activities.groupBy { it.groupId }
+                .map { (groupId, items) ->
+                    val group = if (groupId != null) activityGroupsMap[groupId] else null
+                    CategoryGroup(
+                        id = groupId ?: -1L,
+                        name = group?.name ?: "未分类",
+                        items = items.map { ActivityCategorizable(it) },
+                    )
+                }
+                .sortedBy { if (it.id == -1L) Int.MAX_VALUE.toLong() else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
+            groups
+        }
+
+        CategoryPickerDialog(
+            title = "选择活动",
+            items = activities.map { ActivityCategorizable(it) },
+            categoryGroups = groupedActivities,
+            selectedId = selectedActivityId,
+            onItemSelected = { id ->
+                selectedActivityId = id
+                showActivityPicker = false
+            },
+            onDismiss = { showActivityPicker = false },
+            onAddNew = {
+                showActivityPicker = false
+                showAddActivityDialog = true
+            },
+        )
+    }
+
+    // 标签分类选择弹窗
+    if (showTagPicker) {
+        val groupedTags = remember(allTags) {
+            val groups = allTags.groupBy { it.category ?: "未分类" }
+                .map { (category, items) ->
+                    CategoryGroup(
+                        id = category.hashCode().toLong(),
+                        name = category,
+                        items = items.map { TagCategorizable(it) },
+                    )
+                }
+                .sortedBy { it.name }
+            groups
+        }
+
+        CategoryPickerDialog(
+            title = "选择标签",
+            items = allTags.map { TagCategorizable(it) },
+            categoryGroups = groupedTags,
+            selectedIds = selectedTagIds,
+            multiSelect = true,
+            onItemsSelected = { ids ->
+                selectedTagIds = ids
+            },
+            onDismiss = { showTagPicker = false },
+            onAddNew = {
+                showTagPicker = false
+                showAddTagDialog = true
+            },
+        )
+    }
 }
 
 @Composable
@@ -981,11 +1057,16 @@ private fun AddBehaviorSheetPreview() {
         Tag(1, "Work", null, null, null, null, 0, 0, 0, false),
         Tag(2, "Study", null, null, null, null, 0, 0, 0, false)
     )
+    val sampleGroups = listOf(
+        ActivityGroup(1, "工作", 0),
+        ActivityGroup(2, "学习", 1),
+    )
 
     NLtimerTheme {
         Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
             AddBehaviorSheetContent(
                 activities = sampleActivities,
+                activityGroups = sampleGroups,
                 allTags = sampleTags,
                 dialogConfig = DialogGridConfig(),
                 existingBehaviors = emptyList(),
@@ -994,4 +1075,28 @@ private fun AddBehaviorSheetPreview() {
             )
         }
     }
+}
+
+// 活动适配器，实现 CategorizableItem 接口
+private data class ActivityCategorizable(
+    val activity: Activity,
+) : CategorizableItem {
+    override val itemId: Long = activity.id
+    override val itemName: String = activity.name
+    override val category: String? = null // 分组由外部处理
+    override val usageCount: Int = 0 // 需要从统计数据获取
+    override val lastUsedTimestamp: Long? = null
+    override val emoji: String? = activity.emoji
+}
+
+// 标签适配器，实现 CategorizableItem 接口
+private data class TagCategorizable(
+    val tag: Tag,
+) : CategorizableItem {
+    override val itemId: Long = tag.id
+    override val itemName: String = tag.name
+    override val category: String? = tag.category
+    override val usageCount: Int = tag.usageCount
+    override val lastUsedTimestamp: Long? = null
+    override val emoji: String? = null
 }

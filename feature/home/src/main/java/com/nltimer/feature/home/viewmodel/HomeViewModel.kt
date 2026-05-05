@@ -221,6 +221,11 @@ class HomeViewModel @Inject constructor(
             )
         }
 
+        // 计算空闲区间：最后一条行为结束时间 → 下一条行为开始时间（或当前时间）
+        val lastEnd = cells.lastOrNull()?.endTime
+        val idleStart = lastEnd ?: now
+        val idleEnd = now
+
         val addCell = GridCellUiState(
             behaviorId = null,
             activityEmoji = null,
@@ -229,6 +234,8 @@ class HomeViewModel @Inject constructor(
             status = null,
             isCurrent = false,
             isAddPlaceholder = true,
+            startTime = idleStart,
+            endTime = idleEnd,
         )
         val allCells = cells + addCell
 
@@ -334,12 +341,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED) {
-        _uiState.update { it.copy(addSheetMode = mode) }
+    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED, idleStart: LocalTime? = null, idleEnd: LocalTime? = null) {
+        _uiState.update { it.copy(addSheetMode = mode, idleStartTime = idleStart, idleEndTime = idleEnd) }
     }
 
     fun hideAddSheet() {
-        _uiState.update { it.copy(addSheetMode = null) }
+        _uiState.update { it.copy(addSheetMode = null, idleStartTime = null, idleEndTime = null) }
         selectedActivityId = null
         _tagsForSelectedActivity.update { emptyList() }
     }

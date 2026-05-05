@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -36,7 +37,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun GridRow(
     row: GridRowUiState,
-    onEmptyCellClick: () -> Unit,
+    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
 ) {
@@ -82,7 +83,7 @@ fun GridRow(
                                         .clickable { detailCell = cell },
                                 )
                                 index == targetEmptyIndex -> GridCellEmpty(
-                                    onClick = onEmptyCellClick,
+                                    onClick = { onEmptyCellClick(cell.startTime, cell.endTime) },
                                     modifier = Modifier.heightIn(min = gridMinHeight)
                                 )
                                 else -> {}

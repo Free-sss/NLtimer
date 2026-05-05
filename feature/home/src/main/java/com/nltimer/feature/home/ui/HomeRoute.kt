@@ -29,7 +29,7 @@ fun HomeRoute(
         tagsForSelectedActivity = tagsForSelectedActivity,
         allTags = allTags,
         dialogConfig = dialogConfig,
-        onEmptyCellClick = { viewModel.showAddSheet(AddSheetMode.COMPLETED) },
+        onEmptyCellClick = { idleStart, idleEnd -> viewModel.showAddSheet(AddSheetMode.COMPLETED, idleStart, idleEnd) },
         onShowAddSheet = { viewModel.showAddSheet(it) },
         onAddBehavior = { activityId, tagIds, startTime, endTime, nature, note ->
             val startEpochMillis = LocalDate.now()

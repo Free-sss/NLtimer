@@ -85,7 +85,7 @@ fun HomeScreen(
     tagsForSelectedActivity: List<Tag>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig = DialogGridConfig(),
-    onEmptyCellClick: () -> Unit,
+    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onShowAddSheet: (AddSheetMode) -> Unit,
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismissSheet: () -> Unit,
@@ -248,7 +248,7 @@ fun HomeScreen(
                     onClick = if (uiState.hasActiveBehavior) {
                         { activeBehaviorId?.let { onCompleteBehavior(it) }; Unit }
                     } else {
-                        onEmptyCellClick
+                        { onEmptyCellClick(null, null) }
                     },
                 ) {
                     Row(
@@ -297,7 +297,7 @@ fun HomeScreen(
                         Row(modifier = Modifier.weight(1f)) {
                             TimeAxisGrid(
                                 rows = uiState.rows,
-                                onEmptyCellClick = onEmptyCellClick,
+                                onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
                                 currentHour = uiState.selectedTimeHour,
                                 onLayoutChange = onLayoutChange,
                                 showTimeSideBar = showSideBar,
@@ -320,7 +320,7 @@ fun HomeScreen(
                     HomeLayout.TIMELINE_REVERSE -> {
                         TimelineReverseView(
                             cells = uiState.rows.flatMap { it.cells },
-                            onAddClick = onEmptyCellClick,
+                            onAddClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
                         )
@@ -373,8 +373,8 @@ fun HomeScreen(
                     tagsForActivity = tagsForSelectedActivity,
                     allTags = allTags,
                     dialogConfig = dialogConfig,
-                    initialStartTime = uiState.lastBehaviorEndTime,
-                    initialEndTime = LocalTime.now(),
+                    initialStartTime = uiState.idleStartTime ?: uiState.lastBehaviorEndTime,
+                    initialEndTime = uiState.idleEndTime ?: LocalTime.now(),
                     existingBehaviors = existingBehaviors,
                     onDismiss = onDismissSheet,
                     onConfirm = onAddBehavior,
@@ -522,7 +522,7 @@ private fun HomeScreenPreview() {
             activityGroups = emptyList(),
             tagsForSelectedActivity = sampleTags,
             allTags = sampleTags,
-            onEmptyCellClick = {},
+            onEmptyCellClick = { _, _ -> },
             onShowAddSheet = {},
             onAddBehavior = { _, _, _, _, _, _ -> },
             onDismissSheet = {},
