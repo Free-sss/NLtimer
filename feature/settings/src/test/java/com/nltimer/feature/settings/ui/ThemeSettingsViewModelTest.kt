@@ -8,6 +8,7 @@ import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -129,12 +130,12 @@ class ThemeSettingsViewModelTest {
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
         override suspend fun saveTagCategories(categories: Set<String>) {}
-        override fun getDialogConfigFlow(): Flow<DialogGridConfig> {
-            TODO("Not yet implemented")
-        }
+        override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
 
-        override suspend fun updateDialogConfig(config: DialogGridConfig) {
-            TODO("Not yet implemented")
-        }
+        override suspend fun updateDialogConfig(config: DialogGridConfig) {}
+
+        override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
+
+        override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
     }
 }
