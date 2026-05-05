@@ -31,13 +31,20 @@ fun HomeRoute(
         dialogConfig = dialogConfig,
         onEmptyCellClick = { viewModel.showAddSheet(AddSheetMode.COMPLETED) },
         onShowAddSheet = { viewModel.showAddSheet(it) },
-        onAddBehavior = { activityId, tagIds, startTime, nature, note ->
-            val epochMillis = LocalDate.now()
+        onAddBehavior = { activityId, tagIds, startTime, endTime, nature, note ->
+            val startEpochMillis = LocalDate.now()
                 .atTime(startTime)
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
-            viewModel.addBehavior(activityId, tagIds, epochMillis, nature, note)
+            val endEpochMillis = endTime?.let {
+                LocalDate.now()
+                    .atTime(it)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+            }
+            viewModel.addBehavior(activityId, tagIds, startEpochMillis, endEpochMillis, nature, note)
         },
         onDismissSheet = viewModel::hideAddSheet,
         onCompleteBehavior = { viewModel.completeBehavior(it) },

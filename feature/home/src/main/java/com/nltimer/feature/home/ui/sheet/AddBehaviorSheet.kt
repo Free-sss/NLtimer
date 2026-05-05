@@ -112,7 +112,7 @@ fun AddBehaviorSheet(
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
@@ -142,7 +142,7 @@ fun AddCurrentBehaviorSheet(
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     initialStartTime: LocalTime? = null,
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
@@ -170,7 +170,7 @@ fun AddTargetBehaviorSheet(
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
@@ -198,7 +198,7 @@ private fun BehaviorSheetWrapper(
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
     onDismiss: () -> Unit,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit,
     onAddTag: (name: String) -> Unit,
 ) {
@@ -220,8 +220,8 @@ private fun BehaviorSheetWrapper(
             dialogConfig = dialogConfig,
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,
-            onConfirm = { activityId, tagIds, startTime, nature, note ->
-                onConfirm(activityId, tagIds, startTime, nature, note)
+            onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
+                onConfirm(activityId, tagIds, startTime, endTime, nature, note)
                 onDismiss()
             },
             onDismiss = onDismiss,
@@ -240,7 +240,7 @@ internal fun AddBehaviorSheetContent(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
@@ -724,6 +724,7 @@ internal fun AddBehaviorSheetContent(
                                                 activityId,
                                                 selectedTagIds.toList(),
                                                 startTime.toLocalTime(),
+                                                if (mode == BehaviorNature.COMPLETED) endTime.toLocalTime() else null,
                                                 nature,
                                                 note.ifBlank { null }
                                             )
@@ -924,7 +925,7 @@ private fun AddBehaviorSheetPreview() {
                 activities = sampleActivities,
                 allTags = sampleTags,
                 dialogConfig = DialogGridConfig(),
-                onConfirm = { _, _, _, _, _ -> },
+                onConfirm = { _, _, _, _, _, _ -> },
                 onDismiss = { },
             )
         }

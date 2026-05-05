@@ -334,6 +334,7 @@ class HomeViewModel @Inject constructor(
         activityId: Long,
         tagIds: List<Long>,
         startTime: Long,
+        endTime: Long?,
         status: BehaviorNature,
         note: String?,
     ) {
@@ -350,7 +351,7 @@ class HomeViewModel @Inject constructor(
                     id = 0,
                     activityId = activityId,
                     startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
-                    endTime = if (status == BehaviorNature.COMPLETED) startTime else null,
+                    endTime = if (status == BehaviorNature.COMPLETED) endTime ?: startTime else null,
                     status = status,
                     note = note,
                     pomodoroCount = 0,

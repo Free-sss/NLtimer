@@ -114,7 +114,7 @@ class HomeViewModelTest {
     @Test
     fun `addBehavior calls repository and hides sheet`() = runTest {
         viewModel.showAddSheet()
-        viewModel.addBehavior(1L, listOf(10L), 1000L, BehaviorNature.ACTIVE, "Note")
+        viewModel.addBehavior(1L, listOf(10L), 1000L, null, BehaviorNature.ACTIVE, "Note")
         advanceUntilIdle()
 
         assertTrue(behaviorRepository.endCurrentBehaviorCalled)
