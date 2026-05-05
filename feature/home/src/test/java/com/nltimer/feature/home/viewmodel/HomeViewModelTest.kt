@@ -6,11 +6,13 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -232,5 +234,9 @@ class HomeViewModelTest {
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
         override suspend fun saveTagCategories(categories: Set<String>) {}
+        override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
+        override suspend fun updateDialogConfig(config: DialogGridConfig) {}
+        override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
+        override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
     }
 }

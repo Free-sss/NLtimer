@@ -3,6 +3,7 @@ package com.nltimer.feature.categories.viewmodel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.repository.CategoryRepository
+import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.categories.model.DialogState
 import com.nltimer.feature.categories.model.SectionType
 import kotlinx.coroutines.Dispatchers
@@ -309,13 +310,13 @@ class CategoriesViewModelTest {
             lastSavedTagCategories = categories
         }
 
-        override fun getDialogConfigFlow(): Flow<DialogGridConfig> {
-            TODO("Not yet implemented")
-        }
+        override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
 
-        override suspend fun updateDialogConfig(config: DialogGridConfig) {
-            TODO("Not yet implemented")
-        }
+        override suspend fun updateDialogConfig(config: DialogGridConfig) {}
+
+        override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
+
+        override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
     }
 
     private class FakeCategoryRepository(
