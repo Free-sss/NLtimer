@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.toDisplayString
@@ -355,33 +356,4 @@ private fun TimelineBehaviorItem(
     }
 }
 
-// 将毫秒格式化为"X时X分X秒"的可读字符串
-private fun formatDuration(ms: Long): String {
-    val hours = ms / 3600000
-    val minutes = (ms % 3600000) / 60000
-    val seconds = (ms % 60000) / 1000
-    return buildString {
-        if (hours > 0) append("${hours}时")
-        if (minutes > 0 || hours > 0) append("${minutes}分")
-        if (hours == 0L) append("${seconds}秒")
-    }
-}
 
-/**
- * 小型标签条 Composable，用于时间线视图中的行为卡片。
- */
-@Composable
-private fun TagChipSmall(name: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-    ) {
-        Text(
-            text = "#$name",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-    }
-}

@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.toDisplayString
@@ -269,29 +270,4 @@ private fun BehaviorLogCard(
     }
 }
 
-@Composable
-private fun TagChipSmall(name: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-    ) {
-        Text(
-            text = "#$name",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-    }
-}
 
-private fun formatDuration(ms: Long): String {
-    val hours = ms / 3600000
-    val minutes = (ms % 3600000) / 60000
-    val seconds = (ms % 60000) / 1000
-    return buildString {
-        if (hours > 0) append("${hours}h")
-        if (minutes > 0 || hours > 0) append("${minutes}m")
-        if (hours == 0L && minutes == 0L) append("${seconds}s")
-    }
-}
