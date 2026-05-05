@@ -31,6 +31,7 @@ fun HomeRoute(
         dialogConfig = dialogConfig,
         onEmptyCellClick = { idleStart, idleEnd -> viewModel.showAddSheet(AddSheetMode.COMPLETED, idleStart, idleEnd) },
         onShowAddSheet = { viewModel.showAddSheet(it) },
+        onCellLongClick = { cell -> viewModel.showEditSheet(cell) },
         onAddBehavior = { activityId, tagIds, startTime, endTime, nature, note ->
             val startEpochMillis = LocalDate.now()
                 .atTime(startTime)

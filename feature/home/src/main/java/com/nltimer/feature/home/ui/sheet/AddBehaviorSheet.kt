@@ -114,6 +114,10 @@ fun AddBehaviorSheet(
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
@@ -129,6 +133,10 @@ fun AddBehaviorSheet(
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
         initialEndTime = initialEndTime,
+        initialActivityId = initialActivityId,
+        initialTagIds = initialTagIds,
+        initialNote = initialNote,
+        editBehaviorId = editBehaviorId,
         existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
@@ -147,6 +155,10 @@ fun AddCurrentBehaviorSheet(
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
     initialStartTime: LocalTime? = null,
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
@@ -161,6 +173,10 @@ fun AddCurrentBehaviorSheet(
         allTags = allTags,
         dialogConfig = dialogConfig,
         initialStartTime = initialStartTime,
+        initialActivityId = initialActivityId,
+        initialTagIds = initialTagIds,
+        initialNote = initialNote,
+        editBehaviorId = editBehaviorId,
         existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
@@ -178,6 +194,10 @@ fun AddTargetBehaviorSheet(
     tagsForActivity: List<Tag>,
     allTags: List<Tag> = emptyList(),
     dialogConfig: DialogGridConfig = DialogGridConfig(),
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
@@ -191,6 +211,10 @@ fun AddTargetBehaviorSheet(
         activityGroups = activityGroups,
         allTags = allTags,
         dialogConfig = dialogConfig,
+        initialActivityId = initialActivityId,
+        initialTagIds = initialTagIds,
+        initialNote = initialNote,
+        editBehaviorId = editBehaviorId,
         existingBehaviors = existingBehaviors,
         onDismiss = onDismiss,
         onConfirm = onConfirm,
@@ -210,6 +234,10 @@ private fun BehaviorSheetWrapper(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
@@ -235,6 +263,10 @@ private fun BehaviorSheetWrapper(
             dialogConfig = dialogConfig,
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,
+            initialActivityId = initialActivityId,
+            initialTagIds = initialTagIds,
+            initialNote = initialNote,
+            editBehaviorId = editBehaviorId,
             existingBehaviors = existingBehaviors,
             onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
                 onConfirm(activityId, tagIds, startTime, endTime, nature, note)
@@ -257,14 +289,18 @@ internal fun AddBehaviorSheetContent(
     dialogConfig: DialogGridConfig,
     initialStartTime: LocalTime? = null,
     initialEndTime: LocalTime? = null,
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
     existingBehaviors: List<Behavior> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
     onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
-    var selectedActivityId by remember { mutableStateOf<Long?>(null) }
-    var selectedTagIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var selectedActivityId by remember { mutableStateOf<Long?>(initialActivityId) }
+    var selectedTagIds by remember { mutableStateOf<Set<Long>>(initialTagIds.toSet()) }
     val now = LocalDateTime.now().withSecond(0).withNano(0)
     var startTime by remember {
         mutableStateOf(
@@ -283,7 +319,7 @@ internal fun AddBehaviorSheetContent(
         }
     }
     val nature = mode
-    var note by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf(initialNote ?: "") }
 
     val today = remember { LocalDateTime.now().toLocalDate() }
     val hasTimeConflict by remember(startTime, endTime, mode, existingBehaviors) {

@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.toDisplayString
+import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
 
@@ -41,6 +42,7 @@ import java.time.LocalTime
  * @param modifier 修饰符
  * @param rows 所有网格行数据
  * @param onEmptyCellClick 点击空单元格回调
+ * @param onCellLongClick 长按单元格回调
  * @param onLayoutChange 切换布局模式回调
  * @param currentHour 当前选中的小时
  */
@@ -49,6 +51,7 @@ fun TimeAxisGrid(
     modifier: Modifier = Modifier,
     rows: List<GridRowUiState>,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onCellLongClick: (GridCellUiState) -> Unit = {},
     onLayoutChange: (HomeLayout) -> Unit,
     currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
@@ -121,6 +124,7 @@ fun TimeAxisGrid(
             GridRow(
                 row = row,
                 onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
+                onCellLongClick = onCellLongClick,
                 timeLabelConfig = timeLabelConfig,
             )
         }

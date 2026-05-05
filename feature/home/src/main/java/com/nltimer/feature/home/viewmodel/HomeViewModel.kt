@@ -6,6 +6,7 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
@@ -345,8 +346,47 @@ class HomeViewModel @Inject constructor(
         _uiState.update { it.copy(addSheetMode = mode, idleStartTime = idleStart, idleEndTime = idleEnd) }
     }
 
+    fun showEditSheet(cell: GridCellUiState) {
+        val mode = when (cell.status) {
+            BehaviorNature.COMPLETED -> AddSheetMode.COMPLETED
+            BehaviorNature.ACTIVE -> AddSheetMode.CURRENT
+            BehaviorNature.PENDING -> AddSheetMode.TARGET
+            null -> return
+        }
+        _uiState.update {
+            it.copy(
+                addSheetMode = mode,
+                editBehaviorId = cell.behaviorId,
+                editInitialActivityId = null,
+                editInitialTagIds = cell.tags.map { tag -> tag.id },
+                editInitialNote = cell.note,
+                idleStartTime = cell.startTime,
+                idleEndTime = cell.endTime,
+            )
+        }
+        // 加载行为的完整信息（包括活动ID）
+        cell.behaviorId?.let { behaviorId ->
+            viewModelScope.launch {
+                behaviorRepository.getBehaviorWithDetails(behaviorId)?.let { details ->
+                    _uiState.update { it.copy(editInitialActivityId = details.activity.id) }
+                    onActivitySelected(details.activity.id)
+                }
+            }
+        }
+    }
+
     fun hideAddSheet() {
-        _uiState.update { it.copy(addSheetMode = null, idleStartTime = null, idleEndTime = null) }
+        _uiState.update {
+            it.copy(
+                addSheetMode = null,
+                idleStartTime = null,
+                idleEndTime = null,
+                editBehaviorId = null,
+                editInitialActivityId = null,
+                editInitialTagIds = emptyList(),
+                editInitialNote = null,
+            )
+        }
         selectedActivityId = null
         _tagsForSelectedActivity.update { emptyList() }
     }
@@ -370,6 +410,11 @@ class HomeViewModel @Inject constructor(
         status: BehaviorNature,
         note: String?,
     ) {
+        val editId = _uiState.value.editBehaviorId
+        if (editId != null) {
+            editBehavior(editId, activityId, tagIds, startTime, endTime, status, note)
+            return
+        }
         viewModelScope.launch {
             // 时间约束校验：结束/开始时间不能大于当前时间
             val now = System.currentTimeMillis()
@@ -517,6 +562,52 @@ class HomeViewModel @Inject constructor(
                 ),
                 tagIds = tagIds,
             )
+            hideAddSheet()
+        }
+    }
+
+    // 编辑已有行为
+    private fun editBehavior(
+        behaviorId: Long,
+        activityId: Long,
+        tagIds: List<Long>,
+        startTime: Long,
+        endTime: Long?,
+        status: BehaviorNature,
+        note: String?,
+    ) {
+        viewModelScope.launch {
+            // 时间约束校验
+            val now = System.currentTimeMillis()
+            when (status) {
+                BehaviorNature.COMPLETED -> {
+                    if (endTime != null && endTime > now) {
+                        _uiState.update { it.copy(errorMessage = "结束时间不能大于当前时间") }
+                        return@launch
+                    }
+                }
+                BehaviorNature.ACTIVE -> {
+                    if (startTime > now) {
+                        _uiState.update { it.copy(errorMessage = "开始时间不能大于当前时间") }
+                        return@launch
+                    }
+                }
+                BehaviorNature.PENDING -> {}
+            }
+
+            // 更新行为
+            behaviorRepository.updateBehavior(
+                id = behaviorId,
+                activityId = activityId,
+                startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
+                endTime = if (status == BehaviorNature.COMPLETED) endTime ?: startTime else null,
+                status = status.key,
+                note = note,
+            )
+
+            // 更新标签关联
+            behaviorRepository.updateTagsForBehavior(behaviorId, tagIds)
+
             hideAddSheet()
         }
     }

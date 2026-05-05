@@ -26,4 +26,8 @@ data class HomeUiState(
     val lastBehaviorEndTime: LocalTime? = null,
     val idleStartTime: LocalTime? = null,
     val idleEndTime: LocalTime? = null,
+    val editBehaviorId: Long? = null,
+    val editInitialActivityId: Long? = null,
+    val editInitialTagIds: List<Long> = emptyList(),
+    val editInitialNote: String? = null,
 )

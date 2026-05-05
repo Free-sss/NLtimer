@@ -1,6 +1,8 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,16 +30,19 @@ import java.time.format.DateTimeFormatter
 
 /**
  * 网格单行 Composable，包含时间标签和最多 4 个单元格。
- * 支持点击单元格弹出行为详情对话框。
+ * 支持点击单元格弹出行为详情对话框，长按单元格触发编辑弹窗。
  *
  * @param row 行 UI 状态
  * @param onEmptyCellClick 点击空单元格回调
+ * @param onCellLongClick 长按单元格回调，传递被长按的单元格数据
  * @param modifier 修饰符
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridRow(
     row: GridRowUiState,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onCellLongClick: (GridCellUiState) -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
 ) {
@@ -80,7 +85,10 @@ fun GridRow(
                                     cell = cell,
                                     modifier = Modifier
                                         .heightIn(min = gridMinHeight)
-                                        .clickable { detailCell = cell },
+                                        .combinedClickable(
+                                            onClick = { detailCell = cell },
+                                            onLongClick = { onCellLongClick(cell) },
+                                        ),
                                 )
                                 index == targetEmptyIndex -> GridCellEmpty(
                                     onClick = { onEmptyCellClick(cell.startTime, cell.endTime) },
