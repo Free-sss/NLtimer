@@ -636,7 +636,8 @@ internal fun AddBehaviorSheetContent(
                                         modifier = Modifier.size(14.dp),
                                     )
                                 },
-                                functionChipOnClick = { showAddActivityDialog = true },
+                                functionChipOnClick = {},
+                                functionChipOnLongClick = { showAddActivityDialog = true },
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             ActivityGridComponent(
@@ -663,7 +664,8 @@ internal fun AddBehaviorSheetContent(
                                         modifier = Modifier.size(14.dp),
                                     )
                                 },
-                                functionChipOnClick = { showAddTagDialog = true },
+                                functionChipOnClick = {},
+                                functionChipOnLongClick = { showAddTagDialog = true },
                             )
                             Spacer(modifier = Modifier.height(10.dp))
 

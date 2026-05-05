@@ -392,23 +392,55 @@ class HomeViewModel @Inject constructor(
                 behaviorRepository.endCurrentBehavior(startTime)
             }
 
+            // 自动吸附：UI 只提供分钟精度（秒/毫秒归零），但数据库存储毫秒精度。
+            // 当新行为的开始时间与已有行为的结束时间在同一分钟内时（UI 精度导致的重叠），
+            // 自动调整到该行为结束后的下一毫秒，而非报冲突。
+            var adjustedStart = startTime
+            var adjustedEnd = endTime
+            if (status != BehaviorNature.PENDING) {
+                val snapQueryEnd = when (status) {
+                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
+                    BehaviorNature.COMPLETED -> endTime ?: startTime
+                    BehaviorNature.PENDING -> Long.MAX_VALUE
+                }
+                val overlapping = behaviorRepository
+                    .getBehaviorsOverlappingRange(startTime, snapQueryEnd)
+                    .firstOrNull()
+                    .orEmpty()
+                val prevBehavior = overlapping
+                    .filter { it.endTime != null && it.endTime!! > adjustedStart }
+                    .maxByOrNull { it.endTime!! }
+                val prevEnd = prevBehavior?.endTime
+                // 只在同一分钟内有重叠时才吸附（UI 分钟精度 vs 数据库毫秒精度的差异）
+                // 如果是真正的时间冲突（跨多分钟），不吸附，让后续冲突检测报错
+                if (prevEnd != null && prevEnd > adjustedStart) {
+                    val sameMinute = prevEnd / 60_000 == adjustedStart / 60_000
+                    if (sameMinute) {
+                        adjustedStart = prevEnd + 1
+                        if (status == BehaviorNature.COMPLETED && adjustedEnd != null && adjustedEnd < adjustedStart) {
+                            adjustedEnd = adjustedStart
+                        }
+                    }
+                }
+            }
+
             // 非 PENDING 行为进行时间冲突检测
             if (status != BehaviorNature.PENDING) {
                 val effectiveNewEnd = when (status) {
                     BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                    BehaviorNature.COMPLETED -> endTime ?: startTime
+                    BehaviorNature.COMPLETED -> adjustedEnd ?: adjustedStart
                     BehaviorNature.PENDING -> null
                 }
 
-                if (effectiveNewEnd != null && effectiveNewEnd > startTime) {
+                if (effectiveNewEnd != null && effectiveNewEnd > adjustedStart) {
                     val overlappingBehaviors = behaviorRepository
-                        .getBehaviorsOverlappingRange(startTime, effectiveNewEnd)
+                        .getBehaviorsOverlappingRange(adjustedStart, effectiveNewEnd)
                         .firstOrNull()
                         .orEmpty()
 
                     if (hasTimeConflict(
-                            newStart = startTime,
-                            newEnd = endTime,
+                            newStart = adjustedStart,
+                            newEnd = adjustedEnd,
                             newStatus = status,
                             existingBehaviors = overlappingBehaviors,
                             currentTime = now,
@@ -422,12 +454,15 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+            val finalStart = adjustedStart
+            val finalEnd = adjustedEnd
+
             // 计算新行为的 sequence（按时间排序插入）
             val wasPlanned = status == BehaviorNature.PENDING
             val newSequence = if (status == BehaviorNature.PENDING) {
                 behaviorRepository.getMaxSequence() + 1
             } else {
-                val dayStart = getDayStartMillis(startTime)
+                val dayStart = getDayStartMillis(finalStart)
                 val dayEnd = dayStart + 24 * 60 * 60 * 1000
                 val dayBehaviors = behaviorRepository
                     .getByDayRange(dayStart, dayEnd)
@@ -436,13 +471,13 @@ class HomeViewModel @Inject constructor(
                     .filter { it.status != BehaviorNature.PENDING }
                     .sortedBy { it.startTime }
 
-                val insertIndex = dayBehaviors.indexOfFirst { it.startTime > startTime }
+                val insertIndex = dayBehaviors.indexOfFirst { it.startTime > finalStart }
                 if (insertIndex == -1) dayBehaviors.size else insertIndex
             }
 
             // 更新后续行为的 sequence
             if (status != BehaviorNature.PENDING) {
-                val dayStart = getDayStartMillis(startTime)
+                val dayStart = getDayStartMillis(finalStart)
                 val dayEnd = dayStart + 24 * 60 * 60 * 1000
                 val dayBehaviors = behaviorRepository
                     .getByDayRange(dayStart, dayEnd)
@@ -462,8 +497,8 @@ class HomeViewModel @Inject constructor(
                 Behavior(
                     id = 0,
                     activityId = activityId,
-                    startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
-                    endTime = if (status == BehaviorNature.COMPLETED) endTime ?: startTime else null,
+                    startTime = if (status == BehaviorNature.PENDING) 0L else finalStart,
+                    endTime = if (status == BehaviorNature.COMPLETED) finalEnd ?: finalStart else null,
                     status = status,
                     note = note,
                     pomodoroCount = 0,

@@ -3,6 +3,8 @@ package com.nltimer.feature.home.ui.sheet
 import android.graphics.DiscretePathEffect as AndroidDiscretePathEffect
 import android.graphics.Paint
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -144,7 +146,7 @@ fun StaggeredHorizontalGrid(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ActivityGridComponent(
     modifier: Modifier = Modifier,
@@ -155,6 +157,7 @@ fun ActivityGridComponent(
     functionChipLabel: String = "管理",
     functionChipIcon: @Composable (() -> Unit)? = null,
     functionChipOnClick: () -> Unit = {},
+    functionChipOnLongClick: () -> Unit = {},
     displayMode: ChipDisplayMode = ChipDisplayMode.Filled,
     layoutMode: GridLayoutMode = GridLayoutMode.Horizontal,
     maxLinesPerColumn: Int = 2,
@@ -181,6 +184,7 @@ fun ActivityGridComponent(
                 contentColor = onContentColor,
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
+                onLongClick = functionChipOnLongClick,
                 modifier = Modifier.width(labelWidth),
             )
 
@@ -220,6 +224,7 @@ fun ActivityGridComponent(
                 contentColor = onContentColor,
                 borderColor = Color.Transparent,
                 onClick = functionChipOnClick,
+                onLongClick = functionChipOnLongClick,
                 modifier = Modifier.width(labelWidth),
             )
 
@@ -417,6 +422,7 @@ internal fun AdaptiveActivityChip(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun FunctionChip(
     modifier: Modifier = Modifier,
@@ -426,10 +432,15 @@ internal fun FunctionChip(
     contentColor: Color,
     borderColor: Color,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
 ) {
     Surface(
-        onClick = onClick,
-        modifier = modifier.height(24.dp),
+        modifier = modifier
+            .height(24.dp)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            ),
         color = containerColor,
         contentColor = contentColor,
         shape = RoundedCornerShape(6.dp),
