@@ -1,36 +1,19 @@
 package com.nltimer.feature.home.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
-import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
@@ -59,7 +42,6 @@ fun TimeAxisGrid(
     onTimeLabelSettingsClick: () -> Unit = {},
 ) {
     val listState = rememberLazyListState()
-    var showLayoutMenu by remember { mutableStateOf(false) }
 
     // 当 currentHour 变化时，自动滚动到对应时间行
     LaunchedEffect(currentHour) {
@@ -74,50 +56,20 @@ fun TimeAxisGrid(
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        // 标题行：显示"网格时间"且可点开布局切换菜单
         item {
-            Box {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable { showLayoutMenu = true }
-                ) {
-                    Text(
-                        text = "网格时间",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = showLayoutMenu,
-                    onDismissRequest = { showLayoutMenu = false }
-                ) {
-                    HomeLayout.entries.forEach { layout ->
-                        DropdownMenuItem(
-                            text = { Text(layout.toDisplayString()) },
-                            onClick = {
-                                onLayoutChange(layout)
-                                showLayoutMenu = false
-                            }
-                        )
-                    }
+            LayoutMenuHeader(
+                title = "网格时间",
+                onLayoutChange = onLayoutChange,
+                extraMenuItems = {
                     HorizontalDivider()
                     DropdownMenuItem(
                         text = { Text("时间标题外观") },
                         onClick = {
                             onTimeLabelSettingsClick()
-                            showLayoutMenu = false
                         }
                     )
-                }
-            }
+                },
+            )
         }
 
         items(items = rows, key = { it.rowId }) { row ->

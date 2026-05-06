@@ -17,8 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.util.hhmmFormatter
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 /**
  * 紧凑型时间选择器 Composable。
@@ -64,7 +64,7 @@ fun TimePickerCompact(
 
     // 显示当前时间文本，可点击打开选择器
     Text(
-        text = time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "--:--",
+        text = time?.format(hhmmFormatter) ?: "--:--",
         style = MaterialTheme.typography.bodyMedium,
         modifier = modifier
             .background(MaterialTheme.colorScheme.surfaceContainerHigh, RoundedCornerShape(8.dp))

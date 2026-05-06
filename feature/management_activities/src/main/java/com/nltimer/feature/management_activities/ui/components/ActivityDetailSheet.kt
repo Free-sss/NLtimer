@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
+import com.nltimer.core.data.util.formatDurationMinutes
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -220,7 +221,7 @@ fun ActivityDetailSheet(
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         StatRow("累计使用次数", "${stats.usageCount} 次")
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        StatRow("累计总时长", formatDuration(stats.totalDurationMinutes))
+                        StatRow("累计总时长", formatDurationMinutes(stats.totalDurationMinutes))
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                         StatRow("最近一次使用", formatTimestamp(stats.lastUsedTimestamp))
                     }
@@ -250,22 +251,6 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
-/**
- * 将分钟数格式化为可读的中文时长字符串
- *
- * @param minutes 总分钟数
- * @return 如 "2 小时 30 分钟" 的格式化字符串
- */
-private fun formatDuration(minutes: Long): String {
-    if (minutes == 0L) return "0 分钟"
-    val hours = minutes / 60
-    val mins = minutes % 60
-    return buildString {
-        if (hours > 0) append("${hours} 小时 ")
-        // 当总分钟不足 60 时也显示分钟部分
-        if (mins > 0 || hours == 0L) append("${mins} 分钟")
-    }.trim()
-}
 
 /**
  * 将时间戳格式化为可读日期字符串

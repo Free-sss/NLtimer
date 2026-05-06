@@ -1,12 +1,10 @@
 package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,27 +16,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.HomeLayout
-import com.nltimer.core.designsystem.theme.appBorder
-import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.format.DateTimeFormatter
 
@@ -48,8 +37,7 @@ fun BehaviorLogView(
     onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    var showLayoutMenu by remember { mutableStateOf(false) }
+    val timeFormatter = hhmmFormatter
 
     val behaviors = remember(cells) {
         cells.filter { it.behaviorId != null && it.startTime != null }
@@ -64,40 +52,10 @@ fun BehaviorLogView(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
-                Box {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.clickable { showLayoutMenu = true }
-                    ) {
-                        Text(
-                            text = "行为日志",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondaryContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = showLayoutMenu,
-                        onDismissRequest = { showLayoutMenu = false }
-                    ) {
-                        HomeLayout.entries.forEach { layout ->
-                            DropdownMenuItem(
-                                text = { Text(layout.toDisplayString()) },
-                                onClick = {
-                                    onLayoutChange(layout)
-                                    showLayoutMenu = false
-                                }
-                            )
-                        }
-                    }
-                }
+                LayoutMenuHeader(
+                    title = "行为日志",
+                    onLayoutChange = onLayoutChange,
+                )
             }
 
             if (behaviors.isEmpty()) {
@@ -142,22 +100,12 @@ private fun BehaviorLogCard(
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
     }
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(cardBackground)
-            .appBorder(
-                borderProducer = {
-                    androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                    )
-                },
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(12.dp)
+            .behaviorCardStyle(cardBackground, borderColor)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -222,17 +170,7 @@ private fun BehaviorLogCard(
             }
         }
 
-        if (behavior.tags.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                behavior.tags.forEach { tag ->
-                    TagChipSmall(tag.name)
-                }
-            }
-        }
+        BehaviorTagRow(behavior.tags)
 
         behavior.note?.let { note ->
             if (note.isNotBlank()) {

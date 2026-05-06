@@ -24,9 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 
 /**
  * 网格单行 Composable，包含时间标签和最多 4 个单元格。
@@ -134,7 +134,7 @@ private fun BehaviorDetailDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+                val timeFormatter = hhmmFormatter
 
                 if (cell.tags.isNotEmpty()) {
                     Text(
