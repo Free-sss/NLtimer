@@ -221,6 +221,17 @@ class BehaviorRepositoryImpl @Inject constructor(
         note: String?,
     ) {
         behaviorDao.update(id, activityId, startTime, endTime, status, note)
+        
+        // 重新计算实际耗时
+        if (status == "completed" && endTime != null && startTime > 0) {
+            val duration = endTime - startTime
+            behaviorDao.setActualDuration(id, duration)
+        } else if (status == "active" && startTime > 0) {
+            val duration = System.currentTimeMillis() - startTime
+            behaviorDao.setActualDuration(id, duration)
+        } else {
+            behaviorDao.setActualDuration(id, 0L)
+        }
     }
 
     override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {

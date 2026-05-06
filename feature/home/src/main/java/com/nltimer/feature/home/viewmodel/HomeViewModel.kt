@@ -545,6 +545,17 @@ class HomeViewModel @Inject constructor(
                 }
             }
 
+            // 计算实际耗时
+            val actualDuration = when (status) {
+                BehaviorNature.COMPLETED -> {
+                    if (finalEnd != null && finalStart > 0) finalEnd - finalStart else null
+                }
+                BehaviorNature.ACTIVE -> {
+                    if (finalStart > 0) System.currentTimeMillis() - finalStart else null
+                }
+                BehaviorNature.PENDING -> null
+            }
+
             behaviorRepository.insert(
                 Behavior(
                     id = 0,
@@ -556,7 +567,7 @@ class HomeViewModel @Inject constructor(
                     pomodoroCount = 0,
                     sequence = newSequence,
                     estimatedDuration = null,
-                    actualDuration = null,
+                    actualDuration = actualDuration,
                     achievementLevel = null,
                     wasPlanned = wasPlanned,
                 ),

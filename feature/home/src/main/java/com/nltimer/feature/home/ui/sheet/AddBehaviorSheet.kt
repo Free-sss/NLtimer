@@ -300,6 +300,11 @@ internal fun AddBehaviorSheetContent(
     onAddTag: (name: String) -> Unit = {},
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(initialActivityId) }
+    LaunchedEffect(initialActivityId) {
+        if (initialActivityId != null) {
+            selectedActivityId = initialActivityId
+        }
+    }
     var selectedTagIds by remember { mutableStateOf<Set<Long>>(initialTagIds.toSet()) }
     val now = LocalDateTime.now().withSecond(0).withNano(0)
     var startTime by remember {
@@ -342,6 +347,7 @@ internal fun AddBehaviorSheetContent(
                 newStatus = mode,
                 existingBehaviors = existingBehaviors,
                 currentTime = nowEpoch,
+                ignoreBehaviorId = editBehaviorId,
             )
         }
     }

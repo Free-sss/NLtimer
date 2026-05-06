@@ -267,7 +267,7 @@ private fun TimelineBehaviorItem(
                 )
                 
                 // 计算并显示时长，优先使用 durationMs
-                val duration = behavior.durationMs ?: ((behavior.actualDuration ?: 0L) * 1000)
+                val duration = behavior.durationMs ?: (behavior.actualDuration ?: 0L)
                 if (duration > 0) {
                     Text(
                         text = "⏱ ${formatDuration(duration)}",

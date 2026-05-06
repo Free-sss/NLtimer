@@ -158,7 +158,7 @@ private fun BehaviorLogCard(
             )
 
             val duration = behavior.durationMs
-                ?: ((behavior.actualDuration ?: 0L) * 1000)
+                ?: (behavior.actualDuration ?: 0L)
             if (duration > 0) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -187,7 +187,7 @@ private fun BehaviorLogCard(
         val details = buildList {
             if (behavior.pomodoroCount > 0) add("番茄钟: ${behavior.pomodoroCount}")
             behavior.estimatedDuration?.let { add("预估: ${formatDuration(it)}") }
-            behavior.actualDuration?.let { add("实际: ${formatDuration(it * 1000)}") }
+            behavior.actualDuration?.let { add("实际: ${formatDuration(it)}") }
             behavior.achievementLevel?.let { add("完成度: $it") }
             add("计划内: ${if (behavior.wasPlanned) "是" else "否"}")
         }
