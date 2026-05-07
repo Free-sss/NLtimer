@@ -1,5 +1,8 @@
 package com.nltimer.app
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerState
@@ -13,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -81,7 +85,11 @@ fun NLtimerScaffold(
         Box {
             Scaffold(
                 topBar = {
-                    if (showGlobalBars) {
+                    AnimatedVisibility(
+                        visible = showGlobalBars,
+                        enter = expandVertically(expandFrom = Alignment.Top),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Top),
+                    ) {
                         AppTopAppBar(
                             title = topBarTitle,
                             onMenuClick = {
@@ -94,19 +102,18 @@ fun NLtimerScaffold(
                     }
                 },
                 bottomBar = {
-                    if (showGlobalBars) {
+                    AnimatedVisibility(
+                        visible = showGlobalBars,
+                        enter = expandVertically(expandFrom = Alignment.Bottom),
+                        exit = shrinkVertically(shrinkTowards = Alignment.Bottom),
+                    ) {
                         AppBottomNavigation(navController)
                     }
                 },
             ) { padding ->
-                val hostModifier = if (showGlobalBars) {
-                    Modifier.padding(padding)
-                } else {
-                    Modifier
-                }
                 NLtimerNavHost(
                     navController = navController,
-                    modifier = hostModifier,
+                    modifier = Modifier.padding(padding),
                 )
             }
 

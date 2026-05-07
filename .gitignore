@@ -313,3 +313,4 @@ docs/Android-SimpleTimeTracker/
 # Claude Code local user settings — never commit
 .claude/settings.local.json
 .claude/settings.local.json
+.gradle-home/
