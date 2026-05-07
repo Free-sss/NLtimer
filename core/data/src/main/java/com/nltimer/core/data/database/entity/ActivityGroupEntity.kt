@@ -14,5 +14,7 @@ data class ActivityGroupEntity(
     val id: Long = 0,
     val name: String,
     val sortOrder: Int = 0,
+    val isArchived: Boolean = false,
+    val archivedAt: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
 )

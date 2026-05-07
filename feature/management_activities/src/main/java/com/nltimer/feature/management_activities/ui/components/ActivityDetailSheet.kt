@@ -50,7 +50,7 @@ import java.util.Locale
 /**
  * 活动详情底部弹出表单
  *
- * 展示活动统计信息，支持切换编辑模式修改名称、Emoji 和所属分组。
+ * 展示活动统计信息，支持切换编辑模式修改名称、图标和所属分组。
  *
  * @param activity 当前查看的活动
  * @param stats 活动统计数据
@@ -76,7 +76,7 @@ fun ActivityDetailSheet(
 
     // 编辑模式下各字段的临时状态，初始值从 activity 同步
     var name by remember(activity.name) { mutableStateOf(activity.name) }
-    var emoji by remember(activity.emoji) { mutableStateOf(activity.emoji ?: "") }
+    var iconKey by remember(activity.iconKey) { mutableStateOf(activity.iconKey ?: "") }
     var selectedGroupId by remember(activity.groupId) { mutableStateOf(activity.groupId) }
     // 分组下拉菜单展开状态
     var expanded by remember { mutableStateOf(false) }
@@ -100,7 +100,7 @@ fun ActivityDetailSheet(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = activity.emoji ?: "📌",
+                        text = activity.iconKey ?: "📌",
                         style = MaterialTheme.typography.headlineLarge
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -143,10 +143,9 @@ fun ActivityDetailSheet(
                     )
 
                     OutlinedTextField(
-                        value = emoji,
-                        // 限制 Emoji 输入最多 2 个字符
-                        onValueChange = { if (it.length <= 2) emoji = it },
-                        label = { Text("Emoji") },
+                        value = iconKey,
+                        onValueChange = { if (it.length <= 2) iconKey = it },
+                        label = { Text("图标") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -194,12 +193,11 @@ fun ActivityDetailSheet(
 
                     Button(
                         onClick = {
-                            onUpdate(activity.copy(name = name, emoji = emoji.ifBlank { null }, groupId = selectedGroupId))
+                            onUpdate(activity.copy(name = name, iconKey = iconKey.ifBlank { null }, groupId = selectedGroupId))
                             isEditing = false
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        // 只有内容有实际变动且名称不为空时才可保存
-                        enabled = name.isNotBlank() && (name != activity.name || emoji != (activity.emoji ?: "") || selectedGroupId != activity.groupId)
+                        enabled = name.isNotBlank() && (name != activity.name || iconKey != (activity.iconKey ?: "") || selectedGroupId != activity.groupId)
                     ) {
                         Text("保存修改")
                     }

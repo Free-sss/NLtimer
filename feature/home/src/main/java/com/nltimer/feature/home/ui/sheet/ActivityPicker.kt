@@ -97,7 +97,7 @@ fun ActivityPicker(
                             ),
                         ) {
                             Text(
-                                text = "${activity.emoji ?: ""} $displayName".trim(),
+                                text = "${activity.iconKey ?: ""} $displayName".trim(),
                                 color = if (isSelected) {
                                     MaterialTheme.colorScheme.onPrimaryContainer
                                 } else {

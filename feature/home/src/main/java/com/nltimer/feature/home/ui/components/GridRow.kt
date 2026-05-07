@@ -114,7 +114,7 @@ fun GridRow(
 
 /**
  * 行为详情对话框 Composable。
- * 展示活动 emoji、名称、标签、状态、预计时长和实际时长等信息。
+ * 展示活动图标、名称、标签、状态、预计时长和实际时长等信息。
  *
  * @param cell 要展示详情的单元格数据
  * @param onDismiss 关闭对话框回调
@@ -128,7 +128,7 @@ private fun BehaviorDetailDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "${cell.activityEmoji ?: ""} ${cell.activityName ?: "未命名"}".trim(),
+                text = "${cell.activityIconKey ?: ""} ${cell.activityName ?: "未命名"}".trim(),
                 style = MaterialTheme.typography.headlineSmall,
             )
         },

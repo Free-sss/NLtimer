@@ -198,8 +198,8 @@ fun ActivityManagementScreen(
             AddActivityFormSheet(
                 allGroups = uiState.allGroups,
                 onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, emoji, color, groupId, note ->
-                    viewModel.addActivity(name, emoji, color, groupId, note)
+                onConfirm = { name, iconKey, color, groupId, note ->
+                    viewModel.addActivity(name, iconKey, color, groupId, note)
                 },
             )
         }
@@ -209,8 +209,8 @@ fun ActivityManagementScreen(
                 allGroups = uiState.allGroups,
                 initialGroupId = dialog.group.id,
                 onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, emoji, color, groupId, note ->
-                    viewModel.addActivity(name, emoji, color, groupId, note)
+                onConfirm = { name, iconKey, color, groupId, note ->
+                    viewModel.addActivity(name, iconKey, color, groupId, note)
                 },
             )
         }

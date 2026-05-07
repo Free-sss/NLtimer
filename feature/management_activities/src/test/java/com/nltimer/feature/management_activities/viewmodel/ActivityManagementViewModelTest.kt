@@ -129,7 +129,7 @@ class ActivityManagementViewModelTest {
 
         assertEquals(1, repository.addedActivities.size)
         assertEquals("新活动", repository.addedActivities[0].name)
-        assertEquals("emoji", repository.addedActivities[0].emoji)
+        assertEquals("emoji", repository.addedActivities[0].iconKey)
         assertNull(repository.addedActivities[0].groupId)
     }
 

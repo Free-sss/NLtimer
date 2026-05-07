@@ -81,9 +81,8 @@ fun GridCell(
         verticalArrangement = Arrangement.Top,
     ) {
         Row(){
-            // 显示活动 emoji
-            cell.activityEmoji?.let { emoji ->
-                Text(text = emoji, style = MaterialTheme.typography.bodyMedium)
+            cell.activityIconKey?.let { iconKey ->
+                Text(text = iconKey, style = MaterialTheme.typography.bodyMedium)
             }
 
             // 显示活动名称（单行省略）

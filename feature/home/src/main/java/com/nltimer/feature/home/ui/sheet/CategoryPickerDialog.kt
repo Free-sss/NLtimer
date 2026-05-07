@@ -82,7 +82,7 @@ interface CategorizableItem {
     val category: String?
     val usageCount: Int
     val lastUsedTimestamp: Long?
-    val emoji: String?
+    val iconKey: String?
 }
 
 /**
@@ -393,9 +393,9 @@ private fun <T : CategorizableItem> ItemChip(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (item.emoji != null) {
+            if (item.iconKey != null) {
                 Text(
-                    text = item.emoji!!,
+                    text = item.iconKey!!,
                     fontSize = 12.sp,
                 )
                 Spacer(modifier = Modifier.width(2.dp))

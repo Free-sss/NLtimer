@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 data class BehaviorDetailUiState(
     val behaviorId: Long,
     val activityId: Long,
-    val activityEmoji: String?,
+    val activityIconKey: String?,
     val activityName: String,
     val startTime: LocalDateTime,
     val endTime: LocalDateTime?,

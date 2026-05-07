@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -199,6 +199,81 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 db.execSQL("DROP INDEX IF EXISTS index_behaviors_startTime")
                 // 创建新的复合索引
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_startTime_sequence ON behaviors(startTime, sequence)")
+            }
+        }
+
+        // 数据库从版本 8 到 9 的迁移：
+        // activities: 删除 emoji，新增 keywords/archivedAt/usageCount
+        // activity_groups: 新增 isArchived/archivedAt
+        // tags: 删除 textColor，icon 重命名为 iconKey，新增 archivedAt
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("PRAGMA foreign_keys = OFF")
+                try {
+                    // 1. 重建 activities 表：移除 emoji，新增 keywords/archivedAt/usageCount/color
+                    db.execSQL(
+                        """
+                        CREATE TABLE activities_new (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            name TEXT NOT NULL,
+                            iconKey TEXT,
+                            keywords TEXT,
+                            groupId INTEGER,
+                            isPreset INTEGER NOT NULL DEFAULT 0,
+                            isArchived INTEGER NOT NULL DEFAULT 0,
+                            archivedAt INTEGER,
+                            color INTEGER,
+                            usageCount INTEGER NOT NULL DEFAULT 0,
+                            createdAt INTEGER NOT NULL,
+                            updatedAt INTEGER NOT NULL
+                        )
+                        """.trimIndent()
+                    )
+                    db.execSQL(
+                        """
+                        INSERT INTO activities_new (id, name, iconKey, keywords, groupId, isPreset, isArchived, archivedAt, color, usageCount, createdAt, updatedAt)
+                        SELECT id, name, iconKey, NULL, groupId, isPreset, isArchived, NULL, color, 0, createdAt, updatedAt
+                        FROM activities
+                        """.trimIndent()
+                    )
+                    db.execSQL("DROP TABLE activities")
+                    db.execSQL("ALTER TABLE activities_new RENAME TO activities")
+                    db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_activities_name ON activities(name)")
+
+                    // 2. activity_groups 表：新增 isArchived 和 archivedAt 列
+                    db.execSQL("ALTER TABLE activity_groups ADD COLUMN isArchived INTEGER NOT NULL DEFAULT 0")
+                    db.execSQL("ALTER TABLE activity_groups ADD COLUMN archivedAt INTEGER")
+
+                    // 3. 重建 tags 表：移除 textColor，icon 重命名为 iconKey，新增 archivedAt
+                    db.execSQL(
+                        """
+                        CREATE TABLE tags_new (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            name TEXT NOT NULL,
+                            color INTEGER,
+                            iconKey TEXT,
+                            category TEXT,
+                            priority INTEGER NOT NULL DEFAULT 0,
+                            usageCount INTEGER NOT NULL DEFAULT 0,
+                            sortOrder INTEGER NOT NULL DEFAULT 0,
+                            isArchived INTEGER NOT NULL DEFAULT 0,
+                            archivedAt INTEGER
+                        )
+                        """.trimIndent()
+                    )
+                    db.execSQL(
+                        """
+                        INSERT INTO tags_new (id, name, color, iconKey, category, priority, usageCount, sortOrder, isArchived, archivedAt)
+                        SELECT id, name, color, icon, category, priority, usageCount, sortOrder, isArchived, NULL
+                        FROM tags
+                        """.trimIndent()
+                    )
+                    db.execSQL("DROP TABLE tags")
+                    db.execSQL("ALTER TABLE tags_new RENAME TO tags")
+                    db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_tags_name ON tags(name)")
+                } finally {
+                    db.execSQL("PRAGMA foreign_keys = ON")
+                }
             }
         }
     }

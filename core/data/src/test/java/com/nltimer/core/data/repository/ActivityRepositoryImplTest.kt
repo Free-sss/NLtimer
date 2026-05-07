@@ -246,7 +246,6 @@ class ActivityRepositoryImplTest {
         fakeActivityDao.insert(
             ActivityEntity(
                 name = "完整活动",
-                emoji = "emoji",
                 iconKey = "icon",
                 groupId = 2L,
                 isPreset = true,
@@ -259,7 +258,6 @@ class ActivityRepositoryImplTest {
 
         assertEquals(1L, result?.id)
         assertEquals("完整活动", result?.name)
-        assertEquals("emoji", result?.emoji)
         assertEquals("icon", result?.iconKey)
         assertEquals(2L, result?.groupId)
         assertTrue(result?.isPreset == true)

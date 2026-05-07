@@ -93,7 +93,7 @@ fun HomeScreen(
     onCompleteBehavior: (Long) -> Unit,
     onToggleIdleMode: () -> Unit,
     onStartNextPending: () -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit,
+    onAddActivity: (name: String, iconKey: String) -> Unit,
     onAddTag: (name: String) -> Unit,
     onHourClick: (Int) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
@@ -499,12 +499,12 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenPreview() {
     val sampleTags = listOf(
-        Tag(1, "Tag 1", null, null, null, null, 0, 0, 0, false),
-        Tag(2, "Tag 2", null, null, null, null, 0, 0, 0, false)
+        Tag(1, "Tag 1", null, null, null, 0, 0, 0, false),
+        Tag(2, "Tag 2", null, null, null, 0, 0, 0, false)
     )
     val sampleActivities = listOf(
-        Activity(1, "Activity 1", "😊", null, null, false),
-        Activity(2, "Activity 2", "🚀", null, null, false)
+        Activity(1, "Activity 1", "😊"),
+        Activity(2, "Activity 2", "🚀")
     )
     val sampleUiState = HomeUiState(
         isLoading = false,
@@ -517,7 +517,7 @@ private fun HomeScreenPreview() {
                 cells = listOf(
                     GridCellUiState(
                         behaviorId = 1L,
-                        activityEmoji = "😊",
+                        activityIconKey = "😊",
                         activityName = "Activity 1",
                         tags = listOf(TagUiState(1, "Tag 1", null)),
                         status = BehaviorNature.ACTIVE,

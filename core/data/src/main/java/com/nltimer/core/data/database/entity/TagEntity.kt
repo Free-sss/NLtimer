@@ -14,11 +14,11 @@ data class TagEntity(
     val id: Long = 0,
     val name: String,
     val color: Long? = null,
-    val textColor: Long? = null,
-    val icon: String? = null,
+    val iconKey: String? = null,
     val category: String? = null,
     val priority: Int = 0,
     val usageCount: Int = 0,
     val sortOrder: Int = 0,
     val isArchived: Boolean = false,
+    val archivedAt: Long? = null,
 )

@@ -121,7 +121,7 @@ fun AddBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
     BehaviorSheetWrapper(
@@ -162,7 +162,7 @@ fun AddCurrentBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
     BehaviorSheetWrapper(
@@ -201,7 +201,7 @@ fun AddTargetBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
     BehaviorSheetWrapper(
@@ -241,7 +241,7 @@ private fun BehaviorSheetWrapper(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit,
+    onAddActivity: (name: String, iconKey: String) -> Unit,
     onAddTag: (name: String) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -296,7 +296,7 @@ internal fun AddBehaviorSheetContent(
     existingBehaviors: List<Behavior> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
-    onAddActivity: (name: String, emoji: String) -> Unit = { _, _ -> },
+    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
     onAddTag: (name: String) -> Unit = {},
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(initialActivityId) }
@@ -972,8 +972,8 @@ internal fun AddBehaviorSheetContent(
         // Todo 待完善增加活动弹窗 以及绑定数据
         AddActivityDialog(
             onDismiss = { showAddActivityDialog = false },
-            onConfirm = { name, emoji ->
-                onAddActivity(name, emoji)
+            onConfirm = { name, iconKey ->
+                onAddActivity(name, iconKey)
                 showAddActivityDialog = false
             },
         )
@@ -1091,13 +1091,13 @@ private fun TimeAdjustmentCard(
 @Composable
 private fun AddBehaviorSheetPreview() {
     val sampleActivities = listOf(
-        Activity(1, "Coding", "👨‍💻", null, null, false),
-        Activity(2, "Reading", "📚", null, null, false),
-        Activity(3, "Workout", "💪", null, null, false)
+        Activity(1, "Coding", "👨‍💻"),
+        Activity(2, "Reading", "📚"),
+        Activity(3, "Workout", "💪")
     )
     val sampleTags = listOf(
-        Tag(1, "Work", null, null, null, null, 0, 0, 0, false),
-        Tag(2, "Study", null, null, null, null, 0, 0, 0, false)
+        Tag(1, "Work", null, null, null, 0, 0, 0, false),
+        Tag(2, "Study", null, null, null, 0, 0, 0, false)
     )
     val sampleGroups = listOf(
         ActivityGroup(1, "工作", 0),
@@ -1128,7 +1128,7 @@ private data class ActivityCategorizable(
     override val category: String? = null // 分组由外部处理
     override val usageCount: Int = 0 // 需要从统计数据获取
     override val lastUsedTimestamp: Long? = null
-    override val emoji: String? = activity.emoji
+    override val iconKey: String? = activity.iconKey
 }
 
 // 标签适配器，实现 CategorizableItem 接口
@@ -1140,5 +1140,5 @@ private data class TagCategorizable(
     override val category: String? = tag.category
     override val usageCount: Int = tag.usageCount
     override val lastUsedTimestamp: Long? = null
-    override val emoji: String? = null
+    override val iconKey: String? = null
 }

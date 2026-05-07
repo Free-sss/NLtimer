@@ -260,7 +260,7 @@ private fun TimelineBehaviorItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "${behavior.activityEmoji ?: "❓"} ${behavior.activityName ?: "未知"}",
+                    text = "${behavior.activityIconKey ?: "❓"} ${behavior.activityName ?: "未知"}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)

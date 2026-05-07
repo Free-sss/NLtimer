@@ -178,8 +178,7 @@ class TagRepositoryImplTest {
             id = 0,
             name = "新标签",
             color = null,
-            textColor = null,
-            icon = null,
+            iconKey = null,
             category = null,
             priority = 0,
             usageCount = 0,
@@ -202,8 +201,7 @@ class TagRepositoryImplTest {
             id = 1L,
             name = "新名称",
             color = null,
-            textColor = null,
-            icon = null,
+            iconKey = null,
             category = null,
             priority = 0,
             usageCount = 0,
@@ -272,8 +270,7 @@ class TagRepositoryImplTest {
             TagEntity(
                 name = "完整标签",
                 color = 0xFF0000FF,
-                textColor = 0xFFFFFFFF,
-                icon = "icon",
+                iconKey = "icon",
                 category = "分类",
                 priority = 5,
                 usageCount = 10,
@@ -287,8 +284,7 @@ class TagRepositoryImplTest {
         assertEquals(1L, result?.id)
         assertEquals("完整标签", result?.name)
         assertEquals(0xFF0000FF, result?.color)
-        assertEquals(0xFFFFFFFF, result?.textColor)
-        assertEquals("icon", result?.icon)
+        assertEquals("icon", result?.iconKey)
         assertEquals("分类", result?.category)
         assertEquals(5, result?.priority)
         assertEquals(10, result?.usageCount)

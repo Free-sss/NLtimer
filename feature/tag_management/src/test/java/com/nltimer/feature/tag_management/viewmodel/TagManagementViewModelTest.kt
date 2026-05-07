@@ -56,8 +56,8 @@ class TagManagementViewModelTest {
 
     @Test
     fun `loadData combines tags and categories`() = runTest {
-        val workTag = Tag(1L, "工作", null, null, null, "分类A", 0, 0, 0, false)
-        val personalTag = Tag(2L, "个人", null, null, null, "分类B", 0, 0, 0, false)
+        val workTag = Tag(1L, "工作", null, null, "分类A", 0, 0, 0, false)
+        val personalTag = Tag(2L, "个人", null, null, "分类B", 0, 0, 0, false)
         tagRepository.emitTags(listOf(workTag, personalTag))
         tagRepository.emitCategories(listOf("分类A", "分类B"))
 
@@ -102,7 +102,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `addTag calls repository insert`() = runTest {
-        viewModel.addTag("新标签", 0xFF0000FF, 0xFFFFFFFF, "icon", 1, "分类A")
+        viewModel.addTag("新标签", 0xFF0000FF, "icon", 1, "分类A")
         advanceUntilIdle()
 
         assertEquals(1, tagRepository.insertedTags.size)
@@ -112,7 +112,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `updateTag calls repository update`() = runTest {
-        val tag = Tag(1L, "旧名称", null, null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "旧名称", null, null, null, 0, 0, 0, false)
         viewModel.updateTag(tag)
         advanceUntilIdle()
 
@@ -122,7 +122,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `deleteTag calls setArchived`() = runTest {
-        val tag = Tag(1L, "待删除", null, null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "待删除", null, null, null, 0, 0, 0, false)
         viewModel.deleteTag(tag)
         advanceUntilIdle()
 
@@ -141,7 +141,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `moveTagToCategory updates category`() = runTest {
-        val tag = Tag(1L, "标签", null, null, null, "旧分类", 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
         tagRepository.tagById = tag
         viewModel.moveTagToCategory(1L, "新分类")
         advanceUntilIdle()

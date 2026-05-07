@@ -156,14 +156,14 @@ class ActivityManagementViewModel @Inject constructor(
      * 添加新活动
      *
      * @param name 活动名称
-     * @param emoji 可选的 Emoji
+     * @param iconKey 可选的图标键名
      * @param groupId 可选的分组 ID，null 表示未分类
      */
-    fun addActivity(name: String, emoji: String?, color: Long?, groupId: Long?, note: String?) {
+    fun addActivity(name: String, iconKey: String?, color: Long?, groupId: Long?, note: String?) {
         viewModelScope.launch {
             val activity = Activity(
                 name = name.trim(),
-                emoji = emoji,
+                iconKey = iconKey,
                 color = color,
                 groupId = groupId,
                 isPreset = false,

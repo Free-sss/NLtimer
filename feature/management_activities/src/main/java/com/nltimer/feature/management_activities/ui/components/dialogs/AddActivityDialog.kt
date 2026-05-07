@@ -26,11 +26,11 @@ import com.nltimer.core.data.model.ActivityGroup
 /**
  * 添加活动弹窗
  *
- * 提供活动名称、Emoji 和所属分组三个输入项，支持预选分组。
+ * 提供活动名称、图标和所属分组三个输入项，支持预选分组。
  *
  * @param allGroups 全部分组列表
  * @param onDismiss 关闭弹窗回调
- * @param onConfirm 确认添加回调，参数为名称、Emoji、分组 ID
+ * @param onConfirm 确认添加回调，参数为名称、图标、分组 ID
  * @param initialGroupId 预选的分组 ID，为 null 则为未分类
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,12 +38,12 @@ import com.nltimer.core.data.model.ActivityGroup
 fun AddActivityDialog(
     allGroups: List<ActivityGroup>,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, emoji: String?, groupId: Long?) -> Unit,
+    onConfirm: (name: String, iconKey: String?, groupId: Long?) -> Unit,
     initialGroupId: Long? = null,
 ) {
     // 表单各字段状态
     var name by remember { mutableStateOf("") }
-    var emoji by remember { mutableStateOf("") }
+    var iconKey by remember { mutableStateOf("") }
     var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
     // 分组下拉显示的文本，同步选中状态
     var groupName by remember(initialGroupId, allGroups) {
@@ -68,13 +68,12 @@ fun AddActivityDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Emoji 输入框，限制最多 2 个字符
                 OutlinedTextField(
-                    value = emoji,
+                    value = iconKey,
                     onValueChange = {
-                        if (it.length <= 2) emoji = it
+                        if (it.length <= 2) iconKey = it
                     },
-                    label = { Text("Emoji (可选)") },
+                    label = { Text("图标 (可选)") },
                     singleLine = true,
                     placeholder = { Text("📺") },
                     modifier = Modifier.fillMaxWidth(),
@@ -135,7 +134,7 @@ fun AddActivityDialog(
             // 确认按钮：名称不为空时才可点击
             TextButton(
                 onClick = {
-                    onConfirm(name.trim(), emoji.ifBlank { null }, selectedGroupId)
+                    onConfirm(name.trim(), iconKey.ifBlank { null }, selectedGroupId)
                 },
                 enabled = name.isNotBlank(),
             ) {

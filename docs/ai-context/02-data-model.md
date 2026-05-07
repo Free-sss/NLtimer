@@ -20,12 +20,14 @@ Behavior (N) ──→ Activity (1)
 |------|------|------|
 | id | Long | 自增主键 |
 | name | String | 活动名（唯一索引） |
-| emoji | String? | 显示 emoji |
-| iconKey | String? | 图标键 |
+| iconKey | String? | 图标键名 |
+| keywords | String? | 关键词（正则联动） |
 | groupId | Long? | 外键 → ActivityGroup.id |
 | isPreset | Boolean | 是否预设 |
 | isArchived | Boolean | 是否归档 |
+| archivedAt | Long? | 归档时间（毫秒） |
 | color | Long? | ARGB 颜色 |
+| usageCount | Int | 使用次数统计 |
 
 ### ActivityGroup（活动分组）
 
@@ -34,6 +36,8 @@ Behavior (N) ──→ Activity (1)
 | id | Long | 自增主键 |
 | name | String | 分组名（唯一索引） |
 | sortOrder | Int | 排序权重 |
+| isArchived | Boolean | 是否归档 |
+| archivedAt | Long? | 归档时间（毫秒） |
 
 ### Tag（标签）
 
@@ -42,13 +46,13 @@ Behavior (N) ──→ Activity (1)
 | id | Long | 自增主键 |
 | name | String | 标签名（唯一索引） |
 | color | Long? | ARGB 颜色 |
-| textColor | Long? | 文字颜色 |
-| icon | String? | 图标 |
+| iconKey | String? | 图标键名 |
 | category | String? | 分类 |
 | priority | Int | 优先级 |
 | usageCount | Int | 使用次数 |
 | sortOrder | Int | 排序权重 |
 | isArchived | Boolean | 是否归档 |
+| archivedAt | Long? | 归档时间（毫秒） |
 
 ### Behavior（行为记录）
 
@@ -92,12 +96,13 @@ Behavior (N) ──→ Activity (1)
 ## 数据库
 
 - 名称：`nltimer-database`
-- 当前版本：**6**
+- 当前版本：**9**
 - 迁移策略：`fallbackToDestructiveMigration(false)` + 显式迁移
 - 迁移链：
   - 3→4：category 字段迁移到 activity_groups 表
   - 4→5：activities 新增 color 列
   - 5→6：activities/groups/tags 的 name 列添加唯一索引（去重后创建）
+  - 8→9：activities 删除 emoji 新增 keywords/archivedAt/usageCount，activity_groups 新增 isArchived/archivedAt，tags 删除 textColor 重命名 icon→iconKey 新增 archivedAt
 
 ## Repository 接口速查
 

@@ -64,25 +64,25 @@ class TagRepositoryImpl @Inject constructor(
         id = id,
         name = name,
         color = color,
-        textColor = textColor,
-        icon = icon,
+        iconKey = iconKey,
         category = category,
         priority = priority,
         usageCount = usageCount,
         sortOrder = sortOrder,
         isArchived = isArchived,
+        archivedAt = archivedAt,
     )
 
     private fun Tag.toEntity() = TagEntity(
         id = id,
         name = name,
         color = color,
-        textColor = textColor,
-        icon = icon,
+        iconKey = iconKey,
         category = category,
         priority = priority,
         usageCount = usageCount,
         sortOrder = sortOrder,
         isArchived = isArchived,
+        archivedAt = archivedAt,
     )
 }

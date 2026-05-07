@@ -59,7 +59,7 @@ fun EditTagDialog(
     )
 
     val initialData = mapOf(
-        "icon" to (tag.icon ?: "🏷️"),
+        "icon" to (tag.iconKey ?: "🏷️"),
         "color" to (tag.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
         "name" to tag.name,
         "priority" to tag.priority.toString(),
@@ -82,7 +82,7 @@ fun EditTagDialog(
             onConfirm(
                 tag.copy(
                     name = name,
-                    icon = icon,
+                    iconKey = icon,
                     color = color,
                     priority = priority,
                     isArchived = isArchived,

@@ -57,12 +57,14 @@ class BehaviorRepositoryImpl @Inject constructor(
         val activity = com.nltimer.core.data.model.Activity(
             id = activityEntity.id,
             name = activityEntity.name,
-            emoji = activityEntity.emoji,
             iconKey = activityEntity.iconKey,
+            keywords = activityEntity.keywords,
             groupId = activityEntity.groupId,
             isPreset = activityEntity.isPreset,
             isArchived = activityEntity.isArchived,
+            archivedAt = activityEntity.archivedAt,
             color = activityEntity.color,
+            usageCount = activityEntity.usageCount,
         )
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
         val tags = tagEntities.map { it.toModel() }
@@ -203,13 +205,13 @@ class BehaviorRepositoryImpl @Inject constructor(
         id = id,
         name = name,
         color = color,
-        textColor = textColor,
-        icon = icon,
+        iconKey = iconKey,
         category = category,
         priority = priority,
         usageCount = usageCount,
         sortOrder = sortOrder,
         isArchived = isArchived,
+        archivedAt = archivedAt,
     )
 
     override suspend fun updateBehavior(

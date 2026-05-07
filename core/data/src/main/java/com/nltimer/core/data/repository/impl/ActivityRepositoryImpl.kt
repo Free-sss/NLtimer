@@ -56,17 +56,21 @@ class ActivityRepositoryImpl @Inject constructor(
     private fun ActivityEntity.toModel() = Activity(
         id = id,
         name = name,
-        emoji = emoji,
         iconKey = iconKey,
+        keywords = keywords,
         groupId = groupId,
         isPreset = isPreset,
         isArchived = isArchived,
+        archivedAt = archivedAt,
         color = color,
+        usageCount = usageCount,
     )
 
     private fun ActivityGroupEntity.toModel() = ActivityGroup(
         id = id,
         name = name,
         sortOrder = sortOrder,
+        isArchived = isArchived,
+        archivedAt = archivedAt,
     )
 }

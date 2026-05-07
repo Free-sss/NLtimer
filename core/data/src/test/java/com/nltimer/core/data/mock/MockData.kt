@@ -6,7 +6,7 @@ object MockData {
     val mockActivity = Activity(
         id = 1L,
         name = "测试活动",
-        emoji = "📝",
+        iconKey = "📝",
         groupId = 1L,
         color = 0xFFFF0000,
         isArchived = false,
@@ -16,8 +16,7 @@ object MockData {
         id = 1L,
         name = "测试标签",
         color = 0xFF00FF00,
-        textColor = 0xFFFFFFFF,
-        icon = null,
+        iconKey = null,
         category = "工作",
         priority = 1,
         usageCount = 0,

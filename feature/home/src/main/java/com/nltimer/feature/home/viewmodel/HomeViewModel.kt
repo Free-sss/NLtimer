@@ -136,7 +136,7 @@ class HomeViewModel @Inject constructor(
         if (behaviors.isEmpty()) {
         val addCell = GridCellUiState(
                 behaviorId = null,
-                activityEmoji = null,
+                activityIconKey = null,
                 activityName = null,
                 tags = emptyList(),
                 status = null,
@@ -203,7 +203,7 @@ class HomeViewModel @Inject constructor(
 
             GridCellUiState(
                 behaviorId = behavior.id,
-                activityEmoji = activity?.emoji,
+                activityIconKey = activity?.iconKey,
                 activityName = activity?.name,
                 tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) },
                 status = behavior.status,
@@ -229,7 +229,7 @@ class HomeViewModel @Inject constructor(
 
         val addCell = GridCellUiState(
             behaviorId = null,
-            activityEmoji = null,
+            activityIconKey = null,
             activityName = null,
             tags = emptyList(),
             status = null,
@@ -267,7 +267,7 @@ class HomeViewModel @Inject constructor(
                 paddedCells.add(
                     GridCellUiState(
                         behaviorId = null,
-                        activityEmoji = null,
+                        activityIconKey = null,
                         activityName = null,
                         tags = emptyList(),
                         status = null,
@@ -308,14 +308,13 @@ class HomeViewModel @Inject constructor(
     }
 
     // 添加新活动到仓库
-    fun addActivity(name: String, emoji: String) {
+    fun addActivity(name: String, iconKey: String) {
         viewModelScope.launch {
             activityRepository.insert(
                 Activity(
                     id = 0,
                     name = name,
-                    emoji = emoji.ifBlank { null },
-                    iconKey = null,
+                    iconKey = iconKey.ifBlank { null },
                     isArchived = false,
                 )
             )
@@ -330,8 +329,7 @@ class HomeViewModel @Inject constructor(
                     id = 0,
                     name = name,
                     color = null,
-                    textColor = null,
-                    icon = null,
+                    iconKey = null,
                     category = null,
                     priority = 0,
                     usageCount = 0,

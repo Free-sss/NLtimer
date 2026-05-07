@@ -12,7 +12,7 @@ import com.nltimer.core.designsystem.theme.NLtimerTheme
 @Composable
 fun AddActivityDialog(
     onDismiss: () -> Unit,
-    onConfirm: (name: String, emoji: String) -> Unit,
+    onConfirm: (name: String, iconKey: String) -> Unit,
 ) {
     GenericFormDialog(
         spec = ActivityFormSpecs.createActivity,
@@ -20,9 +20,9 @@ fun AddActivityDialog(
         onDismiss = onDismiss,
         onSubmit = { formState ->
             val name = formState["name"]?.trim() ?: ""
-            val emoji = formState["icon"]?.trim() ?: ""
+            val iconKey = formState["icon"]?.trim() ?: ""
             if (name.isNotBlank()) {
-                onConfirm(name, emoji)
+                onConfirm(name, iconKey)
             }
         },
     )

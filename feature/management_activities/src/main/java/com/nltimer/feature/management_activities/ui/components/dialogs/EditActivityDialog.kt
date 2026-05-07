@@ -27,7 +27,7 @@ import com.nltimer.core.data.model.ActivityGroup
 /**
  * 编辑活动弹窗
  *
- * 预填当前活动信息，支持修改名称、Emoji 和所属分组。
+ * 预填当前活动信息，支持修改名称、图标和所属分组。
  *
  * @param activity 待编辑的活动
  * @param allGroups 全部分组列表
@@ -44,7 +44,7 @@ fun EditActivityDialog(
 ) {
     // 以 activity.id 为 key，切换活动时重置状态
     var name by remember(activity.id) { mutableStateOf(activity.name) }
-    var emoji by remember(activity.id) { mutableStateOf(activity.emoji ?: "") }
+    var iconKey by remember(activity.id) { mutableStateOf(activity.iconKey ?: "") }
     var selectedGroupId by remember(activity.id) { mutableStateOf(activity.groupId) }
     var groupName by remember(activity.id) {
         mutableStateOf(
@@ -70,11 +70,10 @@ fun EditActivityDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Emoji 编辑框，限制最多 2 个字符
                 OutlinedTextField(
-                    value = emoji,
-                    onValueChange = { if (it.length <= 2) emoji = it },
-                    label = { Text("Emoji (可选)") },
+                    value = iconKey,
+                    onValueChange = { if (it.length <= 2) iconKey = it },
+                    label = { Text("图标 (可选)") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = appOutlinedTextFieldColors(),
@@ -135,7 +134,7 @@ fun EditActivityDialog(
                     onConfirm(
                         activity.copy(
                             name = name.trim(),
-                            emoji = emoji.ifBlank { null },
+                            iconKey = iconKey.ifBlank { null },
                             groupId = selectedGroupId,
                         ),
                     )

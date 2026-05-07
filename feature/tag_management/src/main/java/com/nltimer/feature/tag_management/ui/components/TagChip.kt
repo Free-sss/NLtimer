@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -32,9 +33,9 @@ fun TagChip(
     val backgroundColor = tag.color?.let { Color(it) }
         ?: MaterialTheme.colorScheme.surfaceVariant
 
-    // 解析标签文字色，无自定义色时使用主题 onSurfaceVariant
-    val contentColor = tag.textColor?.let { Color(it) }
-        ?: MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = tag.color?.let { colorVal ->
+        if (Color(colorVal).luminance() > 0.5f) Color.Black else Color.White
+    } ?: MaterialTheme.colorScheme.onSurfaceVariant
 
     // 使用 AssistChip 并添加 combinedClickable 以支持长按
     AssistChip(

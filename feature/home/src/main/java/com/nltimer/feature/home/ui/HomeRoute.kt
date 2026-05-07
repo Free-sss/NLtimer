@@ -51,7 +51,7 @@ fun HomeRoute(
         onCompleteBehavior = { viewModel.completeBehavior(it) },
         onToggleIdleMode = viewModel::toggleIdleMode,
         onStartNextPending = viewModel::startNextPending,
-        onAddActivity = { name, emoji -> viewModel.addActivity(name, emoji) },
+        onAddActivity = { name, iconKey -> viewModel.addActivity(name, iconKey) },
         onAddTag = { name -> viewModel.addTag(name) },
         onHourClick = viewModel::scrollToTime,
         onLayoutChange = viewModel::onHomeLayoutChange,

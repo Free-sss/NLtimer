@@ -7,24 +7,23 @@ object TestDataFactory {
     fun createActivity(
         id: Long = Random.nextLong(),
         name: String = "活动_${Random.nextInt()}",
-        emoji: String = "📝",
+        iconKey: String = "📝",
         groupId: Long = 1L,
         color: Long = Random.nextLong(0xFFFFFF),
         isArchived: Boolean = false,
-    ) = Activity(id, name, emoji, null, groupId, false, isArchived, color)
+    ) = Activity(id, name, iconKey, null, groupId, false, isArchived, color)
 
     fun createTag(
         id: Long = Random.nextLong(),
         name: String = "标签_${Random.nextInt()}",
         color: Long = Random.nextLong(0xFFFFFF),
-        textColor: Long = 0xFFFFFFFF,
-        icon: String? = null,
+        iconKey: String? = null,
         category: String = "分类_${Random.nextInt(10)}",
         priority: Int = Random.nextInt(10),
         usageCount: Int = 0,
         sortOrder: Int = 0,
         isArchived: Boolean = false,
-    ) = Tag(id, name, color, textColor, icon, category, priority, usageCount, sortOrder, isArchived)
+    ) = Tag(id, name, color, iconKey, category, priority, usageCount, sortOrder, isArchived)
 
     fun createBehavior(
         id: Long = Random.nextLong(),

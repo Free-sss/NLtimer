@@ -11,11 +11,11 @@ data class Tag(
     val id: Long,
     val name: String,
     val color: Long?,
-    val textColor: Long?,
-    val icon: String?,
+    val iconKey: String?,
     val category: String?,
     val priority: Int,
     val usageCount: Int,
     val sortOrder: Int,
     val isArchived: Boolean,
+    val archivedAt: Long? = null,
 )

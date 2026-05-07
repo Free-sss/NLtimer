@@ -16,7 +16,7 @@ fun AddActivityFormSheet(
     allGroups: List<ActivityGroup>,
     initialGroupId: Long? = null,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, emoji: String?, color: Long?, groupId: Long?, note: String?) -> Unit,
+    onConfirm: (name: String, iconKey: String?, color: Long?, groupId: Long?, note: String?) -> Unit,
 ) {
     var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
     var showGroupPicker by remember { mutableStateOf(false) }
@@ -44,13 +44,13 @@ fun AddActivityFormSheet(
         onDismiss = onDismiss,
         onSubmit = { formState ->
             val name = formState["name"]?.trim() ?: ""
-            val emoji = formState["icon"]?.trim()?.ifBlank { null }
+            val iconKey = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val note = formState["note"]?.trim()?.ifBlank { null }
             val color = colorHex?.let {
                 try { it.toLong(16).or(0xFF000000.toLong()) } catch (_: Exception) { null }
             }
-            onConfirm(name, emoji, color, selectedGroupId, note)
+            onConfirm(name, iconKey, color, selectedGroupId, note)
         },
         overlay = if (showGroupPicker) {
             {
@@ -93,7 +93,7 @@ fun EditActivityFormSheet(
     )
 
     val initialData = mapOf(
-        "icon" to (activity.emoji ?: "📖"),
+        "icon" to (activity.iconKey ?: "📖"),
         "color" to (activity.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
         "name" to activity.name,
         "note" to "",
@@ -106,7 +106,7 @@ fun EditActivityFormSheet(
         onDismiss = onDismiss,
         onSubmit = { formState ->
             val name = formState["name"]?.trim() ?: activity.name
-            val emoji = formState["icon"]?.trim()?.ifBlank { null }
+            val iconKey = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: activity.isArchived
             val colorLong = colorHex?.let {
@@ -115,7 +115,7 @@ fun EditActivityFormSheet(
             onConfirm(
                 activity.copy(
                     name = name,
-                    emoji = emoji,
+                    iconKey = iconKey,
                     groupId = selectedGroupId,
                     isArchived = isArchived,
                     color = colorLong ?: activity.color,

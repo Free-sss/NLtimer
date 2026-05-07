@@ -29,9 +29,8 @@ fun ActivityChip(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 如果活动没有 emoji，使用默认图钉符号
-    val emoji = activity.emoji?.takeIf { it.isNotBlank() } ?: "📌"
-    val label = "$emoji ${activity.name}"
+    val iconKey = activity.iconKey?.takeIf { it.isNotBlank() } ?: "📌"
+    val label = "$iconKey ${activity.name}"
 
     AssistChip(
         onClick = onClick,
