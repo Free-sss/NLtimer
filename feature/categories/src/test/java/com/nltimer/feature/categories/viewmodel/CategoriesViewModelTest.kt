@@ -436,4 +436,66 @@ class CategoriesViewModelTest {
             resetTagCategoryCalled = true
         }
     }
+
+    @Test
+    fun onRenameCategory_tag_showsTagRenameDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+        viewModel.onRenameCategory(SectionType.TAG, "标签A")
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        val dialog = state.dialogState as? DialogState.RenameTagCategory
+        assertNotNull(dialog)
+        assertEquals("标签A", dialog?.oldName)
+        assertEquals(SectionType.TAG, dialog?.sectionType)
+    }
+
+    @Test
+    fun onDeleteCategory_tag_showsTagDeleteDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+        viewModel.onDeleteCategory(SectionType.TAG, "标签分类")
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        val dialog = state.dialogState as? DialogState.DeleteTagCategory
+        assertNotNull(dialog)
+        assertEquals("标签分类", dialog?.category)
+    }
+
+    @Test
+    fun confirmAddCategory_tag_emptyName_dismissesDialog() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+        viewModel.onAddCategory(SectionType.TAG)
+        advanceUntilIdle()
+        viewModel.confirmAddCategory(SectionType.TAG, "  ")
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.dialogState)
+        assertFalse(settingsPrefs.saveTagCategoriesCalled)
+    }
+
+    @Test
+    fun searchQuery_filtersTagCategories() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        tagCategoriesFlow.value = listOf("优先级", "状态", "紧急")
+        advanceUntilIdle()
+        viewModel.onSearchQueryChange("优先")
+        advanceUntilIdle()
+        val state = viewModel.uiState.value
+        assertEquals(listOf("优先级"), state.tagCategories)
+    }
+
+    @Test
+    fun confirmRenameTagCategory_noConflict_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        tagCategoriesFlow.value = listOf("标签A")
+        advanceUntilIdle()
+        viewModel.onRenameCategory(SectionType.TAG, "标签A")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "新标签")
+        advanceUntilIdle()
+        assertTrue(repository.renameTagCategoryCalled)
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
 }

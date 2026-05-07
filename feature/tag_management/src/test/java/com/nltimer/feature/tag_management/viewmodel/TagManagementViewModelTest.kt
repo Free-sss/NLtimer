@@ -224,6 +224,92 @@ class TagManagementViewModelTest {
         assertNull(viewModel.uiState.value.dialogState)
     }
 
+
+    @Test
+    fun `showEditTagDialog updates dialogState`() = runTest {
+        val tag = Tag(1L, "标签", null, null, "分类", 0, 0, 0, false)
+        viewModel.showEditTagDialog(tag)
+        val state = viewModel.uiState.value.dialogState as? DialogState.EditTag
+        assertNotNull(state)
+        assertEquals("标签", state?.tag?.name)
+    }
+
+    @Test
+    fun `showDeleteTagDialog updates dialogState`() = runTest {
+        val tag = Tag(1L, "待删", null, null, null, 0, 0, 0, false)
+        viewModel.showDeleteTagDialog(tag)
+        val state = viewModel.uiState.value.dialogState as? DialogState.DeleteTag
+        assertNotNull(state)
+        assertEquals("待删", state?.tag?.name)
+    }
+
+    @Test
+    fun `showMoveTagDialog updates dialogState with currentCategory`() = runTest {
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
+        viewModel.showMoveTagDialog(tag, "旧分类")
+        val state = viewModel.uiState.value.dialogState as? DialogState.MoveTag
+        assertNotNull(state)
+        assertEquals("旧分类", state?.currentCategory)
+    }
+
+    @Test
+    fun `showAddCategoryDialog updates dialogState`() = runTest {
+        viewModel.showAddCategoryDialog()
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.AddCategory)
+    }
+
+    @Test
+    fun `showRenameCategoryDialog updates dialogState`() = runTest {
+        viewModel.showRenameCategoryDialog("分类A")
+        val state = viewModel.uiState.value.dialogState as? DialogState.RenameCategory
+        assertNotNull(state)
+        assertEquals("分类A", state?.name)
+    }
+
+    @Test
+    fun `showDeleteCategoryDialog updates dialogState with tagCount`() = runTest {
+        viewModel.showDeleteCategoryDialog("分类A", 5)
+        val state = viewModel.uiState.value.dialogState as? DialogState.DeleteCategory
+        assertNotNull(state)
+        assertEquals(5, state?.tagCount)
+    }
+
+    @Test
+    fun `moveTagToCategory with null sets uncategorized`() = runTest {
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
+        tagRepository.tagById = tag
+        viewModel.moveTagToCategory(1L, null)
+        advanceUntilIdle()
+        assertEquals(1, tagRepository.updatedTags.size)
+        assertNull(tagRepository.updatedTags[0].category)
+    }
+
+    @Test
+    fun `addTag dismisses dialog after insert`() = runTest {
+        viewModel.showAddTagDialog("分类A")
+        viewModel.addTag("新标签", null, null, 0, "分类A")
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun `updateTag dismisses dialog after update`() = runTest {
+        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, false)
+        viewModel.showEditTagDialog(tag)
+        viewModel.updateTag(tag)
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun `deleteTag dismisses dialog after archive`() = runTest {
+        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, false)
+        viewModel.showDeleteTagDialog(tag)
+        viewModel.deleteTag(tag)
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
     private class FakeTagRepository : TagRepository {
         private val _tags = MutableStateFlow<List<Tag>>(emptyList())
         private val _categories = MutableStateFlow<List<String>>(emptyList())

@@ -290,4 +290,27 @@ class ActivityManagementViewModelTest {
             initializePresetsCalled = true
         }
     }
+
+    @Test
+    fun `showAddGroupDialog updates dialogState`() = runTest {
+        viewModel.showAddGroupDialog()
+        assertTrue(viewModel.uiState.value.dialogState is DialogState.AddGroup)
+    }
+
+    @Test
+    fun `currentActivityStats returns default when no activity selected`() = runTest {
+        advanceUntilIdle()
+        val stats = viewModel.currentActivityStats.value
+        assertEquals(0, stats.usageCount)
+    }
+
+    @Test
+    fun `dismissDialog resets currentActivityStats to default`() = runTest {
+        val activity = Activity(id = 1L, name = "活动A")
+        viewModel.showActivityDetail(activity)
+        viewModel.dismissDialog()
+        advanceUntilIdle()
+        val stats = viewModel.currentActivityStats.value
+        assertEquals(0, stats.usageCount)
+    }
 }
