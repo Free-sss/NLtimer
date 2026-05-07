@@ -38,6 +38,8 @@ abstract class NLtimerDatabase : RoomDatabase() {
     abstract fun behaviorDao(): BehaviorDao
 
     companion object {
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9)
+
         // 数据库从版本 3 到 4 的迁移：将 category 字段迁移到 activity_groups 表
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
