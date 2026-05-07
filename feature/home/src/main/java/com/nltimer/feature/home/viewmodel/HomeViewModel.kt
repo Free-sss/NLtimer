@@ -13,7 +13,8 @@ import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
-import com.nltimer.core.data.util.hasTimeConflict
+import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
@@ -48,6 +49,8 @@ class HomeViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
+    private val addBehaviorUseCase: AddBehaviorUseCase,
+    private val clockService: ClockService,
 ) : ViewModel() {
 
     // --- 暴露给 UI 的状态流 ---
@@ -213,7 +216,7 @@ class HomeViewModel @Inject constructor(
                 estimatedDuration = behavior.estimatedDuration,
                 actualDuration = behavior.actualDuration,
                 durationMs = if (isActive && behavior.startTime > 0) {
-                    System.currentTimeMillis() - behavior.startTime
+                    clockService.currentTimeMillis() - behavior.startTime
                 } else null,
                 startTime = startLocal,
                 endTime = endLocal,
@@ -401,7 +404,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 添加新行为：ACTIVE 时先结束当前行为，然后插入新记录
     fun addBehavior(
         activityId: Long,
         tagIds: List<Long>,
@@ -411,214 +413,22 @@ class HomeViewModel @Inject constructor(
         note: String?,
     ) {
         val editId = _uiState.value.editBehaviorId
-        if (editId != null) {
-            editBehavior(editId, activityId, tagIds, startTime, endTime, status, note)
-            return
-        }
         viewModelScope.launch {
-            // 时间约束校验：结束/开始时间不能大于当前时间
-            val now = System.currentTimeMillis()
-            when (status) {
-                BehaviorNature.COMPLETED -> {
-                    if (endTime != null && endTime > now) {
-                        _uiState.update {
-                            it.copy(errorMessage = "结束时间不能大于当前时间")
-                        }
-                        return@launch
-                    }
-                }
-                BehaviorNature.ACTIVE -> {
-                    if (startTime > now) {
-                        _uiState.update {
-                            it.copy(errorMessage = "开始时间不能大于当前时间")
-                        }
-                        return@launch
-                    }
-                }
-                BehaviorNature.PENDING -> {} // 无时间约束
-            }
-
-            // 先结束当前行为，再进行冲突检测
-            // 否则 ACTIVE 行为的 endTime=null 会被视为 [+∞)，导致边界相接也被误判为冲突
-            if (status == BehaviorNature.ACTIVE) {
-                behaviorRepository.endCurrentBehavior(startTime)
-            }
-
-            // 自动吸附：UI 只提供分钟精度（秒/毫秒归零），但数据库存储毫秒精度。
-            // 当新行为的开始时间与已有行为的结束时间重叠或相接时，
-            // 自动调整到该行为结束后的下一毫秒，而非报冲突。
-            var adjustedStart = startTime
-            var adjustedEnd = endTime
-            if (status != BehaviorNature.PENDING) {
-                val snapQueryEnd = when (status) {
-                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                    BehaviorNature.COMPLETED -> endTime ?: startTime
-                    BehaviorNature.PENDING -> Long.MAX_VALUE
-                }
-                val overlapping = behaviorRepository
-                    .getBehaviorsOverlappingRange(startTime, snapQueryEnd)
-                    .firstOrNull()
-                    .orEmpty()
-                val prevBehavior = overlapping
-                    .filter { it.endTime != null && it.endTime!! >= adjustedStart }
-                    .maxByOrNull { it.endTime!! }
-                val prevEnd = prevBehavior?.endTime
-                if (prevEnd != null && prevEnd >= adjustedStart) {
-                    adjustedStart = prevEnd + 1
-                    if (status == BehaviorNature.COMPLETED && adjustedEnd != null) {
-                        // 用户选的 endTime 与前一条在同一分钟内 → 自动设为该分钟末尾 .999
-                        if (endTime != null && endTime / 60_000 == prevEnd / 60_000) {
-                            adjustedEnd = prevEnd / 60_000 * 60_000 + 59_999
-                        }
-                        // 用户选的 endTime 跨过了分钟边界 → 保持用户原始值
-                    }
-                }
-            }
-
-            // 非 PENDING 行为进行时间冲突检测
-            if (status != BehaviorNature.PENDING) {
-                val effectiveNewEnd = when (status) {
-                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                    BehaviorNature.COMPLETED -> adjustedEnd ?: adjustedStart
-                    BehaviorNature.PENDING -> null
-                }
-
-                if (effectiveNewEnd != null && effectiveNewEnd > adjustedStart) {
-                    val overlappingBehaviors = behaviorRepository
-                        .getBehaviorsOverlappingRange(adjustedStart, effectiveNewEnd)
-                        .firstOrNull()
-                        .orEmpty()
-
-                    if (hasTimeConflict(
-                            newStart = adjustedStart,
-                            newEnd = adjustedEnd,
-                            newStatus = status,
-                            existingBehaviors = overlappingBehaviors,
-                            currentTime = now,
-                        )
-                    ) {
-                        _uiState.update {
-                            it.copy(errorMessage = "该时间段与已有行为记录冲突")
-                        }
-                        return@launch
-                    }
-                }
-            }
-
-            val finalStart = adjustedStart
-            val finalEnd = adjustedEnd
-
-            // 计算新行为的 sequence（按时间排序插入）
-            val wasPlanned = status == BehaviorNature.PENDING
-            val newSequence = if (status == BehaviorNature.PENDING) {
-                behaviorRepository.getMaxSequence() + 1
-            } else {
-                val dayStart = getDayStartMillis(finalStart)
-                val dayEnd = dayStart + 24 * 60 * 60 * 1000
-                val dayBehaviors = behaviorRepository
-                    .getByDayRange(dayStart, dayEnd)
-                    .firstOrNull()
-                    .orEmpty()
-                    .filter { it.status != BehaviorNature.PENDING }
-                    .sortedBy { it.startTime }
-
-                val insertIndex = dayBehaviors.indexOfFirst { it.startTime > finalStart }
-                if (insertIndex == -1) dayBehaviors.size else insertIndex
-            }
-
-            // 更新后续行为的 sequence
-            if (status != BehaviorNature.PENDING) {
-                val dayStart = getDayStartMillis(finalStart)
-                val dayEnd = dayStart + 24 * 60 * 60 * 1000
-                val dayBehaviors = behaviorRepository
-                    .getByDayRange(dayStart, dayEnd)
-                    .firstOrNull()
-                    .orEmpty()
-                    .filter { it.status != BehaviorNature.PENDING }
-                    .sortedBy { it.startTime }
-
-                dayBehaviors.forEachIndexed { index, behavior ->
-                    if (index >= newSequence) {
-                        behaviorRepository.setSequence(behavior.id, index + 1)
-                    }
-                }
-            }
-
-            // 计算实际耗时
-            val actualDuration = when (status) {
-                BehaviorNature.COMPLETED -> {
-                    if (finalEnd != null && finalStart > 0) finalEnd - finalStart else null
-                }
-                BehaviorNature.ACTIVE -> {
-                    if (finalStart > 0) System.currentTimeMillis() - finalStart else null
-                }
-                BehaviorNature.PENDING -> null
-            }
-
-            behaviorRepository.insert(
-                Behavior(
-                    id = 0,
-                    activityId = activityId,
-                    startTime = if (status == BehaviorNature.PENDING) 0L else finalStart,
-                    endTime = if (status == BehaviorNature.COMPLETED) finalEnd ?: finalStart else null,
-                    status = status,
-                    note = note,
-                    pomodoroCount = 0,
-                    sequence = newSequence,
-                    estimatedDuration = null,
-                    actualDuration = actualDuration,
-                    achievementLevel = null,
-                    wasPlanned = wasPlanned,
-                ),
-                tagIds = tagIds,
-            )
-            hideAddSheet()
-        }
-    }
-
-    // 编辑已有行为
-    private fun editBehavior(
-        behaviorId: Long,
-        activityId: Long,
-        tagIds: List<Long>,
-        startTime: Long,
-        endTime: Long?,
-        status: BehaviorNature,
-        note: String?,
-    ) {
-        viewModelScope.launch {
-            // 时间约束校验
-            val now = System.currentTimeMillis()
-            when (status) {
-                BehaviorNature.COMPLETED -> {
-                    if (endTime != null && endTime > now) {
-                        _uiState.update { it.copy(errorMessage = "结束时间不能大于当前时间") }
-                        return@launch
-                    }
-                }
-                BehaviorNature.ACTIVE -> {
-                    if (startTime > now) {
-                        _uiState.update { it.copy(errorMessage = "开始时间不能大于当前时间") }
-                        return@launch
-                    }
-                }
-                BehaviorNature.PENDING -> {}
-            }
-
-            // 更新行为
-            behaviorRepository.updateBehavior(
-                id = behaviorId,
+            when (val result = addBehaviorUseCase(
                 activityId = activityId,
-                startTime = if (status == BehaviorNature.PENDING) 0L else startTime,
-                endTime = if (status == BehaviorNature.COMPLETED) endTime ?: startTime else null,
-                status = status.key,
+                tagIds = tagIds,
+                startTime = startTime,
+                endTime = endTime,
+                status = status,
                 note = note,
-            )
-
-            // 更新标签关联
-            behaviorRepository.updateTagsForBehavior(behaviorId, tagIds)
-
-            hideAddSheet()
+                editBehaviorId = editId,
+            )) {
+                is AddBehaviorUseCase.Result.Success -> hideAddSheet()
+                is AddBehaviorUseCase.Result.Conflict ->
+                    _uiState.update { it.copy(errorMessage = result.message) }
+                is AddBehaviorUseCase.Result.ValidationError ->
+                    _uiState.update { it.copy(errorMessage = result.message) }
+            }
         }
     }
 
@@ -640,7 +450,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val next = behaviorRepository.getNextPending() ?: return@launch
             behaviorRepository.setStatus(next.id, BehaviorNature.ACTIVE.key)
-            behaviorRepository.setStartTime(next.id, System.currentTimeMillis())
+            behaviorRepository.setStartTime(next.id, clockService.currentTimeMillis())
         }
     }
 
@@ -676,13 +486,5 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPrefs.updateTimeLabelConfig(config)
         }
-    }
-
-    private fun getDayStartMillis(timestamp: Long): Long {
-        val instant = java.time.Instant.ofEpochMilli(timestamp)
-        val zonedDateTime = instant.atZone(java.time.ZoneId.systemDefault())
-        val startOfDay = zonedDateTime.toLocalDate()
-            .atStartOfDay(java.time.ZoneId.systemDefault())
-        return startOfDay.toInstant().toEpochMilli()
     }
 }

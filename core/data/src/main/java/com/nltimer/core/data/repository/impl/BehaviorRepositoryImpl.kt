@@ -5,14 +5,15 @@ import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
-import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.util.BehaviorCalculator
+import com.nltimer.core.data.util.ClockService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,6 +31,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val behaviorDao: BehaviorDao,
     private val activityDao: ActivityDao,
     private val tagDao: TagDao,
+    private val clockService: ClockService,
 ) : BehaviorRepository {
 
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
@@ -43,7 +45,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
-            list.map { it.toModel() }
+            list.map { Tag.fromEntity(it) }
         }
 
     override fun getPendingBehaviors(): Flow<List<Behavior>> =
@@ -54,20 +56,9 @@ class BehaviorRepositoryImpl @Inject constructor(
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
         val behavior = behaviorEntity.toModel()
         val activityEntity = activityDao.getById(behavior.activityId) ?: return null
-        val activity = com.nltimer.core.data.model.Activity(
-            id = activityEntity.id,
-            name = activityEntity.name,
-            iconKey = activityEntity.iconKey,
-            keywords = activityEntity.keywords,
-            groupId = activityEntity.groupId,
-            isPreset = activityEntity.isPreset,
-            isArchived = activityEntity.isArchived,
-            archivedAt = activityEntity.archivedAt,
-            color = activityEntity.color,
-            usageCount = activityEntity.usageCount,
-        )
+        val activity = Activity.fromEntity(activityEntity)
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
-        val tags = tagEntities.map { it.toModel() }
+        val tags = tagEntities.map { Tag.fromEntity(it) }
         return BehaviorWithDetails(
             behavior = behavior,
             activity = activity,
@@ -122,22 +113,21 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.endCurrentBehavior(endTime)
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
-        val now = System.currentTimeMillis()
+        val now = clockService.currentTimeMillis()
         val currentEntity = behaviorDao.getById(currentId) ?: return null
         val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
 
         // 计算实际耗时并评估完成度
         if (currentEntity.startTime > 0) {
-            val duration = clampedEndTime - currentEntity.startTime
-            behaviorDao.setActualDuration(currentId, duration)
-
-            // 如果是有计划的行为，根据耗时偏差计算完成度百分比
-            val estimated = currentEntity.estimatedDuration?.times(60_000)
-            if (currentEntity.wasPlanned && estimated != null && estimated > 0) {
-                val diff = kotlin.math.abs(duration - estimated)
-                val ratio = (diff.toDouble() / estimated).coerceAtMost(1.0)
-                val level = ((1.0 - ratio) * 100).toInt().coerceIn(0, 100)
-                behaviorDao.setAchievementLevel(currentId, level)
+            val result = BehaviorCalculator.calculateCompletion(
+                startTime = currentEntity.startTime,
+                endTime = clampedEndTime,
+                wasPlanned = currentEntity.wasPlanned,
+                estimatedDurationMinutes = currentEntity.estimatedDuration,
+            )
+            behaviorDao.setActualDuration(currentId, result.durationMs)
+            if (result.achievementLevel != null) {
+                behaviorDao.setAchievementLevel(currentId, result.achievementLevel)
             }
         }
 
@@ -150,7 +140,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
         // 自动启动下一个待办行为
         val nextPending = behaviorDao.getNextPending() ?: return null
-        val nextNow = System.currentTimeMillis()
+        val nextNow = clockService.currentTimeMillis()
         behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
         behaviorDao.setStartTime(nextPending.id, nextNow)
         return nextPending.toModel()
@@ -162,10 +152,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(id: Long) {
-        val toDelete = behaviorDao.getById(id) ?: return
-        behaviorDao.delete(id)
-    }
+    override suspend fun delete(id: Long) = behaviorDao.delete(id)
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
     }
@@ -201,19 +188,6 @@ class BehaviorRepositoryImpl @Inject constructor(
         wasPlanned = wasPlanned,
     )
 
-    private fun TagEntity.toModel() = Tag(
-        id = id,
-        name = name,
-        color = color,
-        iconKey = iconKey,
-        category = category,
-        priority = priority,
-        usageCount = usageCount,
-        sortOrder = sortOrder,
-        isArchived = isArchived,
-        archivedAt = archivedAt,
-    )
-
     override suspend fun updateBehavior(
         id: Long,
         activityId: Long,
@@ -229,7 +203,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             val duration = endTime - startTime
             behaviorDao.setActualDuration(id, duration)
         } else if (status == "active" && startTime > 0) {
-            val duration = System.currentTimeMillis() - startTime
+            val duration = clockService.currentTimeMillis() - startTime
             behaviorDao.setActualDuration(id, duration)
         } else {
             behaviorDao.setActualDuration(id, 0L)

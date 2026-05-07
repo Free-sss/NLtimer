@@ -1,6 +1,7 @@
 package com.nltimer.core.data.model
 
 import androidx.compose.runtime.Immutable
+import com.nltimer.core.data.database.entity.TagEntity
 
 /**
  * Tag 标签领域模型
@@ -18,4 +19,32 @@ data class Tag(
     val sortOrder: Int,
     val isArchived: Boolean,
     val archivedAt: Long? = null,
-)
+) {
+    fun toEntity() = TagEntity(
+        id = id,
+        name = name,
+        color = color,
+        iconKey = iconKey,
+        category = category,
+        priority = priority,
+        usageCount = usageCount,
+        sortOrder = sortOrder,
+        isArchived = isArchived,
+        archivedAt = archivedAt,
+    )
+
+    companion object {
+        fun fromEntity(entity: TagEntity) = Tag(
+            id = entity.id,
+            name = entity.name,
+            color = entity.color,
+            iconKey = entity.iconKey,
+            category = entity.category,
+            priority = entity.priority,
+            usageCount = entity.usageCount,
+            sortOrder = entity.sortOrder,
+            isArchived = entity.isArchived,
+            archivedAt = entity.archivedAt,
+        )
+    }
+}

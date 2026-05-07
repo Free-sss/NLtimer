@@ -13,6 +13,10 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.SystemClockService
+import com.nltimer.core.data.util.TimeSnapService
+import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,6 +45,8 @@ class HomeViewModelTest {
     private lateinit var activityRepository: FakeActivityRepository
     private lateinit var tagRepository: FakeTagRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
+    private lateinit var clockService: ClockService
+    private lateinit var addBehaviorUseCase: FakeAddBehaviorUseCase
     private lateinit var viewModel: HomeViewModel
 
     @Before
@@ -50,12 +56,16 @@ class HomeViewModelTest {
         activityRepository = FakeActivityRepository()
         tagRepository = FakeTagRepository()
         settingsPrefs = FakeSettingsPrefs()
+        clockService = SystemClockService()
+        addBehaviorUseCase = FakeAddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
             tagRepository,
             settingsPrefs,
-            KeywordMatchStrategy()
+            KeywordMatchStrategy(),
+            addBehaviorUseCase,
+            clockService
         )
     }
 
@@ -478,4 +488,10 @@ class HomeViewModelTest {
             updateTimeLabelConfigCalled = true
         }
     }
+
+    private class FakeAddBehaviorUseCase(
+        private val behaviorRepository: BehaviorRepository,
+        private val timeSnapService: TimeSnapService,
+        private val clockService: ClockService,
+    ) : AddBehaviorUseCase(behaviorRepository, timeSnapService, clockService)
 }

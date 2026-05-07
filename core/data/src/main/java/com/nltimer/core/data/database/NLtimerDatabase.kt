@@ -276,5 +276,7 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 }
             }
         }
+
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9)
     }
 }
