@@ -13,6 +13,8 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.SystemClockService
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,6 +43,7 @@ class HomeViewModelTest {
     private lateinit var activityRepository: FakeActivityRepository
     private lateinit var tagRepository: FakeTagRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
+    private lateinit var clockService: ClockService
     private lateinit var viewModel: HomeViewModel
 
     @Before
@@ -50,12 +53,14 @@ class HomeViewModelTest {
         activityRepository = FakeActivityRepository()
         tagRepository = FakeTagRepository()
         settingsPrefs = FakeSettingsPrefs()
+        clockService = SystemClockService()
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
             tagRepository,
             settingsPrefs,
-            KeywordMatchStrategy()
+            KeywordMatchStrategy(),
+            clockService
         )
     }
 

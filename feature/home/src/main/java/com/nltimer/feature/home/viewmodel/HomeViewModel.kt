@@ -14,7 +14,7 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.util.ClockService
-import com.nltimer.core.data.util.hasTimeConflict
+import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
@@ -49,7 +49,7 @@ class HomeViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
-    private val clockService: ClockService,
+    private val timeSnapService: TimeSnapService,
 ) : ViewModel() {
 
     // --- 暴露给 UI 的状态流 ---
@@ -590,7 +590,7 @@ class HomeViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             // 时间约束校验
-            val now = System.currentTimeMillis()
+            val now = clockService.currentTimeMillis()
             when (status) {
                 BehaviorNature.COMPLETED -> {
                     if (endTime != null && endTime > now) {
@@ -642,7 +642,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val next = behaviorRepository.getNextPending() ?: return@launch
             behaviorRepository.setStatus(next.id, BehaviorNature.ACTIVE.key)
-            behaviorRepository.setStartTime(next.id, System.currentTimeMillis())
+            behaviorRepository.setStartTime(next.id, clockService.currentTimeMillis())
         }
     }
 
