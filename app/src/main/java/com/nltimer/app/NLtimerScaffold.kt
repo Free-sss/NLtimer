@@ -1,7 +1,7 @@
 package com.nltimer.app
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,8 +21,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -67,7 +69,6 @@ fun NLtimerScaffold(
         else -> "NLtimer"
     }
     var showSettingsPopup by remember { mutableStateOf(false) }
-    val layoutDirection = LocalLayoutDirection.current
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -80,8 +81,19 @@ fun NLtimerScaffold(
             )
         },
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 底栏（在内容层之下）
+            AppBottomNavigation(
+                navController = navController,
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+
+            // 顶栏 + 页面内容（在底栏之上）
             Scaffold(
+                modifier = Modifier.then(
+                    if (!isSecondaryPage) Modifier.padding(bottom = 80.dp) else Modifier
+                ),
+                containerColor = Color.Transparent,
                 topBar = {
                     if (isSecondaryPage) {
                         TopAppBar(
@@ -107,22 +119,15 @@ fun NLtimerScaffold(
                         )
                     }
                 },
-                bottomBar = {
-                    AppBottomNavigation(navController)
-                },
             ) { padding ->
-                val contentPadding = if (isSecondaryPage) {
-                    PaddingValues(
-                        top = padding.calculateTopPadding(),
-                        start = padding.calculateLeftPadding(layoutDirection),
-                        end = padding.calculateRightPadding(layoutDirection),
-                    )
-                } else {
-                    padding
-                }
                 NLtimerNavHost(
                     navController = navController,
-                    modifier = Modifier.padding(contentPadding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = padding.calculateTopPadding(),
+                            bottom = if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
+                        ),
                 )
             }
 

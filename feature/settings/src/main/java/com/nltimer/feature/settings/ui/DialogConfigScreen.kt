@@ -35,7 +35,8 @@ import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
-
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 @Composable
 fun DialogConfigRoute(
     viewModel: DialogConfigViewModel = hiltViewModel(),
@@ -52,6 +53,7 @@ fun DialogConfigRoute(
 fun DialogConfigScreen(
     config: DialogGridConfig,
     onUpdateConfig: (DialogGridConfig) -> Unit,
+    containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
     SettingsSubpageScaffold { padding ->
@@ -59,6 +61,7 @@ fun DialogConfigScreen(
             config = config,
             onUpdateConfig = onUpdateConfig,
             contentPadding = padding,
+            containerColor = containerColor,
             modifier = modifier,
         )
     }
@@ -69,11 +72,13 @@ private fun DialogConfigContent(
     config: DialogGridConfig,
     onUpdateConfig: (DialogGridConfig) -> Unit,
     contentPadding: PaddingValues,
+    containerColor: Color,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(containerColor)
             .padding(contentPadding)
             .verticalScroll(rememberScrollState())
     ) {

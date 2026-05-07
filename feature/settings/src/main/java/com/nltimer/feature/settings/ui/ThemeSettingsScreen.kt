@@ -114,6 +114,7 @@ fun ThemeSettingsScreen(
     onMaterialYouToggle: (Boolean) -> Unit,
     onFontChange: (Fonts) -> Unit,
     onShowBordersToggle: (Boolean) -> Unit,
+    containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
@@ -139,6 +140,7 @@ fun ThemeSettingsScreen(
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
             contentPadding = padding,
+            containerColor = containerColor,
             modifier = modifier,
         )
     }
@@ -157,10 +159,13 @@ private fun ThemeSettingsContent(
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
     contentPadding: PaddingValues,
+    containerColor: Color,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .background(containerColor),
         contentPadding = contentPadding,
     ) {
             item {
