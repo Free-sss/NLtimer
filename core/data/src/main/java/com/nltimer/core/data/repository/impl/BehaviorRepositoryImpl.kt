@@ -5,7 +5,6 @@ import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
-import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
@@ -14,7 +13,6 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.util.BehaviorCalculator
 import com.nltimer.core.data.util.ClockService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,7 +44,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
-            list.map { it.toModel() }
+            list.map { Tag.fromEntity(it) }
         }
 
     override fun getPendingBehaviors(): Flow<List<Behavior>> =
@@ -57,20 +55,9 @@ class BehaviorRepositoryImpl @Inject constructor(
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
         val behavior = behaviorEntity.toModel()
         val activityEntity = activityDao.getById(behavior.activityId) ?: return null
-        val activity = com.nltimer.core.data.model.Activity(
-            id = activityEntity.id,
-            name = activityEntity.name,
-            iconKey = activityEntity.iconKey,
-            keywords = activityEntity.keywords,
-            groupId = activityEntity.groupId,
-            isPreset = activityEntity.isPreset,
-            isArchived = activityEntity.isArchived,
-            archivedAt = activityEntity.archivedAt,
-            color = activityEntity.color,
-            usageCount = activityEntity.usageCount,
-        )
+        val activity = Activity.fromEntity(activityEntity)
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
-        val tags = tagEntities.map { it.toModel() }
+        val tags = tagEntities.map { Tag.fromEntity(it) }
         return BehaviorWithDetails(
             behavior = behavior,
             activity = activity,
@@ -164,10 +151,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(id: Long) {
-        val toDelete = behaviorDao.getById(id) ?: return
-        behaviorDao.delete(id)
-    }
+    override suspend fun delete(id: Long) = behaviorDao.delete(id)
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
     }
@@ -201,19 +185,6 @@ class BehaviorRepositoryImpl @Inject constructor(
         actualDuration = actualDuration,
         achievementLevel = achievementLevel,
         wasPlanned = wasPlanned,
-    )
-
-    private fun TagEntity.toModel() = Tag(
-        id = id,
-        name = name,
-        color = color,
-        iconKey = iconKey,
-        category = category,
-        priority = priority,
-        usageCount = usageCount,
-        sortOrder = sortOrder,
-        isArchived = isArchived,
-        archivedAt = archivedAt,
     )
 
     override suspend fun updateBehavior(
