@@ -19,6 +19,7 @@ import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.SystemClockService
+import com.nltimer.core.data.util.TimeSnapService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -86,5 +87,9 @@ abstract class DataModule {
         @Provides
         @Singleton
         fun provideClockService(): ClockService = SystemClockService()
+
+        @Provides
+        @Singleton
+        fun provideTimeSnapService(): TimeSnapService = TimeSnapService()
     }
 }

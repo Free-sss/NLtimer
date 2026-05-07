@@ -14,9 +14,9 @@ import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.data.util.ClockService
-import com.nltimer.core.data.util.SnapResult
 import com.nltimer.core.data.util.SystemClockService
 import com.nltimer.core.data.util.TimeSnapService
+import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,6 +46,7 @@ class HomeViewModelTest {
     private lateinit var tagRepository: FakeTagRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
     private lateinit var clockService: ClockService
+    private lateinit var addBehaviorUseCase: FakeAddBehaviorUseCase
     private lateinit var viewModel: HomeViewModel
 
     @Before
@@ -56,13 +57,14 @@ class HomeViewModelTest {
         tagRepository = FakeTagRepository()
         settingsPrefs = FakeSettingsPrefs()
         clockService = SystemClockService()
+        addBehaviorUseCase = FakeAddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
             tagRepository,
             settingsPrefs,
             KeywordMatchStrategy(),
-            FakeTimeSnapService(),
+            addBehaviorUseCase,
             clockService
         )
     }
@@ -487,18 +489,9 @@ class HomeViewModelTest {
         }
     }
 
-    private class FakeTimeSnapService : TimeSnapService() {
-        override fun snapAndCheckConflict(
-            newStart: Long,
-            newEnd: Long?,
-            newStatus: BehaviorNature,
-            overlappingBehaviors: List<Behavior>,
-            currentTime: Long,
-            ignoreBehaviorId: Long?,
-        ): SnapResult {
-            return super.snapAndCheckConflict(
-                newStart, newEnd, newStatus, overlappingBehaviors, currentTime, ignoreBehaviorId
-            )
-        }
-    }
+    private class FakeAddBehaviorUseCase(
+        private val behaviorRepository: BehaviorRepository,
+        private val timeSnapService: TimeSnapService,
+        private val clockService: ClockService,
+    ) : AddBehaviorUseCase(behaviorRepository, timeSnapService, clockService)
 }
