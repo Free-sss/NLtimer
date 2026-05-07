@@ -445,7 +445,7 @@ class HomeViewModel @Inject constructor(
             }
 
             // 自动吸附：UI 只提供分钟精度（秒/毫秒归零），但数据库存储毫秒精度。
-            // 当新行为的开始时间与已有行为的结束时间在同一分钟内时（UI 精度导致的重叠），
+            // 当新行为的开始时间与已有行为的结束时间重叠或相接时，
             // 自动调整到该行为结束后的下一毫秒，而非报冲突。
             var adjustedStart = startTime
             var adjustedEnd = endTime
@@ -460,18 +460,17 @@ class HomeViewModel @Inject constructor(
                     .firstOrNull()
                     .orEmpty()
                 val prevBehavior = overlapping
-                    .filter { it.endTime != null && it.endTime!! > adjustedStart }
+                    .filter { it.endTime != null && it.endTime!! >= adjustedStart }
                     .maxByOrNull { it.endTime!! }
                 val prevEnd = prevBehavior?.endTime
-                // 只在同一分钟内有重叠时才吸附（UI 分钟精度 vs 数据库毫秒精度的差异）
-                // 如果是真正的时间冲突（跨多分钟），不吸附，让后续冲突检测报错
-                if (prevEnd != null && prevEnd > adjustedStart) {
-                    val sameMinute = prevEnd / 60_000 == adjustedStart / 60_000
-                    if (sameMinute) {
-                        adjustedStart = prevEnd + 1
-                        if (status == BehaviorNature.COMPLETED && adjustedEnd != null && adjustedEnd < adjustedStart) {
-                            adjustedEnd = adjustedStart
+                if (prevEnd != null && prevEnd >= adjustedStart) {
+                    adjustedStart = prevEnd + 1
+                    if (status == BehaviorNature.COMPLETED && adjustedEnd != null) {
+                        // 用户选的 endTime 与前一条在同一分钟内 → 自动设为该分钟末尾 .999
+                        if (endTime != null && endTime / 60_000 == prevEnd / 60_000) {
+                            adjustedEnd = prevEnd / 60_000 * 60_000 + 59_999
                         }
+                        // 用户选的 endTime 跨过了分钟边界 → 保持用户原始值
                     }
                 }
             }

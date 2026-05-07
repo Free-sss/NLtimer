@@ -798,25 +798,16 @@ internal fun AddBehaviorSheetContent(
                                 }
                                 Button(
                                     onClick = {
-                                        // TODO: 前端校验暂时注释，由后端统一校验
-                                        // if (mode == BehaviorNature.COMPLETED
-                                        //     && !startTime.toLocalTime().isBefore(endTime.toLocalTime())
-                                        // ) {
-                                        //     Toast.makeText(
-                                        //         context,
-                                        //         "开始时间必须早于结束时间",
-                                        //         Toast.LENGTH_SHORT
-                                        //     ).show()
-                                        //     return@Button
-                                        // }
-                                        // if (hasTimeConflict) {
-                                        //     Toast.makeText(
-                                        //         context,
-                                        //         "该时间段与已有行为记录冲突",
-                                        //         Toast.LENGTH_SHORT
-                                        //     ).show()
-                                        //     return@Button
-                                        // }
+                                        if (mode == BehaviorNature.COMPLETED
+                                            && !startTime.toLocalTime().isBefore(endTime.toLocalTime())
+                                        ) {
+                                            Toast.makeText(
+                                                context,
+                                                "开始时间必须早于结束时间",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            return@Button
+                                        }
                                         selectedActivityId?.let { activityId ->
                                             onConfirm(
                                                 activityId,
