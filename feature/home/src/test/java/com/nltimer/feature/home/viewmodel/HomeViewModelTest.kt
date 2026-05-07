@@ -14,7 +14,9 @@ import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.SnapResult
 import com.nltimer.core.data.util.SystemClockService
+import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,6 +62,7 @@ class HomeViewModelTest {
             tagRepository,
             settingsPrefs,
             KeywordMatchStrategy(),
+            FakeTimeSnapService(),
             clockService
         )
     }
@@ -481,6 +484,21 @@ class HomeViewModelTest {
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {
             updateTimeLabelConfigCalled = true
+        }
+    }
+
+    private class FakeTimeSnapService : TimeSnapService() {
+        override fun snapAndCheckConflict(
+            newStart: Long,
+            newEnd: Long?,
+            newStatus: BehaviorNature,
+            overlappingBehaviors: List<Behavior>,
+            currentTime: Long,
+            ignoreBehaviorId: Long?,
+        ): SnapResult {
+            return super.snapAndCheckConflict(
+                newStart, newEnd, newStatus, overlappingBehaviors, currentTime, ignoreBehaviorId
+            )
         }
     }
 }

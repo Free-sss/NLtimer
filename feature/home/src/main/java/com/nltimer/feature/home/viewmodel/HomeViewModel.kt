@@ -50,6 +50,7 @@ class HomeViewModel @Inject constructor(
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
     private val timeSnapService: TimeSnapService,
+    private val clockService: ClockService,
 ) : ViewModel() {
 
     // --- 暴露给 UI 的状态流 ---
@@ -446,69 +447,30 @@ class HomeViewModel @Inject constructor(
                 behaviorRepository.endCurrentBehavior(startTime)
             }
 
-            // 自动吸附：UI 只提供分钟精度（秒/毫秒归零），但数据库存储毫秒精度。
-            // 当新行为的开始时间与已有行为的结束时间重叠或相接时，
-            // 自动调整到该行为结束后的下一毫秒，而非报冲突。
-            var adjustedStart = startTime
-            var adjustedEnd = endTime
-            if (status != BehaviorNature.PENDING) {
-                val snapQueryEnd = when (status) {
-                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                    BehaviorNature.COMPLETED -> endTime ?: startTime
-                    BehaviorNature.PENDING -> Long.MAX_VALUE
-                }
-                val overlapping = behaviorRepository
-                    .getBehaviorsOverlappingRange(startTime, snapQueryEnd)
-                    .firstOrNull()
-                    .orEmpty()
-                val prevBehavior = overlapping
-                    .filter { it.endTime != null && it.endTime!! >= adjustedStart }
-                    .maxByOrNull { it.endTime!! }
-                val prevEnd = prevBehavior?.endTime
-                if (prevEnd != null && prevEnd >= adjustedStart) {
-                    adjustedStart = prevEnd + 1
-                    if (status == BehaviorNature.COMPLETED && adjustedEnd != null) {
-                        // 用户选的 endTime 与前一条在同一分钟内 → 自动设为该分钟末尾 .999
-                        if (endTime != null && endTime / 60_000 == prevEnd / 60_000) {
-                            adjustedEnd = prevEnd / 60_000 * 60_000 + 59_999
-                        }
-                        // 用户选的 endTime 跨过了分钟边界 → 保持用户原始值
+            val snapResult = timeSnapService.snapAndCheckConflict(
+                newStart = startTime,
+                newEnd = endTime,
+                newStatus = status,
+                overlappingBehaviors = if (status != BehaviorNature.PENDING) {
+                    val snapQueryEnd = when (status) {
+                        BehaviorNature.ACTIVE -> Long.MAX_VALUE
+                        BehaviorNature.COMPLETED -> endTime ?: startTime
+                        BehaviorNature.PENDING -> Long.MAX_VALUE
                     }
+                    behaviorRepository.getBehaviorsOverlappingRange(startTime, snapQueryEnd)
+                        .firstOrNull().orEmpty()
+                } else emptyList(),
+                currentTime = now,
+            )
+            if (snapResult.hasConflict) {
+                _uiState.update {
+                    it.copy(errorMessage = "该时间段与已有行为记录冲突")
                 }
+                return@launch
             }
 
-            // 非 PENDING 行为进行时间冲突检测
-            if (status != BehaviorNature.PENDING) {
-                val effectiveNewEnd = when (status) {
-                    BehaviorNature.ACTIVE -> Long.MAX_VALUE
-                    BehaviorNature.COMPLETED -> adjustedEnd ?: adjustedStart
-                    BehaviorNature.PENDING -> null
-                }
-
-                if (effectiveNewEnd != null && effectiveNewEnd > adjustedStart) {
-                    val overlappingBehaviors = behaviorRepository
-                        .getBehaviorsOverlappingRange(adjustedStart, effectiveNewEnd)
-                        .firstOrNull()
-                        .orEmpty()
-
-                    if (hasTimeConflict(
-                            newStart = adjustedStart,
-                            newEnd = adjustedEnd,
-                            newStatus = status,
-                            existingBehaviors = overlappingBehaviors,
-                            currentTime = now,
-                        )
-                    ) {
-                        _uiState.update {
-                            it.copy(errorMessage = "该时间段与已有行为记录冲突")
-                        }
-                        return@launch
-                    }
-                }
-            }
-
-            val finalStart = adjustedStart
-            val finalEnd = adjustedEnd
+            val finalStart = snapResult.adjustedStart
+            val finalEnd = snapResult.adjustedEnd
 
             // 计算新行为的 sequence（按时间排序插入）
             val wasPlanned = status == BehaviorNature.PENDING
