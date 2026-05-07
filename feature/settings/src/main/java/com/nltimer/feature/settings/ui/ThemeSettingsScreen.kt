@@ -33,11 +33,13 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,7 +50,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.materialkolor.rememberDynamicColorScheme
+import com.materialkolor.dynamicColorScheme
 import com.nltimer.core.designsystem.component.ColorPickerDialog
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.Fonts
@@ -61,6 +63,8 @@ import com.nltimer.core.designsystem.theme.middleItemShape
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.core.designsystem.theme.toFontRes
 import com.nltimer.core.designsystem.theme.toMPaletteStyle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * 主题设置页路由入口，负责初始化ViewModel并将状态与回调绑定到UI层。
@@ -156,6 +160,30 @@ private fun LazyListScope.ThemeSettingsContent(
     onShowColorPicker: (Boolean) -> Unit,
 ) {
     item {
+        val isDark = when (theme.appTheme) {
+            AppTheme.SYSTEM -> isSystemInDarkTheme()
+            AppTheme.DARK -> true
+            AppTheme.LIGHT -> false
+        }
+
+        val schemes by produceState<Map<PaletteStyle, ColorScheme>>(
+            initialValue = emptyMap(),
+            key1 = theme.seedColor,
+            key2 = isDark,
+            key3 = theme.isAmoled,
+        ) {
+            value = withContext(Dispatchers.Default) {
+                PaletteStyle.entries.associateWith { style ->
+                    dynamicColorScheme(
+                        seedColor = theme.seedColor,
+                        isDark = isDark,
+                        isAmoled = theme.isAmoled,
+                        style = style.toMPaletteStyle(),
+                    )
+                }
+            }
+        }
+
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     // 主题模式切换区：使用FilterChip选择亮/暗/跟随系统
                     Column(modifier = Modifier.clip(leadingItemShape())) {
@@ -305,67 +333,60 @@ private fun LazyListScope.ThemeSettingsContent(
                                 )
                             },
                         )
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(listItemColors().containerColor)
-                                .padding(start = 52.dp, end = 16.dp, bottom = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            PaletteStyle.entries.toList().forEach { style ->
-                                val scheme = rememberDynamicColorScheme(
-                                    primary = theme.seedColor,
-                                    isDark = when (theme.appTheme) {
-                                        AppTheme.SYSTEM -> isSystemInDarkTheme()
-                                        AppTheme.DARK -> true
-                                        AppTheme.LIGHT -> false
-                                    },
-                                    isAmoled = theme.isAmoled,
-                                    style = style.toMPaletteStyle(),
-                                )
-                                val selected = theme.paletteStyle == style
+                        if (schemes.isNotEmpty()) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(listItemColors().containerColor)
+                                    .padding(start = 52.dp, end = 16.dp, bottom = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                PaletteStyle.entries.toList().forEach { style ->
+                                    val scheme = schemes[style] ?: return@forEach
+                                    val selected = theme.paletteStyle == style
 
-                                Box(
-                                    modifier = Modifier
-                                        .size(50.dp)
-                                        .clip(CircleShape)
-                                        .clickable { onPaletteChange(style) },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Canvas(modifier = Modifier.matchParentSize()) {
-                                        val colors: List<Color> = listOf(
-                                            scheme.primary,
-                                            scheme.primaryContainer,
-                                            scheme.secondary,
-                                            scheme.secondaryContainer,
-                                            scheme.tertiary,
-                                            scheme.tertiaryContainer,
-                                        )
-                                        val sweepAngle = 360f / colors.size
-                                        colors.forEachIndexed { index: Int, color: Color ->
-                                            drawArc(
-                                                color = color,
-                                                startAngle = index * sweepAngle,
-                                                sweepAngle = sweepAngle,
-                                                useCenter = true,
+                                    Box(
+                                        modifier = Modifier
+                                            .size(50.dp)
+                                            .clip(CircleShape)
+                                            .clickable { onPaletteChange(style) },
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        Canvas(modifier = Modifier.matchParentSize()) {
+                                            val colors: List<Color> = listOf(
+                                                scheme.primary,
+                                                scheme.primaryContainer,
+                                                scheme.secondary,
+                                                scheme.secondaryContainer,
+                                                scheme.tertiary,
+                                                scheme.tertiaryContainer,
+                                            )
+                                            val sweepAngle = 360f / colors.size
+                                            colors.forEachIndexed { index: Int, color: Color ->
+                                                drawArc(
+                                                    color = color,
+                                                    startAngle = index * sweepAngle,
+                                                    sweepAngle = sweepAngle,
+                                                    useCenter = true,
+                                                )
+                                            }
+                                        }
+
+                                        if (selected) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .matchParentSize()
+                                                    .background(
+                                                        scheme.primary.copy(alpha = 0.7f)
+                                                    )
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.CheckCircle,
+                                                contentDescription = null,
+                                                tint = scheme.onPrimary,
                                             )
                                         }
-                                    }
-
-                                    if (selected) {
-                                        Box(
-                                            modifier = Modifier
-                                                .matchParentSize()
-                                                .background(
-                                                    scheme.primary.copy(alpha = 0.7f)
-                                                )
-                                        )
-                                        Icon(
-                                            imageVector = Icons.Default.CheckCircle,
-                                            contentDescription = null,
-                                            tint = scheme.onPrimary,
-                                        )
                                     }
                                 }
                             }
