@@ -1,6 +1,8 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,12 +20,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.HomeLayout
@@ -34,6 +39,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun BehaviorLogView(
     cells: List<GridCellUiState>,
+    onCellLongClick: (GridCellUiState) -> Unit = {},
     onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -44,6 +50,8 @@ fun BehaviorLogView(
             .sortedByDescending { it.startTime }
     }
 
+    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
+
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -53,7 +61,7 @@ fun BehaviorLogView(
         ) {
             item {
                 LayoutMenuHeader(
-                    title = "行为日志",
+                    title = "\u884c\u4e3a\u65e5\u5fd7",
                     onLayoutChange = onLayoutChange,
                 )
             }
@@ -67,7 +75,7 @@ fun BehaviorLogView(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "暂无行为记录",
+                            text = "\u6682\u65e0\u884c\u4e3a\u8bb0\u5f55",
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -77,7 +85,9 @@ fun BehaviorLogView(
                 items(items = behaviors, key = { it.behaviorId!! }) { behavior ->
                     BehaviorLogCard(
                         behavior = behavior,
-                        timeFormatter = timeFormatter
+                        timeFormatter = timeFormatter,
+                        onClick = { detailCell = behavior },
+                        onLongClick = { onCellLongClick(behavior) },
                     )
                 }
             }
@@ -87,13 +97,22 @@ fun BehaviorLogView(
             }
         }
     }
+
+    detailCell?.let { cell ->
+        BehaviorDetailDialog(
+            cell = cell,
+            onDismiss = { detailCell = null },
+        )
+    }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun BehaviorLogCard(
     behavior: GridCellUiState,
     timeFormatter: DateTimeFormatter,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val cardBackground = if (behavior.isCurrent) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
@@ -106,13 +125,17 @@ private fun BehaviorLogCard(
         modifier = Modifier
             .fillMaxWidth()
             .behaviorCardStyle(cardBackground, borderColor)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "${behavior.activityIconKey ?: "❓"} ${behavior.activityName ?: "未知"}",
+                text = "${behavior.activityIconKey ?: "\u2753"} ${behavior.activityName ?: "\u672a\u77e5"}",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
@@ -120,11 +143,11 @@ private fun BehaviorLogCard(
 
             behavior.status?.let { status ->
                 val (bgColor, textColor) = when (status) {
-                    com.nltimer.core.data.model.BehaviorNature.ACTIVE ->
+                    BehaviorNature.ACTIVE ->
                         MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
-                    com.nltimer.core.data.model.BehaviorNature.COMPLETED ->
+                    BehaviorNature.COMPLETED ->
                         MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
-                    com.nltimer.core.data.model.BehaviorNature.PENDING ->
+                    BehaviorNature.PENDING ->
                         MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
                 }
                 Box(
@@ -150,9 +173,9 @@ private fun BehaviorLogCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             val startText = behavior.startTime?.format(timeFormatter) ?: "--:--"
-            val endText = behavior.endTime?.format(timeFormatter) ?: "进行中"
+            val endText = behavior.endTime?.format(timeFormatter) ?: "\u8fdb\u884c\u4e2d"
             Text(
-                text = "起始: $startText → 结束: $endText",
+                text = "\u8d77\u59cb: $startText \u2192 \u7ed3\u675f: $endText",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -162,7 +185,7 @@ private fun BehaviorLogCard(
             if (duration > 0) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "用时: ${formatDuration(duration)}",
+                    text = "\u7528\u65f6: ${formatDuration(duration)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -176,7 +199,7 @@ private fun BehaviorLogCard(
             if (note.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "备注: $note",
+                    text = "\u5907\u6ce8: $note",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -185,11 +208,11 @@ private fun BehaviorLogCard(
 
         Spacer(modifier = Modifier.height(8.dp))
         val details = buildList {
-            if (behavior.pomodoroCount > 0) add("番茄钟: ${behavior.pomodoroCount}")
-            behavior.estimatedDuration?.let { add("预估: ${formatDuration(it)}") }
-            behavior.actualDuration?.let { add("实际: ${formatDuration(it)}") }
-            behavior.achievementLevel?.let { add("完成度: $it") }
-            add("计划内: ${if (behavior.wasPlanned) "是" else "否"}")
+            if (behavior.pomodoroCount > 0) add("\u756a\u8304\u949f: ${behavior.pomodoroCount}")
+            behavior.estimatedDuration?.let { add("\u9884\u4f30: ${formatDuration(it)}") }
+            behavior.actualDuration?.let { add("\u5b9e\u9645: ${formatDuration(it)}") }
+            behavior.achievementLevel?.let { add("\u5b8c\u6210\u5ea6: $it") }
+            add("\u8ba1\u5212\u5185: ${if (behavior.wasPlanned) "\u662f" else "\u5426"}")
         }
         if (details.isNotEmpty()) {
             Text(
@@ -207,5 +230,3 @@ private fun BehaviorLogCard(
         )
     }
 }
-
-

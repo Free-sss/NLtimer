@@ -323,6 +323,7 @@ fun HomeScreen(
                         TimelineReverseView(
                             cells = uiState.rows.flatMap { it.cells },
                             onAddClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
+                            onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
                         )
@@ -330,6 +331,7 @@ fun HomeScreen(
                     HomeLayout.LOG -> {
                         BehaviorLogView(
                             cells = uiState.rows.flatMap { it.cells },
+                            onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
                         )
