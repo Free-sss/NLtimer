@@ -18,4 +18,5 @@ data class Tag(
     val sortOrder: Int,
     val isArchived: Boolean,
     val archivedAt: Long? = null,
+    val keywords: String? = null,
 )

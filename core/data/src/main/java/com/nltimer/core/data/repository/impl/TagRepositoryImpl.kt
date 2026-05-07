@@ -71,6 +71,7 @@ class TagRepositoryImpl @Inject constructor(
         sortOrder = sortOrder,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        keywords = keywords,
     )
 
     private fun Tag.toEntity() = TagEntity(
@@ -84,5 +85,6 @@ class TagRepositoryImpl @Inject constructor(
         sortOrder = sortOrder,
         isArchived = isArchived,
         archivedAt = archivedAt,
+        keywords = keywords,
     )
 }

@@ -55,8 +55,8 @@ class ListActivitiesTool @Inject constructor(
         parameters = parameters,
         returnExample = """
             [
-              { "id": 1, "name": "编程", "emoji": "💻", "isArchived": false },
-              { "id": 2, "name": "阅读", "emoji": "📖", "isArchived": false }
+              { "id": 1, "name": "编程", "iconKey": "code", "keywords": "编程,coding", "usageCount": 12, "isArchived": false },
+              { "id": 2, "name": "阅读", "iconKey": "book", "keywords": null, "usageCount": 5, "isArchived": false }
             ]
         """.trimIndent(),
         errorExamples = listOf(
