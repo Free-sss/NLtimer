@@ -1,6 +1,5 @@
 package com.nltimer.feature.settings.ui
 
-import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,13 +10,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -127,7 +124,10 @@ fun ThemeSettingsScreen(
         )
     }
 
-    SettingsSubpageScaffold { padding ->
+    SettingsSubpageContainer(
+        containerColor = containerColor,
+        modifier = modifier,
+    ) {
         ThemeSettingsContent(
             theme = theme,
             onSeedColorChange = onSeedColorChange,
@@ -139,15 +139,11 @@ fun ThemeSettingsScreen(
             onShowBordersToggle = onShowBordersToggle,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
-            contentPadding = padding,
-            containerColor = containerColor,
-            modifier = modifier,
         )
     }
 }
 
-@Composable
-private fun ThemeSettingsContent(
+private fun LazyListScope.ThemeSettingsContent(
     theme: Theme,
     onSeedColorChange: (Color) -> Unit,
     onThemeSwitch: (AppTheme) -> Unit,
@@ -158,19 +154,9 @@ private fun ThemeSettingsContent(
     onShowBordersToggle: (Boolean) -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
-    contentPadding: PaddingValues,
-    containerColor: Color,
-    modifier: Modifier = Modifier,
 ) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .background(containerColor),
-        contentPadding = contentPadding,
-    ) {
-            item {
-                // 所有设置项纵向排列，项间距2dp
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    item {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     // 主题模式切换区：使用FilterChip选择亮/暗/跟随系统
                     Column(modifier = Modifier.clip(leadingItemShape())) {
                         ListItem(
@@ -399,7 +385,6 @@ private fun ThemeSettingsContent(
                         colors = listItemColors(),
                         modifier = Modifier.clip(endItemShape()),
                     )
-                }
-            }
         }
     }
+}

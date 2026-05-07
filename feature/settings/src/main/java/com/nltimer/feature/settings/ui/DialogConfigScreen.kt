@@ -1,18 +1,16 @@
 package com.nltimer.feature.settings.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -35,8 +34,6 @@ import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
-import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Color
 @Composable
 fun DialogConfigRoute(
     viewModel: DialogConfigViewModel = hiltViewModel(),
@@ -56,32 +53,23 @@ fun DialogConfigScreen(
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
-    SettingsSubpageScaffold { padding ->
+    SettingsSubpageContainer(
+        containerColor = containerColor,
+        modifier = modifier,
+    ) {
         DialogConfigContent(
             config = config,
             onUpdateConfig = onUpdateConfig,
-            contentPadding = padding,
-            containerColor = containerColor,
-            modifier = modifier,
         )
     }
 }
 
-@Composable
-private fun DialogConfigContent(
+private fun LazyListScope.DialogConfigContent(
     config: DialogGridConfig,
     onUpdateConfig: (DialogGridConfig) -> Unit,
-    contentPadding: PaddingValues,
-    containerColor: Color,
-    modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(containerColor)
-            .padding(contentPadding)
-            .verticalScroll(rememberScrollState())
-    ) {
+    item {
+        Column {
             GridConfigBlock(
                 label = "活动",
                 displayMode = config.activityDisplayMode,
@@ -140,6 +128,7 @@ private fun DialogConfigContent(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }
 
