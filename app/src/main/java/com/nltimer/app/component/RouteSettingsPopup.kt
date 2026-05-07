@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -50,7 +51,7 @@ import com.nltimer.core.designsystem.theme.NLtimerTheme
 fun RouteSettingsPopupPreview() {
     NLtimerTheme {
         RouteSettingsPopup(
-            currentRoute = "home",
+            currentRoute = NLtimerRoutes.HOME,
             onDismiss = {},
             onHomeLayoutChange = {},
             onShowTimeSideBarChange = {}
@@ -115,7 +116,7 @@ fun RouteSettingsPopup(
                 HorizontalDivider()
 
                 // home 路由专属：布局切换功能
-                if (currentRoute == "home") {
+                if (currentRoute == NLtimerRoutes.HOME) {
                     PopupItem(
                         icon = Icons.Default.Dashboard,
                         label = if (showLayoutOptions) "返回设置" else "更改布局",

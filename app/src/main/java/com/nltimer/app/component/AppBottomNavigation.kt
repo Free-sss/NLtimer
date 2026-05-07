@@ -17,6 +17,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.nltimer.app.navigation.NLtimerRoutes
 
 /**
  * 底部导航栏菜单项数据模型
@@ -33,10 +34,10 @@ private data class NavItem(
 
 // 底部导航栏的菜单项列表，按显示顺序排列
 private val navItems = listOf(
-    NavItem("home", "主页", Icons.Default.Home),
-    NavItem("sub", "副页", Icons.Default.Apps),
-    NavItem("stats", "统计", Icons.Default.BarChart),
-    NavItem("settings", "设置", Icons.Default.Settings),
+    NavItem(NLtimerRoutes.HOME, "主页", Icons.Default.Home),
+    NavItem(NLtimerRoutes.SUB, "副页", Icons.Default.Apps),
+    NavItem(NLtimerRoutes.STATS, "统计", Icons.Default.BarChart),
+    NavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
 
 /**
