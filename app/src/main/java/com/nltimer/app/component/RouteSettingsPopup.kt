@@ -21,7 +21,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -158,26 +157,28 @@ fun RouteSettingsPopup(
 
                 // 未展开布局选项时，显示通用快捷操作列表
                 if (!showLayoutOptions) {
-                    PopupItem(
-                        icon = Icons.Default.Search,
-                        label = "搜索",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.List,
-                        label = "活动管理",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.Label,
-                        label = "标签管理",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.Accessible,
-                        label = "导出今日记录",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
+                    //TODO: 其他路由的快捷操作列表
+                
+                    // PopupItem(
+                    //     icon = Icons.Default.Search,
+                    //     label = "搜索",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.List,
+                    //     label = "活动管理",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.Label,
+                    //     label = "标签管理",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.Accessible,
+                    //     label = "导出今日记录",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
                 }
             }
         }
@@ -232,7 +233,12 @@ private fun PopupSwitchItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .background(
+                color = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .clickable { onCheckedChange(!checked) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -246,10 +252,6 @@ private fun PopupSwitchItem(
             style = MaterialTheme.typography.bodyMedium,
             color = tint,
             modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
         )
     }
 }
