@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
@@ -35,11 +34,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -51,8 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -125,12 +119,8 @@ fun ThemeSettingsScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 颜色选择器弹窗显示状态，仅当用户点击主题色按钮时置为true
     var showColorPicker by remember { mutableStateOf(false) }
-    // 顶部栏滚动行为：下滑时隐藏、上滑时显示
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    // 颜色选择器弹窗：从主题色初始化，选择后立即写入，关闭后重置状态
     if (showColorPicker) {
         ColorPickerDialog(
             initialColor = theme.seedColor,
@@ -139,35 +129,46 @@ fun ThemeSettingsScreen(
         )
     }
 
-    // 页面主骨架：嵌套滚动配合顶部栏折叠效果
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            // 顶部应用栏：带滚动折叠行为，左侧返回按钮，标题"主题配置"
-            TopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = { Text(text = "主题配置") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "返回",
-                        )
-                    }
-                },
-            )
-        },
+    SettingsSubpageScaffold(
+        title = "主题配置",
+        onNavigateBack = onNavigateBack,
     ) { padding ->
-        // 可纵向滚动的设置项列表
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding() + 16.dp,
-                bottom = padding.calculateBottomPadding() + 60.dp,
-                start = padding.calculateLeftPadding(LocalLayoutDirection.current) + 16.dp,
-                end = padding.calculateRightPadding(LocalLayoutDirection.current) + 16.dp,
-            ),
-        ) {
+        ThemeSettingsContent(
+            theme = theme,
+            onSeedColorChange = onSeedColorChange,
+            onThemeSwitch = onThemeSwitch,
+            onAmoledSwitch = onAmoledSwitch,
+            onPaletteChange = onPaletteChange,
+            onMaterialYouToggle = onMaterialYouToggle,
+            onFontChange = onFontChange,
+            onShowBordersToggle = onShowBordersToggle,
+            showColorPicker = showColorPicker,
+            onShowColorPicker = { showColorPicker = it },
+            contentPadding = padding,
+            modifier = modifier,
+        )
+    }
+}
+
+@Composable
+private fun ThemeSettingsContent(
+    theme: Theme,
+    onSeedColorChange: (Color) -> Unit,
+    onThemeSwitch: (AppTheme) -> Unit,
+    onAmoledSwitch: (Boolean) -> Unit,
+    onPaletteChange: (PaletteStyle) -> Unit,
+    onMaterialYouToggle: (Boolean) -> Unit,
+    onFontChange: (Fonts) -> Unit,
+    onShowBordersToggle: (Boolean) -> Unit,
+    showColorPicker: Boolean,
+    onShowColorPicker: (Boolean) -> Unit,
+    contentPadding: PaddingValues,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+    ) {
             item {
                 // 所有设置项纵向排列，项间距2dp
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -290,7 +291,7 @@ fun ThemeSettingsScreen(
                             supportingContent = { Text(text = "选择应用的主色调") },
                             trailingContent = {
                                 IconButton(
-                                    onClick = { showColorPicker = true },
+                                    onClick = { onShowColorPicker(true) },
                                     colors = IconButtonDefaults.iconButtonColors(
                                         containerColor = theme.seedColor,
                                         contentColor = contentColorFor(theme.seedColor),
