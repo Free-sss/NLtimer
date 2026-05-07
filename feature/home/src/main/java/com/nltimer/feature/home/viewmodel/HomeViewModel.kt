@@ -30,9 +30,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -65,13 +68,19 @@ class HomeViewModel @Inject constructor(
     private val _activityGroups = MutableStateFlow<List<ActivityGroup>>(emptyList())
     val activityGroups: StateFlow<List<ActivityGroup>> = _activityGroups.asStateFlow()
 
-    // 当前选中活动关联的标签流
-    private val _tagsForSelectedActivity = MutableStateFlow<List<Tag>>(emptyList())
-    val tagsForSelectedActivity: StateFlow<List<Tag>> = _tagsForSelectedActivity.asStateFlow()
-
     // 全部标签流
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
+
+    // 当前选中的活动 ID（用于标签过滤）
+    private val _selectedActivityId = MutableStateFlow<Long?>(null)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val tagsForSelectedActivity: StateFlow<List<Tag>> = _selectedActivityId
+        .flatMapLatest { id ->
+            if (id != null) tagRepository.getByActivityId(id) else flowOf(emptyList())
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     // 弹窗配置流
     val dialogConfig: StateFlow<DialogGridConfig> = settingsPrefs.getDialogConfigFlow()
@@ -79,9 +88,6 @@ class HomeViewModel @Inject constructor(
 
     val timeLabelConfig: StateFlow<TimeLabelConfig> = settingsPrefs.getTimeLabelConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimeLabelConfig())
-
-    // 当前选中的活动 ID（用于标签过滤）
-    private var selectedActivityId: Long? = null
 
     private val today = LocalDate.now()
 
@@ -123,7 +129,6 @@ class HomeViewModel @Inject constructor(
             val dayEnd = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
             behaviorRepository.getHomeBehaviors(dayStart, dayEnd)
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
                 .collect { behaviors ->
                     val state = buildUiState(behaviors)
                     _uiState.update { state }
@@ -162,7 +167,7 @@ class HomeViewModel @Inject constructor(
             )
         }
 
-        val allActivities = activityRepository.getAll().firstOrNull().orEmpty()
+        val allActivities = _activities.value
         val activityMap = allActivities.associateBy { it.id }
 
         // 排序规则：COMPLETED + ACTIVE 按 startTime 升序在前；
@@ -179,13 +184,16 @@ class HomeViewModel @Inject constructor(
         }
 
         val rows = mutableListOf<GridRowUiState>()
+        val behaviorIds = sortedBehaviors.map { it.id }
+        val tagsByBehaviorId = try {
+            behaviorRepository.getTagsForBehaviors(behaviorIds)
+        } catch (_: Exception) {
+            emptyMap()
+        }
+
         val cells = sortedBehaviors.map { behavior ->
             val activity = activityMap[behavior.activityId]
-            val tags = try {
-                behaviorRepository.getTagsForBehavior(behavior.id).firstOrNull() ?: emptyList()
-            } catch (_: Exception) {
-                emptyList()
-            }
+            val tags = tagsByBehaviorId[behavior.id].orEmpty()
             val isActive = behavior.status == BehaviorNature.ACTIVE
             val isPending = behavior.status == BehaviorNature.PENDING
             // PENDING 的 startTime 在数据库里是 0L，用 Instant.ofEpochMilli(0) 在 UTC+N 时区下
@@ -390,18 +398,12 @@ class HomeViewModel @Inject constructor(
                 editInitialNote = null,
             )
         }
-        selectedActivityId = null
-        _tagsForSelectedActivity.update { emptyList() }
+        _selectedActivityId.value = null
     }
 
     // 选中活动时加载其关联标签
     fun onActivitySelected(activityId: Long) {
-        selectedActivityId = activityId
-        viewModelScope.launch {
-            tagRepository.getByActivityId(activityId).collect { tags ->
-                _tagsForSelectedActivity.update { tags }
-            }
-        }
+        _selectedActivityId.value = activityId
     }
 
     fun addBehavior(

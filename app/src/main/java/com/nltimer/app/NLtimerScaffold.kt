@@ -43,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 fun NLtimerScaffold(
     navController: NavHostController,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-    themeViewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
     val coroutineScope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -119,6 +118,7 @@ fun NLtimerScaffold(
             }
 
             if (showSettingsPopup) {
+                val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
                     onDismiss = { showSettingsPopup = false },

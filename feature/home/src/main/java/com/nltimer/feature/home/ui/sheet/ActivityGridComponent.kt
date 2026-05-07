@@ -33,6 +33,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -54,6 +56,7 @@ import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import kotlin.math.max
 
+@Immutable
 data class ChipItem(
     val id: Long,
     val name: String,
@@ -198,7 +201,7 @@ fun ActivityGridComponent(
                     horizontalSpacing = 4.dp,
                     verticalSpacing = 4.dp,
                 ) {
-                    chips.forEach { chip ->
+                    chips.forEach { chip -> key(chip.id) {
                         AdaptiveActivityChip(
                             chip = chip,
                             displayMode = displayMode,
@@ -208,7 +211,7 @@ fun ActivityGridComponent(
                             maxWidth = chipMaxWidth,
                             useActivityColorForText = useActivityColorForText,
                         )
-                    }
+                    } }
                 }
             }
         }
@@ -236,7 +239,7 @@ fun ActivityGridComponent(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    chips.forEach { chip ->
+                    chips.forEach { chip -> key(chip.id) {
                         AdaptiveActivityChip(
                             chip = chip,
                             displayMode = displayMode,
@@ -246,7 +249,7 @@ fun ActivityGridComponent(
                             maxWidth = chipMaxWidth,
                             useActivityColorForText = useActivityColorForText,
                         )
-                    }
+                    } }
                 }
             } else {
                 val lineHeightDp = 28.dp
@@ -261,7 +264,7 @@ fun ActivityGridComponent(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        chips.forEach { chip ->
+                        chips.forEach { chip -> key(chip.id) {
                             AdaptiveActivityChip(
                                 chip = chip,
                                 displayMode = displayMode,
@@ -271,7 +274,7 @@ fun ActivityGridComponent(
                                 maxWidth = chipMaxWidth,
                                 useActivityColorForText = useActivityColorForText,
                             )
-                        }
+                        } }
                     }
                 }
             }

@@ -1,16 +1,30 @@
-# Baseline Profile for NLtimer
-# Generated via Macrobenchmark or manual testing.
-# Profile rules optimize startup and runtime performance by pre-compiling
-# critical code paths at install time.
-#
-# To generate: run Macrobenchmark test on a device/emulator,
-# then copy the generated baseline-prof.txt here.
-
 HSPLandroidx/compose/runtime/ComposerImpl;->apply(Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)V
 HSPLandroidx/compose/runtime/ComposerImpl;->startRestartGroup(I)Landroidx/compose/runtime/Composer;
 HSPLandroidx/compose/runtime/ComposerImpl;->endRestartGroup()Landroidx/compose/runtime/ScopeUpdateScope;
 HSPLandroidx/compose/runtime/ComposerImpl;->$init$(ILkotlin/jvm/functions/Function1;)V
-
 SPLcom/nltimer/app/MainActivity;->onCreate(Landroid/os/Bundle;)V
 SPLcom/nltimer/app/NLtimerApplication;->onCreate()V
 SPLcom/nltimer/app/NLtimerAppKt;->NLtimerApp(Landroidx/compose/runtime/Composer;I)V
+SPLcom/nltimer/core/data/database/NLtimerDatabase;-><init>()V
+SPLcom/nltimer/core/data/database/dao/ActivityDao;->getAllActive()Lkotlinx/coroutines/flow/Flow;
+SPLcom/nltimer/core/data/database/dao/BehaviorDao;->getHomeBehaviors(JJ)Lkotlinx/coroutines/flow/Flow;
+SPLcom/nltimer/core/data/database/dao/TagDao;->getAllActive()Lkotlinx/coroutines/flow/Flow;
+SPLcom/nltimer/core/data/database/dao/ActivityGroupDao;->getAll()Lkotlinx/coroutines/flow/Flow;
+SPLcom/nltimer/core/data/repository/impl/BehaviorRepositoryImpl;-><init>(...)V
+SPLcom/nltimer/core/data/repository/impl/ActivityRepositoryImpl;-><init>(...)V
+SPLcom/nltimer/core/data/repository/impl/TagRepositoryImpl;-><init>(...)V
+SPLcom/nltimer/core/data/repository/impl/ActivityManagementRepositoryImpl;-><init>(...)V
+SPLcom/nltimer/core/data/SettingsPrefsImpl;-><init>(...)V
+SPLcom/nltimer/feature/home/viewmodel/HomeViewModel;-><init>(...)V
+SPLcom/nltimer/feature/home/viewmodel/HomeViewModel;->loadHomeBehaviors()V
+SPLcom/nltimer/feature/home/viewmodel/HomeViewModel;->loadActivitiesAndGroups()V
+SPLcom/nltimer/feature/home/viewmodel/HomeViewModel;->loadAllTags()V
+SPLcom/nltimer/feature/home/viewmodel/HomeViewModel;->buildUiState(Ljava/util/List;)Lcom/nltimer/feature/home/model/HomeUiState;
+SPLcom/nltimer/core/designsystem/theme/ThemeKt;->NLtimerTheme(...)V
+SPLcom/nltimer/app/navigation/NLtimerNavHostKt;->NLtimerNavHost(...)V
+SPLcom/nltimer/feature/home/ui/HomeRouteKt;->HomeRoute(...)V
+SPLcom/nltimer/feature/home/ui/HomeScreenKt;->HomeScreen(...)V
+SPLcom/nltimer/app/NLtimerScaffoldKt;->NLtimerScaffold(...)V
+SPLcom/nltimer/app/component/AppDrawerKt;->AppDrawer(...)V
+SPLcom/nltimer/app/component/AppBottomNavigationKt;->AppBottomNavigation(...)V
+SPLcom/nltimer/app/component/AppTopAppBarKt;->AppTopAppBar(...)V

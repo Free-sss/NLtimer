@@ -42,4 +42,10 @@ interface ActivityGroupDao {
 
     @Query("DELETE FROM activity_groups")
     suspend fun deleteAll()
+
+    @Query("SELECT MAX(sortOrder) FROM activity_groups")
+    suspend fun getMaxSortOrder(): Int?
+
+    @Query("SELECT * FROM activity_groups WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): ActivityGroupEntity?
 }

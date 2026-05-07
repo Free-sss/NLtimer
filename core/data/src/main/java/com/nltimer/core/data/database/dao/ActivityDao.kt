@@ -54,6 +54,9 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
     fun getAllPresets(): Flow<List<ActivityEntity>>
 
+    @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
+    suspend fun getAllPresetsSync(): List<ActivityEntity>
+
     /** 移动活动到指定分组（groupId 为 null 则取消分组） */
     @Query("UPDATE activities SET groupId = :groupId WHERE id = :activityId")
     suspend fun moveToGroup(activityId: Long, groupId: Long?)

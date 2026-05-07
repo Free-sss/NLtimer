@@ -975,6 +975,9 @@ internal fun AddBehaviorSheetContent(
         )
     }
 
+    val categorizableActivities = remember(activities) { activities.map { ActivityCategorizable(it) } }
+    val categorizableTags = remember(allTags) { allTags.map { TagCategorizable(it) } }
+
     // 活动分类选择弹窗
     if (showActivityPicker) {
         val activityGroupsMap = remember(activityGroups) {
@@ -996,7 +999,7 @@ internal fun AddBehaviorSheetContent(
 
         CategoryPickerDialog(
             title = "选择活动",
-            items = activities.map { ActivityCategorizable(it) },
+            items = categorizableActivities,
             categoryGroups = groupedActivities,
             selectedId = selectedActivityId,
             onItemSelected = { id ->
@@ -1028,7 +1031,7 @@ internal fun AddBehaviorSheetContent(
 
         CategoryPickerDialog(
             title = "选择标签",
-            items = allTags.map { TagCategorizable(it) },
+            items = categorizableTags,
             categoryGroups = groupedTags,
             selectedIds = selectedTagIds,
             multiSelect = true,

@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
     implementation(libs.profileinstaller)
+    implementation(libs.splashscreen)
 
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)

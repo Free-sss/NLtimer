@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -141,13 +142,13 @@ fun GroupCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        activities.forEach { activity ->
+                        activities.forEach { activity -> key(activity.id) {
                             ActivityChip(
                                 activity = activity,
                                 onClick = { onActivityClick(activity) },
                                 onLongClick = { onActivityLongClick(activity) },
                             )
-                        }
+                        } }
                     }
                 }
             }

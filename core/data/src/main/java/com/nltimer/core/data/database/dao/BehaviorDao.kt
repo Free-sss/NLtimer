@@ -10,6 +10,26 @@ import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
+data class BehaviorTagRow(
+    val behaviorId: Long,
+    val id: Long,
+    val name: String,
+    val color: Long?,
+    val iconKey: String?,
+    val category: String?,
+    val priority: Int,
+    val usageCount: Int,
+    val sortOrder: Int,
+    val isArchived: Boolean,
+    val archivedAt: Long?,
+)
+
+data class ActivityStatsRow(
+    val usageCount: Int = 0,
+    val totalDurationMinutes: Long = 0,
+    val lastUsedTimestamp: Long? = null,
+)
+
 /**
  * BehaviorDao 行为记录数据访问对象
  * 提供 behaviors 表的基础 CRUD、计时字段更新、状态变更、统计查询及标签关联管理
@@ -161,6 +181,19 @@ interface BehaviorDao {
     )
     suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity>
 
+    /** 批量同步查询多个行为关联的标签 */
+    @Query(
+        """
+        SELECT btc.behaviorId, t.id, t.name, t.color, t.iconKey, t.category,
+               t.priority, t.usageCount, t.sortOrder, t.isArchived, t.archivedAt
+        FROM tags t
+        INNER JOIN behavior_tag_cross_ref btc ON t.id = btc.tagId
+        WHERE btc.behaviorId IN (:behaviorIds)
+        ORDER BY t.priority DESC, t.name
+        """
+    )
+    suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow>
+
     @Query("DELETE FROM behaviors")
     suspend fun deleteAll()
 
@@ -203,4 +236,14 @@ interface BehaviorDao {
         rangeStart: Long,
         rangeEnd: Long,
     ): Flow<List<BehaviorEntity>>
+
+    @Query(
+        """
+        SELECT COUNT(*) as usageCount,
+               COALESCE(SUM(COALESCE(actualDuration, (endTime - startTime))), 0) / 60000 as totalDurationMinutes,
+               MAX(CASE WHEN status != 'pending' THEN startTime END) as lastUsedTimestamp
+        FROM behaviors WHERE activityId = :activityId AND status = 'completed'
+        """
+    )
+    fun getActivityStatsSync(activityId: Long): Flow<ActivityStatsRow>
 }
