@@ -73,7 +73,6 @@ import com.nltimer.core.designsystem.theme.toMPaletteStyle
 @Composable
 fun ThemeSettingsRoute(
     viewModel: ThemeSettingsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
 ) {
     // 从ViewModel中收集主题状态，重组时自动订阅
     val theme by viewModel.theme.collectAsState()
@@ -87,7 +86,6 @@ fun ThemeSettingsRoute(
         onMaterialYouToggle = viewModel::onMaterialYouToggle,
         onFontChange = viewModel::onFontChange,
         onShowBordersToggle = viewModel::onShowBordersToggle,
-        onNavigateBack = onNavigateBack,
     )
 }
 
@@ -116,7 +114,6 @@ fun ThemeSettingsScreen(
     onMaterialYouToggle: (Boolean) -> Unit,
     onFontChange: (Fonts) -> Unit,
     onShowBordersToggle: (Boolean) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showColorPicker by remember { mutableStateOf(false) }
@@ -129,10 +126,7 @@ fun ThemeSettingsScreen(
         )
     }
 
-    SettingsSubpageScaffold(
-        title = "主题配置",
-        onNavigateBack = onNavigateBack,
-    ) { padding ->
+    SettingsSubpageScaffold { padding ->
         ThemeSettingsContent(
             theme = theme,
             onSeedColorChange = onSeedColorChange,

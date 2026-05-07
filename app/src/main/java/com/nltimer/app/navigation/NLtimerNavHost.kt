@@ -68,9 +68,7 @@ fun NLtimerNavHost(
             popEnterTransition = { slideInHorizontally { -it } },
             popExitTransition = { slideOutHorizontally { it } },
         ) {
-            ThemeSettingsRoute(
-                onNavigateBack = { navController.popBackStack() },
-            )
+            ThemeSettingsRoute()
         }
         composable(
             DIALOG_CONFIG_ROUTE,
@@ -79,9 +77,7 @@ fun NLtimerNavHost(
             popEnterTransition = { slideInHorizontally { -it } },
             popExitTransition = { slideOutHorizontally { it } },
         ) {
-            DialogConfigRoute(
-                onNavigateBack = { navController.popBackStack() },
-            )
+            DialogConfigRoute()
         }
         debugRoutes?.invoke(this)
     }

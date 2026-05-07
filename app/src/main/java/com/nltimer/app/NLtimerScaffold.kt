@@ -1,14 +1,18 @@
 package com.nltimer.app
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -32,23 +35,14 @@ import com.nltimer.app.navigation.THEME_SETTINGS_ROUTE
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
-/**
- * 应用主框架 Composable
- * 使用 ModalNavigationDrawer 包裹 Scaffold，整合顶栏、底栏、抽屉和路由导航
- *
- * @param navController 导航控制器，用于管理页面跳转
- * @param drawerState 抽屉状态，控制侧边栏的打开与关闭
- * @param themeViewModel 主题设置 ViewModel，用于响应主页布局变更
- */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NLtimerScaffold(
     navController: NavHostController,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
     themeViewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
-    // 获取协程作用域，用于在回调中启动协程操作抽屉
     val coroutineScope = rememberCoroutineScope()
-    // 监听当前导航回退栈，获取当前路由名
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val primaryRoutes = setOf(
@@ -63,14 +57,15 @@ fun NLtimerScaffold(
         THEME_SETTINGS_ROUTE,
         DIALOG_CONFIG_ROUTE,
     )
-    val showGlobalBars = currentRoute in primaryRoutes
+    val isSecondaryPage = currentRoute in settingsFullscreenRoutes
     val topBarTitle = when (currentRoute) {
         SETTINGS_ROUTE -> "设置"
+        THEME_SETTINGS_ROUTE -> "主题配置"
+        DIALOG_CONFIG_ROUTE -> "弹窗配置"
         else -> "NLtimer"
     }
     var showSettingsPopup by remember { mutableStateOf(false) }
 
-    // 模态抽屉布局，包裹整个 Scaffold 内容
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -85,11 +80,19 @@ fun NLtimerScaffold(
         Box {
             Scaffold(
                 topBar = {
-                    AnimatedVisibility(
-                        visible = showGlobalBars,
-                        enter = expandVertically(expandFrom = Alignment.Top),
-                        exit = shrinkVertically(shrinkTowards = Alignment.Top),
-                    ) {
+                    if (isSecondaryPage) {
+                        TopAppBar(
+                            title = { Text(topBarTitle) },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "返回",
+                                    )
+                                }
+                            },
+                        )
+                    } else {
                         AppTopAppBar(
                             title = topBarTitle,
                             onMenuClick = {
@@ -102,13 +105,7 @@ fun NLtimerScaffold(
                     }
                 },
                 bottomBar = {
-                    AnimatedVisibility(
-                        visible = showGlobalBars,
-                        enter = expandVertically(expandFrom = Alignment.Bottom),
-                        exit = shrinkVertically(shrinkTowards = Alignment.Bottom),
-                    ) {
-                        AppBottomNavigation(navController)
-                    }
+                    AppBottomNavigation(navController)
                 },
             ) { padding ->
                 NLtimerNavHost(
@@ -117,7 +114,6 @@ fun NLtimerScaffold(
                 )
             }
 
-            // 设置弹窗以覆盖层形式展示在当前页面之上
             if (showSettingsPopup) {
                 RouteSettingsPopup(
                     currentRoute = currentRoute,

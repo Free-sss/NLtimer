@@ -39,13 +39,11 @@ import com.nltimer.core.designsystem.theme.PathDrawMode
 @Composable
 fun DialogConfigRoute(
     viewModel: DialogConfigViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit,
 ) {
     val config by viewModel.dialogConfig.collectAsState()
     DialogConfigScreen(
         config = config,
         onUpdateConfig = viewModel::updateConfig,
-        onNavigateBack = onNavigateBack,
     )
 }
 
@@ -54,13 +52,9 @@ fun DialogConfigRoute(
 fun DialogConfigScreen(
     config: DialogGridConfig,
     onUpdateConfig: (DialogGridConfig) -> Unit,
-    onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SettingsSubpageScaffold(
-        title = "弹窗配置",
-        onNavigateBack = onNavigateBack,
-    ) { padding ->
+    SettingsSubpageScaffold { padding ->
         DialogConfigContent(
             config = config,
             onUpdateConfig = onUpdateConfig,
