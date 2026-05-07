@@ -17,6 +17,8 @@ import com.nltimer.core.data.repository.impl.ActivityRepositoryImpl
 import com.nltimer.core.data.repository.impl.BehaviorRepositoryImpl
 import com.nltimer.core.data.repository.impl.CategoryRepositoryImpl
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
+import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.SystemClockService
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -80,5 +82,9 @@ abstract class DataModule {
         @Provides
         fun provideBehaviorDao(database: NLtimerDatabase): BehaviorDao =
             database.behaviorDao()
+
+        @Provides
+        @Singleton
+        fun provideClockService(): ClockService = SystemClockService()
     }
 }

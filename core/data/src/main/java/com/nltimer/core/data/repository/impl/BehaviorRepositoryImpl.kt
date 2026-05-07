@@ -11,6 +11,8 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.util.BehaviorCalculator
+import com.nltimer.core.data.util.ClockService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -30,6 +32,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val behaviorDao: BehaviorDao,
     private val activityDao: ActivityDao,
     private val tagDao: TagDao,
+    private val clockService: ClockService,
 ) : BehaviorRepository {
 
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
@@ -122,22 +125,21 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.endCurrentBehavior(endTime)
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
-        val now = System.currentTimeMillis()
+        val now = clockService.currentTimeMillis()
         val currentEntity = behaviorDao.getById(currentId) ?: return null
         val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
 
         // 计算实际耗时并评估完成度
         if (currentEntity.startTime > 0) {
-            val duration = clampedEndTime - currentEntity.startTime
-            behaviorDao.setActualDuration(currentId, duration)
-
-            // 如果是有计划的行为，根据耗时偏差计算完成度百分比
-            val estimated = currentEntity.estimatedDuration?.times(60_000)
-            if (currentEntity.wasPlanned && estimated != null && estimated > 0) {
-                val diff = kotlin.math.abs(duration - estimated)
-                val ratio = (diff.toDouble() / estimated).coerceAtMost(1.0)
-                val level = ((1.0 - ratio) * 100).toInt().coerceIn(0, 100)
-                behaviorDao.setAchievementLevel(currentId, level)
+            val result = BehaviorCalculator.calculateCompletion(
+                startTime = currentEntity.startTime,
+                endTime = clampedEndTime,
+                wasPlanned = currentEntity.wasPlanned,
+                estimatedDurationMinutes = currentEntity.estimatedDuration,
+            )
+            behaviorDao.setActualDuration(currentId, result.durationMs)
+            if (result.achievementLevel != null) {
+                behaviorDao.setAchievementLevel(currentId, result.achievementLevel)
             }
         }
 
@@ -150,7 +152,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
         // 自动启动下一个待办行为
         val nextPending = behaviorDao.getNextPending() ?: return null
-        val nextNow = System.currentTimeMillis()
+        val nextNow = clockService.currentTimeMillis()
         behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
         behaviorDao.setStartTime(nextPending.id, nextNow)
         return nextPending.toModel()
@@ -229,7 +231,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             val duration = endTime - startTime
             behaviorDao.setActualDuration(id, duration)
         } else if (status == "active" && startTime > 0) {
-            val duration = System.currentTimeMillis() - startTime
+            val duration = clockService.currentTimeMillis() - startTime
             behaviorDao.setActualDuration(id, duration)
         } else {
             behaviorDao.setActualDuration(id, 0L)

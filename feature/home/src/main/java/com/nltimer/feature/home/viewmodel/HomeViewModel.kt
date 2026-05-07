@@ -13,6 +13,7 @@ import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -48,6 +49,7 @@ class HomeViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
+    private val clockService: ClockService,
 ) : ViewModel() {
 
     // --- 暴露给 UI 的状态流 ---
@@ -213,7 +215,7 @@ class HomeViewModel @Inject constructor(
                 estimatedDuration = behavior.estimatedDuration,
                 actualDuration = behavior.actualDuration,
                 durationMs = if (isActive && behavior.startTime > 0) {
-                    System.currentTimeMillis() - behavior.startTime
+                    clockService.currentTimeMillis() - behavior.startTime
                 } else null,
                 startTime = startLocal,
                 endTime = endLocal,
@@ -417,7 +419,7 @@ class HomeViewModel @Inject constructor(
         }
         viewModelScope.launch {
             // 时间约束校验：结束/开始时间不能大于当前时间
-            val now = System.currentTimeMillis()
+            val now = clockService.currentTimeMillis()
             when (status) {
                 BehaviorNature.COMPLETED -> {
                     if (endTime != null && endTime > now) {
@@ -550,7 +552,7 @@ class HomeViewModel @Inject constructor(
                     if (finalEnd != null && finalStart > 0) finalEnd - finalStart else null
                 }
                 BehaviorNature.ACTIVE -> {
-                    if (finalStart > 0) System.currentTimeMillis() - finalStart else null
+                    if (finalStart > 0) clockService.currentTimeMillis() - finalStart else null
                 }
                 BehaviorNature.PENDING -> null
             }
