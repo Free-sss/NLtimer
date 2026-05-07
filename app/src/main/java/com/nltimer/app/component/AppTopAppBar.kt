@@ -23,12 +23,13 @@ import androidx.compose.runtime.Composable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopAppBar(
+    title: String,
     onMenuClick: () -> Unit,
     onSettingClick: () -> Unit,
     modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
 ) {
     CenterAlignedTopAppBar(
-        title = { Text("NLtimer") },
+        title = { Text(title) },
         navigationIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(

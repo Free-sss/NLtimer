@@ -21,7 +21,10 @@ import com.nltimer.app.component.AppBottomNavigation
 import com.nltimer.app.component.AppDrawer
 import com.nltimer.app.component.AppTopAppBar
 import com.nltimer.app.component.RouteSettingsPopup
+import com.nltimer.app.navigation.DIALOG_CONFIG_ROUTE
 import com.nltimer.app.navigation.NLtimerNavHost
+import com.nltimer.app.navigation.SETTINGS_ROUTE
+import com.nltimer.app.navigation.THEME_SETTINGS_ROUTE
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -44,7 +47,23 @@ fun NLtimerScaffold(
     // 监听当前导航回退栈，获取当前路由名
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    // 控制路由设置弹窗的显示状态
+    val primaryRoutes = setOf(
+        "home",
+        "sub",
+        "stats",
+        "categories",
+        "management_activities",
+        SETTINGS_ROUTE,
+    )
+    val settingsFullscreenRoutes = setOf(
+        THEME_SETTINGS_ROUTE,
+        DIALOG_CONFIG_ROUTE,
+    )
+    val showGlobalBars = currentRoute in primaryRoutes
+    val topBarTitle = when (currentRoute) {
+        SETTINGS_ROUTE -> "设置"
+        else -> "NLtimer"
+    }
     var showSettingsPopup by remember { mutableStateOf(false) }
 
     // 模态抽屉布局，包裹整个 Scaffold 内容
@@ -62,21 +81,32 @@ fun NLtimerScaffold(
         Box {
             Scaffold(
                 topBar = {
-                    AppTopAppBar(
-                        onMenuClick = {
-                            coroutineScope.launch { drawerState.open() }
-                        },
-                        onSettingClick = {
-                            showSettingsPopup = true
-                        },
-                    )
+                    if (showGlobalBars) {
+                        AppTopAppBar(
+                            title = topBarTitle,
+                            onMenuClick = {
+                                coroutineScope.launch { drawerState.open() }
+                            },
+                            onSettingClick = {
+                                showSettingsPopup = true
+                            },
+                        )
+                    }
                 },
-                bottomBar = { AppBottomNavigation(navController) },
+                bottomBar = {
+                    if (showGlobalBars) {
+                        AppBottomNavigation(navController)
+                    }
+                },
             ) { padding ->
-                // 导航宿主容器，传入 Scaffold 的 padding 避免被顶栏底栏遮挡
+                val hostModifier = if (showGlobalBars) {
+                    Modifier.padding(padding)
+                } else {
+                    Modifier
+                }
                 NLtimerNavHost(
                     navController = navController,
-                    modifier = Modifier.padding(padding),
+                    modifier = hostModifier,
                 )
             }
 

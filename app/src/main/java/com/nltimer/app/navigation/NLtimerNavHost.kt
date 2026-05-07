@@ -16,6 +16,16 @@ import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.sub.ui.SubRoute
 import com.nltimer.feature.tag_management.ui.TagManagementRoute
 
+const val HOME_ROUTE = "home"
+const val SUB_ROUTE = "sub"
+const val STATS_ROUTE = "stats"
+const val CATEGORIES_ROUTE = "categories"
+const val MANAGEMENT_ACTIVITIES_ROUTE = "management_activities"
+const val TAG_MANAGEMENT_ROUTE = "tag_management"
+const val SETTINGS_ROUTE = "settings"
+const val THEME_SETTINGS_ROUTE = "theme_settings"
+const val DIALOG_CONFIG_ROUTE = "dialog_config"
+
 /**
  * 导航宿主 Composable
  * 注册所有应用页面的路由，包括 feature 模块的页面路由和 debug 模块的动态路由
@@ -30,39 +40,35 @@ fun NLtimerNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = HOME_ROUTE,
         modifier = modifier,
     ) {
-        // 注册主页、副页、统计页等常规模块路由
-        composable("home") { HomeRoute() }
-        composable("sub") { SubRoute() }
-        composable("stats") { StatsRoute() }
-        // 注册分类管理、活动管理、标签管理等后台管理路由
-        composable("categories") { CategoriesRoute() }
-        composable("management_activities") { ActivityManagementRoute() }
-        composable("tag_management") {
+        composable(HOME_ROUTE) { HomeRoute() }
+        composable(SUB_ROUTE) { SubRoute() }
+        composable(STATS_ROUTE) { StatsRoute() }
+        composable(CATEGORIES_ROUTE) { CategoriesRoute() }
+        composable(MANAGEMENT_ACTIVITIES_ROUTE) { ActivityManagementRoute() }
+        composable(TAG_MANAGEMENT_ROUTE) {
             TagManagementRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        // 注册设置页与主题设置页路由，支持返回导航
-        composable("settings") {
+        composable(SETTINGS_ROUTE) {
             SettingsRoute(
-                onNavigateToThemeSettings = { navController.navigate("theme_settings") },
-                onNavigateToDialogConfig = { navController.navigate("dialog_config") },
+                onNavigateToThemeSettings = { navController.navigate(THEME_SETTINGS_ROUTE) },
+                onNavigateToDialogConfig = { navController.navigate(DIALOG_CONFIG_ROUTE) },
             )
         }
-        composable("theme_settings") {
+        composable(THEME_SETTINGS_ROUTE) {
             ThemeSettingsRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable("dialog_config") {
+        composable(DIALOG_CONFIG_ROUTE) {
             DialogConfigRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        // 注入 debug 模块的动态路由（release 构建中为 null，不执行）
         debugRoutes?.invoke(this)
     }
 }
