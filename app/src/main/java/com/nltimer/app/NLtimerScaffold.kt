@@ -38,7 +38,8 @@ import com.nltimer.app.navigation.SETTINGS_ROUTE
 import com.nltimer.app.navigation.THEME_SETTINGS_ROUTE
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
-
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NLtimerScaffold(
@@ -81,7 +82,7 @@ fun NLtimerScaffold(
             )
         },
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             // 底栏（在内容层之下）
             AppBottomNavigation(
                 navController = navController,
