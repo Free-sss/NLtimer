@@ -25,6 +25,7 @@ include(
     "app",
     "core:designsystem",
     "core:data",
+    "core:tools",
     "feature:home",
     "feature:sub",
     "feature:stats",
