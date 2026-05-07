@@ -404,4 +404,3 @@ private fun ThemeSettingsContent(
             }
         }
     }
-}
