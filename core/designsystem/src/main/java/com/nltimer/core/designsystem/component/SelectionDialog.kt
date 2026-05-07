@@ -349,7 +349,7 @@ fun <T> SelectionDialog(
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
                     ) {
                         LazyColumn {
-                            itemsIndexed(items) { index, item ->
+                            itemsIndexed(items = items, key = { index, _ -> index }) { index, item ->
                                 val isSelected = item.value == selected?.value
                                 val itemPosition = getItemPosition(index, items.size)
 

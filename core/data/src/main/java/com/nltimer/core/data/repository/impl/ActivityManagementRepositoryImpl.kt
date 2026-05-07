@@ -4,14 +4,14 @@ import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,6 +28,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
     private val groupDao: ActivityGroupDao,
     private val behaviorDao: BehaviorDao,
+    private val database: NLtimerDatabase,
 ) : ActivityManagementRepository {
 
     companion object {
@@ -58,16 +59,11 @@ class ActivityManagementRepositoryImpl @Inject constructor(
         groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
 
     override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
-        // 合并三个 Flow 拼装统计对象
-        combine(
-            behaviorDao.getUsageCount(activityId),
-            behaviorDao.getTotalDurationMs(activityId),
-            behaviorDao.getLastUsedTimestamp(activityId)
-        ) { count, durationMs, lastUsed ->
+        behaviorDao.getActivityStatsSync(activityId).map { row ->
             ActivityStats(
-                usageCount = count,
-                totalDurationMinutes = (durationMs ?: 0L) / 60000,
-                lastUsedTimestamp = lastUsed
+                usageCount = row.usageCount,
+                totalDurationMinutes = row.totalDurationMinutes,
+                lastUsedTimestamp = row.lastUsedTimestamp,
             )
         }
 
@@ -84,32 +80,27 @@ class ActivityManagementRepositoryImpl @Inject constructor(
         activityDao.moveToGroup(activityId, groupId)
 
     override suspend fun addGroup(name: String): Long {
-        // 计算当前最大排序值，新分组追加到最后
-        val groups = groupDao.getAll().first()
-        val maxOrder = groups.maxOfOrNull { it.sortOrder } ?: -1
+        val maxOrder = groupDao.getMaxSortOrder()
         return groupDao.insert(
-            ActivityGroupEntity(name = name, sortOrder = maxOrder + 1)
+            ActivityGroupEntity(name = name, sortOrder = (maxOrder ?: -1) + 1)
         )
     }
 
     override suspend fun renameGroup(id: Long, newName: String) {
-        // 查找目标分组后更新名称
-        val groups = groupDao.getAll().first()
-        val group = groups.find { it.id == id } ?: return
+        val group = groupDao.getById(id) ?: return
         groupDao.update(group.copy(name = newName))
     }
 
     override suspend fun deleteGroup(id: Long) {
-        // 先解除该分组下所有活动的关联，再删除分组
-        groupDao.ungroupAllActivities(id)
-        val groups = groupDao.getAll().first()
-        val group = groups.find { it.id == id } ?: return
-        groupDao.delete(group)
+        database.withTransaction {
+            groupDao.ungroupAllActivities(id)
+            val group = groupDao.getById(id) ?: return@withTransaction
+            groupDao.delete(group)
+        }
     }
 
     override suspend fun initializePresets() {
-        // 仅在无预设记录时插入
-        val existingPresets = activityDao.getAllPresets().first()
+        val existingPresets = activityDao.getAllPresetsSync()
         if (existingPresets.isEmpty()) {
             PRESET_ACTIVITIES.forEach { preset ->
                 activityDao.insert(preset.toEntity())

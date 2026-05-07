@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ fun TagPicker(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        tags.forEach { tag ->
+        tags.forEach { tag -> key(tag.id) {
             // 选中状态决定背景色、边框色和文字色
             val isSelected = tag.id in selectedTagIds
             val tagColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
@@ -63,6 +64,6 @@ fun TagPicker(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
-        }
+        } }
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -157,8 +158,7 @@ fun ActivityManagementScreen(
                     }
 
                     // 遍历渲染每个分组卡片
-                    items(uiState.groups.size) { index ->
-                        val groupWithActivities = uiState.groups[index]
+                    items(items = uiState.groups, key = { it.group.id }) { groupWithActivities ->
                         GroupCard(
                             group = groupWithActivities.group,
                             activities = groupWithActivities.activities,

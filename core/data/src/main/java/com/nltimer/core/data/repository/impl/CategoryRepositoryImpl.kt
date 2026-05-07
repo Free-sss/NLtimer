@@ -3,10 +3,11 @@ package com.nltimer.core.data.repository.impl
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,6 +22,7 @@ import javax.inject.Singleton
 class CategoryRepositoryImpl @Inject constructor(
     private val groupDao: ActivityGroupDao,
     private val tagDao: TagDao,
+    private val database: NLtimerDatabase,
 ) : CategoryRepository {
 
     override fun getDistinctActivityCategories(parent: String?): Flow<List<String>> =
@@ -30,9 +32,7 @@ class CategoryRepositoryImpl @Inject constructor(
         }
 
     override suspend fun addActivityCategory(name: String) {
-        // 计算当前最大排序值，追加新分组到最后
-        val existing = groupDao.getAll().first()
-        val maxOrder = existing.maxOfOrNull { it.sortOrder } ?: -1
+        val maxOrder = groupDao.getMaxSortOrder() ?: -1
         groupDao.insert(ActivityGroupEntity(name = name, sortOrder = maxOrder + 1))
     }
 
@@ -41,10 +41,11 @@ class CategoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun resetActivityCategory(category: String) {
-        // 先解绑分组下的所有活动，再删除分组本身
-        val group = groupDao.getByName(category) ?: return
-        groupDao.ungroupAllActivities(group.id)
-        groupDao.delete(group)
+        database.withTransaction {
+            val group = groupDao.getByName(category) ?: return@withTransaction
+            groupDao.ungroupAllActivities(group.id)
+            groupDao.delete(group)
+        }
     }
 
     override fun getDistinctTagCategories(parent: String?): Flow<List<String>> =

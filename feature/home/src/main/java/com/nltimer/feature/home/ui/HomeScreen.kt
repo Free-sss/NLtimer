@@ -45,7 +45,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -136,10 +135,12 @@ fun HomeScreen(
     var optionsRowHeight by remember { mutableFloatStateOf(0f) }
     var boxPositionInWindow by remember { mutableStateOf(Offset.Zero) }
 
-    val dragOptions = if (uiState.hasActiveBehavior) {
-        listOf("完成", "放弃", "特记", "+自定义")
-    } else {
-        listOf("完成", "目标", "当前", "+自定义")
+    val dragOptions = remember(uiState.hasActiveBehavior) {
+        if (uiState.hasActiveBehavior) {
+            listOf("完成", "放弃", "特记", "+自定义")
+        } else {
+            listOf("完成", "目标", "当前", "+自定义")
+        }
     }
 
     val density = LocalDensity.current
@@ -298,7 +299,7 @@ fun HomeScreen(
                         Row(modifier = Modifier.weight(1f)) {
                             TimeAxisGrid(
                                 rows = uiState.rows,
-                                onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
+                                onEmptyCellClick = onEmptyCellClick,
                                 onCellLongClick = onCellLongClick,
                                 currentHour = uiState.selectedTimeHour,
                                 onLayoutChange = onLayoutChange,
@@ -308,11 +309,16 @@ fun HomeScreen(
                                 modifier = Modifier.weight(1f),
                             )
                             if (showSideBar) {
+                                val activeHours by remember {
+                                    derivedStateOf {
+                                        uiState.rows
+                                            .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
+                                            .map { it.startTime.hour }
+                                            .toSet()
+                                    }
+                                }
                                 TimeSideBar(
-                                    activeHours = uiState.rows
-                                        .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
-                                        .map { it.startTime.hour }
-                                        .toSet(),
+                                    activeHours = activeHours,
                                     currentHour = uiState.selectedTimeHour,
                                     onHourClick = onHourClick,
                                 )
@@ -320,17 +326,19 @@ fun HomeScreen(
                         }
                     }
                     HomeLayout.TIMELINE_REVERSE -> {
+                        val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
                         TimelineReverseView(
-                            cells = uiState.rows.flatMap { it.cells },
-                            onAddClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
+                            cells = allCells,
+                            onAddClick = onEmptyCellClick,
                             onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
                         )
                     }
                     HomeLayout.LOG -> {
+                        val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
                         BehaviorLogView(
-                            cells = uiState.rows.flatMap { it.cells },
+                            cells = allCells,
                             onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
@@ -340,33 +348,35 @@ fun HomeScreen(
             }
         }
 
-        val existingBehaviors = remember(uiState.rows) {
-            uiState.rows.flatMap { it.cells }
-                .filter { it.behaviorId != null && it.status != null }
-                .map { cell ->
-                    Behavior(
-                        id = cell.behaviorId!!,
-                        activityId = 0,
-                        startTime = cell.startTime
-                            ?.atDate(LocalDate.now())
-                            ?.atZone(ZoneId.systemDefault())
-                            ?.toInstant()
-                            ?.toEpochMilli() ?: 0,
-                        endTime = cell.endTime
-                            ?.atDate(LocalDate.now())
-                            ?.atZone(ZoneId.systemDefault())
-                            ?.toInstant()
-                            ?.toEpochMilli(),
-                        status = cell.status!!,
-                        note = cell.note,
-                        pomodoroCount = cell.pomodoroCount,
-                        sequence = 0,
-                        estimatedDuration = cell.estimatedDuration,
-                        actualDuration = cell.actualDuration,
-                        achievementLevel = cell.achievementLevel,
-                        wasPlanned = cell.wasPlanned,
-                    )
-                }
+        val existingBehaviors by remember(uiState.rows) {
+            derivedStateOf {
+                uiState.rows.flatMap { it.cells }
+                    .filter { it.behaviorId != null && it.status != null }
+                    .map { cell ->
+                        Behavior(
+                            id = cell.behaviorId!!,
+                            activityId = 0,
+                            startTime = cell.startTime
+                                ?.atDate(LocalDate.now())
+                                ?.atZone(ZoneId.systemDefault())
+                                ?.toInstant()
+                                ?.toEpochMilli() ?: 0,
+                            endTime = cell.endTime
+                                ?.atDate(LocalDate.now())
+                                ?.atZone(ZoneId.systemDefault())
+                                ?.toInstant()
+                                ?.toEpochMilli(),
+                            status = cell.status!!,
+                            note = cell.note,
+                            pomodoroCount = cell.pomodoroCount,
+                            sequence = 0,
+                            estimatedDuration = cell.estimatedDuration,
+                            actualDuration = cell.actualDuration,
+                            achievementLevel = cell.achievementLevel,
+                            wasPlanned = cell.wasPlanned,
+                        )
+                    }
+            }
         }
 
         when (uiState.addSheetMode) {

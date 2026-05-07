@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -36,6 +37,8 @@ import javax.inject.Inject
 class ActivityManagementViewModel @Inject constructor(
     private val repository: ActivityManagementRepository,
 ) : ViewModel() {
+
+    private var groupActivityJobs = mutableListOf<Job>()
 
     // 页面整体 UI 状态，包括活动列表、分组列表、弹窗状态等
     private val _uiState = MutableStateFlow(ActivityManagementUiState())
@@ -93,12 +96,13 @@ class ActivityManagementViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getAllGroups().collect { groups ->
                 val currentGroupIds = groups.map { it.id }.toSet()
-                // 清理已删除分组的 UI 数据
                 _uiState.update { state ->
                     state.copy(groups = state.groups.filter { it.group.id in currentGroupIds })
                 }
+                groupActivityJobs.forEach { it.cancel() }
+                groupActivityJobs.clear()
                 groups.forEach { group ->
-                    repository.getActivitiesByGroup(group.id)
+                    val job = repository.getActivitiesByGroup(group.id)
                         .onEach { activities ->
                             _uiState.update { uiState ->
                                 val updatedGroups = uiState.groups.map { gwa ->
@@ -112,6 +116,7 @@ class ActivityManagementViewModel @Inject constructor(
                             }
                         }
                         .launchIn(viewModelScope)
+                    groupActivityJobs.add(job)
                 }
             }
         }

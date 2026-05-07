@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -120,13 +121,13 @@ fun CategoryCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                tags.forEach { tag ->
+                tags.forEach { tag -> key(tag.id) {
                     TagChip(
                         tag = tag,
                         onClick = { onTagClick(tag) },
                         onLongClick = { onTagLongClick(tag) },
                     )
-                }
+                } }
 
                 IconButton(
                     onClick = onAddTag,

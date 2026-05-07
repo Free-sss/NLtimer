@@ -70,6 +70,9 @@ interface TagDao {
     @Query("SELECT DISTINCT category FROM tags WHERE category IS NOT NULL AND category != '' ORDER BY category")
     fun getDistinctCategories(): Flow<List<String>>
 
+    @Query("SELECT DISTINCT category FROM tags WHERE category IS NOT NULL AND category != '' ORDER BY category")
+    suspend fun getDistinctCategoriesSync(): List<String>
+
     @Query("UPDATE tags SET category = :newName WHERE category = :oldName")
     suspend fun renameCategory(oldName: String, newName: String)
 

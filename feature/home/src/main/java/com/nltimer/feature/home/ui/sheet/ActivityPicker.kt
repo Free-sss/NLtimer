@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -73,7 +74,7 @@ fun ActivityPicker(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    for (activity in groupActivities) {
+                    for (activity in groupActivities) { key(activity.id) {
                         val isSelected = activity.id == selectedActivityId
                         val displayName = activity.name.let {
                             if (it.length > 5) it.take(5) + "..." else it
@@ -109,7 +110,7 @@ fun ActivityPicker(
                                 modifier = Modifier.padding(2.dp),
                             )
                         }
-                    }
+                    } }
                 }
             }
         }
