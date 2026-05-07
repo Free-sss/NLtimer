@@ -8,6 +8,7 @@ import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.util.BehaviorCalculator

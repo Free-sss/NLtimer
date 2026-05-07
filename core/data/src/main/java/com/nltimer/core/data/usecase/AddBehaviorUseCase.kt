@@ -6,6 +6,7 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.SnapResult
 import com.nltimer.core.data.util.TimeSnapService
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
