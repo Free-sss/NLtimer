@@ -1,5 +1,7 @@
 package com.nltimer.app.navigation
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
@@ -59,12 +61,24 @@ fun NLtimerNavHost(
                 onNavigateToDialogConfig = { navController.navigate(DIALOG_CONFIG_ROUTE) },
             )
         }
-        composable(THEME_SETTINGS_ROUTE) {
+        composable(
+            THEME_SETTINGS_ROUTE,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
             ThemeSettingsRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(DIALOG_CONFIG_ROUTE) {
+        composable(
+            DIALOG_CONFIG_ROUTE,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
             DialogConfigRoute(
                 onNavigateBack = { navController.popBackStack() },
             )

@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +35,14 @@ fun SettingsSubpageScaffold(
             )
         }
     ) { padding ->
-        content(padding)
+        val layoutDirection = LocalLayoutDirection.current
+        content(
+            PaddingValues(
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + 24.dp,
+                start = padding.calculateLeftPadding(layoutDirection) + 16.dp,
+                end = padding.calculateRightPadding(layoutDirection) + 16.dp,
+            )
+        )
     }
 }
