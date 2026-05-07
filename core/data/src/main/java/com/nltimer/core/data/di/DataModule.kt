@@ -62,7 +62,7 @@ abstract class DataModule {
                 "nltimer-database",
             )
                 .fallbackToDestructiveMigration(true)
-                .addMigrations(NLtimerDatabase.MIGRATION_3_4, NLtimerDatabase.MIGRATION_4_5, NLtimerDatabase.MIGRATION_5_6, NLtimerDatabase.MIGRATION_7_8, NLtimerDatabase.MIGRATION_8_9)
+                .addMigrations(NLtimerDatabase.MIGRATION_3_4, NLtimerDatabase.MIGRATION_4_5, NLtimerDatabase.MIGRATION_5_6, NLtimerDatabase.MIGRATION_7_8, NLtimerDatabase.MIGRATION_8_9, NLtimerDatabase.MIGRATION_9_10)
                 .build()
 
         @Provides

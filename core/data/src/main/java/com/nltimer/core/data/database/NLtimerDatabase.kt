@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -274,6 +274,14 @@ abstract class NLtimerDatabase : RoomDatabase() {
                 } finally {
                     db.execSQL("PRAGMA foreign_keys = ON")
                 }
+            }
+        }
+
+        // 数据库从版本 9 到 10 的迁移：
+        // tags: 新增 keywords 列（可空），用于 MatchActivitiesAndTagsTool 的关键词检索
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tags ADD COLUMN keywords TEXT")
             }
         }
     }
