@@ -217,6 +217,8 @@ class HomeViewModel @Inject constructor(
                 } else null,
                 startTime = startLocal,
                 endTime = endLocal,
+                startEpochMs = if (isPending || behavior.startTime <= 0L) null else behavior.startTime,
+                endEpochMs = behavior.endTime,
                 note = behavior.note,
                 pomodoroCount = behavior.pomodoroCount,
             )

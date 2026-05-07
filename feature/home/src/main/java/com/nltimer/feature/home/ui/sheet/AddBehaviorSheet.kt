@@ -798,24 +798,25 @@ internal fun AddBehaviorSheetContent(
                                 }
                                 Button(
                                     onClick = {
-                                        if (mode == BehaviorNature.COMPLETED
-                                            && !startTime.toLocalTime().isBefore(endTime.toLocalTime())
-                                        ) {
-                                            Toast.makeText(
-                                                context,
-                                                "开始时间必须早于结束时间",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            return@Button
-                                        }
-                                        if (hasTimeConflict) {
-                                            Toast.makeText(
-                                                context,
-                                                "该时间段与已有行为记录冲突",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                            return@Button
-                                        }
+                                        // TODO: 前端校验暂时注释，由后端统一校验
+                                        // if (mode == BehaviorNature.COMPLETED
+                                        //     && !startTime.toLocalTime().isBefore(endTime.toLocalTime())
+                                        // ) {
+                                        //     Toast.makeText(
+                                        //         context,
+                                        //         "开始时间必须早于结束时间",
+                                        //         Toast.LENGTH_SHORT
+                                        //     ).show()
+                                        //     return@Button
+                                        // }
+                                        // if (hasTimeConflict) {
+                                        //     Toast.makeText(
+                                        //         context,
+                                        //         "该时间段与已有行为记录冲突",
+                                        //         Toast.LENGTH_SHORT
+                                        //     ).show()
+                                        //     return@Button
+                                        // }
                                         selectedActivityId?.let { activityId ->
                                             onConfirm(
                                                 activityId,
@@ -829,24 +830,17 @@ internal fun AddBehaviorSheetContent(
                                     },
                                     shape = RoundedCornerShape(24.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = if (hasTimeConflict)
-                                            MaterialTheme.colorScheme.error
-                                        else
-                                            MaterialTheme.colorScheme.primaryContainer
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
                                     ),
-
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(40.dp),
                                     enabled = selectedActivityId != null,
                                 ) {
                                     Text(
-                                        text = if (hasTimeConflict) "时间冲突" else "确认",
+                                        text = "确认",
                                         fontSize = 14.sp,
-                                        color = if (hasTimeConflict)
-                                            MaterialTheme.colorScheme.onError
-                                        else
-                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
                             }
