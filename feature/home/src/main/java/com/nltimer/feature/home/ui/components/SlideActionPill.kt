@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,11 +23,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -51,11 +50,11 @@ fun SlideActionPill(
     val padding = 6.dp
     val maxOffset = with(LocalDensity.current) { (pillWidth - thumbSize - padding * 2).toPx() }
 
-    var offsetXState by remember { mutableFloatStateOf(0f) }
-    var isDraggingState by remember { mutableStateOf(false) }
+    var offsetXState = remember { mutableStateOf(0f) }
+    var isDraggingState = remember { mutableStateOf(false) }
 
-    val animatedOffset by animateFloatAsState(
-        targetValue = if (isDraggingState) offsetXState else 0f,
+    val animatedOffset = animateFloatAsState(
+        targetValue = if (isDraggingState.value) offsetXState.value else 0f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -63,7 +62,7 @@ fun SlideActionPill(
         label = "thumb_offset"
     )
 
-    val progress = (animatedOffset / maxOffset).coerceIn(0f, 1f)
+    val progress = (animatedOffset.value / maxOffset).coerceIn(0f, 1f)
 
     LaunchedEffect(progress) {
         onSlideProgress(progress)
@@ -75,20 +74,20 @@ fun SlideActionPill(
             .height(72.dp)
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
-                    onDragStart = { isDraggingState = true },
+                    onDragStart = { isDraggingState.value = true },
                     onDragEnd = {
-                        if (offsetXState >= maxOffset * 0.7f) {
+                        if (offsetXState.value >= maxOffset * 0.7f) {
                             onActivate()
                         }
-                        offsetXState = 0f
-                        isDraggingState = false
+                        offsetXState.value = 0f
+                        isDraggingState.value = false
                     },
                     onDragCancel = {
-                        offsetXState = 0f
-                        isDraggingState = false
+                        offsetXState.value = 0f
+                        isDraggingState.value = false
                     },
                     onHorizontalDrag = { _, dragAmount ->
-                        offsetXState = (offsetXState + dragAmount).coerceIn(0f, maxOffset)
+                        offsetXState.value = (offsetXState.value + dragAmount).coerceIn(0f, maxOffset)
                     }
                 )
             },
@@ -135,7 +134,7 @@ fun SlideActionPill(
             Surface(
                 modifier = Modifier
                     .size(thumbSize)
-                    .offset { IntOffset(animatedOffset.roundToInt(), 0) },
+                    .offset { IntOffset(animatedOffset.value.roundToInt(), 0) },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
                 shadowElevation = 4.dp + (4.dp * progress)
