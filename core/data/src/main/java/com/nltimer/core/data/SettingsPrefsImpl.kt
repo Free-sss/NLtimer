@@ -6,16 +6,21 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.AlphaPreset
+import com.nltimer.core.designsystem.theme.BorderPreset
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
+import com.nltimer.core.designsystem.theme.CornerPreset
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.PathDrawMode
+import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
@@ -48,6 +53,14 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showBorders = prefs[showBordersKey] != false,
             homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: IllegalArgumentException) { HomeLayout.GRID },
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
+            style = StyleConfig(
+                cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
+                borderPreset = try { BorderPreset.valueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name) } catch (_: IllegalArgumentException) { BorderPreset.STANDARD },
+                alphaPreset = try { AlphaPreset.valueOf(prefs[alphaPresetKey] ?: AlphaPreset.STANDARD.name) } catch (_: IllegalArgumentException) { AlphaPreset.STANDARD },
+                cornerScale = prefs[cornerScaleCustomKey],
+                borderScale = prefs[borderScaleCustomKey],
+                alphaScale = prefs[alphaScaleCustomKey],
+            ),
         )
     }
 
@@ -62,6 +75,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[showBordersKey] = theme.showBorders
             prefs[homeLayoutKey] = theme.homeLayout.name
             prefs[showTimeSideBarKey] = theme.showTimeSideBar
+            prefs[cornerPresetKey] = theme.style.cornerPreset.name
+            prefs[borderPresetKey] = theme.style.borderPreset.name
+            prefs[alphaPresetKey] = theme.style.alphaPreset.name
+            val cs = theme.style.cornerScale; if (cs != null) prefs[cornerScaleCustomKey] = cs else prefs.remove(cornerScaleCustomKey)
+            val bs = theme.style.borderScale; if (bs != null) prefs[borderScaleCustomKey] = bs else prefs.remove(borderScaleCustomKey)
+            val alphaSc = theme.style.alphaScale; if (alphaSc != null) prefs[alphaScaleCustomKey] = alphaSc else prefs.remove(alphaScaleCustomKey)
         }
     }
 
@@ -164,5 +183,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val showNatureKey = booleanPreferencesKey("show_nature_selector")
         private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
         private val timeLabelConfigKey = stringPreferencesKey("time_label_config")
+
+        private val cornerPresetKey = stringPreferencesKey("corner_preset")
+        private val borderPresetKey = stringPreferencesKey("border_preset")
+        private val alphaPresetKey = stringPreferencesKey("alpha_preset")
+        private val cornerScaleCustomKey = floatPreferencesKey("corner_scale_custom")
+        private val borderScaleCustomKey = floatPreferencesKey("border_scale_custom")
+        private val alphaScaleCustomKey = floatPreferencesKey("alpha_scale_custom")
     }
 }
