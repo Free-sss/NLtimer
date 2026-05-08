@@ -195,6 +195,12 @@ interface BehaviorDao {
     )
     suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow>
 
+    @Query("DELETE FROM behaviors WHERE activityId = :activityId")
+    suspend fun deleteByActivityId(activityId: Long)
+
+    @Query("DELETE FROM behavior_tag_cross_ref WHERE behaviorId IN (SELECT id FROM behaviors WHERE activityId = :activityId)")
+    suspend fun deleteTagCrossRefsByActivityId(activityId: Long)
+
     @Query("DELETE FROM behaviors")
     suspend fun deleteAll()
 

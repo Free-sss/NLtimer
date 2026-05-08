@@ -74,8 +74,14 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override suspend fun updateActivity(activity: Activity) =
         activityDao.update(activity.toEntity())
 
-    override suspend fun deleteActivity(id: Long) =
-        activityDao.deleteById(id)
+    override suspend fun deleteActivity(id: Long) {
+        database.withTransaction {
+            behaviorDao.deleteTagCrossRefsByActivityId(id)
+            behaviorDao.deleteByActivityId(id)
+            activityDao.deleteActivityTagBindingsForActivity(id)
+            activityDao.deleteById(id)
+        }
+    }
 
     override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) =
         activityDao.moveToGroup(activityId, groupId)

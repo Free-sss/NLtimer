@@ -17,7 +17,7 @@ import androidx.room.Index
             entity = ActivityEntity::class,
             parentColumns = ["id"],
             childColumns = ["activityId"],
-            onDelete = ForeignKey.RESTRICT,
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
     indices = [

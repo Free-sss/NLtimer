@@ -580,6 +580,13 @@ class BehaviorRepositoryImplTest {
 
         override suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity> = tagEntities
 
+        override suspend fun deleteByActivityId(activityId: Long) {
+            behaviors.removeAll { it.activityId == activityId }
+        }
+        override suspend fun deleteTagCrossRefsByActivityId(activityId: Long) {
+            val behaviorIds = behaviors.filter { it.activityId == activityId }.map { it.id }.toSet()
+            insertedCrossRefs.removeAll { it.behaviorId in behaviorIds }
+        }
         override suspend fun deleteAll() { behaviors.clear() }
         override suspend fun deleteAllTagCrossRefs() { insertedCrossRefs.clear() }
         override suspend fun deleteAllActivityTagBindings() {}
