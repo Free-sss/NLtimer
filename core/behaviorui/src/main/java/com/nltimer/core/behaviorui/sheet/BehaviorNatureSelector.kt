@@ -1,4 +1,4 @@
-package com.nltimer.feature.home.ui.sheet
+package com.nltimer.core.behaviorui.sheet
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
-import com.nltimer.feature.home.R
+import com.nltimer.core.behaviorui.R
 
 /**
  * 行为类型选择器 Composable。
