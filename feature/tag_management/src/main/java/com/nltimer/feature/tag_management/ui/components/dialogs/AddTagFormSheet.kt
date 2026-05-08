@@ -12,6 +12,7 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
@@ -20,7 +21,7 @@ fun AddTagFormSheet(
     categories: List<String>,
     allActivities: List<Activity>,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
+    onConfirm: AddTagCallback,
 ) {
     var selectedCategory by remember { mutableStateOf(initialCategory) }
     var selectedActivityId by remember { mutableStateOf(null as Long?) }

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.model.AddActivityCallback
 import com.nltimer.core.designsystem.component.GroupPickerPopup
 import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
@@ -28,7 +29,7 @@ fun AddActivityFormSheet(
     allTags: List<Tag>,
     initialGroupId: Long? = null,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onConfirm: AddActivityCallback,
 ) {
     var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
     var selectedTagIds by remember { mutableStateOf(emptySet<Long>()) }

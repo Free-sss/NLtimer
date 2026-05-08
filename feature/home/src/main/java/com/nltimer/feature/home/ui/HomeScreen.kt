@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.AddActivityCallback
+import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
@@ -94,8 +96,8 @@ fun HomeScreen(
     onToggleIdleMode: () -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
+    onAddActivity: AddActivityCallback,
+    onAddTag: AddTagCallback,
     onHourClick: (Int) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),

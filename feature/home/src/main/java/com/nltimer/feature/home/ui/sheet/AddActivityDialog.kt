@@ -13,6 +13,7 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.data.model.AddActivityCallback
 import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
@@ -20,7 +21,7 @@ fun AddActivityDialog(
     allGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onConfirm: AddActivityCallback,
 ) {
     var selectedGroupId by remember { mutableStateOf(null as Long?) }
     var selectedTagIds by remember { mutableStateOf(emptySet<Long>()) }
