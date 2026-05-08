@@ -35,7 +35,7 @@ fun AddTagDialog(
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val priority = formState["priority"]?.toIntOrNull() ?: 0
             val color = colorHex?.let {
-                try { it.toLong(16).or(0xFF000000.toLong()) } catch (_: Exception) { null }
+                try { it.toULong(16).toLong() } catch (_: Exception) { null }
             }
             onConfirm(name, color, icon, priority, initialCategory)
         },

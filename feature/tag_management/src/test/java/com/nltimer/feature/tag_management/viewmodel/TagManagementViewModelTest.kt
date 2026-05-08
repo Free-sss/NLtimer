@@ -1,7 +1,9 @@
 package com.nltimer.feature.tag_management.viewmodel
 
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.feature.tag_management.model.DialogState
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,7 @@ class TagManagementViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var tagRepository: FakeTagRepository
+    private lateinit var activityRepository: FakeActivityManagementRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
     private lateinit var viewModel: TagManagementViewModel
 
@@ -36,8 +39,9 @@ class TagManagementViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         tagRepository = FakeTagRepository()
+        activityRepository = FakeActivityManagementRepository()
         settingsPrefs = FakeSettingsPrefs()
-        viewModel = TagManagementViewModel(tagRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
     }
 
     @After
@@ -56,8 +60,8 @@ class TagManagementViewModelTest {
 
     @Test
     fun `loadData combines tags and categories`() = runTest {
-        val workTag = Tag(1L, "工作", null, null, "分类A", 0, 0, 0, false)
-        val personalTag = Tag(2L, "个人", null, null, "分类B", 0, 0, 0, false)
+        val workTag = Tag(1L, "工作", null, null, "分类A", 0, 0, 0, null, false)
+        val personalTag = Tag(2L, "个人", null, null, "分类B", 0, 0, 0, null, false)
         tagRepository.emitTags(listOf(workTag, personalTag))
         tagRepository.emitCategories(listOf("分类A", "分类B"))
 
@@ -78,7 +82,7 @@ class TagManagementViewModelTest {
         tagRepository.emitCategories(emptyList())
 
         // Recreate viewModel so init picks up the new settings value
-        viewModel = TagManagementViewModel(tagRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.value
@@ -102,7 +106,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `addTag calls repository insert`() = runTest {
-        viewModel.addTag("新标签", 0xFF0000FF, "icon", 1, "分类A")
+        viewModel.addTag("新标签", 0xFF0000FF, "icon", 1, "分类A", null, null)
         advanceUntilIdle()
 
         assertEquals(1, tagRepository.insertedTags.size)
@@ -112,8 +116,8 @@ class TagManagementViewModelTest {
 
     @Test
     fun `updateTag calls repository update`() = runTest {
-        val tag = Tag(1L, "旧名称", null, null, null, 0, 0, 0, false)
-        viewModel.updateTag(tag)
+        val tag = Tag(1L, "旧名称", null, null, null, 0, 0, 0, null, false)
+        viewModel.updateTag(tag, null)
         advanceUntilIdle()
 
         assertEquals(1, tagRepository.updatedTags.size)
@@ -122,7 +126,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `deleteTag calls setArchived`() = runTest {
-        val tag = Tag(1L, "待删除", null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "待删除", null, null, null, 0, 0, 0, null, false)
         viewModel.deleteTag(tag)
         advanceUntilIdle()
 
@@ -141,7 +145,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `moveTagToCategory updates category`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
         tagRepository.tagById = tag
         viewModel.moveTagToCategory(1L, "新分类")
         advanceUntilIdle()
@@ -165,7 +169,7 @@ class TagManagementViewModelTest {
         tagRepository.emitTags(emptyList())
         tagRepository.emitCategories(emptyList())
         // Recreate viewModel so init picks up the settings value
-        viewModel = TagManagementViewModel(tagRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
         advanceUntilIdle()
 
         viewModel.renameCategory("旧分类", "新分类")
@@ -227,7 +231,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showEditTagDialog updates dialogState`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "分类", 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, "分类", 0, 0, 0, null, false)
         viewModel.showEditTagDialog(tag)
         val state = viewModel.uiState.value.dialogState as? DialogState.EditTag
         assertNotNull(state)
@@ -236,7 +240,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showDeleteTagDialog updates dialogState`() = runTest {
-        val tag = Tag(1L, "待删", null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "待删", null, null, null, 0, 0, 0, null, false)
         viewModel.showDeleteTagDialog(tag)
         val state = viewModel.uiState.value.dialogState as? DialogState.DeleteTag
         assertNotNull(state)
@@ -245,7 +249,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `showMoveTagDialog updates dialogState with currentCategory`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
         viewModel.showMoveTagDialog(tag, "旧分类")
         val state = viewModel.uiState.value.dialogState as? DialogState.MoveTag
         assertNotNull(state)
@@ -276,7 +280,7 @@ class TagManagementViewModelTest {
 
     @Test
     fun `moveTagToCategory with null sets uncategorized`() = runTest {
-        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, "旧分类", 0, 0, 0, null, false)
         tagRepository.tagById = tag
         viewModel.moveTagToCategory(1L, null)
         advanceUntilIdle()
@@ -287,23 +291,23 @@ class TagManagementViewModelTest {
     @Test
     fun `addTag dismisses dialog after insert`() = runTest {
         viewModel.showAddTagDialog("分类A")
-        viewModel.addTag("新标签", null, null, 0, "分类A")
+        viewModel.addTag("新标签", null, null, 0, "分类A", null, null)
         advanceUntilIdle()
         assertNull(viewModel.uiState.value.dialogState)
     }
 
     @Test
     fun `updateTag dismisses dialog after update`() = runTest {
-        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, null, false)
         viewModel.showEditTagDialog(tag)
-        viewModel.updateTag(tag)
+        viewModel.updateTag(tag, null)
         advanceUntilIdle()
         assertNull(viewModel.uiState.value.dialogState)
     }
 
     @Test
     fun `deleteTag dismisses dialog after archive`() = runTest {
-        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, false)
+        val tag = Tag(1L, "标签", null, null, null, 0, 0, 0, null, false)
         viewModel.showDeleteTagDialog(tag)
         viewModel.deleteTag(tag)
         advanceUntilIdle()
@@ -359,6 +363,27 @@ class TagManagementViewModelTest {
             resetCategoryCalled = true
             lastResetCategory = category
         }
+        override suspend fun getActivityIdsForTag(tagId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {}
+    }
+
+    private class FakeActivityManagementRepository : ActivityManagementRepository {
+        override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getUncategorizedActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getAllGroups(): Flow<List<com.nltimer.core.data.model.ActivityGroup>> = flowOf(emptyList())
+        override fun getActivityStats(activityId: Long): Flow<com.nltimer.core.data.model.ActivityStats> = flowOf(com.nltimer.core.data.model.ActivityStats())
+        override suspend fun addActivity(activity: Activity): Long = 1L
+        override suspend fun updateActivity(activity: Activity) {}
+        override suspend fun deleteActivity(id: Long) {}
+        override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {}
+        override suspend fun addGroup(name: String): Long = 1L
+        override suspend fun renameGroup(id: Long, newName: String) {}
+        override suspend fun deleteGroup(id: Long) {}
+        override suspend fun initializePresets() {}
+        override suspend fun getTagIdsForActivity(activityId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {}
+        override suspend fun getAllActivitiesSync(): List<Activity> = emptyList()
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {

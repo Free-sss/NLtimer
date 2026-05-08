@@ -195,7 +195,7 @@ private fun dialogIconColorRenderer(
     val fallbackColor = MaterialTheme.colorScheme.primary
     val currentColor = remember(colorValue) {
         try {
-            if (colorValue.isNotBlank()) Color(colorValue.toLong(16).or(0xFF000000.toLong()))
+            if (colorValue.isNotBlank()) Color(colorValue.toULong(16).toLong())
             else fallbackColor
         } catch (_: Exception) {
             fallbackColor

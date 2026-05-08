@@ -1,4 +1,4 @@
-package com.nltimer.feature.home.ui.sheet
+package com.nltimer.feature.tag_management.ui.components.dialogs
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,19 +14,21 @@ import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
 
 @Composable
-fun AddTagDialog(
+fun AddTagFormSheet(
+    initialCategory: String?,
     categories: List<String>,
     allActivities: List<Activity>,
     onDismiss: () -> Unit,
     onConfirm: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf(null as String?) }
+    var selectedCategory by remember { mutableStateOf(initialCategory) }
     var selectedActivityId by remember { mutableStateOf(null as Long?) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showActivityPicker by remember { mutableStateOf(false) }
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
-    val activityCountText = activityName ?: "+ 增加"
+    val activityText = activityName ?: "+ 增加"
+    val activityItems = listOf(null to "未关联") + allActivities.map { it.id to it.name }
 
     val specWithCategory = ActivityFormSpecs.createTag.copy(
         sections = ActivityFormSpecs.createTag.sections.map { section ->
@@ -38,7 +40,7 @@ fun AddTagDialog(
                             onClick = { showCategoryPicker = true },
                         )
                         row is FormRow.LabelAction && row.key == "activities" -> row.copy(
-                            actionText = activityCountText,
+                            actionText = activityText,
                             onClick = { showActivityPicker = true },
                         )
                         else -> row
@@ -61,9 +63,7 @@ fun AddTagDialog(
             val color = colorHex?.let {
                 try { it.toULong(16).toLong() } catch (_: Exception) { null }
             }
-            if (name.isNotBlank()) {
-                onConfirm(name, color, icon, priority, selectedCategory, keywords, selectedActivityId)
-            }
+            onConfirm(name, color, icon, priority, selectedCategory, keywords, selectedActivityId)
         },
         overlay = {
             if (showCategoryPicker) {
@@ -77,7 +77,7 @@ fun AddTagDialog(
             if (showActivityPicker) {
                 SingleSelectPickerPopup(
                     title = "关联活动",
-                    items = listOf(null to "未关联") + allActivities.map { it.id to it.name },
+                    items = activityItems,
                     selectedId = selectedActivityId,
                     onSelected = { selectedActivityId = it },
                     onDismiss = { showActivityPicker = false },

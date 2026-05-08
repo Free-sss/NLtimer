@@ -183,6 +183,7 @@ class TagRepositoryImplTest {
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 
@@ -206,6 +207,7 @@ class TagRepositoryImplTest {
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 

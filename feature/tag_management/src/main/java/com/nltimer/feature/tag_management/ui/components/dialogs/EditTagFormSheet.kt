@@ -1,10 +1,17 @@
-package com.nltimer.feature.home.ui.sheet
+package com.nltimer.feature.tag_management.ui.components.dialogs
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.CategoryPickerPopup
@@ -14,22 +21,25 @@ import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
 
 @Composable
-fun AddTagDialog(
+fun EditTagFormSheet(
+    tag: Tag,
     categories: List<String>,
     allActivities: List<Activity>,
+    initialActivityId: Long?,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
+    onConfirm: (Tag, Long?) -> Unit,
+    onDelete: () -> Unit = {},
 ) {
-    var selectedCategory by remember { mutableStateOf(null as String?) }
-    var selectedActivityId by remember { mutableStateOf(null as Long?) }
+    var selectedCategory by remember { mutableStateOf(tag.category) }
+    var selectedActivityId by remember { mutableStateOf(initialActivityId) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showActivityPicker by remember { mutableStateOf(false) }
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
 
-    val specWithCategory = ActivityFormSpecs.createTag.copy(
-        sections = ActivityFormSpecs.createTag.sections.map { section ->
+    val specWithCategory = ActivityFormSpecs.editTag().copy(
+        sections = ActivityFormSpecs.editTag().sections.map { section ->
             section.copy(
                 rows = section.rows.map { row ->
                     when {
@@ -48,22 +58,41 @@ fun AddTagDialog(
         },
     )
 
+    val initialData = mapOf(
+        "icon" to (tag.iconKey ?: "🏷️"),
+        "color" to (tag.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
+        "name" to tag.name,
+        "keywords" to (tag.keywords ?: ""),
+        "priority" to tag.priority.toString(),
+        "isArchived" to tag.isArchived.toString(),
+    )
+
     GenericFormSheet(
         spec = specWithCategory,
-        initialData = null,
+        initialData = initialData,
         onDismiss = onDismiss,
         onSubmit = { formState ->
-            val name = formState["name"]?.trim() ?: ""
+            val name = formState["name"]?.trim() ?: tag.name
             val icon = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
-            val priority = formState["priority"]?.toIntOrNull() ?: 0
+            val priority = formState["priority"]?.toIntOrNull() ?: tag.priority
+            val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: tag.isArchived
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
             val color = colorHex?.let {
                 try { it.toULong(16).toLong() } catch (_: Exception) { null }
             }
-            if (name.isNotBlank()) {
-                onConfirm(name, color, icon, priority, selectedCategory, keywords, selectedActivityId)
-            }
+            onConfirm(
+                tag.copy(
+                    name = name,
+                    iconKey = icon,
+                    color = color,
+                    priority = priority,
+                    category = selectedCategory,
+                    keywords = keywords,
+                    isArchived = isArchived,
+                ),
+                selectedActivityId,
+            )
         },
         overlay = {
             if (showCategoryPicker) {
@@ -82,6 +111,14 @@ fun AddTagDialog(
                     onSelected = { selectedActivityId = it },
                     onDismiss = { showActivityPicker = false },
                 )
+            }
+        },
+        trailing = {
+            TextButton(
+                onClick = { onDismiss(); onDelete() },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 48.dp),
+            ) {
+                Text("删除标签", color = MaterialTheme.colorScheme.error)
             }
         },
     )

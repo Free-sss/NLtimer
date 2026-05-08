@@ -1,6 +1,7 @@
 package com.nltimer.feature.tag_management.model
 
 import androidx.compose.runtime.Immutable
+import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 
 /**
@@ -15,6 +16,8 @@ import com.nltimer.core.data.model.Tag
 data class TagManagementUiState(
     val uncategorizedTags: List<Tag> = emptyList(),
     val categories: List<CategoryWithTags> = emptyList(),
+    val categoryNames: List<String> = emptyList(),
+    val allActivities: List<Activity> = emptyList(),
     val isLoading: Boolean = true,
     val dialogState: DialogState? = null,
 )
@@ -37,8 +40,7 @@ data class CategoryWithTags(
 sealed interface DialogState {
     /** 添加标签对话框，可选指定初始分类 */
     data class AddTag(val category: String? = null) : DialogState
-    /** 编辑标签对话框 */
-    data class EditTag(val tag: Tag) : DialogState
+    data class EditTag(val tag: Tag, val activityId: Long? = null) : DialogState
     /** 删除标签确认对话框 */
     data class DeleteTag(val tag: Tag) : DialogState
     /** 移动标签到其他分类对话框 */

@@ -22,4 +22,7 @@ interface TagRepository {
     fun getDistinctCategories(): Flow<List<String>>
     suspend fun renameCategory(oldName: String, newName: String)
     suspend fun resetCategory(category: String)
+
+    suspend fun getActivityIdsForTag(tagId: Long): List<Long>
+    suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>)
 }

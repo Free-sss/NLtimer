@@ -240,6 +240,7 @@ class BehaviorRepositoryImpl @Inject constructor(
                     priority = row.priority,
                     usageCount = row.usageCount,
                     sortOrder = row.sortOrder,
+                    keywords = row.keywords,
                     isArchived = row.isArchived,
                     archivedAt = row.archivedAt,
                 )
