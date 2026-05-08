@@ -247,4 +247,45 @@ class BehaviorRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
+        behaviorDao.getByTimeRange(startTime, endTime).map { entities ->
+            assembleBehaviorWithDetailsList(entities)
+        }
+
+    override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> {
+        val entities = behaviorDao.getByTimeRangeSync(startTime, endTime)
+        return assembleBehaviorWithDetailsList(entities)
+    }
+
+    private suspend fun assembleBehaviorWithDetailsList(entities: List<BehaviorEntity>): List<BehaviorWithDetails> {
+        if (entities.isEmpty()) return emptyList()
+        val behaviorIds = entities.map { it.id }
+        val tagsMap = behaviorDao.getTagsForBehaviorsSync(behaviorIds)
+            .groupBy { it.behaviorId }
+            .mapValues { (_, rows) ->
+                rows.map { row ->
+                    Tag(
+                        id = row.id,
+                        name = row.name,
+                        color = row.color,
+                        iconKey = row.iconKey,
+                        category = row.category,
+                        priority = row.priority,
+                        usageCount = row.usageCount,
+                        sortOrder = row.sortOrder,
+                        keywords = row.keywords,
+                        isArchived = row.isArchived,
+                        archivedAt = row.archivedAt,
+                    )
+                }
+            }
+        return entities.mapNotNull { entity ->
+            val activityEntity = activityDao.getById(entity.activityId) ?: return@mapNotNull null
+            val behavior = entity.toModel()
+            val activity = Activity.fromEntity(activityEntity)
+            val tags = tagsMap[entity.id] ?: emptyList()
+            BehaviorWithDetails(behavior = behavior, activity = activity, tags = tags)
+        }
+    }
 }
