@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -289,6 +289,54 @@ abstract class NLtimerDatabase : RoomDatabase() {
             }
         }
 
-        val ALL_MIGRATIONS = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+        // 数据库从版本 11 到 12 的迁移：重建 behaviors 表，将外键 onDelete 从 RESTRICT 改为 CASCADE
+        // 这样删除活动时会自动级联删除相关的行为记录，避免删除活动时的崩溃
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("PRAGMA foreign_keys = OFF")
+                try {
+                    // 重建 behaviors 表，将外键 onDelete 从 RESTRICT 改为 CASCADE
+                    db.execSQL(
+                        """
+                        CREATE TABLE behaviors_new (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                            activityId INTEGER NOT NULL,
+                            startTime INTEGER NOT NULL,
+                            endTime INTEGER,
+                            status TEXT NOT NULL DEFAULT 'pending',
+                            note TEXT,
+                            pomodoroCount INTEGER NOT NULL DEFAULT 0,
+                            sequence INTEGER NOT NULL DEFAULT 0,
+                            estimatedDuration INTEGER,
+                            actualDuration INTEGER,
+                            achievementLevel INTEGER,
+                            wasPlanned INTEGER NOT NULL DEFAULT 0,
+                            FOREIGN KEY (activityId) REFERENCES activities(id) ON DELETE CASCADE
+                        )
+                        """.trimIndent()
+                    )
+                    // 迁移数据
+                    db.execSQL(
+                        """
+                        INSERT INTO behaviors_new (id, activityId, startTime, endTime, status, note, pomodoroCount, sequence, estimatedDuration, actualDuration, achievementLevel, wasPlanned)
+                        SELECT id, activityId, startTime, endTime, status, note, pomodoroCount, sequence, estimatedDuration, actualDuration, achievementLevel, wasPlanned
+                        FROM behaviors
+                        """.trimIndent()
+                    )
+                    // 删除旧表，重命名新表
+                    db.execSQL("DROP TABLE behaviors")
+                    db.execSQL("ALTER TABLE behaviors_new RENAME TO behaviors")
+                    // 重建索引
+                    db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_activityId ON behaviors(activityId)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_startTime_sequence ON behaviors(startTime, sequence)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_status ON behaviors(status)")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS index_behaviors_startTime_status ON behaviors(startTime, status)")
+                } finally {
+                    db.execSQL("PRAGMA foreign_keys = ON")
+                }
+            }
+        }
+
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
     }
 }
