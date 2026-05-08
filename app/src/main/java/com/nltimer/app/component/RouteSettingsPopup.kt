@@ -41,6 +41,9 @@ import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
 
 /**
  * RouteSettingsPopup 调试预览入口
@@ -96,7 +99,7 @@ fun RouteSettingsPopup(
             modifier = modifier
                 .width(popupWidth)
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
             tonalElevation = 8.dp,
             shadowElevation = 8.dp
         ) {
@@ -237,8 +240,8 @@ private fun PopupSwitchItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .background(
-                color = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) else Color.Transparent,
-                shape = RoundedCornerShape(8.dp)
+                color = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.5f)) else Color.Transparent,
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL))
             )
             .clickable { onCheckedChange(!checked) },
         verticalAlignment = Alignment.CenterVertically

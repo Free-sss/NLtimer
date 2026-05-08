@@ -52,8 +52,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import kotlin.math.max
 
 @Immutable
@@ -293,13 +298,13 @@ internal fun AdaptiveActivityChip(
     useActivityColorForText: Boolean = true,
 ) {
     val baseColor = chip.color
-    val containerColor = baseColor.copy(alpha = 0.15f)
+    val containerColor = baseColor.copy(alpha = styledAlpha(0.15f))
     val contentColor = if (useActivityColorForText) {
-        baseColor.copy(alpha = 0.9f)
+        baseColor.copy(alpha = styledAlpha(0.9f))
     } else {
         MaterialTheme.colorScheme.onSurface
     }
-    val borderColor = baseColor.copy(alpha = 0.5f)
+    val borderColor = baseColor.copy(alpha = styledAlpha(0.5f))
     val selectedBorderColor = MaterialTheme.colorScheme.primary
 
     val shape = when (displayMode) {
@@ -307,7 +312,7 @@ internal fun AdaptiveActivityChip(
         ChipDisplayMode.Squares -> RoundedCornerShape(0)
         ChipDisplayMode.SquareBorder -> RoundedCornerShape(0)
         ChipDisplayMode.None -> RoundedCornerShape(0)
-        else -> RoundedCornerShape(6.dp)
+        else -> RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL))
     }
 
     val surfaceColor = when (displayMode) {
@@ -317,7 +322,7 @@ internal fun AdaptiveActivityChip(
     }
 
     val border = when (displayMode) {
-        ChipDisplayMode.Capsules -> BorderStroke(1.dp, if (isSelected) selectedBorderColor else borderColor)
+        ChipDisplayMode.Capsules -> BorderStroke(styledBorder(BorderTokens.THIN), if (isSelected) selectedBorderColor else borderColor)
         else -> null
     }
 
@@ -446,8 +451,8 @@ internal fun FunctionChip(
             ),
         color = containerColor,
         contentColor = contentColor,
-        shape = RoundedCornerShape(6.dp),
-        border = BorderStroke(1.dp, borderColor),
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+        border = BorderStroke(styledBorder(BorderTokens.THIN), borderColor),
     ) {
         Row(
             modifier = Modifier.padding(start = 8.dp),

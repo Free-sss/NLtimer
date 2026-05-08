@@ -33,6 +33,7 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.format.DateTimeFormatter
 
@@ -115,11 +116,11 @@ private fun BehaviorLogCard(
     onLongClick: () -> Unit,
 ) {
     val cardBackground = if (behavior.isCurrent) {
-        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.15f))
     } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.2f))
     }
-    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f))
 
     Column(
         modifier = Modifier
@@ -218,7 +219,7 @@ private fun BehaviorLogCard(
             Text(
                 text = details.joinToString("    "),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.8f))
             )
         }
 
@@ -226,7 +227,7 @@ private fun BehaviorLogCard(
         Text(
             text = "behaviorId: ${behavior.behaviorId ?: "-"}",
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.5f))
         )
     }
 }

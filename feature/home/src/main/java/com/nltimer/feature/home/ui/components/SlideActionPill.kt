@@ -33,6 +33,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
 import kotlin.math.roundToInt
 
 @Composable
@@ -91,8 +94,8 @@ fun SlideActionPill(
                     }
                 )
             },
-        shape = RoundedCornerShape(36.dp),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f + progress * 0.4f)
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_PILL)),
+        color = MaterialTheme.colorScheme.primary.copy(alpha = styledAlpha(0.3f) + progress * 0.4f)
     ) {
         Box(
             modifier = Modifier

@@ -22,7 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 
 /**
@@ -43,7 +48,7 @@ fun GridCell(
 
     // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
-        cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+        cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.3f))
         isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
@@ -53,7 +58,7 @@ fun GridCell(
             .fillMaxSize()
             .heightIn(max = 140.dp)
             .clipToBounds()
-            .background(backgroundColor, RoundedCornerShape(12.dp))
+            .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
             .appBorder(
                 borderProducer = {
                     val borderColor = when {
@@ -63,16 +68,16 @@ fun GridCell(
                                 red = (0.78f + 0.22f * strength),
                                 green = (0.69f + 0.31f * strength),
                                 blue = 1.0f,
-                                alpha = 0.5f + 0.5f * strength,
+                                alpha = styledAlpha(0.5f) + 0.5f * strength,
                             )
                         }
                         cell.isCurrent -> MaterialTheme.colorScheme.primary
                         else -> MaterialTheme.colorScheme.outlineVariant
                     }
-                    val borderWidth = if (cell.isCurrent || isPlatinum) 2.dp else 1.dp
+                    val borderWidth = if (cell.isCurrent || isPlatinum) styledBorder(BorderTokens.STANDARD) else styledBorder(BorderTokens.THIN)
                     BorderStroke(borderWidth, borderColor)
                 },
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
             )
             .padding(4.dp)
             ,
@@ -111,7 +116,7 @@ fun GridCell(
             Text(
                 text = note,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
             )
         }
     }

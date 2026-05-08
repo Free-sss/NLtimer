@@ -39,6 +39,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.styledCorner
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.feature.home.model.GridCellUiState
 
 @Composable
@@ -88,7 +93,7 @@ private fun TagNoteRow(
             Text(
                 text = note,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.6f)),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.width(120.dp),
@@ -123,7 +128,7 @@ private fun ActiveCard(
         label = "pulse_alpha"
     )
 
-    val cardShape = RoundedCornerShape(32.dp)
+    val cardShape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_FULL))
 
     Card(
         modifier = modifier
@@ -131,7 +136,7 @@ private fun ActiveCard(
             .height(260.dp)
             .clip(cardShape)
             .border(
-                width = 2.dp,
+                width = styledBorder(BorderTokens.STANDARD),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha),
                 shape = cardShape
             ),
@@ -174,12 +179,12 @@ private fun ActiveCard(
                 Text(
                     text = durationText,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.8f)),
                 )
                 Text(
                     text = "正在专注...",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.5f)),
                 )
             }
         }
@@ -198,7 +203,7 @@ private fun PendingCard(
         modifier = modifier
             .fillMaxWidth()
             .height(260.dp),
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_FULL)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(
@@ -234,14 +239,14 @@ private fun PendingCard(
                 Text(
                     text = estimatedText,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.7f)),
                 )
             }
 
             Text(
                 text = "滑动开启目标",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.5f)),
                 textAlign = TextAlign.Center,
             )
         }
@@ -258,7 +263,7 @@ private fun EmptyCard(
         modifier = modifier
             .fillMaxWidth()
             .height(260.dp),
-        shape = RoundedCornerShape(32.dp),
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_FULL)),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(
@@ -272,7 +277,7 @@ private fun EmptyCard(
                 imageVector = Icons.Filled.Add,
                 contentDescription = null,
                 modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.6f)),
             )
 
             Spacer(Modifier.height(16.dp))
@@ -290,7 +295,7 @@ private fun EmptyCard(
             Text(
                 text = "点击开始记录你的行为",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.5f)),
                 textAlign = TextAlign.Center,
             )
         }

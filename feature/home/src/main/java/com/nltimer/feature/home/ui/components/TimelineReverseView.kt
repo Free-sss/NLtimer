@@ -40,8 +40,13 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Duration
 import java.time.LocalTime
@@ -184,23 +189,23 @@ private fun TimelineIdleItem(
             Text(
                 text = start.format(timeFormatter),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f))
             )
         }
 
         Row(
             modifier = Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+                .clip(RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.1f)))
                 .appBorder(
                     borderProducer = {
                         BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                            styledBorder(BorderTokens.THIN),
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.3f))
                         )
                     },
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
                 )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -216,7 +221,7 @@ private fun TimelineIdleItem(
                 Icon(
                     Icons.Default.Add,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.5f)),
                     modifier = Modifier.size(20.dp)
                 )
             }
