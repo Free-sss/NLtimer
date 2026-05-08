@@ -17,8 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.nltimer.app.BuildConfig
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.CategoryPickerPopup
@@ -106,7 +106,11 @@ fun EditTagFormSheet(
             )
         },
         overlay = {
-            if (BuildConfig.DEBUG) {
+            val context = LocalContext.current
+            val isDebug = remember(context) {
+                (context.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+            }
+            if (isDebug) {
                 Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = { showFieldDetail = true },
