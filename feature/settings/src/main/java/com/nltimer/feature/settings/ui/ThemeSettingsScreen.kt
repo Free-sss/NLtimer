@@ -47,6 +47,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -641,27 +642,40 @@ private fun StyleConfigSection(
             }
 
             AnimatedVisibility(visible = showAdvanced) {
+                val cornerScale = styleConfig.effectiveCornerScale()
+                val borderScale = styleConfig.effectiveBorderScale()
+                val alphaScale = styleConfig.effectiveAlphaScale()
+                var localCorner by remember { mutableStateOf(cornerScale) }
+                var localBorder by remember { mutableStateOf(borderScale) }
+                var localAlpha by remember { mutableStateOf(alphaScale) }
+                LaunchedEffect(cornerScale) { localCorner = cornerScale }
+                LaunchedEffect(borderScale) { localBorder = borderScale }
+                LaunchedEffect(alphaScale) { localAlpha = alphaScale }
+
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = "圆角比例: ${"%.2f".format(styleConfig.effectiveCornerScale())}")
+                    Text(text = "圆角比例: ${"%.2f".format(localCorner)}")
                     Slider(
-                        value = styleConfig.effectiveCornerScale(),
-                        onValueChange = { onCustomCornerScale(it) },
+                        value = localCorner,
+                        onValueChange = { localCorner = it },
+                        onValueChangeFinished = { onCustomCornerScale(localCorner) },
                         valueRange = 0f..4f,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Text(text = "边框比例: ${"%.2f".format(styleConfig.effectiveBorderScale())}")
+                    Text(text = "边框比例: ${"%.2f".format(localBorder)}")
                     Slider(
-                        value = styleConfig.effectiveBorderScale(),
-                        onValueChange = { onCustomBorderScale(it) },
+                        value = localBorder,
+                        onValueChange = { localBorder = it },
+                        onValueChangeFinished = { onCustomBorderScale(localBorder) },
                         valueRange = 0f..3f,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Text(text = "透明度比例: ${"%.2f".format(styleConfig.effectiveAlphaScale())}")
+                    Text(text = "透明度比例: ${"%.2f".format(localAlpha)}")
                     Slider(
-                        value = styleConfig.effectiveAlphaScale(),
-                        onValueChange = { onCustomAlphaScale(it) },
+                        value = localAlpha,
+                        onValueChange = { localAlpha = it },
+                        onValueChangeFinished = { onCustomAlphaScale(localAlpha) },
                         valueRange = 0f..3f,
                         modifier = Modifier.fillMaxWidth(),
                     )
