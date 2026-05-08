@@ -1,15 +1,19 @@
 package com.nltimer.feature.management_activities.ui.components.dialogs
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,8 +22,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.icon.IconPickerSheet
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
@@ -52,6 +59,7 @@ fun EditActivityDialog(
         )
     }
     var expanded by remember { mutableStateOf(false) }
+    var showIconPicker by remember { mutableStateOf(false) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -70,14 +78,27 @@ fun EditActivityDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = iconKey,
-                    onValueChange = { if (it.length <= 2) iconKey = it },
-                    label = { Text("图标 (可选)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = appOutlinedTextFieldColors(),
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconRenderer(
+                        iconKey = iconKey.ifBlank { null },
+                        defaultEmoji = "📌",
+                        iconSize = 24.dp,
+                        modifier = Modifier.clickable { showIconPicker = true },
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text("图标", style = MaterialTheme.typography.bodyMedium)
+                }
+
+                if (showIconPicker) {
+                    IconPickerSheet(
+                        currentIconKey = iconKey.ifBlank { null },
+                        onIconSelected = { newKey ->
+                            iconKey = newKey ?: ""
+                            showIconPicker = false
+                        },
+                        onDismiss = { showIconPicker = false },
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
