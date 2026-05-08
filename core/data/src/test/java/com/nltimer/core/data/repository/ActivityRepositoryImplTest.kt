@@ -4,6 +4,7 @@ import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.entity.ActivityEntity
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.repository.impl.ActivityRepositoryImpl
@@ -86,6 +87,12 @@ class ActivityRepositoryImplTest {
             activityEntities.clear()
             activityFlow.value = emptyList()
         }
+
+        override suspend fun getAllPresetsSync(): List<ActivityEntity> = emptyList()
+        override suspend fun getTagIdsForActivitySync(activityId: Long): List<Long> = emptyList()
+        override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) {}
+        override suspend fun getAllActiveSync(): List<ActivityEntity> = activityEntities.filter { !it.isArchived }
     }
 
     private val fakeGroupDao = object : ActivityGroupDao {
@@ -129,6 +136,9 @@ class ActivityRepositoryImplTest {
             groupEntities.clear()
             groupFlow.value = emptyList()
         }
+
+        override suspend fun getMaxSortOrder(): Int? = groupEntities.maxOfOrNull { it.sortOrder }
+        override suspend fun getById(id: Long): ActivityGroupEntity? = groupEntities.find { it.id == id }
     }
 
     private val repository = ActivityRepositoryImpl(fakeActivityDao, fakeGroupDao)

@@ -3,7 +3,9 @@ package com.nltimer.feature.management_activities.viewmodel
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
+import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
+import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.feature.management_activities.model.DialogState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,13 +32,15 @@ class ActivityManagementViewModelTest {
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var repository: FakeActivityManagementRepository
+    private lateinit var tagRepository: FakeTagRepository
     private lateinit var viewModel: ActivityManagementViewModel
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         repository = FakeActivityManagementRepository()
-        viewModel = ActivityManagementViewModel(repository)
+        tagRepository = FakeTagRepository()
+        viewModel = ActivityManagementViewModel(repository, tagRepository)
     }
 
     @After
@@ -117,6 +121,7 @@ class ActivityManagementViewModelTest {
     fun `showEditActivityDialog updates dialogState`() = runTest {
         val activity = Activity(id = 1L, name = "活动A")
         viewModel.showEditActivityDialog(activity)
+        advanceUntilIdle()
         val state = viewModel.uiState.value.dialogState as? DialogState.EditActivity
         assertNotNull(state)
         assertEquals("活动A", state?.activity?.name)
@@ -124,7 +129,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `addActivity calls repository with trimmed name`() = runTest {
-        viewModel.addActivity("  新活动  ", "emoji", 0xFF0000FF, null, null)
+        viewModel.addActivity("  新活动  ", "emoji", 0xFF0000FF, null, null, emptyList())
         advanceUntilIdle()
 
         assertEquals(1, repository.addedActivities.size)
@@ -135,7 +140,7 @@ class ActivityManagementViewModelTest {
 
     @Test
     fun `addActivity with groupId passes groupId`() = runTest {
-        viewModel.addActivity("新活动", null, null, 2L, null)
+        viewModel.addActivity("新活动", null, null, 2L, null, emptyList())
         advanceUntilIdle()
 
         assertEquals(2L, repository.addedActivities[0].groupId)
@@ -144,7 +149,7 @@ class ActivityManagementViewModelTest {
     @Test
     fun `updateActivity calls repository`() = runTest {
         val activity = Activity(id = 1L, name = "更新后")
-        viewModel.updateActivity(activity)
+        viewModel.updateActivity(activity, emptyList())
         advanceUntilIdle()
 
         assertEquals(1, repository.updatedActivities.size)
@@ -289,6 +294,27 @@ class ActivityManagementViewModelTest {
         override suspend fun initializePresets() {
             initializePresetsCalled = true
         }
+        override suspend fun getTagIdsForActivity(activityId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {}
+        override suspend fun getAllActivitiesSync(): List<Activity> = emptyList()
+    }
+
+    private class FakeTagRepository : TagRepository {
+        override fun getAllActive(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getAll(): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getByCategory(category: String): Flow<List<Tag>> = flowOf(emptyList())
+        override fun search(query: String): Flow<List<Tag>> = flowOf(emptyList())
+        override fun getByActivityId(activityId: Long): Flow<List<Tag>> = flowOf(emptyList())
+        override suspend fun getById(id: Long): Tag? = null
+        override suspend fun getByName(name: String): Tag? = null
+        override suspend fun insert(tag: Tag): Long = 1L
+        override suspend fun update(tag: Tag) {}
+        override suspend fun setArchived(id: Long, archived: Boolean) {}
+        override fun getDistinctCategories(): Flow<List<String>> = flowOf(emptyList())
+        override suspend fun renameCategory(oldName: String, newName: String) {}
+        override suspend fun resetCategory(category: String) {}
+        override suspend fun getActivityIdsForTag(tagId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {}
     }
 
     @Test

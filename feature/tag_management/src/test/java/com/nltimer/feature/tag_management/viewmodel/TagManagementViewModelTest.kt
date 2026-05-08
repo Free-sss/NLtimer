@@ -233,6 +233,7 @@ class TagManagementViewModelTest {
     fun `showEditTagDialog updates dialogState`() = runTest {
         val tag = Tag(1L, "标签", null, null, "分类", 0, 0, 0, null, false)
         viewModel.showEditTagDialog(tag)
+        advanceUntilIdle()
         val state = viewModel.uiState.value.dialogState as? DialogState.EditTag
         assertNotNull(state)
         assertEquals("标签", state?.tag?.name)
