@@ -10,12 +10,6 @@ import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * TagRepositoryImpl 标签仓库实现
- * 委托 TagDao 完成标签的增删改查及分类管理
- *
- * @param tagDao 标签数据访问对象
- */
 @Singleton
 class TagRepositoryImpl @Inject constructor(
     private val tagDao: TagDao,

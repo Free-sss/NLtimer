@@ -58,6 +58,7 @@ hilt_navigation_compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 lifecycle_viewmodel_compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle_runtime_compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 navigation_compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation_compose" }
+kotlinx_coroutines_core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx_coroutines_test" }
 kotlinx_coroutines_test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx_coroutines_test" }
 room_runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room_ktx = { module = "androidx.room:room-ktx", version.ref = "room" }

@@ -21,6 +21,11 @@ private val editTagSpec = FormSpec(
         FormSection(
             rows = listOf(
                 FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入标签名"),
+                FormRow.TextInput(
+                    key = "keywords",
+                    label = "关键词",
+                    placeholder = "用逗号分隔，留空则按名称匹配",
+                ),
                 FormRow.NumberInput(key = "priority", label = "优先级", initialValue = 0, range = 0..99),
             ),
         ),
@@ -62,6 +67,7 @@ fun EditTagDialog(
         "icon" to (tag.iconKey ?: "🏷️"),
         "color" to (tag.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
         "name" to tag.name,
+        "keywords" to (tag.keywords ?: ""),
         "priority" to tag.priority.toString(),
         "isArchived" to tag.isArchived.toString(),
     )
@@ -74,6 +80,7 @@ fun EditTagDialog(
             val name = formState["name"]?.trim() ?: tag.name
             val icon = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
+            val keywords = formState["keywords"]?.trim()?.ifBlank { null }
             val priority = formState["priority"]?.toIntOrNull() ?: tag.priority
             val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: tag.isArchived
             val color = colorHex?.let {
@@ -84,6 +91,7 @@ fun EditTagDialog(
                     name = name,
                     iconKey = icon,
                     color = color,
+                    keywords = keywords,
                     priority = priority,
                     isArchived = isArchived,
                 ),

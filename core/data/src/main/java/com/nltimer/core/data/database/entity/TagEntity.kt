@@ -19,7 +19,7 @@ data class TagEntity(
     val priority: Int = 0,
     val usageCount: Int = 0,
     val sortOrder: Int = 0,
-    val keywords: String? = null,
     val isArchived: Boolean = false,
     val archivedAt: Long? = null,
+    val keywords: String? = null,
 )

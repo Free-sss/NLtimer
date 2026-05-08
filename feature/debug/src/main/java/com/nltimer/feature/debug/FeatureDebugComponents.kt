@@ -2,6 +2,7 @@ package com.nltimer.feature.debug
 
 import com.nltimer.core.designsystem.debug.DebugComponent
 import com.nltimer.core.designsystem.debug.DebugComponentRegistry
+import com.nltimer.feature.debug.tools.ToolConsoleScreen
 import com.nltimer.feature.debug.ui.preview.ActivityChipGridDebugPreview
 import com.nltimer.feature.debug.ui.preview.ActivityNoteBoxDebugPreview
 import com.nltimer.feature.debug.ui.preview.ActivityRecordCombinedPreview
@@ -129,6 +130,17 @@ object FeatureDebugComponents {
                 implemented = true,
             ) {
                 DatabaseToolsPreview()
+            }
+        )
+        DebugComponentRegistry.register(
+            DebugComponent(
+                id = "ToolConsole",
+                name = "工具控制台",
+                group = "AI / Tools",
+                description = "调用 ToolRegistry 中所有已注册工具（含参数校验、超时、错误归一化）",
+                implemented = true,
+            ) {
+                ToolConsoleScreen()
             }
         )
     }
