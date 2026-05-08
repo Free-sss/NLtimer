@@ -5,8 +5,8 @@ import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.repository.ActivityRepository
+import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,16 +24,16 @@ class ActivityRepositoryImpl @Inject constructor(
 ) : ActivityRepository {
 
     override fun getAllActive(): Flow<List<Activity>> =
-        activityDao.getAllActive().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getAllActive().mapList { Activity.fromEntity(it) }
 
     override fun getAll(): Flow<List<Activity>> =
-        activityDao.getAll().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getAll().mapList { Activity.fromEntity(it) }
 
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
-        groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
+        groupDao.getAll().mapList { ActivityGroup.fromEntity(it) }
 
     override fun search(query: String): Flow<List<Activity>> =
-        activityDao.search(query).map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.search(query).mapList { Activity.fromEntity(it) }
 
     override suspend fun getById(id: Long): Activity? =
         activityDao.getById(id)?.let { Activity.fromEntity(it) }

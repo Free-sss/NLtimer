@@ -4,8 +4,8 @@ import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,19 +17,19 @@ class TagRepositoryImpl @Inject constructor(
 ) : TagRepository {
 
     override fun getAllActive(): Flow<List<Tag>> =
-        tagDao.getAllActive().map { list -> list.map { Tag.fromEntity(it) } }
+        tagDao.getAllActive().mapList { Tag.fromEntity(it) }
 
     override fun getAll(): Flow<List<Tag>> =
-        tagDao.getAll().map { list -> list.map { Tag.fromEntity(it) } }
+        tagDao.getAll().mapList { Tag.fromEntity(it) }
 
     override fun getByCategory(category: String): Flow<List<Tag>> =
-        tagDao.getByCategory(category).map { list -> list.map { Tag.fromEntity(it) } }
+        tagDao.getByCategory(category).mapList { Tag.fromEntity(it) }
 
     override fun search(query: String): Flow<List<Tag>> =
-        tagDao.search(query).map { list -> list.map { Tag.fromEntity(it) } }
+        tagDao.search(query).mapList { Tag.fromEntity(it) }
 
     override fun getByActivityId(activityId: Long): Flow<List<Tag>> =
-        tagDao.getByActivityId(activityId).map { list -> list.map { Tag.fromEntity(it) } }
+        tagDao.getByActivityId(activityId).mapList { Tag.fromEntity(it) }
 
     override suspend fun getById(id: Long): Tag? =
         tagDao.getById(id)?.let { Tag.fromEntity(it) }
