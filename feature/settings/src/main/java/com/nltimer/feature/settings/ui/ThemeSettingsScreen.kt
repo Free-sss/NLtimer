@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Colorize
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Colorize
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
@@ -62,17 +64,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.materialkolor.dynamicColorScheme
 import com.nltimer.core.designsystem.component.ColorPickerDialog
-import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.AppTheme
-import com.nltimer.core.designsystem.theme.BorderPreset
-import com.nltimer.core.designsystem.theme.CornerPreset
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.PaletteStyle
-import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.AlphaPreset
+import com.nltimer.core.designsystem.theme.BorderPreset
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.CornerPreset
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.StyleConfig
+import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.effectiveAlphaScale
 import com.nltimer.core.designsystem.theme.effectiveBorderScale
 import com.nltimer.core.designsystem.theme.effectiveCornerScale
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.core.designsystem.theme.endItemShape
 import com.nltimer.core.designsystem.theme.leadingItemShape
 import com.nltimer.core.designsystem.theme.listItemColors
@@ -483,6 +491,76 @@ private fun PaletteStyleSection(
     }
 }
 
+@Composable
+private fun StylePreviewRow() {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(64.dp)
+                .background(
+                    colorScheme.primaryContainer.copy(alpha = styledAlpha(0.3f)),
+                    RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
+                )
+                .appBorder(
+                    borderProducer = { BorderStroke(styledBorder(BorderTokens.STANDARD), colorScheme.outlineVariant) },
+                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "卡片",
+                style = MaterialTheme.typography.labelMedium,
+                color = colorScheme.onSurface.copy(alpha = styledAlpha(0.8f)),
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(64.dp)
+                .background(
+                    colorScheme.primaryContainer.copy(alpha = styledAlpha(0.15f)),
+                    RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE)),
+                )
+                .appBorder(
+                    borderProducer = { BorderStroke(styledBorder(BorderTokens.THIN), colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f))) },
+                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE)),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "容器",
+                style = MaterialTheme.typography.labelMedium,
+                color = colorScheme.onSurface.copy(alpha = styledAlpha(0.6f)),
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(64.dp)
+                .background(
+                    colorScheme.primary.copy(alpha = styledAlpha(0.3f)),
+                    RoundedCornerShape(styledCorner(ShapeTokens.CORNER_PILL)),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "胶囊",
+                style = MaterialTheme.typography.labelMedium,
+                color = colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.7f)),
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StyleConfigSection(
@@ -510,6 +588,8 @@ private fun StyleConfigSection(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            StylePreviewRow()
+
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 CornerPreset.entries.forEachIndexed { index, preset ->
                     SegmentedButton(
