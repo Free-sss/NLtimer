@@ -1,7 +1,12 @@
 package com.nltimer.feature.tag_management.ui.components.dialogs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -10,8 +15,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.app.BuildConfig
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.CategoryPickerPopup
@@ -19,6 +26,9 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.feature.debug.ui.components.FieldDetailDialog
+import com.nltimer.feature.debug.ui.components.toFieldInfoList
+import com.nltimer.feature.debug.ui.components.toJsonString
 
 @Composable
 fun EditTagFormSheet(
@@ -34,6 +44,7 @@ fun EditTagFormSheet(
     var selectedActivityId by remember { mutableStateOf(initialActivityId) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showActivityPicker by remember { mutableStateOf(false) }
+    var showFieldDetail by remember { mutableStateOf(false) }
 
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
@@ -95,6 +106,20 @@ fun EditTagFormSheet(
             )
         },
         overlay = {
+            if (BuildConfig.DEBUG) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    IconButton(
+                        onClick = { showFieldDetail = true },
+                        modifier = Modifier.align(Alignment.TopEnd),
+                    ) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = "字段详细",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+            }
             if (showCategoryPicker) {
                 CategoryPickerPopup(
                     categories = categories,
@@ -122,4 +147,16 @@ fun EditTagFormSheet(
             }
         },
     )
+
+    if (showFieldDetail) {
+        val fields = remember(tag) { tag.toFieldInfoList() }
+        val rawJson = remember(fields) { fields.toJsonString() }
+
+        FieldDetailDialog(
+            title = "标签字段详情",
+            fields = fields,
+            rawJson = rawJson,
+            onDismiss = { showFieldDetail = false },
+        )
+    }
 }
