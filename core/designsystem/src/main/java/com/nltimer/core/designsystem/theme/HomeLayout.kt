@@ -5,9 +5,11 @@ package com.nltimer.core.designsystem.theme
  * - GRID: 网格时间展示
  * - TIMELINE_REVERSE: 反向时间轴展示
  * - LOG: 行为日志列表展示
+ * - MOMENT: 当前时刻聚焦卡片展示
  */
 enum class HomeLayout {
     GRID,
     TIMELINE_REVERSE,
     LOG,
+    MOMENT,
 }
