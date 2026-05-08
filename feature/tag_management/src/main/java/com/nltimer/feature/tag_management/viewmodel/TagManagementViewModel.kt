@@ -6,6 +6,7 @@ import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.feature.tag_management.model.CategoryWithTags
 import com.nltimer.feature.tag_management.model.DialogState
 import com.nltimer.feature.tag_management.model.TagManagementUiState
@@ -25,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TagManagementViewModel @Inject constructor(
     private val tagRepository: TagRepository,
+    private val addTagUseCase: AddTagUseCase,
     private val activityRepository: ActivityManagementRepository,
     private val settingsPrefs: SettingsPrefs,
 ) : ViewModel() {
@@ -115,15 +117,7 @@ class TagManagementViewModel @Inject constructor(
 
     fun addTag(name: String, color: Long?, iconKey: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) {
         viewModelScope.launch {
-            val tag = Tag(
-                id = 0, name = name, color = color,
-                iconKey = iconKey, category = category, priority = priority,
-                usageCount = 0, sortOrder = 0, keywords = keywords, isArchived = false,
-            )
-            val tagId = tagRepository.insert(tag)
-            if (activityId != null) {
-                tagRepository.setActivityTagBindings(tagId, listOf(activityId))
-            }
+            addTagUseCase(name, color, iconKey, priority, category, keywords, activityId)
             dismissDialog()
         }
     }
