@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
@@ -20,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Colorize
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FontDownload
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Palette
@@ -31,8 +35,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -53,10 +62,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.materialkolor.dynamicColorScheme
 import com.nltimer.core.designsystem.component.ColorPickerDialog
+import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.BorderPreset
+import com.nltimer.core.designsystem.theme.CornerPreset
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.PaletteStyle
+import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.effectiveAlphaScale
+import com.nltimer.core.designsystem.theme.effectiveBorderScale
+import com.nltimer.core.designsystem.theme.effectiveCornerScale
 import com.nltimer.core.designsystem.theme.endItemShape
 import com.nltimer.core.designsystem.theme.leadingItemShape
 import com.nltimer.core.designsystem.theme.listItemColors
@@ -88,6 +104,13 @@ fun ThemeSettingsRoute(
         onMaterialYouToggle = viewModel::onMaterialYouToggle,
         onFontChange = viewModel::onFontChange,
         onShowBordersToggle = viewModel::onShowBordersToggle,
+        onCornerPresetChange = viewModel::onCornerPresetChange,
+        onBorderPresetChange = viewModel::onBorderPresetChange,
+        onAlphaPresetChange = viewModel::onAlphaPresetChange,
+        onCustomCornerScale = viewModel::onCustomCornerScale,
+        onCustomBorderScale = viewModel::onCustomBorderScale,
+        onCustomAlphaScale = viewModel::onCustomAlphaScale,
+        onResetStyleConfig = viewModel::onResetStyleConfig,
     )
 }
 
@@ -116,6 +139,13 @@ fun ThemeSettingsScreen(
     onMaterialYouToggle: (Boolean) -> Unit,
     onFontChange: (Fonts) -> Unit,
     onShowBordersToggle: (Boolean) -> Unit,
+    onCornerPresetChange: (CornerPreset) -> Unit,
+    onBorderPresetChange: (BorderPreset) -> Unit,
+    onAlphaPresetChange: (AlphaPreset) -> Unit,
+    onCustomCornerScale: (Float?) -> Unit,
+    onCustomBorderScale: (Float?) -> Unit,
+    onCustomAlphaScale: (Float?) -> Unit,
+    onResetStyleConfig: () -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
@@ -142,6 +172,13 @@ fun ThemeSettingsScreen(
             onMaterialYouToggle = onMaterialYouToggle,
             onFontChange = onFontChange,
             onShowBordersToggle = onShowBordersToggle,
+            onCornerPresetChange = onCornerPresetChange,
+            onBorderPresetChange = onBorderPresetChange,
+            onAlphaPresetChange = onAlphaPresetChange,
+            onCustomCornerScale = onCustomCornerScale,
+            onCustomBorderScale = onCustomBorderScale,
+            onCustomAlphaScale = onCustomAlphaScale,
+            onResetStyleConfig = onResetStyleConfig,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
         )
@@ -157,6 +194,13 @@ private fun LazyListScope.ThemeSettingsContent(
     onMaterialYouToggle: (Boolean) -> Unit,
     onFontChange: (Fonts) -> Unit,
     onShowBordersToggle: (Boolean) -> Unit,
+    onCornerPresetChange: (CornerPreset) -> Unit,
+    onBorderPresetChange: (BorderPreset) -> Unit,
+    onAlphaPresetChange: (AlphaPreset) -> Unit,
+    onCustomCornerScale: (Float?) -> Unit,
+    onCustomBorderScale: (Float?) -> Unit,
+    onCustomAlphaScale: (Float?) -> Unit,
+    onResetStyleConfig: () -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
 ) {
@@ -340,7 +384,18 @@ private fun LazyListScope.ThemeSettingsContent(
                             )
                         },
                         colors = listItemColors(),
-                        modifier = Modifier.clip(endItemShape()),
+                        modifier = Modifier.clip(middleItemShape()),
+                    )
+
+                    StyleConfigSection(
+                        styleConfig = theme.style,
+                        onCornerPresetChange = onCornerPresetChange,
+                        onBorderPresetChange = onBorderPresetChange,
+                        onAlphaPresetChange = onAlphaPresetChange,
+                        onCustomCornerScale = onCustomCornerScale,
+                        onCustomBorderScale = onCustomBorderScale,
+                        onCustomAlphaScale = onCustomAlphaScale,
+                        onResetStyleConfig = onResetStyleConfig,
                     )
         }
     }
@@ -424,6 +479,125 @@ private fun PaletteStyleSection(
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StyleConfigSection(
+    styleConfig: StyleConfig,
+    onCornerPresetChange: (CornerPreset) -> Unit,
+    onBorderPresetChange: (BorderPreset) -> Unit,
+    onAlphaPresetChange: (AlphaPreset) -> Unit,
+    onCustomCornerScale: (Float?) -> Unit,
+    onCustomBorderScale: (Float?) -> Unit,
+    onCustomAlphaScale: (Float?) -> Unit,
+    onResetStyleConfig: () -> Unit,
+) {
+    var showAdvanced by remember { mutableStateOf(false) }
+
+    Column(modifier = Modifier.clip(endItemShape())) {
+        ListItem(
+            headlineContent = { Text(text = "样式风格") },
+            colors = listItemColors(),
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(listItemColors().containerColor)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                CornerPreset.entries.forEachIndexed { index, preset ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = CornerPreset.entries.size),
+                        onClick = { onCornerPresetChange(preset) },
+                        selected = styleConfig.cornerPreset == preset,
+                    ) {
+                        Text(text = preset.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                BorderPreset.entries.forEachIndexed { index, preset ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = BorderPreset.entries.size),
+                        onClick = { onBorderPresetChange(preset) },
+                        selected = styleConfig.borderPreset == preset,
+                    ) {
+                        Text(text = preset.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                AlphaPreset.entries.forEachIndexed { index, preset ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = AlphaPreset.entries.size),
+                        onClick = { onAlphaPresetChange(preset) },
+                        selected = styleConfig.alphaPreset == preset,
+                    ) {
+                        Text(text = preset.toDisplayString())
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showAdvanced = !showAdvanced },
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(text = "高级自定义")
+                Icon(
+                    imageVector = if (showAdvanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = null,
+                )
+            }
+
+            AnimatedVisibility(visible = showAdvanced) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(text = "圆角比例: ${styleConfig.effectiveCornerScale()}")
+                    Slider(
+                        value = styleConfig.effectiveCornerScale(),
+                        onValueChange = { onCustomCornerScale(it) },
+                        valueRange = 0f..4f,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Text(text = "边框比例: ${styleConfig.effectiveBorderScale()}")
+                    Slider(
+                        value = styleConfig.effectiveBorderScale(),
+                        onValueChange = { onCustomBorderScale(it) },
+                        valueRange = 0f..3f,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    Text(text = "透明度比例: ${styleConfig.effectiveAlphaScale()}")
+                    Slider(
+                        value = styleConfig.effectiveAlphaScale(),
+                        onValueChange = { onCustomAlphaScale(it) },
+                        valueRange = 0f..3f,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            TextButton(
+                onClick = onResetStyleConfig,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(text = "重置为默认")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

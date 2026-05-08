@@ -52,3 +52,24 @@ fun HomeLayout.toDisplayString(): String = when (this) {
     HomeLayout.LOG -> "行为日志"
     HomeLayout.MOMENT -> "当前时刻"
 }
+
+fun CornerPreset.toDisplayString(): String = when (this) {
+    CornerPreset.COMPACT -> "紧凑"
+    CornerPreset.STANDARD -> "标准"
+    CornerPreset.ROUNDED -> "圆润"
+    CornerPreset.SOFT -> "超圆"
+}
+
+fun BorderPreset.toDisplayString(): String = when (this) {
+    BorderPreset.NONE -> "无边"
+    BorderPreset.THIN -> "纤细"
+    BorderPreset.STANDARD -> "标准"
+    BorderPreset.THICK -> "粗厚"
+}
+
+fun AlphaPreset.toDisplayString(): String = when (this) {
+    AlphaPreset.SUBTLE -> "淡雅"
+    AlphaPreset.STANDARD -> "标准"
+    AlphaPreset.VIVID -> "鲜明"
+    AlphaPreset.SOLID -> "实心"
+}
