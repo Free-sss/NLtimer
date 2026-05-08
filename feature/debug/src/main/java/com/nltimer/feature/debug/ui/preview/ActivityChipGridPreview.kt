@@ -21,8 +21,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
-import com.nltimer.feature.home.ui.sheet.ActivityGridComponent
-import com.nltimer.feature.home.ui.sheet.ChipItem
+import com.nltimer.core.behaviorui.sheet.ActivityGridComponent
+import com.nltimer.core.behaviorui.sheet.ChipItem
 
 @Preview(showBackground = true)
 @Composable

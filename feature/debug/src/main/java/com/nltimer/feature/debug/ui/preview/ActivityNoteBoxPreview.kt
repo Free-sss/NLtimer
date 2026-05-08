@@ -13,7 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.nltimer.feature.home.ui.sheet.NoteInputComponent
+import com.nltimer.core.behaviorui.sheet.NoteInputComponent
 
 @Composable
 fun ActivityNoteBoxDebugPreview() {
