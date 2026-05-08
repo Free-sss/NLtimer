@@ -84,7 +84,7 @@ fun EditTagDialog(
             val priority = formState["priority"]?.toIntOrNull() ?: tag.priority
             val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: tag.isArchived
             val color = colorHex?.let {
-                try { it.toLong(16).or(0xFF000000.toLong()) } catch (_: Exception) { null }
+                try { it.toULong(16).toLong() } catch (_: Exception) { null }
             }
             onConfirm(
                 tag.copy(

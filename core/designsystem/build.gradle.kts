@@ -16,4 +16,5 @@ dependencies {
 
     implementation(libs.materialkolor)
     implementation(libs.colorpicker.compose)
+    implementation(libs.kotlinx.collections.immutable)
 }

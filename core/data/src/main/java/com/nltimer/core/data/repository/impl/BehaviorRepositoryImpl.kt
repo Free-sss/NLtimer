@@ -6,14 +6,18 @@ import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
 import com.nltimer.core.data.database.entity.TagEntity
+import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
+import com.nltimer.core.data.util.BehaviorCalculator
+import com.nltimer.core.data.util.ClockService
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,6 +34,8 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val behaviorDao: BehaviorDao,
     private val activityDao: ActivityDao,
     private val tagDao: TagDao,
+    private val clockService: ClockService,
+    private val database: NLtimerDatabase,
 ) : BehaviorRepository {
 
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
@@ -43,7 +49,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
         behaviorDao.getTagsForBehavior(behaviorId).map { list ->
-            list.map { it.toModel() }
+            list.map { Tag.fromEntity(it) }
         }
 
     override fun getPendingBehaviors(): Flow<List<Behavior>> =
@@ -54,20 +60,9 @@ class BehaviorRepositoryImpl @Inject constructor(
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
         val behavior = behaviorEntity.toModel()
         val activityEntity = activityDao.getById(behavior.activityId) ?: return null
-        val activity = com.nltimer.core.data.model.Activity(
-            id = activityEntity.id,
-            name = activityEntity.name,
-            iconKey = activityEntity.iconKey,
-            keywords = activityEntity.keywords,
-            groupId = activityEntity.groupId,
-            isPreset = activityEntity.isPreset,
-            isArchived = activityEntity.isArchived,
-            archivedAt = activityEntity.archivedAt,
-            color = activityEntity.color,
-            usageCount = activityEntity.usageCount,
-        )
+        val activity = Activity.fromEntity(activityEntity)
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
-        val tags = tagEntities.map { it.toModel() }
+        val tags = tagEntities.map { Tag.fromEntity(it) }
         return BehaviorWithDetails(
             behavior = behavior,
             activity = activity,
@@ -82,19 +77,20 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.getMaxSequence()
 
     override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
-        // 先插入行为记录，再批量插入标签关联
-        val id = behaviorDao.insert(behavior.toEntity())
-        if (tagIds.isNotEmpty()) {
-            behaviorDao.insertTagCrossRefs(
-                tagIds.map { tagId ->
-                    BehaviorTagCrossRefEntity(
-                        behaviorId = id,
-                        tagId = tagId,
-                    )
-                }
-            )
+        return database.withTransaction {
+            val id = behaviorDao.insert(behavior.toEntity())
+            if (tagIds.isNotEmpty()) {
+                behaviorDao.insertTagCrossRefs(
+                    tagIds.map { tagId ->
+                        BehaviorTagCrossRefEntity(
+                            behaviorId = id,
+                            tagId = tagId,
+                        )
+                    }
+                )
+            }
+            id
         }
-        return id
     }
 
     override suspend fun setEndTime(id: Long, endTime: Long) =
@@ -122,38 +118,35 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.endCurrentBehavior(endTime)
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
-        val now = System.currentTimeMillis()
-        val currentEntity = behaviorDao.getById(currentId) ?: return null
-        val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
+        return database.withTransaction {
+            val now = clockService.currentTimeMillis()
+            val currentEntity = behaviorDao.getById(currentId) ?: return@withTransaction null
+            val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
 
-        // 计算实际耗时并评估完成度
-        if (currentEntity.startTime > 0) {
-            val duration = clampedEndTime - currentEntity.startTime
-            behaviorDao.setActualDuration(currentId, duration)
-
-            // 如果是有计划的行为，根据耗时偏差计算完成度百分比
-            val estimated = currentEntity.estimatedDuration?.times(60_000)
-            if (currentEntity.wasPlanned && estimated != null && estimated > 0) {
-                val diff = kotlin.math.abs(duration - estimated)
-                val ratio = (diff.toDouble() / estimated).coerceAtMost(1.0)
-                val level = ((1.0 - ratio) * 100).toInt().coerceIn(0, 100)
-                behaviorDao.setAchievementLevel(currentId, level)
+            if (currentEntity.startTime > 0) {
+                val result = BehaviorCalculator.calculateCompletion(
+                    startTime = currentEntity.startTime,
+                    endTime = clampedEndTime,
+                    wasPlanned = currentEntity.wasPlanned,
+                    estimatedDurationMinutes = currentEntity.estimatedDuration,
+                )
+                behaviorDao.setActualDuration(currentId, result.durationMs)
+                if (result.achievementLevel != null) {
+                    behaviorDao.setAchievementLevel(currentId, result.achievementLevel)
+                }
             }
+
+            behaviorDao.setEndTime(currentId, clampedEndTime)
+            behaviorDao.setStatus(currentId, BehaviorNature.COMPLETED.key)
+
+            if (idleMode) return@withTransaction null
+
+            val nextPending = behaviorDao.getNextPending() ?: return@withTransaction null
+            val nextNow = clockService.currentTimeMillis()
+            behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
+            behaviorDao.setStartTime(nextPending.id, nextNow)
+            nextPending.toModel()
         }
-
-        // 结束当前行为：设置结束时间和状态
-        behaviorDao.setEndTime(currentId, clampedEndTime)
-        behaviorDao.setStatus(currentId, BehaviorNature.COMPLETED.key)
-
-        // 空闲模式不启动下一个
-        if (idleMode) return null
-
-        // 自动启动下一个待办行为
-        val nextPending = behaviorDao.getNextPending() ?: return null
-        val nextNow = System.currentTimeMillis()
-        behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
-        behaviorDao.setStartTime(nextPending.id, nextNow)
-        return nextPending.toModel()
     }
 
     override suspend fun reorderGoals(orderedIds: List<Long>) {
@@ -162,10 +155,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun delete(id: Long) {
-        val toDelete = behaviorDao.getById(id) ?: return
-        behaviorDao.delete(id)
-    }
+    override suspend fun delete(id: Long) = behaviorDao.delete(id)
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
     }
@@ -201,19 +191,6 @@ class BehaviorRepositoryImpl @Inject constructor(
         wasPlanned = wasPlanned,
     )
 
-    private fun TagEntity.toModel() = Tag(
-        id = id,
-        name = name,
-        color = color,
-        iconKey = iconKey,
-        category = category,
-        priority = priority,
-        usageCount = usageCount,
-        sortOrder = sortOrder,
-        isArchived = isArchived,
-        archivedAt = archivedAt,
-    )
-
     override suspend fun updateBehavior(
         id: Long,
         activityId: Long,
@@ -222,28 +199,52 @@ class BehaviorRepositoryImpl @Inject constructor(
         status: String,
         note: String?,
     ) {
-        behaviorDao.update(id, activityId, startTime, endTime, status, note)
-        
-        // 重新计算实际耗时
-        if (status == "completed" && endTime != null && startTime > 0) {
-            val duration = endTime - startTime
-            behaviorDao.setActualDuration(id, duration)
-        } else if (status == "active" && startTime > 0) {
-            val duration = System.currentTimeMillis() - startTime
-            behaviorDao.setActualDuration(id, duration)
-        } else {
-            behaviorDao.setActualDuration(id, 0L)
+        database.withTransaction {
+            behaviorDao.update(id, activityId, startTime, endTime, status, note)
+
+            if (status == "completed" && endTime != null && startTime > 0) {
+                val duration = endTime - startTime
+                behaviorDao.setActualDuration(id, duration)
+            } else if (status == "active" && startTime > 0) {
+                val duration = clockService.currentTimeMillis() - startTime
+                behaviorDao.setActualDuration(id, duration)
+            } else {
+                behaviorDao.setActualDuration(id, 0L)
+            }
         }
     }
 
     override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {
-        // 先删除原有关联，再重新插入
-        behaviorDao.deleteTagsForBehavior(behaviorId)
-        behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
+        database.withTransaction {
+            behaviorDao.deleteTagsForBehavior(behaviorId)
+            behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
+        }
     }
 
     override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> =
         behaviorDao.getBehaviorsOverlappingRange(rangeStart, rangeEnd).map { list ->
             list.map { it.toModel() }
         }
+
+    override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> {
+        if (behaviorIds.isEmpty()) return emptyMap()
+        val rows = behaviorDao.getTagsForBehaviorsSync(behaviorIds)
+        return rows.groupBy { it.behaviorId }.mapValues { (_, rows) ->
+            rows.map { row ->
+                Tag(
+                    id = row.id,
+                    name = row.name,
+                    color = row.color,
+                    iconKey = row.iconKey,
+                    category = row.category,
+                    priority = row.priority,
+                    usageCount = row.usageCount,
+                    sortOrder = row.sortOrder,
+                    keywords = row.keywords,
+                    isArchived = row.isArchived,
+                    archivedAt = row.archivedAt,
+                )
+            }
+        }
+    }
 }

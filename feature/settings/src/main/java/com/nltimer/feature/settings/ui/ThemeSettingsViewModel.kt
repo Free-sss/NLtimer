@@ -4,10 +4,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.AppTheme
+import com.nltimer.core.designsystem.theme.BorderPreset
+import com.nltimer.core.designsystem.theme.CornerPreset
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
+import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -55,11 +59,35 @@ class ThemeSettingsViewModel @Inject constructor(
     fun onFontChange(font: Fonts) = updateTheme { copy(font = font) }
 
     /** 切换组件边框显示 */
-    fun onShowBordersToggle(enabled: Boolean) = updateTheme { copy(showBorders = enabled) }
+    fun onShowBordersToggle(enabled: Boolean) = updateTheme {
+        val newBorderPreset = if (enabled) {
+            if (style.borderPreset == BorderPreset.NONE) BorderPreset.STANDARD else style.borderPreset
+        } else {
+            BorderPreset.NONE
+        }
+        copy(showBorders = enabled, style = style.copy(borderPreset = newBorderPreset))
+    }
 
     /** 切换主页布局（网格/时间轴） */
     fun onHomeLayoutChange(layout: HomeLayout) = updateTheme { copy(homeLayout = layout) }
 
     /** 切换侧边滑动时间轴显示 */
     fun onShowTimeSideBarToggle(enabled: Boolean) = updateTheme { copy(showTimeSideBar = enabled) }
+
+    fun onCornerPresetChange(preset: CornerPreset) = updateTheme { copy(style = style.copy(cornerPreset = preset, cornerScale = null)) }
+
+    fun onBorderPresetChange(preset: BorderPreset) = updateTheme {
+        val newShowBorders = preset != BorderPreset.NONE
+        copy(showBorders = newShowBorders, style = style.copy(borderPreset = preset, borderScale = null))
+    }
+
+    fun onAlphaPresetChange(preset: AlphaPreset) = updateTheme { copy(style = style.copy(alphaPreset = preset, alphaScale = null)) }
+
+    fun onCustomCornerScale(scale: Float?) = updateTheme { copy(style = style.copy(cornerScale = scale)) }
+
+    fun onCustomBorderScale(scale: Float?) = updateTheme { copy(style = style.copy(borderScale = scale)) }
+
+    fun onCustomAlphaScale(scale: Float?) = updateTheme { copy(style = style.copy(alphaScale = scale)) }
+
+    fun onResetStyleConfig() = updateTheme { copy(showBorders = true, style = StyleConfig()) }
 }

@@ -23,6 +23,8 @@ data class GridCellUiState(
     val durationMs: Long? = null,
     val startTime: LocalTime? = null,
     val endTime: LocalTime? = null,
+    val startEpochMs: Long? = null,
+    val endEpochMs: Long? = null,
     val isAddPlaceholder: Boolean = false,
     val note: String? = null,
     val pomodoroCount: Int = 0,

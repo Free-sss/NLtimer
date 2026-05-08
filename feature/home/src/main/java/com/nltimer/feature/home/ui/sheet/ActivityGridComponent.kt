@@ -33,6 +33,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -50,10 +52,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import kotlin.math.max
 
+@Immutable
 data class ChipItem(
     val id: Long,
     val name: String,
@@ -198,7 +206,7 @@ fun ActivityGridComponent(
                     horizontalSpacing = 4.dp,
                     verticalSpacing = 4.dp,
                 ) {
-                    chips.forEach { chip ->
+                    chips.forEach { chip -> key(chip.id) {
                         AdaptiveActivityChip(
                             chip = chip,
                             displayMode = displayMode,
@@ -208,7 +216,7 @@ fun ActivityGridComponent(
                             maxWidth = chipMaxWidth,
                             useActivityColorForText = useActivityColorForText,
                         )
-                    }
+                    } }
                 }
             }
         }
@@ -236,7 +244,7 @@ fun ActivityGridComponent(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    chips.forEach { chip ->
+                    chips.forEach { chip -> key(chip.id) {
                         AdaptiveActivityChip(
                             chip = chip,
                             displayMode = displayMode,
@@ -246,7 +254,7 @@ fun ActivityGridComponent(
                             maxWidth = chipMaxWidth,
                             useActivityColorForText = useActivityColorForText,
                         )
-                    }
+                    } }
                 }
             } else {
                 val lineHeightDp = 28.dp
@@ -257,11 +265,11 @@ fun ActivityGridComponent(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp,start = 4.dp,bottom = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        chips.forEach { chip ->
+                        chips.forEach { chip -> key(chip.id) {
                             AdaptiveActivityChip(
                                 chip = chip,
                                 displayMode = displayMode,
@@ -271,7 +279,7 @@ fun ActivityGridComponent(
                                 maxWidth = chipMaxWidth,
                                 useActivityColorForText = useActivityColorForText,
                             )
-                        }
+                        } }
                     }
                 }
             }
@@ -290,13 +298,13 @@ internal fun AdaptiveActivityChip(
     useActivityColorForText: Boolean = true,
 ) {
     val baseColor = chip.color
-    val containerColor = baseColor.copy(alpha = 0.15f)
+    val containerColor = baseColor.copy(alpha = styledAlpha(0.15f))
     val contentColor = if (useActivityColorForText) {
-        baseColor.copy(alpha = 0.9f)
+        baseColor.copy(alpha = styledAlpha(0.9f))
     } else {
         MaterialTheme.colorScheme.onSurface
     }
-    val borderColor = baseColor.copy(alpha = 0.5f)
+    val borderColor = baseColor.copy(alpha = styledAlpha(0.5f))
     val selectedBorderColor = MaterialTheme.colorScheme.primary
 
     val shape = when (displayMode) {
@@ -304,7 +312,7 @@ internal fun AdaptiveActivityChip(
         ChipDisplayMode.Squares -> RoundedCornerShape(0)
         ChipDisplayMode.SquareBorder -> RoundedCornerShape(0)
         ChipDisplayMode.None -> RoundedCornerShape(0)
-        else -> RoundedCornerShape(6.dp)
+        else -> RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL))
     }
 
     val surfaceColor = when (displayMode) {
@@ -314,7 +322,7 @@ internal fun AdaptiveActivityChip(
     }
 
     val border = when (displayMode) {
-        ChipDisplayMode.Capsules -> BorderStroke(1.dp, if (isSelected) selectedBorderColor else borderColor)
+        ChipDisplayMode.Capsules -> BorderStroke(styledBorder(BorderTokens.THIN), if (isSelected) selectedBorderColor else borderColor)
         else -> null
     }
 
@@ -443,8 +451,8 @@ internal fun FunctionChip(
             ),
         color = containerColor,
         contentColor = contentColor,
-        shape = RoundedCornerShape(6.dp),
-        border = BorderStroke(1.dp, borderColor),
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+        border = BorderStroke(styledBorder(BorderTokens.THIN), borderColor),
     ) {
         Row(
             modifier = Modifier.padding(start = 8.dp),

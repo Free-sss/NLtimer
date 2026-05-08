@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import java.util.concurrent.CopyOnWriteArrayList
+import com.nltimer.app.navigation.NLtimerRoutes
 
 /**
  * 抽屉侧边栏菜单项数据模型
@@ -44,12 +45,12 @@ internal data class DrawerMenuItem(
 
 // 抽屉侧边栏菜单项列表，debug 模块可在初始化时动态追加
 internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
-    DrawerMenuItem("home", "主页", Icons.Default.Home),
-    DrawerMenuItem("theme_settings", "主题配置", Icons.Default.Brightness5),
-    DrawerMenuItem("categories", "分类管理", Icons.Default.Category),
-    DrawerMenuItem("management_activities", "活动管理", Icons.Default.List),
-    DrawerMenuItem("tag_management", "标签管理", Icons.Default.Label),
-    DrawerMenuItem("settings", "设置", Icons.Default.Settings),
+    DrawerMenuItem(NLtimerRoutes.HOME, "主页", Icons.Default.Home),
+    DrawerMenuItem(NLtimerRoutes.THEME_SETTINGS, "主题配置", Icons.Default.Brightness5),
+    DrawerMenuItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
+    DrawerMenuItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.Default.List),
+    DrawerMenuItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.Default.Label),
+    DrawerMenuItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 ))
 
 /**

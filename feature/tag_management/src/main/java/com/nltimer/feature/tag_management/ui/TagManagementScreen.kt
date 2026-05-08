@@ -34,20 +34,11 @@ import com.nltimer.feature.tag_management.model.DialogState
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 import com.nltimer.feature.tag_management.ui.components.CategoryCard
 import com.nltimer.feature.tag_management.ui.components.dialogs.AddCategoryDialog
-import com.nltimer.feature.tag_management.ui.components.dialogs.AddTagDialog
+import com.nltimer.feature.tag_management.ui.components.dialogs.AddTagFormSheet
 import com.nltimer.feature.tag_management.ui.components.dialogs.ConfirmDialog
-import com.nltimer.feature.tag_management.ui.components.dialogs.EditTagDialog
+import com.nltimer.feature.tag_management.ui.components.dialogs.EditTagFormSheet
 import com.nltimer.feature.tag_management.ui.components.dialogs.RenameCategoryDialog
 
-/**
- * 标签管理主界面
- *
- * 展示所有标签分类，支持添加、编辑、删除、移动标签和分类操作。
- *
- * @param viewModel 标签管理 ViewModel
- * @param onNavigateBack 返回上一页的回调
- * @param modifier 修饰符
- */
 @Composable
 fun TagManagementScreen(
     viewModel: TagManagementViewModel,
@@ -130,19 +121,26 @@ fun TagManagementScreen(
     uiState.dialogState?.let { dialog ->
         when (dialog) {
             is DialogState.AddTag -> {
-                AddTagDialog(
+                AddTagFormSheet(
                     initialCategory = dialog.category,
+                    categories = uiState.categoryNames,
+                    allActivities = uiState.allActivities,
                     onDismiss = { viewModel.dismissDialog() },
-                    onConfirm = { name, color, icon, priority, category ->
-                        viewModel.addTag(name, color, icon, priority, category)
+                    onConfirm = { name, color, icon, priority, category, keywords, activityId ->
+                        viewModel.addTag(name, color, icon, priority, category, keywords, activityId)
                     },
                 )
             }
             is DialogState.EditTag -> {
-                EditTagDialog(
+                EditTagFormSheet(
                     tag = dialog.tag,
+                    categories = uiState.categoryNames,
+                    allActivities = uiState.allActivities,
+                    initialActivityId = dialog.activityId,
                     onDismiss = { viewModel.dismissDialog() },
-                    onConfirm = { viewModel.updateTag(it) },
+                    onConfirm = { tag, activityId ->
+                        viewModel.updateTag(tag, activityId)
+                    },
                     onDelete = { viewModel.showDeleteTagDialog(dialog.tag) },
                 )
             }
@@ -192,17 +190,6 @@ fun TagManagementScreen(
     }
 }
 
-/**
- * 移动标签对话框包装组件
- *
- * 提供下拉菜单让用户选择目标分类。
- *
- * @param tag 要移动的标签
- * @param currentCategory 当前分类
- * @param categories 所有可选分类列表
- * @param onDismiss 关闭对话框回调
- * @param onConfirm 确认移动回调，参数为目标分类名或 null（未分类）
- */
 @Composable
 private fun MoveTagDialogWrapper(
     tag: Tag,

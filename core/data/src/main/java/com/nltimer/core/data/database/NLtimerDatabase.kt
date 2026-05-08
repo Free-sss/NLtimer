@@ -28,7 +28,7 @@ import com.nltimer.core.data.database.entity.TagEntity
         ActivityTagBindingEntity::class,
         BehaviorTagCrossRefEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = false,
 )
 abstract class NLtimerDatabase : RoomDatabase() {
@@ -202,10 +202,6 @@ abstract class NLtimerDatabase : RoomDatabase() {
             }
         }
 
-        // 数据库从版本 8 到 9 的迁移：
-        // activities: 删除 emoji，新增 keywords/archivedAt/usageCount
-        // activity_groups: 新增 isArchived/archivedAt
-        // tags: 删除 textColor，icon 重命名为 iconKey，新增 archivedAt
         val MIGRATION_8_9 = object : Migration(8, 9) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("PRAGMA foreign_keys = OFF")
@@ -277,12 +273,22 @@ abstract class NLtimerDatabase : RoomDatabase() {
             }
         }
 
-        // 数据库从版本 9 到 10 的迁移：
-        // tags: 新增 keywords 列（可空），用于 MatchActivitiesAndTagsTool 的关键词检索
         val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE tags ADD COLUMN keywords TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_activities_isArchived` ON `activities` (`isArchived`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_activities_groupId` ON `activities` (`groupId`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tags_isArchived` ON `tags` (`isArchived`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_tags_category` ON `tags` (`category`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_behaviors_startTime_status` ON `behaviors` (`startTime`, `status`)")
             }
         }
+
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE tags ADD COLUMN keywords TEXT DEFAULT NULL")
+            }
+        }
+
+        val ALL_MIGRATIONS = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
     }
 }

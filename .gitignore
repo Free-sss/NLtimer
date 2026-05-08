@@ -315,3 +315,4 @@ docs/Android-SimpleTimeTracker/
 .claude/settings.local.json
 .claude/worktrees/
 .gradle-home/
+.mindfs/

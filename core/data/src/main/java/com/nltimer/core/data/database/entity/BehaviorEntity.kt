@@ -24,6 +24,7 @@ import androidx.room.Index
         Index("activityId"),
         Index(value = ["startTime", "sequence"]),
         Index("status"),
+        Index(value = ["startTime", "status"]),
     ],
 )
 data class BehaviorEntity(

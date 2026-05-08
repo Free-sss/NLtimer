@@ -18,4 +18,5 @@ data class Theme(
     val showBorders: Boolean = true,
     val homeLayout: HomeLayout = HomeLayout.GRID,
     val showTimeSideBar: Boolean = true,
+    val style: StyleConfig = StyleConfig(),
 )

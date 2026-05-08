@@ -58,6 +58,7 @@ fun GenericFormSheet(
     onDismiss: () -> Unit,
     onSubmit: (Map<String, String>) -> Unit,
     overlay: @Composable (() -> Unit)? = null,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -146,6 +147,8 @@ fun GenericFormSheet(
                         style = MaterialTheme.typography.labelLarge,
                     )
                 }
+
+                trailing?.invoke()
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -246,7 +249,7 @@ private fun iconColorRenderer(
     val fallbackColor = MaterialTheme.colorScheme.primary
     val currentColor = remember(colorValue) {
         try {
-            if (colorValue.isNotBlank()) Color(colorValue.toLong(16).or(0xFF000000.toLong()))
+            if (colorValue.isNotBlank()) Color(colorValue.toULong(16).toLong())
             else fallbackColor
         } catch (_: Exception) {
             fallbackColor
@@ -318,7 +321,7 @@ private fun iconColorRenderer(
         ColorPickerDialog(
             initialColor = currentColor,
             onSelect = { color ->
-                val hex = color.toArgb().toULong().toString(16)
+                val hex = (color.toArgb().toLong() and 0xFFFFFFFFL).toString(16)
                 onColorChange(hex)
                 showColorPicker = false
             },

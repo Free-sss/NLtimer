@@ -17,9 +17,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
+import com.nltimer.core.designsystem.theme.styledCorner
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -94,7 +96,7 @@ private fun PillLabel(
         color = contentColor,
         style = MaterialTheme.typography.labelMedium,
         modifier = modifier
-            .background(backgroundColor, RoundedCornerShape(4.dp))
+            .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_EXTRA_SMALL)))
             .padding(horizontal = 10.dp, vertical = 2.dp),
     )
 }

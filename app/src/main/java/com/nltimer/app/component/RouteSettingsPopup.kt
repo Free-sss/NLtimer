@@ -21,7 +21,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,14 +32,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.tooling.preview.Preview
+import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
 
 /**
  * RouteSettingsPopup 调试预览入口
@@ -51,7 +54,7 @@ import com.nltimer.core.designsystem.theme.NLtimerTheme
 fun RouteSettingsPopupPreview() {
     NLtimerTheme {
         RouteSettingsPopup(
-            currentRoute = "home",
+            currentRoute = NLtimerRoutes.HOME,
             onDismiss = {},
             onHomeLayoutChange = {},
             onShowTimeSideBarChange = {}
@@ -96,7 +99,7 @@ fun RouteSettingsPopup(
             modifier = modifier
                 .width(popupWidth)
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
             tonalElevation = 8.dp,
             shadowElevation = 8.dp
         ) {
@@ -116,7 +119,7 @@ fun RouteSettingsPopup(
                 HorizontalDivider()
 
                 // home 路由专属：布局切换功能
-                if (currentRoute == "home") {
+                if (currentRoute == NLtimerRoutes.HOME) {
                     PopupItem(
                         icon = Icons.Default.Dashboard,
                         label = if (showLayoutOptions) "返回设置" else "更改布局",
@@ -133,6 +136,7 @@ fun RouteSettingsPopup(
                                     HomeLayout.GRID -> "网格时间"
                                     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
                                     HomeLayout.LOG -> "行为日志"
+                                    HomeLayout.MOMENT -> "瞬间"
                                 },
                                 onClick = {
                                     onHomeLayoutChange(layout)
@@ -158,26 +162,28 @@ fun RouteSettingsPopup(
 
                 // 未展开布局选项时，显示通用快捷操作列表
                 if (!showLayoutOptions) {
-                    PopupItem(
-                        icon = Icons.Default.Search,
-                        label = "搜索",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.List,
-                        label = "活动管理",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.Label,
-                        label = "标签管理",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
-                    PopupItem(
-                        icon = Icons.AutoMirrored.Filled.Accessible,
-                        label = "导出今日记录",
-                        onClick = { /* TODO */ onDismiss() }
-                    )
+                    //TODO: 其他路由的快捷操作列表
+                
+                    // PopupItem(
+                    //     icon = Icons.Default.Search,
+                    //     label = "搜索",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.List,
+                    //     label = "活动管理",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.Label,
+                    //     label = "标签管理",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
+                    // PopupItem(
+                    //     icon = Icons.AutoMirrored.Filled.Accessible,
+                    //     label = "导出今日记录",
+                    //     onClick = { /* TODO */ onDismiss() }
+                    // )
                 }
             }
         }
@@ -232,7 +238,12 @@ private fun PopupSwitchItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .background(
+                color = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.5f)) else Color.Transparent,
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL))
+            )
+            .clickable { onCheckedChange(!checked) },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -246,10 +257,6 @@ private fun PopupSwitchItem(
             style = MaterialTheme.typography.bodyMedium,
             color = tint,
             modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
         )
     }
 }

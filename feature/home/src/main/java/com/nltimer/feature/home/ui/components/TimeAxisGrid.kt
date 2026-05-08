@@ -75,7 +75,7 @@ fun TimeAxisGrid(
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(
                 row = row,
-                onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
+                onEmptyCellClick = onEmptyCellClick,
                 onCellLongClick = onCellLongClick,
                 timeLabelConfig = timeLabelConfig,
             )

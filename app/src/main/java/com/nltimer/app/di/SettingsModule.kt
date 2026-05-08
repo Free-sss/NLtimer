@@ -15,12 +15,12 @@ import okio.Path.Companion.toPath
 import javax.inject.Singleton
 
 /**
- * Hilt 数据层依赖注入模块
+ * Hilt 设置依赖注入模块
  * 提供 DataStore 实例和 SettingsPrefs 接口绑定，注册在 SingletonComponent 中
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule {
+object SettingsModule {
 
     /**
      * 提供基于文件的 Preferences DataStore 实例
@@ -31,7 +31,6 @@ object DataModule {
     fun provideDataStore(
         @ApplicationContext context: Context
     ): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath {
-        // 使用 Okio Path 指向 settings 偏好文件
         context.filesDir.resolve("settings.preferences_pb").absolutePath.toPath()
     }
 

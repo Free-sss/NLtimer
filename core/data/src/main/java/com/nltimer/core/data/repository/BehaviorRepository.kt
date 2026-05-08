@@ -44,4 +44,6 @@ interface BehaviorRepository {
     suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>)
 
     fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>>
+
+    suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>>
 }

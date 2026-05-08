@@ -16,8 +16,8 @@ fun Modifier.appBorder(
     borderProducer: @Composable () -> BorderStroke,
     shape: Shape = RectangleShape
 ): Modifier {
-    val showBorders = LocalTheme.current.showBorders
-    return if (showBorders) {
+    val effectiveScale = LocalTheme.current.style.effectiveBorderScale()
+    return if (effectiveScale > 0f) {
         this.border(borderProducer(), shape)
     } else {
         this

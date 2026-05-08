@@ -2,8 +2,6 @@ package com.nltimer.core.data.repository.impl
 
 import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
-import com.nltimer.core.data.database.entity.ActivityEntity
-import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.repository.ActivityRepository
@@ -26,22 +24,22 @@ class ActivityRepositoryImpl @Inject constructor(
 ) : ActivityRepository {
 
     override fun getAllActive(): Flow<List<Activity>> =
-        activityDao.getAllActive().map { list -> list.map { it.toModel() } }
+        activityDao.getAllActive().map { list -> list.map { Activity.fromEntity(it) } }
 
     override fun getAll(): Flow<List<Activity>> =
-        activityDao.getAll().map { list -> list.map { it.toModel() } }
+        activityDao.getAll().map { list -> list.map { Activity.fromEntity(it) } }
 
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
-        groupDao.getAll().map { list -> list.map { it.toModel() } }
+        groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
 
     override fun search(query: String): Flow<List<Activity>> =
-        activityDao.search(query).map { list -> list.map { it.toModel() } }
+        activityDao.search(query).map { list -> list.map { Activity.fromEntity(it) } }
 
     override suspend fun getById(id: Long): Activity? =
-        activityDao.getById(id)?.toModel()
+        activityDao.getById(id)?.let { Activity.fromEntity(it) }
 
     override suspend fun getByName(name: String): Activity? =
-        activityDao.getByName(name)?.toModel()
+        activityDao.getByName(name)?.let { Activity.fromEntity(it) }
 
     override suspend fun insert(activity: Activity): Long =
         activityDao.insert(activity.toEntity())
@@ -51,26 +49,4 @@ class ActivityRepositoryImpl @Inject constructor(
 
     override suspend fun setArchived(id: Long, archived: Boolean) =
         activityDao.setArchived(id, archived)
-
-    // 数据库实体转领域模型
-    private fun ActivityEntity.toModel() = Activity(
-        id = id,
-        name = name,
-        iconKey = iconKey,
-        keywords = keywords,
-        groupId = groupId,
-        isPreset = isPreset,
-        isArchived = isArchived,
-        archivedAt = archivedAt,
-        color = color,
-        usageCount = usageCount,
-    )
-
-    private fun ActivityGroupEntity.toModel() = ActivityGroup(
-        id = id,
-        name = name,
-        sortOrder = sortOrder,
-        isArchived = isArchived,
-        archivedAt = archivedAt,
-    )
 }

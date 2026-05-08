@@ -1,7 +1,14 @@
 package com.nltimer.core.data.repository
 
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.TagEntity
+import com.nltimer.core.data.database.NLtimerDatabase
+import androidx.room.withTransaction
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,9 +101,19 @@ class TagRepositoryImplTest {
             tagEntities.clear()
             tagFlow.value = emptyList()
         }
+
+        override suspend fun getDistinctCategoriesSync(): List<String> = emptyList()
+        override suspend fun getActivityIdsForTagSync(tagId: Long): List<Long> = emptyList()
+        override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
     }
 
-    private val repository = TagRepositoryImpl(fakeTagDao)
+    private val fakeDatabase: NLtimerDatabase = mockk<NLtimerDatabase>(relaxed = true).also {
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { it.withTransaction(any<suspend () -> Unit>()) } coAnswers { (args[0] as suspend () -> Unit).invoke() }
+    }
+
+    private val repository = TagRepositoryImpl(fakeTagDao, fakeDatabase)
 
     @Test
     fun `getAllActive returns only non-archived tags`() = runTest {
@@ -183,6 +200,7 @@ class TagRepositoryImplTest {
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 
@@ -206,6 +224,7 @@ class TagRepositoryImplTest {
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 

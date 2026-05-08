@@ -18,16 +18,6 @@ import com.nltimer.feature.stats.ui.StatsRoute
 import com.nltimer.feature.sub.ui.SubRoute
 import com.nltimer.feature.tag_management.ui.TagManagementRoute
 
-const val HOME_ROUTE = "home"
-const val SUB_ROUTE = "sub"
-const val STATS_ROUTE = "stats"
-const val CATEGORIES_ROUTE = "categories"
-const val MANAGEMENT_ACTIVITIES_ROUTE = "management_activities"
-const val TAG_MANAGEMENT_ROUTE = "tag_management"
-const val SETTINGS_ROUTE = "settings"
-const val THEME_SETTINGS_ROUTE = "theme_settings"
-const val DIALOG_CONFIG_ROUTE = "dialog_config"
-
 /**
  * 导航宿主 Composable
  * 注册所有应用页面的路由，包括 feature 模块的页面路由和 debug 模块的动态路由
@@ -42,27 +32,27 @@ fun NLtimerNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = HOME_ROUTE,
+        startDestination = NLtimerRoutes.HOME,
         modifier = modifier,
     ) {
-        composable(HOME_ROUTE) { HomeRoute() }
-        composable(SUB_ROUTE) { SubRoute() }
-        composable(STATS_ROUTE) { StatsRoute() }
-        composable(CATEGORIES_ROUTE) { CategoriesRoute() }
-        composable(MANAGEMENT_ACTIVITIES_ROUTE) { ActivityManagementRoute() }
-        composable(TAG_MANAGEMENT_ROUTE) {
+        composable(NLtimerRoutes.HOME) { HomeRoute() }
+        composable(NLtimerRoutes.SUB) { SubRoute() }
+        composable(NLtimerRoutes.STATS) { StatsRoute() }
+        composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
+        composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }
+        composable(NLtimerRoutes.TAG_MANAGEMENT) {
             TagManagementRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(SETTINGS_ROUTE) {
+        composable(NLtimerRoutes.SETTINGS) {
             SettingsRoute(
-                onNavigateToThemeSettings = { navController.navigate(THEME_SETTINGS_ROUTE) },
-                onNavigateToDialogConfig = { navController.navigate(DIALOG_CONFIG_ROUTE) },
+                onNavigateToThemeSettings = { navController.navigate(NLtimerRoutes.THEME_SETTINGS) },
+                onNavigateToDialogConfig = { navController.navigate(NLtimerRoutes.DIALOG_CONFIG) },
             )
         }
         composable(
-            THEME_SETTINGS_ROUTE,
+            NLtimerRoutes.THEME_SETTINGS,
             enterTransition = { slideInHorizontally { it } },
             exitTransition = { slideOutHorizontally { -it } },
             popEnterTransition = { slideInHorizontally { -it } },
@@ -71,7 +61,7 @@ fun NLtimerNavHost(
             ThemeSettingsRoute()
         }
         composable(
-            DIALOG_CONFIG_ROUTE,
+            NLtimerRoutes.DIALOG_CONFIG,
             enterTransition = { slideInHorizontally { it } },
             exitTransition = { slideOutHorizontally { -it } },
             popEnterTransition = { slideInHorizontally { -it } },

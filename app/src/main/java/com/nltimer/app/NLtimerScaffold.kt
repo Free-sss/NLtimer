@@ -32,10 +32,8 @@ import com.nltimer.app.component.AppBottomNavigation
 import com.nltimer.app.component.AppDrawer
 import com.nltimer.app.component.AppTopAppBar
 import com.nltimer.app.component.RouteSettingsPopup
-import com.nltimer.app.navigation.DIALOG_CONFIG_ROUTE
 import com.nltimer.app.navigation.NLtimerNavHost
-import com.nltimer.app.navigation.SETTINGS_ROUTE
-import com.nltimer.app.navigation.THEME_SETTINGS_ROUTE
+import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
@@ -45,28 +43,15 @@ import androidx.compose.material3.MaterialTheme
 fun NLtimerScaffold(
     navController: NavHostController,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-    themeViewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
     val coroutineScope = rememberCoroutineScope()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val primaryRoutes = setOf(
-        "home",
-        "sub",
-        "stats",
-        "categories",
-        "management_activities",
-        SETTINGS_ROUTE,
-    )
-    val settingsFullscreenRoutes = setOf(
-        THEME_SETTINGS_ROUTE,
-        DIALOG_CONFIG_ROUTE,
-    )
-    val isSecondaryPage = currentRoute in settingsFullscreenRoutes
+    val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
     val topBarTitle = when (currentRoute) {
-        SETTINGS_ROUTE -> "设置"
-        THEME_SETTINGS_ROUTE -> "主题配置"
-        DIALOG_CONFIG_ROUTE -> "弹窗配置"
+        NLtimerRoutes.SETTINGS -> "设置"
+        NLtimerRoutes.THEME_SETTINGS -> "主题配置"
+        NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         else -> "NLtimer"
     }
     var showSettingsPopup by remember { mutableStateOf(false) }
@@ -133,6 +118,7 @@ fun NLtimerScaffold(
             }
 
             if (showSettingsPopup) {
+                val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
                     onDismiss = { showSettingsPopup = false },
