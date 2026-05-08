@@ -34,5 +34,6 @@ include(
     "feature:categories",
     "feature:management_activities",
     "feature:tag_management",
+    "feature:behavior_management",
     "feature:debug",
 )
