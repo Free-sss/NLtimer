@@ -12,6 +12,7 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
 fun AddTagFormSheet(
@@ -30,6 +31,7 @@ fun AddTagFormSheet(
     val activityText = activityName ?: "+ 增加"
     val activityItems = listOf(null to "未关联") + allActivities.map { it.id to it.name }
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createTag.copy(
         sections = ActivityFormSpecs.createTag.sections.map { section ->
             section.copy(
@@ -60,9 +62,7 @@ fun AddTagFormSheet(
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val priority = formState["priority"]?.toIntOrNull() ?: 0
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
-            val color = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val color = parseColorHex(colorHex)
             onConfirm(name, color, icon, priority, selectedCategory, keywords, selectedActivityId)
         },
         overlay = {

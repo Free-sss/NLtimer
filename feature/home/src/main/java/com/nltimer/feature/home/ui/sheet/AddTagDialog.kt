@@ -12,6 +12,7 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
 fun AddTagDialog(
@@ -28,6 +29,7 @@ fun AddTagDialog(
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createTag.copy(
         sections = ActivityFormSpecs.createTag.sections.map { section ->
             section.copy(
@@ -58,9 +60,7 @@ fun AddTagDialog(
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val priority = formState["priority"]?.toIntOrNull() ?: 0
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
-            val color = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val color = parseColorHex(colorHex)
             if (name.isNotBlank()) {
                 onConfirm(name, color, icon, priority, selectedCategory, keywords, selectedActivityId)
             }
