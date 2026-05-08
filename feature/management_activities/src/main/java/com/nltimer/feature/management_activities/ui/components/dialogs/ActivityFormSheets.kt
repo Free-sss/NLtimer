@@ -74,7 +74,7 @@ fun AddActivityFormSheet(
         overlay = {
             if (showGroupPicker) {
                 GroupPickerPopup(
-                    groups = allGroups,
+                    groups = allGroups.map { it.id to it.name },
                     selectedId = selectedGroupId,
                     onSelected = { selectedGroupId = it },
                     onDismiss = { showGroupPicker = false },
@@ -168,7 +168,7 @@ fun EditActivityFormSheet(
         overlay = {
             if (showGroupPicker) {
                 GroupPickerPopup(
-                    groups = allGroups,
+                    groups = allGroups.map { it.id to it.name },
                     selectedId = selectedGroupId,
                     onSelected = { selectedGroupId = it },
                     onDismiss = { showGroupPicker = false },

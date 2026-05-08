@@ -69,7 +69,7 @@ fun AddActivityPreview() {
             onDismiss = { showSheet = false },
             onSubmit = { showSheet = false },
             overlay = if (showGroupPicker) {
-                { GroupPickerPopup(groups = mockGroups, selectedId = selectedGroupId, onSelected = { selectedGroupId = it }, onDismiss = { showGroupPicker = false }) }
+                { GroupPickerPopup(groups = mockGroups.map { it.id to it.name }, selectedId = selectedGroupId, onSelected = { selectedGroupId = it }, onDismiss = { showGroupPicker = false }) }
             } else null,
         )
     }
@@ -83,3 +83,4 @@ fun AddActivityPreview() {
         )
     }
 }
+

@@ -16,6 +16,7 @@ import com.nltimer.core.data.util.BehaviorCalculator
 import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,7 +42,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         behaviorDao.getByDayRange(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }
 
     override fun getCurrentBehavior(): Flow<Behavior?> =
-        behaviorDao.getCurrentBehavior().map { it?.let { Behavior.fromEntity(it) } }
+        behaviorDao.getCurrentBehavior().map { entity -> entity?.let { Behavior.fromEntity(it) } }
 
     override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
         behaviorDao.getHomeBehaviors(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }

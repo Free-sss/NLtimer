@@ -25,17 +25,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import com.nltimer.core.data.model.ActivityGroup
 
+/**
+ * 通用分组选择器弹窗。
+ *
+ * @param groups 可选分组列表，每项为 (id, name) 对
+ * @param selectedId 当前选中分组 ID，null 表示未分类
+ * @param onSelected 选中回调，null 表示选择"未分类"
+ * @param onDismiss 关闭回调
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GroupPickerPopup(
-    groups: List<ActivityGroup>,
+    groups: List<Pair<Long, String>>,
     selectedId: Long?,
     onSelected: (Long?) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val allGroups = listOf(ActivityGroup(id = 0, name = "未分类", sortOrder = 0)) + groups
+    val allGroups = listOf(0L to "未分类") + groups
 
     Popup(
         alignment = Alignment.BottomCenter,
@@ -62,12 +69,12 @@ fun GroupPickerPopup(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    allGroups.forEach { group ->
-                        val isSelected = group.id == (selectedId ?: 0L)
+                    allGroups.forEach { (id, name) ->
+                        val isSelected = id == (selectedId ?: 0L)
 
                         Surface(
                             onClick = {
-                                onSelected(if (group.id == 0L) null else group.id)
+                                onSelected(if (id == 0L) null else id)
                                 onDismiss()
                             },
                             shape = RoundedCornerShape(10.dp),
@@ -99,7 +106,7 @@ fun GroupPickerPopup(
                                     Spacer(modifier = Modifier.size(4.dp))
                                 }
                                 Text(
-                                    text = group.name,
+                                    text = name,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     color = if (isSelected) {
