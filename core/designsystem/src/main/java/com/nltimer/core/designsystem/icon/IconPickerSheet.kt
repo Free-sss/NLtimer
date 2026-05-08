@@ -2,11 +2,10 @@ package com.nltimer.core.designsystem.icon
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,16 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,12 +51,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.R
 import java.text.BreakIterator
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IconPickerSheet(
     currentIconKey: String?,
@@ -68,6 +68,10 @@ fun IconPickerSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val initialTab = if (IconKeyResolver.isMaterialIconOrNull(currentIconKey)) 1 else 0
     var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
+    var showSearch by rememberSaveable { mutableStateOf(false) }
+    var showManualInput by rememberSaveable { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var manualInput by rememberSaveable { mutableStateOf("") }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -83,7 +87,8 @@ fun IconPickerSheet(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .height(48.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
@@ -92,6 +97,89 @@ fun IconPickerSheet(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                 )
+
+                if (showSearch) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                            showManualInput = false
+                        },
+                        placeholder = { Text(stringResource(R.string.icon_picker_search), style = MaterialTheme.typography.bodySmall) },
+                        singleLine = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        textStyle = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                if (showManualInput) {
+                    OutlinedTextField(
+                        value = manualInput,
+                        onValueChange = { raw ->
+                            manualInput = truncateToCodePoints(raw, maxCodePoints = 4)
+                            showSearch = false
+                        },
+                        placeholder = { Text(stringResource(R.string.icon_picker_manual_input), style = MaterialTheme.typography.bodySmall) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (manualInput.isNotBlank()) {
+                                    onIconSelected(manualInput)
+                                }
+                            },
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        textStyle = MaterialTheme.typography.bodySmall,
+                    )
+                    TextButton(
+                        onClick = {
+                            if (manualInput.isNotBlank()) {
+                                onIconSelected(manualInput)
+                            }
+                        },
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+                    ) {
+                        Text(stringResource(R.string.icon_picker_confirm), style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+
+                if (!showManualInput) {
+                    IconButton(
+                        onClick = {
+                            showManualInput = !showManualInput
+                            if (showManualInput) showSearch = false
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Keyboard,
+                            contentDescription = stringResource(R.string.icon_picker_manual_input),
+                            tint = if (showManualInput) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                if (!showSearch) {
+                    IconButton(
+                        onClick = {
+                            showSearch = !showSearch
+                            if (showSearch) showManualInput = false
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = stringResource(R.string.icon_picker_search),
+                            tint = if (showSearch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
                 IconButton(onClick = { onIconSelected(null) }) {
                     Icon(
                         imageVector = Icons.Outlined.DeleteOutline,
@@ -119,12 +207,14 @@ fun IconPickerSheet(
                 0 -> EmojiTab(
                     currentIconKey = currentIconKey,
                     defaultEmoji = defaultEmoji,
+                    searchQuery = searchQuery,
                     onIconSelected = {
                         onIconSelected(it)
                         onDismiss()
                     },
                 )
                 1 -> MaterialIconTab(
+                    searchQuery = searchQuery,
                     onIconSelected = {
                         onIconSelected(it)
                         onDismiss()
@@ -135,16 +225,14 @@ fun IconPickerSheet(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun EmojiTab(
     currentIconKey: String?,
     defaultEmoji: String,
+    searchQuery: String,
     onIconSelected: (String?) -> Unit,
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<EmojiCategory?>(null) }
-    var manualInput by rememberSaveable { mutableStateOf("") }
 
     val allEmojis = remember { EmojiCategory.entries.flatMap { EmojiCatalog.findByCategory(it) } }
     val filteredEmojis = remember(searchQuery, selectedCategory) {
@@ -155,35 +243,14 @@ private fun EmojiTab(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            placeholder = stringResource(R.string.icon_picker_search),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+        CategoryScrollRow(
+            categories = EmojiCategory.entries,
+            selectedCategory = selectedCategory,
+            categoryLabel = { emojiCategoryLabel(it) },
+            onCategorySelected = { cat ->
+                selectedCategory = if (selectedCategory == cat) null else cat
+            },
         )
-
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            FilterChip(
-                selected = selectedCategory == null,
-                onClick = { selectedCategory = null },
-                label = { Text(stringResource(R.string.emoji_category_frequent), style = MaterialTheme.typography.labelSmall) },
-            )
-            EmojiCategory.entries.forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { selectedCategory = if (selectedCategory == category) null else category },
-                    label = { Text(emojiCategoryLabel(category), style = MaterialTheme.typography.labelSmall) },
-                )
-            }
-        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(6),
@@ -214,52 +281,14 @@ private fun EmojiTab(
                 }
             }
         }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OutlinedTextField(
-                value = manualInput,
-                onValueChange = { raw ->
-                    manualInput = truncateToCodePoints(raw, maxCodePoints = 4)
-                },
-                label = { Text(stringResource(R.string.icon_picker_manual_input)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (manualInput.isNotBlank()) {
-                            onIconSelected(manualInput)
-                        }
-                    },
-                ),
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            TextButton(
-                onClick = {
-                    if (manualInput.isNotBlank()) {
-                        onIconSelected(manualInput)
-                    } else {
-                        onIconSelected(currentIconKey ?: defaultEmoji)
-                    }
-                },
-            ) {
-                Text(stringResource(R.string.icon_picker_confirm))
-            }
-        }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MaterialIconTab(
+    searchQuery: String,
     onIconSelected: (String?) -> Unit,
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
     var selectedCategory by rememberSaveable { mutableStateOf<IconCategory?>(null) }
 
     val allIcons = remember { MaterialIconCatalog.icons }
@@ -275,35 +304,14 @@ private fun MaterialIconTab(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        SearchField(
-            query = searchQuery,
-            onQueryChange = { searchQuery = it },
-            placeholder = stringResource(R.string.icon_picker_search),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+        CategoryScrollRow(
+            categories = IconCategory.entries,
+            selectedCategory = selectedCategory,
+            categoryLabel = { iconCategoryLabel(it) },
+            onCategorySelected = { cat ->
+                selectedCategory = if (selectedCategory == cat) null else cat
+            },
         )
-
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            FilterChip(
-                selected = selectedCategory == null,
-                onClick = { selectedCategory = null },
-                label = { Text(stringResource(R.string.icon_category_action), style = MaterialTheme.typography.labelSmall) },
-            )
-            IconCategory.entries.forEach { category ->
-                FilterChip(
-                    selected = selectedCategory == category,
-                    onClick = { selectedCategory = if (selectedCategory == category) null else category },
-                    label = { Text(iconCategoryLabel(category), style = MaterialTheme.typography.labelSmall) },
-                )
-            }
-        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(5),
@@ -337,26 +345,47 @@ private fun MaterialIconTab(
 }
 
 @Composable
-private fun SearchField(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier,
+private fun <T> CategoryScrollRow(
+    categories: List<T>,
+    selectedCategory: T?,
+    categoryLabel: @Composable (T) -> String,
+    onCategorySelected: (T) -> Unit,
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        placeholder = { Text(placeholder) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Outlined.Search,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
+    val scrollState = rememberScrollState()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(scrollState)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        categories.forEach { category ->
+            CategoryTab(
+                label = categoryLabel(category),
+                selected = selectedCategory == category,
+                onClick = { onCategorySelected(category) },
             )
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier,
+        }
+    }
+}
+
+@Composable
+private fun CategoryTab(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelMedium.copy(
+            textDecoration = if (selected) TextDecoration.Underline else TextDecoration.None,
+        ),
+        color = color,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     )
 }
 
