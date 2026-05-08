@@ -68,3 +68,25 @@ fun Tag.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("isArchived", "归档", isArchived, isDisplayed = false, isMissing = false),
     FieldInfo("archivedAt", "归档时间", archivedAt, isDisplayed = false, isMissing = archivedAt.isFieldMissing("archivedAt")),
 )
+
+/**
+ * 将 FieldInfo 列表转换为格式化的 JSON 字符串
+ *
+ * 自动处理字符串转义和 null 值
+ */
+fun List<FieldInfo>.toJsonString(): String = buildString {
+    append("{\n")
+    this@toJsonString.forEachIndexed { index, field ->
+        val valueStr = when (val v = field.value) {
+            null -> "null"
+            is String -> "\"${v.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+            is Boolean -> v.toString()
+            is Number -> v.toString()
+            else -> "\"$v\""
+        }
+        append("  \"${field.name}\": $valueStr")
+        if (index < this@toJsonString.size - 1) append(",")
+        append("\n")
+    }
+    append("}")
+}

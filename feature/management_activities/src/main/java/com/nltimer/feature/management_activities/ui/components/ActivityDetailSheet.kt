@@ -38,6 +38,7 @@ import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.util.formatDurationMinutes
 import com.nltimer.feature.debug.ui.components.FieldDetailDialog
 import com.nltimer.feature.debug.ui.components.toFieldInfoList
+import com.nltimer.feature.debug.ui.components.toJsonString
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -140,22 +141,7 @@ fun ActivityDetailSheet(
 
     if (showFieldDetail) {
         val fields = remember(activity) { activity.toFieldInfoList() }
-        val rawJson = remember(activity) {
-            buildString {
-                append("{\n")
-                append("  \"id\": ${activity.id},\n")
-                append("  \"name\": \"${activity.name}\",\n")
-                append("  \"iconKey\": ${activity.iconKey?.let { "\"$it\"" } ?: "null"},\n")
-                append("  \"keywords\": ${activity.keywords?.let { "\"$it\"" } ?: "null"},\n")
-                append("  \"groupId\": ${activity.groupId ?: "null"},\n")
-                append("  \"isPreset\": ${activity.isPreset},\n")
-                append("  \"isArchived\": ${activity.isArchived},\n")
-                append("  \"archivedAt\": ${activity.archivedAt ?: "null"},\n")
-                append("  \"color\": ${activity.color ?: "null"},\n")
-                append("  \"usageCount\": ${activity.usageCount}\n")
-                append("}")
-            }
-        }
+        val rawJson = remember(fields) { fields.toJsonString() }
 
         FieldDetailDialog(
             title = "活动字段详情",
