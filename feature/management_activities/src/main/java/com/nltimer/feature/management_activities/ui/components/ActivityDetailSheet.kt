@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -22,14 +23,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.app.BuildConfig
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.util.formatDurationMinutes
+import com.nltimer.feature.debug.ui.components.FieldDetailDialog
+import com.nltimer.feature.debug.ui.components.toFieldInfoList
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,6 +53,7 @@ fun ActivityDetailSheet(
     onDelete: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showFieldDetail by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -76,6 +85,15 @@ fun ActivityDetailSheet(
                 }
 
                 Row {
+                    if (BuildConfig.DEBUG) {
+                        IconButton(onClick = { showFieldDetail = true }) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = "字段详细",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
                     IconButton(onClick = { onEdit(activity) }) {
                         Icon(
                             Icons.Default.Edit,
@@ -118,6 +136,33 @@ fun ActivityDetailSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (showFieldDetail) {
+        val fields = remember(activity) { activity.toFieldInfoList() }
+        val rawJson = remember(activity) {
+            buildString {
+                append("{\n")
+                append("  \"id\": ${activity.id},\n")
+                append("  \"name\": \"${activity.name}\",\n")
+                append("  \"iconKey\": ${activity.iconKey?.let { "\"$it\"" } ?: "null"},\n")
+                append("  \"keywords\": ${activity.keywords?.let { "\"$it\"" } ?: "null"},\n")
+                append("  \"groupId\": ${activity.groupId ?: "null"},\n")
+                append("  \"isPreset\": ${activity.isPreset},\n")
+                append("  \"isArchived\": ${activity.isArchived},\n")
+                append("  \"archivedAt\": ${activity.archivedAt ?: "null"},\n")
+                append("  \"color\": ${activity.color ?: "null"},\n")
+                append("  \"usageCount\": ${activity.usageCount}\n")
+                append("}")
+            }
+        }
+
+        FieldDetailDialog(
+            title = "活动字段详情",
+            fields = fields,
+            rawJson = rawJson,
+            onDismiss = { showFieldDetail = false },
+        )
     }
 }
 
