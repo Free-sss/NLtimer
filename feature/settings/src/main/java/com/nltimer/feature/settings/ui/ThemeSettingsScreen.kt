@@ -642,7 +642,7 @@ private fun StyleConfigSection(
 
             AnimatedVisibility(visible = showAdvanced) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(text = "圆角比例: ${styleConfig.effectiveCornerScale()}")
+                    Text(text = "圆角比例: ${"%.2f".format(styleConfig.effectiveCornerScale())}")
                     Slider(
                         value = styleConfig.effectiveCornerScale(),
                         onValueChange = { onCustomCornerScale(it) },
@@ -650,7 +650,7 @@ private fun StyleConfigSection(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Text(text = "边框比例: ${styleConfig.effectiveBorderScale()}")
+                    Text(text = "边框比例: ${"%.2f".format(styleConfig.effectiveBorderScale())}")
                     Slider(
                         value = styleConfig.effectiveBorderScale(),
                         onValueChange = { onCustomBorderScale(it) },
@@ -658,7 +658,7 @@ private fun StyleConfigSection(
                         modifier = Modifier.fillMaxWidth(),
                     )
 
-                    Text(text = "透明度比例: ${styleConfig.effectiveAlphaScale()}")
+                    Text(text = "透明度比例: ${"%.2f".format(styleConfig.effectiveAlphaScale())}")
                     Slider(
                         value = styleConfig.effectiveAlphaScale(),
                         onValueChange = { onCustomAlphaScale(it) },
