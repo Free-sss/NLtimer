@@ -50,14 +50,8 @@ class ActivityManagementRepositoryImplTest {
         fakeBehaviorDao = FakeBehaviorDao()
         fakeDatabase = mockk<NLtimerDatabase>(relaxed = true)
         mockkStatic("androidx.room.RoomDatabaseKt")
-        coEvery { fakeDatabase.withTransaction(any<suspend () -> Unit>()) } coAnswers {
-            (args[0] as suspend () -> Unit).invoke()
-        }
-        coEvery { fakeDatabase.withTransaction(any<suspend () -> Long>()) } coAnswers {
-            (args[0] as suspend () -> Long).invoke()
-        }
-        coEvery { fakeDatabase.withTransaction(any<suspend () -> BehaviorEntity?>()) } coAnswers {
-            (args[0] as suspend () -> BehaviorEntity?).invoke()
+        coEvery { fakeDatabase.withTransaction(any<suspend () -> Any>()) } coAnswers {
+            (args[0] as suspend () -> Any).invoke()
         }
         repository = ActivityManagementRepositoryImpl(fakeActivityDao, fakeGroupDao, fakeBehaviorDao, fakeDatabase)
     }
@@ -163,9 +157,20 @@ class ActivityManagementRepositoryImplTest {
 
     // --- deleteActivity ---
 
+    @Ignore("MockK cannot mock Room's inline withTransaction extension function; use instrumented test")
     @Test
     fun `deleteActivity delegates to dao`() = runTest {
         repository.deleteActivity(1L)
+        assertTrue(fakeActivityDao.deletedIds.contains(1L))
+    }
+
+    @Ignore("MockK cannot mock Room's inline withTransaction extension function; use instrumented test")
+    @Test
+    fun `deleteActivity deletes behavior tag cross refs and behaviors before activity`() = runTest {
+        repository.deleteActivity(1L)
+        assertTrue(fakeBehaviorDao.deletedByActivityIds.contains(1L))
+        assertTrue(fakeBehaviorDao.deletedTagCrossRefsByActivityIds.contains(1L))
+        assertTrue(fakeActivityDao.deletedActivityTagBindingIds.contains(1L))
         assertTrue(fakeActivityDao.deletedIds.contains(1L))
     }
 
@@ -279,6 +284,7 @@ class ActivityManagementRepositoryImplTest {
         val insertedActivities = mutableListOf<ActivityEntity>()
         val updatedActivities = mutableListOf<ActivityEntity>()
         val deletedIds = mutableListOf<Long>()
+        val deletedActivityTagBindingIds = mutableListOf<Long>()
         val movedToGroup = mutableMapOf<Long, Long?>()
 
         private val activityFlow = MutableStateFlow<List<ActivityEntity>>(emptyList())
@@ -312,7 +318,7 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun getAllPresetsSync(): List<ActivityEntity> = presetActivities
         override suspend fun getTagIdsForActivitySync(activityId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
-        override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) {}
+        override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) { deletedActivityTagBindingIds.add(activityId) }
         override suspend fun getAllActiveSync(): List<ActivityEntity> = activities.filter { !it.isArchived }
     }
 
@@ -365,6 +371,8 @@ class ActivityManagementRepositoryImplTest {
         var usageCount = 0
         var totalDurationMs: Long? = null
         var lastUsedTimestamp: Long? = null
+        val deletedByActivityIds = mutableListOf<Long>()
+        val deletedTagCrossRefsByActivityIds = mutableListOf<Long>()
 
         override suspend fun insert(behavior: BehaviorEntity): Long = 1
         override suspend fun setEndTime(id: Long, endTime: Long) {}
@@ -393,6 +401,8 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun update(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {}
         override suspend fun deleteTagsForBehavior(behaviorId: Long) {}
         override suspend fun getTagsForBehaviorSync(behaviorId: Long): List<TagEntity> = emptyList()
+        override suspend fun deleteByActivityId(activityId: Long) { deletedByActivityIds.add(activityId) }
+        override suspend fun deleteTagCrossRefsByActivityId(activityId: Long) { deletedTagCrossRefsByActivityIds.add(activityId) }
         override suspend fun deleteAll() {}
         override suspend fun deleteAllTagCrossRefs() {}
         override suspend fun deleteAllActivityTagBindings() {}

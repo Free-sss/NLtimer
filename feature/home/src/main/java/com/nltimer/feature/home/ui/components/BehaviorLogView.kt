@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -183,8 +184,17 @@ private fun BehaviorLogCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            val duration = behavior.durationMs
-                ?: (behavior.actualDuration ?: 0L)
+            val duration = if (behavior.isCurrent && behavior.startEpochMs != null) {
+                val elapsed by produceState(initialValue = System.currentTimeMillis() - behavior.startEpochMs) {
+                    while (true) {
+                        kotlinx.coroutines.delay(1000)
+                        value = System.currentTimeMillis() - behavior.startEpochMs
+                    }
+                }
+                elapsed
+            } else {
+                behavior.durationMs ?: (behavior.actualDuration ?: 0L)
+            }
             if (duration > 0) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
