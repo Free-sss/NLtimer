@@ -6,7 +6,7 @@ object IconKeyResolver {
 
     fun isMaterialIcon(iconKey: String): Boolean = iconKey.startsWith(PREFIX)
 
-    fun isMaterialIcon(iconKey: String?): Boolean =
+    fun isMaterialIconOrNull(iconKey: String?): Boolean =
         iconKey != null && isMaterialIcon(iconKey)
 
     fun parseMaterialIcon(iconKey: String): Pair<String, String>? {

@@ -311,4 +311,19 @@ object EmojiCatalog {
         EmojiEntry("🍨", "ice_cream", EmojiCategory.FOOD, listOf("冰淇淋", "ice", "cream")),
         EmojiEntry("🍦", "soft_ice_cream", EmojiCategory.FOOD, listOf("甜筒", "冰淇淋", "ice", "cream")),
         EmojiEntry("🍿", "popcorn", EmojiCategory.FOOD, listOf("爆米花", "popcorn")),
-        EmojiEntry("🧃", "beverage_box", EmojiCategory.FOOD, listOf("饮料盒", "juice", "beverage")),
+        EmojiEntry("🧃", "beverage_box", EmojiCategory.FOOD, listOf("饮料盒", "juice", "beverage"))
+    )
+
+    val emojis: List<EmojiEntry> get() = _emojis
+
+    fun findByCategory(category: EmojiCategory): List<EmojiEntry> =
+        _emojis.filter { it.category == category }
+
+    fun searchEmoji(query: String): List<EmojiEntry> {
+        val lowerQuery = query.lowercase()
+        return _emojis.filter { entry ->
+            entry.name.contains(lowerQuery, ignoreCase = true) ||
+                entry.keywords.any { it.contains(lowerQuery, ignoreCase = true) }
+        }
+    }
+}
