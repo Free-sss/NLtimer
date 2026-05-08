@@ -6,15 +6,8 @@ import androidx.navigation.compose.composable
 import com.nltimer.app.component.DrawerMenuItem
 import com.nltimer.app.component.drawerMenuItems
 import com.nltimer.app.navigation.debugRoutes
-import com.nltimer.feature.categories.debug.CategoriesDebugComponents
 import com.nltimer.feature.debug.DebugRoute
 import com.nltimer.feature.debug.FeatureDebugComponents
-import com.nltimer.feature.home.debug.HomeDebugComponents
-import com.nltimer.feature.management_activities.debug.ManagementDebugComponents
-import com.nltimer.feature.settings.debug.SettingsDebugComponents
-import com.nltimer.feature.stats.debug.StatsDebugComponents
-import com.nltimer.feature.sub.debug.SubDebugComponents
-import com.nltimer.feature.tag_management.debug.TagManagementDebugComponents
 
 /**
  * app 模块的调试初始化入口
@@ -36,13 +29,5 @@ object DebugInitializer {
 
         // 通过聚合注册器批量注册所有模块调试组件
         FeatureDebugComponents.registerAll()
-        // 依次注册各 feature 模块的调试组件（预览数据、假路由等）
-        HomeDebugComponents.registerAll()
-        SubDebugComponents.registerAll()
-        StatsDebugComponents.registerAll()
-        SettingsDebugComponents.registerAll()
-        CategoriesDebugComponents.registerAll()
-        ManagementDebugComponents.registerAll()
-        TagManagementDebugComponents.registerAll()
     }
 }

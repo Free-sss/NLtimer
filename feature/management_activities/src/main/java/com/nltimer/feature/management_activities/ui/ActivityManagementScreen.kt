@@ -44,7 +44,7 @@ import com.nltimer.feature.management_activities.ui.components.ActivityDetailShe
 import com.nltimer.feature.management_activities.ui.components.GroupCard
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddGroupDialog
-import com.nltimer.feature.management_activities.ui.components.dialogs.ConfirmDialog
+import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.MoveToGroupDialog
 

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.component.GroupPickerPopup
 import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow

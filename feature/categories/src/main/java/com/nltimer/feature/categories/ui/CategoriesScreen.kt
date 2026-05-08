@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appInputChipBorder
 import com.nltimer.core.designsystem.theme.appAssistChipBorder
+import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 import com.nltimer.feature.categories.model.CategoriesUiState
 import com.nltimer.feature.categories.model.DialogState
@@ -325,19 +326,25 @@ private fun CategoryDialog(
 
         // 确认删除活动分类
         is DialogState.DeleteActivityCategory -> {
-            DeleteConfirmDialog(
-                category = dialogState.category,
+            ConfirmDialog(
+                title = "删除分类",
+                message = "确定要删除分类「${dialogState.category}」吗？该分类下的所有活动和标签将变为未分类状态。",
+                confirmText = "删除",
                 onDismiss = onDismiss,
                 onConfirm = { onConfirmDelete(SectionType.ACTIVITY, dialogState.category) },
+                confirmTextColor = MaterialTheme.colorScheme.error,
             )
         }
 
         // 确认删除标签分类
         is DialogState.DeleteTagCategory -> {
-            DeleteConfirmDialog(
-                category = dialogState.category,
+            ConfirmDialog(
+                title = "删除分类",
+                message = "确定要删除分类「${dialogState.category}」吗？该分类下的所有活动和标签将变为未分类状态。",
+                confirmText = "删除",
                 onDismiss = onDismiss,
                 onConfirm = { onConfirmDelete(SectionType.TAG, dialogState.category) },
+                confirmTextColor = MaterialTheme.colorScheme.error,
             )
         }
     }
@@ -409,35 +416,3 @@ private fun RenameDialog(
     )
 }
 
-/**
- * Confirmation dialog before deleting a category.
- * Warns the user that associated activities/tags will become uncategorized.
- *
- * @param category the name of the category to be deleted
- * @param onDismiss callback to dismiss without deleting
- * @param onConfirm callback to confirm deletion
- */
-@Composable
-private fun DeleteConfirmDialog(
-    category: String,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("删除分类") },
-        text = {
-            Text("确定要删除分类「$category」吗？该分类下的所有活动和标签将变为未分类状态。")
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text("删除", color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
-    )
-}

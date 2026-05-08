@@ -1,4 +1,4 @@
-package com.nltimer.feature.management_activities.ui.components.dialogs
+package com.nltimer.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

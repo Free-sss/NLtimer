@@ -35,7 +35,7 @@ import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 import com.nltimer.feature.tag_management.ui.components.CategoryCard
 import com.nltimer.feature.tag_management.ui.components.dialogs.AddCategoryDialog
 import com.nltimer.feature.tag_management.ui.components.dialogs.AddTagFormSheet
-import com.nltimer.feature.tag_management.ui.components.dialogs.ConfirmDialog
+import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.feature.tag_management.ui.components.dialogs.EditTagFormSheet
 import com.nltimer.feature.tag_management.ui.components.dialogs.RenameCategoryDialog
 
