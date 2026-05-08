@@ -1,28 +1,14 @@
 package com.nltimer.feature.home.ui
 
+import android.widget.Toast
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import android.widget.Toast
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.IntOffset
-import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -42,11 +28,23 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
@@ -54,17 +52,17 @@ import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
-import com.nltimer.feature.home.model.HomeUiState
-import androidx.compose.ui.tooling.preview.Preview
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
-import com.nltimer.feature.home.ui.components.BehaviorLogView
+import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
-import com.nltimer.feature.home.model.AddSheetMode
+import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
+import com.nltimer.feature.home.ui.components.BehaviorLogView
+import com.nltimer.feature.home.ui.components.MomentView
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
@@ -75,6 +73,7 @@ import com.nltimer.feature.home.ui.sheet.AddTargetBehaviorSheet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 @Composable
 fun HomeScreen(
@@ -342,6 +341,20 @@ fun HomeScreen(
                             onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
                             modifier = Modifier.weight(1f)
+                        )
+                    }
+                    HomeLayout.MOMENT -> {
+                        val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
+                        MomentView(
+                            cells = allCells,
+                            hasActiveBehavior = uiState.hasActiveBehavior,
+                            activeBehaviorId = activeBehaviorId,
+                            onCompleteBehavior = onCompleteBehavior,
+                            onStartNextPending = onStartNextPending,
+                            onEmptyCellClick = onEmptyCellClick,
+                            onCellLongClick = onCellLongClick,
+                            onLayoutChange = onLayoutChange,
+                            modifier = Modifier.weight(1f),
                         )
                     }
                 }
