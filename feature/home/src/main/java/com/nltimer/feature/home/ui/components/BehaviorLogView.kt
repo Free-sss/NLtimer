@@ -33,7 +33,9 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.format.DateTimeFormatter
 
@@ -153,7 +155,7 @@ private fun BehaviorLogCard(
                 }
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)))
                         .background(bgColor)
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
