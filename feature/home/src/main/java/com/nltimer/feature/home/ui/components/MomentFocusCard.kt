@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.styledCorner
@@ -150,13 +151,25 @@ private fun ActiveCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "${cell.activityIconKey ?: ""} ${cell.activityName ?: ""}",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                IconRenderer(
+                    iconKey = cell.activityIconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 16.dp,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = cell.activityName ?: "",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -213,13 +226,25 @@ private fun PendingCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "${cell.activityIconKey ?: ""} ${cell.activityName ?: ""}",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                IconRenderer(
+                    iconKey = cell.activityIconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 16.dp,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = cell.activityName ?: "",
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
 
             Spacer(Modifier.height(12.dp))
 

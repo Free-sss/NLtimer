@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
@@ -87,7 +88,11 @@ fun GridCell(
     ) {
         Row(){
             cell.activityIconKey?.let { iconKey ->
-                Text(text = iconKey, style = MaterialTheme.typography.bodyMedium)
+                IconRenderer(
+                    iconKey = iconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 14.dp,
+                )
             }
 
             // 显示活动名称（单行省略）

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.ShapeTokens
@@ -280,12 +281,22 @@ private fun TimelineBehaviorItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "${behavior.activityIconKey ?: "\u2753"} ${behavior.activityName ?: "\u672a\u77e5"}",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
-                )
+                ) {
+                    IconRenderer(
+                        iconKey = behavior.activityIconKey,
+                        defaultEmoji = "❓",
+                        iconSize = 16.dp,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = behavior.activityName ?: "未知",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
 
                 val duration = behavior.durationMs ?: (behavior.actualDuration ?: 0L)
                 if (duration > 0) {
