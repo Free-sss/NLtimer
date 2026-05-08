@@ -1,4 +1,4 @@
-package com.nltimer.feature.home.ui
+﻿package com.nltimer.feature.home.ui
 
 import android.widget.Toast
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -29,7 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +93,7 @@ fun HomeScreen(
     onCompleteBehavior: (Long) -> Unit,
     onToggleIdleMode: () -> Unit,
     onStartNextPending: () -> Unit,
+    onStartBehavior: (Long) -> Unit,
     onAddActivity: (name: String, iconKey: String) -> Unit,
     onAddTag: (name: String) -> Unit,
     onHourClick: (Int) -> Unit,
@@ -351,6 +354,7 @@ fun HomeScreen(
                             activeBehaviorId = activeBehaviorId,
                             onCompleteBehavior = onCompleteBehavior,
                             onStartNextPending = onStartNextPending,
+                            onStartBehavior = onStartBehavior,
                             onEmptyCellClick = onEmptyCellClick,
                             onCellLongClick = onCellLongClick,
                             onLayoutChange = onLayoutChange,
@@ -569,6 +573,7 @@ private fun HomeScreenPreview() {
             onCompleteBehavior = {},
             onToggleIdleMode = {},
             onStartNextPending = {},
+            onStartBehavior = {},
             onAddActivity = { _, _ -> },
             onAddTag = {},
             onHourClick = {},

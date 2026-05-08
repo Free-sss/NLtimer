@@ -25,7 +25,7 @@ fun HomeRoute(
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalTime?, idleEnd: LocalTime? ->
-            viewModel.showAddSheet(AddSheetMode.COMPLETED, idleStart, idleEnd)
+            viewModel.showAddSheet(AddSheetMode.CURRENT, idleStart, idleEnd)
         }
     }
     val onShowAddSheet = remember(viewModel) {
@@ -57,6 +57,7 @@ fun HomeRoute(
     }
     val onToggleIdleMode = remember(viewModel) { { viewModel.toggleIdleMode() } }
     val onStartNextPending = remember(viewModel) { { viewModel.startNextPending() } }
+    val onStartBehavior = remember(viewModel) { { id: Long -> viewModel.startBehavior(id) } }
     val onAddActivity = remember(viewModel) {
         { name: String, iconKey: String -> viewModel.addActivity(name, iconKey) }
     }
@@ -84,6 +85,7 @@ fun HomeRoute(
         onCompleteBehavior = onCompleteBehavior,
         onToggleIdleMode = onToggleIdleMode,
         onStartNextPending = onStartNextPending,
+        onStartBehavior = onStartBehavior,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
         onHourClick = onHourClick,

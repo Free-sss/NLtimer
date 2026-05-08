@@ -448,6 +448,13 @@ class HomeViewModel @Inject constructor(
     }
 
     // 启动下一个待办行为
+    fun startBehavior(behaviorId: Long) {
+        viewModelScope.launch {
+            behaviorRepository.setStatus(behaviorId, BehaviorNature.ACTIVE.key)
+            behaviorRepository.setStartTime(behaviorId, clockService.currentTimeMillis())
+        }
+    }
+
     fun startNextPending() {
         viewModelScope.launch {
             val next = behaviorRepository.getNextPending() ?: return@launch

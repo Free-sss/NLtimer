@@ -32,11 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.tooling.preview.Preview
 import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
@@ -133,6 +133,7 @@ fun RouteSettingsPopup(
                                     HomeLayout.GRID -> "网格时间"
                                     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
                                     HomeLayout.LOG -> "行为日志"
+                                    HomeLayout.MOMENT -> "瞬间"
                                 },
                                 onClick = {
                                     onHomeLayoutChange(layout)

@@ -260,7 +260,7 @@ fun ActivityGridComponent(
                         .verticalScroll(rememberScrollState()),
                 ) {
                     FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp,start = 4.dp,bottom = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {

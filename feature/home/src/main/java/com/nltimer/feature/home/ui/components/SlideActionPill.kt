@@ -127,6 +127,7 @@ fun SlideActionPill(
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(
                             alpha = (1f - progress).coerceIn(0.3f, 0.7f)
                         ),
+                        modifier = Modifier.padding(end = 10.dp),
                     )
                 }
             }
