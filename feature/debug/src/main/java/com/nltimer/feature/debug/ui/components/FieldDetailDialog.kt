@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.AlertDialog
@@ -185,7 +188,8 @@ private fun NativeTab(rawJson: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 16.dp)
+            .verticalScroll(rememberScrollState()),
     ) {
         Button(
             onClick = {
@@ -195,7 +199,7 @@ private fun NativeTab(rawJson: String) {
         ) {
             Icon(
                 imageVector = Icons.Default.ContentCopy,
-                contentDescription = null,
+                contentDescription = "复制 JSON",
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text("复制全部")
@@ -203,18 +207,20 @@ private fun NativeTab(rawJson: String) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = rawJson,
-            style = MaterialTheme.typography.bodySmall.copy(
-                fontFamily = FontFamily.Monospace,
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    shape = RoundedCornerShape(8.dp),
-                )
-                .padding(12.dp),
-        )
+        SelectionContainer {
+            Text(
+                text = rawJson,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                    )
+                    .padding(12.dp),
+            )
+        }
     }
 }
