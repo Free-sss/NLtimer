@@ -100,7 +100,7 @@ fun MomentView(
             MomentSortMode.TIME_ASC -> nonPending.sortedBy { it.startEpochMs ?: 0L }
             MomentSortMode.DURATION -> nonPending.sortedByDescending { it.actualDuration ?: it.durationMs ?: 0L }
         }
-        sortedNonPending + pending
+        pending + sortedNonPending
     }
 
     detailCell?.let { cell ->
