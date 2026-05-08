@@ -5,6 +5,7 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.feature.tag_management.model.DialogState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -41,7 +42,7 @@ class TagManagementViewModelTest {
         tagRepository = FakeTagRepository()
         activityRepository = FakeActivityManagementRepository()
         settingsPrefs = FakeSettingsPrefs()
-        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, AddTagUseCase(tagRepository), activityRepository, settingsPrefs)
     }
 
     @After
@@ -82,7 +83,7 @@ class TagManagementViewModelTest {
         tagRepository.emitCategories(emptyList())
 
         // Recreate viewModel so init picks up the new settings value
-        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, AddTagUseCase(tagRepository), activityRepository, settingsPrefs)
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.value
@@ -169,7 +170,7 @@ class TagManagementViewModelTest {
         tagRepository.emitTags(emptyList())
         tagRepository.emitCategories(emptyList())
         // Recreate viewModel so init picks up the settings value
-        viewModel = TagManagementViewModel(tagRepository, activityRepository, settingsPrefs)
+        viewModel = TagManagementViewModel(tagRepository, AddTagUseCase(tagRepository), activityRepository, settingsPrefs)
         advanceUntilIdle()
 
         viewModel.renameCategory("旧分类", "新分类")

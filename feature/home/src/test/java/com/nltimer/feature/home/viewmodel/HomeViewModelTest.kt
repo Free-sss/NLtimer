@@ -18,7 +18,9 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.SystemClockService
 import com.nltimer.core.data.util.TimeSnapService
+import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
+import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -51,6 +53,8 @@ class HomeViewModelTest {
     private lateinit var settingsPrefs: FakeSettingsPrefs
     private lateinit var clockService: ClockService
     private lateinit var addBehaviorUseCase: AddBehaviorUseCase
+    private lateinit var addTagUseCase: AddTagUseCase
+    private lateinit var addActivityUseCase: AddActivityUseCase
     private lateinit var activityManagementRepository: FakeActivityManagementRepository
     private lateinit var viewModel: HomeViewModel
 
@@ -64,6 +68,8 @@ class HomeViewModelTest {
         settingsPrefs = FakeSettingsPrefs()
         clockService = SystemClockService()
         addBehaviorUseCase = AddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
+        addTagUseCase = AddTagUseCase(tagRepository)
+        addActivityUseCase = AddActivityUseCase(activityManagementRepository)
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
@@ -72,6 +78,8 @@ class HomeViewModelTest {
             settingsPrefs,
             KeywordMatchStrategy(),
             addBehaviorUseCase,
+            addTagUseCase,
+            addActivityUseCase,
             clockService
         )
     }
@@ -94,8 +102,8 @@ class HomeViewModelTest {
     fun `addActivity calls repository`() = runTest {
         viewModel.addActivity("Test Activity", "😊", null, null, null, emptyList())
         advanceUntilIdle()
-        assertEquals(1, activityRepository.insertedActivities.size)
-        assertEquals("Test Activity", activityRepository.insertedActivities[0].name)
+        assertEquals(1, activityManagementRepository.addedActivities.size)
+        assertEquals("Test Activity", activityManagementRepository.addedActivities[0].name)
     }
 
     @Test
@@ -506,12 +514,16 @@ class HomeViewModelTest {
     }
 
     private class FakeActivityManagementRepository : ActivityManagementRepository {
+        val addedActivities = mutableListOf<Activity>()
         override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getUncategorizedActivities(): Flow<List<Activity>> = flowOf(emptyList())
         override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
         override fun getAllGroups(): Flow<List<ActivityGroup>> = flowOf(emptyList())
         override fun getActivityStats(activityId: Long): Flow<ActivityStats> = flowOf(ActivityStats())
-        override suspend fun addActivity(activity: Activity): Long = 1L
+        override suspend fun addActivity(activity: Activity): Long {
+            addedActivities.add(activity)
+            return 1L
+        }
         override suspend fun updateActivity(activity: Activity) {}
         override suspend fun deleteActivity(id: Long) {}
         override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {}
