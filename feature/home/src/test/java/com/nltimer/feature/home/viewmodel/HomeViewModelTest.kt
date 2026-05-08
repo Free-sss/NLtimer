@@ -305,14 +305,18 @@ class HomeViewModelTest {
 
     @Test
     fun `addBehavior with time conflict shows error`() = runTest {
-        val now = System.currentTimeMillis()
-        val startTime = now - 3600_000
-        val endTime = now - 1800_000
-        val overlapping = Behavior(
+        // 设置冲突场景：新行为的开始时间在已有行为结束时间之后（不触发自动吸附），
+        // 但新行为的结束时间与另一个已有行为重叠（触发冲突检测）
+        // 已有行为1：1000 - 5000
+        // 已有行为2：7000 - 10000
+        // 新行为：6000 - 8000
+        // 自动吸附不触发（5000 < 6000）
+        // 冲突检测：新行为 (6000 - 8000) 与已有行为2 (7000 - 10000) 重叠，触发冲突
+        val existing1 = Behavior(
             id = 1L,
             activityId = 1L,
-            startTime = startTime - 1800_000,
-            endTime = endTime + 1800_000,
+            startTime = 1000L,
+            endTime = 5000L,
             status = BehaviorNature.COMPLETED,
             note = null,
             pomodoroCount = 0,
@@ -322,17 +326,36 @@ class HomeViewModelTest {
             achievementLevel = null,
             wasPlanned = false,
         )
-        behaviorRepository.overlappingBehaviors.add(overlapping)
+        val existing2 = Behavior(
+            id = 2L,
+            activityId = 1L,
+            startTime = 7000L,
+            endTime = 10000L,
+            status = BehaviorNature.COMPLETED,
+            note = null,
+            pomodoroCount = 0,
+            sequence = 1,
+            estimatedDuration = null,
+            actualDuration = null,
+            achievementLevel = null,
+            wasPlanned = false,
+        )
+        behaviorRepository.overlappingBehaviors.add(existing1)
+        behaviorRepository.overlappingBehaviors.add(existing2)
 
         viewModel.addBehavior(
             activityId = 1L,
             tagIds = emptyList(),
-            startTime = startTime,
-            endTime = endTime,
+            startTime = 6000L,
+            endTime = 8000L,
             status = BehaviorNature.COMPLETED,
             note = null,
         )
         advanceUntilIdle()
+
+        println("DEBUG: errorMessage = ${viewModel.uiState.value.errorMessage}")
+        println("DEBUG: insertedBehaviors.size = ${behaviorRepository.insertedBehaviors.size}")
+        println("DEBUG: overlappingBehaviors.size = ${behaviorRepository.overlappingBehaviors.size}")
 
         assertEquals("该时间段与已有行为记录冲突", viewModel.uiState.value.errorMessage)
         assertEquals(0, behaviorRepository.insertedBehaviors.size)
