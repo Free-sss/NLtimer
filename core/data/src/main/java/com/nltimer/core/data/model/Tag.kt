@@ -17,6 +17,7 @@ data class Tag(
     val priority: Int,
     val usageCount: Int,
     val sortOrder: Int,
+    val keywords: String?,
     val isArchived: Boolean,
     val archivedAt: Long? = null,
 ) {
@@ -29,6 +30,7 @@ data class Tag(
         priority = priority,
         usageCount = usageCount,
         sortOrder = sortOrder,
+        keywords = keywords,
         isArchived = isArchived,
         archivedAt = archivedAt,
     )
@@ -43,6 +45,7 @@ data class Tag(
             priority = entity.priority,
             usageCount = entity.usageCount,
             sortOrder = entity.sortOrder,
+            keywords = entity.keywords,
             isArchived = entity.isArchived,
             archivedAt = entity.archivedAt,
         )

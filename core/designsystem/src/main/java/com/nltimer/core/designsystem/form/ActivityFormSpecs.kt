@@ -13,7 +13,7 @@ object ActivityFormSpecs {
             FormSection(
                 rows = listOf(
                     FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入"),
-                    FormRow.TextInput(key = "note", label = "备注", placeholder = "请输入"),
+                    FormRow.TextInput(key = "keywords", label = "关键词", placeholder = "多个关键词用逗号分隔"),
                 ),
             ),
             FormSection(
@@ -51,7 +51,13 @@ object ActivityFormSpecs {
             FormSection(
                 rows = listOf(
                     FormRow.TextInput(key = "name", label = "名称", placeholder = "请输入标签名"),
+                    FormRow.TextInput(key = "keywords", label = "关键词", placeholder = "多个关键词用逗号分隔"),
                     FormRow.NumberInput(key = "priority", label = "优先级", initialValue = 0, range = 0..99),
+                ),
+            ),
+            FormSection(
+                rows = listOf(
+                    FormRow.LabelAction(key = "activities", label = "关联活动", actionText = "+ 增加"),
                 ),
             ),
             FormSection(

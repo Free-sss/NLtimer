@@ -20,6 +20,7 @@ data class BehaviorTagRow(
     val priority: Int,
     val usageCount: Int,
     val sortOrder: Int,
+    val keywords: String?,
     val isArchived: Boolean,
     val archivedAt: Long?,
 )
@@ -185,7 +186,7 @@ interface BehaviorDao {
     @Query(
         """
         SELECT btc.behaviorId, t.id, t.name, t.color, t.iconKey, t.category,
-               t.priority, t.usageCount, t.sortOrder, t.isArchived, t.archivedAt
+               t.priority, t.usageCount, t.sortOrder, t.keywords, t.isArchived, t.archivedAt
         FROM tags t
         INNER JOIN behavior_tag_cross_ref btc ON t.id = btc.tagId
         WHERE btc.behaviorId IN (:behaviorIds)

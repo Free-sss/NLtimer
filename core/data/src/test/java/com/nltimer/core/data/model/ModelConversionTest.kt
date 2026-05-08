@@ -258,7 +258,7 @@ class ModelConversionTest {
         val t1 = Tag(
             id = 1, name = "标签", color = 0xFF0000, iconKey = null,
             category = "分类", priority = 1, usageCount = 5,
-            sortOrder = 0, isArchived = false, archivedAt = null,
+            sortOrder = 0, keywords = null, isArchived = false, archivedAt = null,
         )
         val t2 = t1.copy()
 
@@ -277,8 +277,8 @@ class ModelConversionTest {
         )
         val activity = Activity(id = 10, name = "活动")
         val tags = listOf(
-            Tag(1, "标签1", null, null, null, 0, 0, 0, false),
-            Tag(2, "标签2", null, null, null, 0, 0, 0, false),
+            Tag(1, "标签1", null, null, null, 0, 0, 0, null, false),
+            Tag(2, "标签2", null, null, null, 0, 0, 0, null, false),
         )
 
         val details = BehaviorWithDetails(behavior = behavior, activity = activity, tags = tags)

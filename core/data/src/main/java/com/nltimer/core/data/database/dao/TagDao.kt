@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -81,4 +82,13 @@ interface TagDao {
 
     @Query("DELETE FROM tags")
     suspend fun deleteAll()
+
+    @Query("SELECT activityId FROM activity_tag_binding WHERE tagId = :tagId")
+    suspend fun getActivityIdsForTagSync(tagId: Long): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity)
+
+    @Query("DELETE FROM activity_tag_binding WHERE tagId = :tagId")
+    suspend fun deleteActivityTagBindingsForTag(tagId: Long)
 }

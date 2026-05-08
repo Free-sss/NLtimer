@@ -258,7 +258,7 @@ private fun IconColorRenderer(
     val fallbackColor = MaterialTheme.colorScheme.primary
     val currentColor = remember(colorValue) {
         try {
-            if (colorValue.isNotBlank()) Color(colorValue.toLong(16).or(0xFF000000.toLong()))
+            if (colorValue.isNotBlank()) Color(colorValue.toULong(16).toLong())
             else fallbackColor
         } catch (_: Exception) {
             fallbackColor
@@ -330,7 +330,7 @@ private fun IconColorRenderer(
         ColorPickerDialog(
             initialColor = currentColor,
             onSelect = { color ->
-                val hex = color.toArgb().toULong().toString(16)
+                val hex = (color.toArgb().toLong() and 0xFFFFFFFFL).toString(16)
                 onColorChange(hex)
                 showColorPicker = false
             },

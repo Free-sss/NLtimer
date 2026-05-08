@@ -4,6 +4,7 @@ import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
@@ -107,4 +108,19 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun getTagIdsForActivity(activityId: Long): List<Long> =
+        activityDao.getTagIdsForActivitySync(activityId)
+
+    override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {
+        database.withTransaction {
+            activityDao.deleteActivityTagBindingsForActivity(activityId)
+            tagIds.forEach { tagId ->
+                activityDao.insertActivityTagBinding(ActivityTagBindingEntity(activityId = activityId, tagId = tagId))
+            }
+        }
+    }
+
+    override suspend fun getAllActivitiesSync(): List<Activity> =
+        activityDao.getAllActiveSync().map { Activity.fromEntity(it) }
 }

@@ -1,10 +1,12 @@
 package com.nltimer.core.data.repository.impl
 
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.TagRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class TagRepositoryImpl @Inject constructor(
     private val tagDao: TagDao,
+    private val database: com.nltimer.core.data.database.NLtimerDatabase,
 ) : TagRepository {
 
     override fun getAllActive(): Flow<List<Tag>> =
@@ -57,4 +60,16 @@ class TagRepositoryImpl @Inject constructor(
 
     override suspend fun resetCategory(category: String) =
         tagDao.resetCategory(category)
+
+    override suspend fun getActivityIdsForTag(tagId: Long): List<Long> =
+        tagDao.getActivityIdsForTagSync(tagId)
+
+    override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {
+        database.withTransaction {
+            tagDao.deleteActivityTagBindingsForTag(tagId)
+            activityIds.forEach { activityId ->
+                tagDao.insertActivityTagBinding(ActivityTagBindingEntity(activityId = activityId, tagId = tagId))
+            }
+        }
+    }
 }

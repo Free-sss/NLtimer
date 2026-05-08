@@ -121,8 +121,8 @@ fun AddBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
-    onAddTag: (name: String) -> Unit = {},
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -162,8 +162,8 @@ fun AddCurrentBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
-    onAddTag: (name: String) -> Unit = {},
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -201,8 +201,8 @@ fun AddTargetBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
-    onAddTag: (name: String) -> Unit = {},
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -241,8 +241,8 @@ private fun BehaviorSheetWrapper(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit,
-    onAddTag: (name: String) -> Unit,
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -296,8 +296,8 @@ internal fun AddBehaviorSheetContent(
     existingBehaviors: List<Behavior> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit = { _, _ -> },
-    onAddTag: (name: String) -> Unit = {},
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(initialActivityId) }
     LaunchedEffect(initialActivityId) {
@@ -956,9 +956,11 @@ internal fun AddBehaviorSheetContent(
     if (showAddActivityDialog) {
         // Todo 待完善增加活动弹窗 以及绑定数据
         AddActivityDialog(
+            allGroups = activityGroups,
+            allTags = allTags,
             onDismiss = { showAddActivityDialog = false },
-            onConfirm = { name, iconKey ->
-                onAddActivity(name, iconKey)
+            onConfirm = { name, iconKey, color, groupId, keywords, tagIds ->
+                onAddActivity(name, iconKey, color, groupId, keywords, tagIds)
                 showAddActivityDialog = false
             },
         )
@@ -967,9 +969,11 @@ internal fun AddBehaviorSheetContent(
     if (showAddTagDialog) {
         // Todo 待完善增加标签弹窗 以及绑定数据
         AddTagDialog(
+            categories = emptyList(),
+            allActivities = activities,
             onDismiss = { showAddTagDialog = false },
-            onConfirm = { name ->
-                onAddTag(name)
+            onConfirm = { name, color, icon, priority, category, keywords, activityId ->
+                onAddTag(name, color, icon, priority, category, keywords, activityId)
                 showAddTagDialog = false
             },
         )
@@ -1084,8 +1088,8 @@ private fun AddBehaviorSheetPreview() {
         Activity(3, "Workout", "💪")
     )
     val sampleTags = listOf(
-        Tag(1, "Work", null, null, null, 0, 0, 0, false),
-        Tag(2, "Study", null, null, null, 0, 0, 0, false)
+        Tag(1, "Work", null, null, null, 0, 0, 0, null, false),
+        Tag(2, "Study", null, null, null, 0, 0, 0, null, false)
     )
     val sampleGroups = listOf(
         ActivityGroup(1, "工作", 0),

@@ -135,5 +135,7 @@ class CategoryMigrationValidatorTest {
         override suspend fun renameByName(oldName: String, newName: String) {}
         override suspend fun deleteByName(name: String) {}
         override suspend fun deleteAll() {}
+        override suspend fun getMaxSortOrder(): Int? = groups.maxOfOrNull { it.sortOrder }
+        override suspend fun getById(id: Long): ActivityGroupEntity? = groups.find { it.id == id }
     }
 }

@@ -9,6 +9,7 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
@@ -49,6 +50,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val behaviorRepository: BehaviorRepository,
     private val activityRepository: ActivityRepository,
+    private val activityManagementRepository: ActivityManagementRepository,
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
@@ -321,35 +323,43 @@ class HomeViewModel @Inject constructor(
     }
 
     // 添加新活动到仓库
-    fun addActivity(name: String, iconKey: String) {
+    fun addActivity(name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) {
         viewModelScope.launch {
-            activityRepository.insert(
-                Activity(
-                    id = 0,
-                    name = name,
-                    iconKey = iconKey.ifBlank { null },
-                    isArchived = false,
-                )
+            val activity = Activity(
+                id = 0,
+                name = name,
+                iconKey = iconKey,
+                color = color,
+                groupId = groupId,
+                keywords = keywords,
+                isPreset = false,
+                isArchived = false,
             )
+            val activityId = activityRepository.insert(activity)
+            if (tagIds.isNotEmpty()) {
+                activityManagementRepository.setActivityTagBindings(activityId, tagIds)
+            }
         }
     }
 
-    // 添加新标签到仓库
-    fun addTag(name: String) {
+    fun addTag(name: String, color: Long?, iconKey: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) {
         viewModelScope.launch {
-            tagRepository.insert(
-                Tag(
-                    id = 0,
-                    name = name,
-                    color = null,
-                    iconKey = null,
-                    category = null,
-                    priority = 0,
-                    usageCount = 0,
-                    sortOrder = 0,
-                    isArchived = false,
-                )
+            val tag = Tag(
+                id = 0,
+                name = name,
+                color = color,
+                iconKey = iconKey,
+                category = category,
+                priority = priority,
+                usageCount = 0,
+                sortOrder = 0,
+                keywords = keywords,
+                isArchived = false,
             )
+            val tagId = tagRepository.insert(tag)
+            if (activityId != null) {
+                tagRepository.setActivityTagBindings(tagId, listOf(activityId))
+            }
         }
     }
 

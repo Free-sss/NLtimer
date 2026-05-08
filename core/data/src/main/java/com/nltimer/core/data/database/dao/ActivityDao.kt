@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.nltimer.core.data.database.entity.ActivityEntity
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -66,4 +67,16 @@ interface ActivityDao {
 
     @Query("DELETE FROM activities")
     suspend fun deleteAll()
+
+    @Query("SELECT tagId FROM activity_tag_binding WHERE activityId = :activityId")
+    suspend fun getTagIdsForActivitySync(activityId: Long): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity)
+
+    @Query("DELETE FROM activity_tag_binding WHERE activityId = :activityId")
+    suspend fun deleteActivityTagBindingsForActivity(activityId: Long)
+
+    @Query("SELECT * FROM activities WHERE isArchived = 0 ORDER BY name")
+    suspend fun getAllActiveSync(): List<ActivityEntity>
 }

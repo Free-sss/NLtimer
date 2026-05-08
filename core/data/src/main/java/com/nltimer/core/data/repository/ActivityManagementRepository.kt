@@ -32,4 +32,8 @@ interface ActivityManagementRepository {
 
     /** 初始化预设活动列表 */
     suspend fun initializePresets()
+
+    suspend fun getTagIdsForActivity(activityId: Long): List<Long>
+    suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>)
+    suspend fun getAllActivitiesSync(): List<Activity>
 }

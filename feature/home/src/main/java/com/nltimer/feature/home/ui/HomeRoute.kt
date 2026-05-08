@@ -59,10 +59,14 @@ fun HomeRoute(
     val onStartNextPending = remember(viewModel) { { viewModel.startNextPending() } }
     val onStartBehavior = remember(viewModel) { { id: Long -> viewModel.startBehavior(id) } }
     val onAddActivity = remember(viewModel) {
-        { name: String, iconKey: String -> viewModel.addActivity(name, iconKey) }
+        { name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long> ->
+            viewModel.addActivity(name, iconKey, color, groupId, keywords, tagIds)
+        }
     }
     val onAddTag = remember(viewModel) {
-        { name: String -> viewModel.addTag(name) }
+        { name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long? ->
+            viewModel.addTag(name, color, icon, priority, category, keywords, activityId)
+        }
     }
     val onHourClick = remember(viewModel) { { hour: Int -> viewModel.scrollToTime(hour) } }
     val onLayoutChange = remember(viewModel) { { layout: com.nltimer.core.designsystem.theme.HomeLayout -> viewModel.onHomeLayoutChange(layout) } }

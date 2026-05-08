@@ -94,8 +94,8 @@ fun HomeScreen(
     onToggleIdleMode: () -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
-    onAddActivity: (name: String, iconKey: String) -> Unit,
-    onAddTag: (name: String) -> Unit,
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
     onHourClick: (Int) -> Unit,
     onLayoutChange: (HomeLayout) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
@@ -528,8 +528,8 @@ fun HomeScreen(
 @Composable
 private fun HomeScreenPreview() {
     val sampleTags = listOf(
-        Tag(1, "Tag 1", null, null, null, 0, 0, 0, false),
-        Tag(2, "Tag 2", null, null, null, 0, 0, 0, false)
+        Tag(1, "Tag 1", null, null, null, 0, 0, 0, null, false),
+        Tag(2, "Tag 2", null, null, null, 0, 0, 0, null, false)
     )
     val sampleActivities = listOf(
         Activity(1, "Activity 1", "😊"),
@@ -574,8 +574,8 @@ private fun HomeScreenPreview() {
             onToggleIdleMode = {},
             onStartNextPending = {},
             onStartBehavior = {},
-            onAddActivity = { _, _ -> },
-            onAddTag = {},
+            onAddActivity = { _, _, _, _, _, _ -> },
+            onAddTag = { _, _, _, _, _, _, _ -> },
             onHourClick = {},
             onLayoutChange = {}
         )

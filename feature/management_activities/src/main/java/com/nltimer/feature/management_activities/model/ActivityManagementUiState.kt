@@ -3,6 +3,7 @@ package com.nltimer.feature.management_activities.model
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.Tag
 
 /**
  * 活动管理页面的 UI 状态
@@ -19,6 +20,7 @@ data class ActivityManagementUiState(
     val uncategorizedActivities: List<Activity> = emptyList(),
     val groups: List<GroupWithActivities> = emptyList(),
     val allGroups: List<ActivityGroup> = emptyList(),
+    val allTags: List<Tag> = emptyList(),
     val isLoading: Boolean = true,
     val expandedGroupIds: Set<Long> = emptySet(),
     val dialogState: DialogState? = null,
@@ -42,7 +44,7 @@ data class GroupWithActivities(
 sealed interface DialogState {
     object AddActivity : DialogState
     data class AddActivityToGroup(val group: ActivityGroup) : DialogState
-    data class EditActivity(val activity: Activity) : DialogState
+    data class EditActivity(val activity: Activity, val tagIds: Set<Long> = emptySet()) : DialogState
     object AddGroup : DialogState
     data class RenameGroup(val group: ActivityGroup) : DialogState
     data class DeleteGroup(val group: ActivityGroup) : DialogState

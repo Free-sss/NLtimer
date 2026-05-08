@@ -3,11 +3,13 @@ package com.nltimer.feature.home.viewmodel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
@@ -28,6 +30,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,7 +50,8 @@ class HomeViewModelTest {
     private lateinit var tagRepository: FakeTagRepository
     private lateinit var settingsPrefs: FakeSettingsPrefs
     private lateinit var clockService: ClockService
-    private lateinit var addBehaviorUseCase: FakeAddBehaviorUseCase
+    private lateinit var addBehaviorUseCase: AddBehaviorUseCase
+    private lateinit var activityManagementRepository: FakeActivityManagementRepository
     private lateinit var viewModel: HomeViewModel
 
     @Before
@@ -55,12 +60,14 @@ class HomeViewModelTest {
         behaviorRepository = FakeBehaviorRepository()
         activityRepository = FakeActivityRepository()
         tagRepository = FakeTagRepository()
+        activityManagementRepository = FakeActivityManagementRepository()
         settingsPrefs = FakeSettingsPrefs()
         clockService = SystemClockService()
-        addBehaviorUseCase = FakeAddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
+        addBehaviorUseCase = AddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
+            activityManagementRepository,
             tagRepository,
             settingsPrefs,
             KeywordMatchStrategy(),
@@ -85,7 +92,7 @@ class HomeViewModelTest {
 
     @Test
     fun `addActivity calls repository`() = runTest {
-        viewModel.addActivity("Test Activity", "😊")
+        viewModel.addActivity("Test Activity", "😊", null, null, null, emptyList())
         advanceUntilIdle()
         assertEquals(1, activityRepository.insertedActivities.size)
         assertEquals("Test Activity", activityRepository.insertedActivities[0].name)
@@ -93,7 +100,7 @@ class HomeViewModelTest {
 
     @Test
     fun `addTag calls repository`() = runTest {
-        viewModel.addTag("Test Tag")
+        viewModel.addTag("Test Tag", null, null, 0, null, null, null)
         advanceUntilIdle()
         assertEquals(1, tagRepository.insertedTags.size)
         assertEquals("Test Tag", tagRepository.insertedTags[0].name)
@@ -114,13 +121,18 @@ class HomeViewModelTest {
 
     @Test
     fun `onActivitySelected loads tags`() = runTest {
-        val tags = listOf(Tag(1, "Tag1", null, null, null, 0, 0, 0, false))
+        val tags = listOf(Tag(1, "Tag1", null, null, null, 0, 0, 0, null, false))
         tagRepository.tagsByActivityId[1L] = tags
+        
+        val collectJob = launch {
+            viewModel.tagsForSelectedActivity.collect {}
+        }
         
         viewModel.onActivitySelected(1L)
         advanceUntilIdle()
         
         assertEquals(tags, viewModel.tagsForSelectedActivity.value)
+        collectJob.cancel()
     }
 
     @Test
@@ -305,19 +317,14 @@ class HomeViewModelTest {
 
     @Test
     fun `addBehavior with time conflict shows error`() = runTest {
-        // 设置冲突场景：新行为的开始时间在已有行为结束时间之后（不触发自动吸附），
-        // 但新行为的结束时间与另一个已有行为重叠（触发冲突检测）
-        // 已有行为1：1000 - 5000
-        // 已有行为2：7000 - 10000
-        // 新行为：6000 - 8000
-        // 自动吸附不触发（5000 < 6000）
-        // 冲突检测：新行为 (6000 - 8000) 与已有行为2 (7000 - 10000) 重叠，触发冲突
-        val existing1 = Behavior(
+        val startTime = System.currentTimeMillis() - 7200_000
+        val endTime = System.currentTimeMillis() - 3600_000
+        val activeBehavior = Behavior(
             id = 1L,
             activityId = 1L,
-            startTime = 1000L,
-            endTime = 5000L,
-            status = BehaviorNature.COMPLETED,
+            startTime = startTime,
+            endTime = null,
+            status = BehaviorNature.ACTIVE,
             note = null,
             pomodoroCount = 0,
             sequence = 0,
@@ -326,36 +333,18 @@ class HomeViewModelTest {
             achievementLevel = null,
             wasPlanned = false,
         )
-        val existing2 = Behavior(
-            id = 2L,
-            activityId = 1L,
-            startTime = 7000L,
-            endTime = 10000L,
-            status = BehaviorNature.COMPLETED,
-            note = null,
-            pomodoroCount = 0,
-            sequence = 1,
-            estimatedDuration = null,
-            actualDuration = null,
-            achievementLevel = null,
-            wasPlanned = false,
-        )
-        behaviorRepository.overlappingBehaviors.add(existing1)
-        behaviorRepository.overlappingBehaviors.add(existing2)
+        behaviorRepository.overlappingBehaviors.add(activeBehavior)
+        behaviorRepository._currentBehavior = activeBehavior
 
         viewModel.addBehavior(
-            activityId = 1L,
+            activityId = 2L,
             tagIds = emptyList(),
-            startTime = 6000L,
-            endTime = 8000L,
+            startTime = endTime - 1000L,
+            endTime = endTime,
             status = BehaviorNature.COMPLETED,
             note = null,
         )
         advanceUntilIdle()
-
-        println("DEBUG: errorMessage = ${viewModel.uiState.value.errorMessage}")
-        println("DEBUG: insertedBehaviors.size = ${behaviorRepository.insertedBehaviors.size}")
-        println("DEBUG: overlappingBehaviors.size = ${behaviorRepository.overlappingBehaviors.size}")
 
         assertEquals("该时间段与已有行为记录冲突", viewModel.uiState.value.errorMessage)
         assertEquals(0, behaviorRepository.insertedBehaviors.size)
@@ -410,7 +399,8 @@ class HomeViewModelTest {
         override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(
             dayRangeBehaviors.filter { it.startTime in dayStart until dayEnd }
         )
-        override fun getCurrentBehavior(): Flow<Behavior?> = flowOf(null)
+        var _currentBehavior: Behavior? = null
+        override fun getCurrentBehavior(): Flow<Behavior?> = flowOf(_currentBehavior)
         override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(emptyList())
         override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> = flowOf(overlappingBehaviors)
         override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> = flowOf(emptyList())
@@ -451,6 +441,7 @@ class HomeViewModelTest {
         override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
         override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {}
         override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
+        override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
     }
 
     private class FakeActivityRepository : ActivityRepository {
@@ -490,6 +481,8 @@ class HomeViewModelTest {
         override fun getDistinctCategories(): Flow<List<String>> = flowOf(emptyList())
         override suspend fun renameCategory(oldName: String, newName: String) {}
         override suspend fun resetCategory(category: String) {}
+        override suspend fun getActivityIdsForTag(tagId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {}
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {
@@ -512,9 +505,22 @@ class HomeViewModelTest {
         }
     }
 
-    private class FakeAddBehaviorUseCase(
-        private val behaviorRepository: BehaviorRepository,
-        private val timeSnapService: TimeSnapService,
-        private val clockService: ClockService,
-    ) : AddBehaviorUseCase(behaviorRepository, timeSnapService, clockService)
+    private class FakeActivityManagementRepository : ActivityManagementRepository {
+        override fun getAllActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getUncategorizedActivities(): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> = flowOf(emptyList())
+        override fun getAllGroups(): Flow<List<ActivityGroup>> = flowOf(emptyList())
+        override fun getActivityStats(activityId: Long): Flow<ActivityStats> = flowOf(ActivityStats())
+        override suspend fun addActivity(activity: Activity): Long = 1L
+        override suspend fun updateActivity(activity: Activity) {}
+        override suspend fun deleteActivity(id: Long) {}
+        override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {}
+        override suspend fun addGroup(name: String): Long = 1L
+        override suspend fun renameGroup(id: Long, newName: String) {}
+        override suspend fun deleteGroup(id: Long) {}
+        override suspend fun initializePresets() {}
+        override suspend fun getTagIdsForActivity(activityId: Long): List<Long> = emptyList()
+        override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {}
+        override suspend fun getAllActivitiesSync(): List<Activity> = emptyList()
+    }
 }
