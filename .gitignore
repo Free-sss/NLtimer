@@ -317,3 +317,4 @@ docs/Android-SimpleTimeTracker/
 .claude/worktrees/
 .gradle-home/
 .mindfs/
+.zed/settings.json
