@@ -75,3 +75,39 @@ fun AlphaPreset.toDisplayString(): String = when (this) {
     AlphaPreset.VIVID -> "鲜明"
     AlphaPreset.SOLID -> "实心"
 }
+
+fun ExpressivenessPreset.toDisplayString(): String = when (this) {
+    ExpressivenessPreset.SUBDUED -> "克制"
+    ExpressivenessPreset.STANDARD -> "标准"
+    ExpressivenessPreset.EXPRESSIVE -> "表达🔥"
+}
+
+fun CardColorStrategy.toDisplayString(): String = when (this) {
+    CardColorStrategy.SURFACE -> "素色"
+    CardColorStrategy.TINTED_PRIMARY -> "主色浸染"
+    CardColorStrategy.MULTI_CONTAINER -> "多彩容器"
+}
+
+fun IconContainerSize.toDisplayString(): String = when (this) {
+    IconContainerSize.NONE -> "无"
+    IconContainerSize.CIRCLE_SMALL -> "小圆"
+    IconContainerSize.CIRCLE_LARGE -> "大圆"
+}
+
+fun TimerTypography.toDisplayString(): String = when (this) {
+    TimerTypography.HEADLINE -> "标题"
+    TimerTypography.DISPLAY_SMALL -> "展示 S"
+    TimerTypography.DISPLAY_LARGE_SERIF -> "衬线展示"
+}
+
+fun PressedShapeLevel.toDisplayString(): String = when (this) {
+    PressedShapeLevel.OFF -> "关闭"
+    PressedShapeLevel.MILD -> "轻微"
+    PressedShapeLevel.FULL_MORPH -> "完全形变"
+}
+
+fun WavyProgressLevel.toDisplayString(): String = when (this) {
+    WavyProgressLevel.OFF -> "关闭"
+    WavyProgressLevel.ON -> "波浪"
+    WavyProgressLevel.PROMINENT -> "醒目波浪"
+}

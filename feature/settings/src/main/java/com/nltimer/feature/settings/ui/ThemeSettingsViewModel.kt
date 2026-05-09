@@ -7,12 +7,19 @@ import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.BorderPreset
+import com.nltimer.core.designsystem.theme.CardColorStrategy
 import com.nltimer.core.designsystem.theme.CornerPreset
+import com.nltimer.core.designsystem.theme.ExpressivenessPreset
 import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.IconContainerSize
 import com.nltimer.core.designsystem.theme.PaletteStyle
+import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
+import com.nltimer.core.designsystem.theme.TimerTypography
+import com.nltimer.core.designsystem.theme.WavyProgressLevel
+import com.nltimer.core.designsystem.theme.toStyleConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -88,6 +95,20 @@ class ThemeSettingsViewModel @Inject constructor(
     fun onCustomBorderScale(scale: Float?) = updateTheme { copy(style = style.copy(borderScale = scale)) }
 
     fun onCustomAlphaScale(scale: Float?) = updateTheme { copy(style = style.copy(alphaScale = scale)) }
+
+    fun onExpressivenessChange(preset: ExpressivenessPreset) = updateTheme {
+        copy(showBorders = preset.toStyleConfig().borderPreset != BorderPreset.NONE, style = preset.toStyleConfig())
+    }
+
+    fun onCardColorStrategyChange(strategy: CardColorStrategy) = updateTheme { copy(style = style.copy(cardColorStrategy = strategy)) }
+
+    fun onIconContainerSizeChange(size: IconContainerSize) = updateTheme { copy(style = style.copy(iconContainerSize = size)) }
+
+    fun onTimerTypographyChange(typography: TimerTypography) = updateTheme { copy(style = style.copy(timerTypography = typography)) }
+
+    fun onPressedShapeChange(level: PressedShapeLevel) = updateTheme { copy(style = style.copy(pressedShape = level)) }
+
+    fun onWavyProgressChange(level: WavyProgressLevel) = updateTheme { copy(style = style.copy(wavyProgress = level)) }
 
     fun onResetStyleConfig() = updateTheme { copy(showBorders = true, style = StyleConfig()) }
 }

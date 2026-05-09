@@ -72,9 +72,15 @@ import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.BorderPreset
 import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.CardColorStrategy
 import com.nltimer.core.designsystem.theme.CornerPreset
+import com.nltimer.core.designsystem.theme.ExpressivenessPreset
+import com.nltimer.core.designsystem.theme.IconContainerSize
+import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.StyleConfig
+import com.nltimer.core.designsystem.theme.TimerTypography
+import com.nltimer.core.designsystem.theme.WavyProgressLevel
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.effectiveAlphaScale
 import com.nltimer.core.designsystem.theme.effectiveBorderScale
@@ -89,6 +95,7 @@ import com.nltimer.core.designsystem.theme.middleItemShape
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.core.designsystem.theme.toFontRes
 import com.nltimer.core.designsystem.theme.toMPaletteStyle
+import com.nltimer.core.designsystem.theme.toStyleConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -119,6 +126,12 @@ fun ThemeSettingsRoute(
         onCustomCornerScale = viewModel::onCustomCornerScale,
         onCustomBorderScale = viewModel::onCustomBorderScale,
         onCustomAlphaScale = viewModel::onCustomAlphaScale,
+        onExpressivenessChange = viewModel::onExpressivenessChange,
+        onCardColorStrategyChange = viewModel::onCardColorStrategyChange,
+        onIconContainerSizeChange = viewModel::onIconContainerSizeChange,
+        onTimerTypographyChange = viewModel::onTimerTypographyChange,
+        onPressedShapeChange = viewModel::onPressedShapeChange,
+        onWavyProgressChange = viewModel::onWavyProgressChange,
         onResetStyleConfig = viewModel::onResetStyleConfig,
     )
 }
@@ -154,6 +167,12 @@ fun ThemeSettingsScreen(
     onCustomCornerScale: (Float?) -> Unit,
     onCustomBorderScale: (Float?) -> Unit,
     onCustomAlphaScale: (Float?) -> Unit,
+    onExpressivenessChange: (ExpressivenessPreset) -> Unit,
+    onCardColorStrategyChange: (CardColorStrategy) -> Unit,
+    onIconContainerSizeChange: (IconContainerSize) -> Unit,
+    onTimerTypographyChange: (TimerTypography) -> Unit,
+    onPressedShapeChange: (PressedShapeLevel) -> Unit,
+    onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
@@ -187,6 +206,12 @@ fun ThemeSettingsScreen(
             onCustomCornerScale = onCustomCornerScale,
             onCustomBorderScale = onCustomBorderScale,
             onCustomAlphaScale = onCustomAlphaScale,
+            onExpressivenessChange = onExpressivenessChange,
+            onCardColorStrategyChange = onCardColorStrategyChange,
+            onIconContainerSizeChange = onIconContainerSizeChange,
+            onTimerTypographyChange = onTimerTypographyChange,
+            onPressedShapeChange = onPressedShapeChange,
+            onWavyProgressChange = onWavyProgressChange,
             onResetStyleConfig = onResetStyleConfig,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
@@ -209,6 +234,12 @@ private fun LazyListScope.ThemeSettingsContent(
     onCustomCornerScale: (Float?) -> Unit,
     onCustomBorderScale: (Float?) -> Unit,
     onCustomAlphaScale: (Float?) -> Unit,
+    onExpressivenessChange: (ExpressivenessPreset) -> Unit,
+    onCardColorStrategyChange: (CardColorStrategy) -> Unit,
+    onIconContainerSizeChange: (IconContainerSize) -> Unit,
+    onTimerTypographyChange: (TimerTypography) -> Unit,
+    onPressedShapeChange: (PressedShapeLevel) -> Unit,
+    onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
@@ -396,6 +427,16 @@ private fun LazyListScope.ThemeSettingsContent(
                         modifier = Modifier.clip(middleItemShape()),
                     )
 
+                    ExpressivenessSection(
+                        styleConfig = theme.style,
+                        onExpressivenessChange = onExpressivenessChange,
+                        onCardColorStrategyChange = onCardColorStrategyChange,
+                        onIconContainerSizeChange = onIconContainerSizeChange,
+                        onTimerTypographyChange = onTimerTypographyChange,
+                        onPressedShapeChange = onPressedShapeChange,
+                        onWavyProgressChange = onWavyProgressChange,
+                    )
+
                     StyleConfigSection(
                         styleConfig = theme.style,
                         onCornerPresetChange = onCornerPresetChange,
@@ -558,6 +599,122 @@ private fun StylePreviewRow() {
                 style = MaterialTheme.typography.labelMedium,
                 color = colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.7f)),
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpressivenessSection(
+    styleConfig: StyleConfig,
+    onExpressivenessChange: (ExpressivenessPreset) -> Unit,
+    onCardColorStrategyChange: (CardColorStrategy) -> Unit,
+    onIconContainerSizeChange: (IconContainerSize) -> Unit,
+    onTimerTypographyChange: (TimerTypography) -> Unit,
+    onPressedShapeChange: (PressedShapeLevel) -> Unit,
+    onWavyProgressChange: (WavyProgressLevel) -> Unit,
+) {
+    val currentPreset = styleConfig.expressiveness
+    val presetConfig = currentPreset.toStyleConfig()
+    val isCustom = styleConfig.cardColorStrategy != presetConfig.cardColorStrategy
+            || styleConfig.iconContainerSize != presetConfig.iconContainerSize
+            || styleConfig.timerTypography != presetConfig.timerTypography
+            || styleConfig.pressedShape != presetConfig.pressedShape
+            || styleConfig.wavyProgress != presetConfig.wavyProgress
+
+    Column(modifier = Modifier.clip(middleItemShape())) {
+        ListItem(
+            headlineContent = { Text(text = "表达力") },
+            colors = listItemColors(),
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(listItemColors().containerColor)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                ExpressivenessPreset.entries.forEachIndexed { index, preset ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = ExpressivenessPreset.entries.size),
+                        onClick = { onExpressivenessChange(preset) },
+                        selected = !isCustom && currentPreset == preset,
+                    ) {
+                        Text(text = preset.toDisplayString())
+                    }
+                }
+            }
+
+            if (isCustom) {
+                Text(
+                    text = "自定义",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                CardColorStrategy.entries.forEachIndexed { index, strategy ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = CardColorStrategy.entries.size),
+                        onClick = { onCardColorStrategyChange(strategy) },
+                        selected = styleConfig.cardColorStrategy == strategy,
+                    ) {
+                        Text(text = strategy.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                IconContainerSize.entries.forEachIndexed { index, size ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = IconContainerSize.entries.size),
+                        onClick = { onIconContainerSizeChange(size) },
+                        selected = styleConfig.iconContainerSize == size,
+                    ) {
+                        Text(text = size.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                TimerTypography.entries.forEachIndexed { index, typography ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = TimerTypography.entries.size),
+                        onClick = { onTimerTypographyChange(typography) },
+                        selected = styleConfig.timerTypography == typography,
+                    ) {
+                        Text(text = typography.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                PressedShapeLevel.entries.forEachIndexed { index, level ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = PressedShapeLevel.entries.size),
+                        onClick = { onPressedShapeChange(level) },
+                        selected = styleConfig.pressedShape == level,
+                    ) {
+                        Text(text = level.toDisplayString())
+                    }
+                }
+            }
+
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                WavyProgressLevel.entries.forEachIndexed { index, level ->
+                    SegmentedButton(
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = WavyProgressLevel.entries.size),
+                        onClick = { onWavyProgressChange(level) },
+                        selected = styleConfig.wavyProgress == level,
+                    ) {
+                        Text(text = level.toDisplayString())
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }
