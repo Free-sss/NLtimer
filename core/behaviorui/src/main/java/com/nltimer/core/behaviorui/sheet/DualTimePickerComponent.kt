@@ -44,8 +44,8 @@ fun DualTimePicker(
     onLeftCenterClick: () -> Unit = {},
     onRightCenterClick: () -> Unit = {},
 ) {
-    val startProperty = remember(startTime) { startTime.withSecond(0).withNano(0) }
-    val endProperty = remember(endTime) { endTime.withSecond(0).withNano(0) }
+    val startProperty = remember(startTime) { startTime.withNano(0) }
+    val endProperty = remember(endTime) { endTime.withNano(0) }
 
     val today = LocalDate.now()
     val threeDaysAgo = today.minusDays(3)
@@ -95,9 +95,11 @@ fun DualTimePicker(
 
     val leftDateTime = remember(leftSelectedDate, leftSelectedHour, leftSelectedMinute) {
         leftSelectedDate.date.atTime(leftSelectedHour.toInt(), leftSelectedMinute.toInt())
+            .withSecond(startProperty.second)
     }
     val rightDateTime = remember(rightSelectedDate, rightSelectedHour, rightSelectedMinute) {
         rightSelectedDate.date.atTime(rightSelectedHour.toInt(), rightSelectedMinute.toInt())
+            .withSecond(endProperty.second)
     }
 
     LaunchedEffect(leftDateTime, rightDateTime) {
@@ -207,7 +209,7 @@ fun SingleTimePicker(
     onTimeChanged: (LocalDateTime) -> Unit = {},
     onCenterClick: () -> Unit = {},
 ) {
-    val startProperty = remember(startTime) { startTime.withSecond(0).withNano(0) }
+    val startProperty = remember(startTime) { startTime.withNano(0) }
 
     val today = LocalDate.now()
     val threeDaysAgo = today.minusDays(3)
@@ -246,6 +248,7 @@ fun SingleTimePicker(
 
     val currentDateTime = remember(selectedDate, selectedHour, selectedMinute) {
         selectedDate.date.atTime(selectedHour.toInt(), selectedMinute.toInt())
+            .withSecond(startProperty.second)
     }
 
     LaunchedEffect(currentDateTime) {
