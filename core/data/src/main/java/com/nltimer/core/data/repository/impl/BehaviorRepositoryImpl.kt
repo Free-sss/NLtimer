@@ -166,7 +166,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         activityId = activityId,
         startTime = startTime,
         endTime = endTime,
-        status = BehaviorNature.entries.firstOrNull { it.key == status } ?: BehaviorNature.PENDING,
+        status = BehaviorNature.fromKey(status),
         note = note,
         pomodoroCount = pomodoroCount,
         sequence = sequence,

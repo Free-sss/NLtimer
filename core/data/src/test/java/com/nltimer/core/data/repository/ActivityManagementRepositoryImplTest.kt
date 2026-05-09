@@ -318,8 +318,12 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun getAllPresetsSync(): List<ActivityEntity> = presetActivities
         override suspend fun getTagIdsForActivitySync(activityId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) { deletedActivityTagBindingIds.add(activityId) }
         override suspend fun getAllActiveSync(): List<ActivityEntity> = activities.filter { !it.isArchived }
+        override suspend fun insertAll(activities: List<ActivityEntity>) {
+            insertedActivities.addAll(activities)
+        }
     }
 
     private class FakeGroupDao : ActivityGroupDao {

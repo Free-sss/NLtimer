@@ -19,6 +19,9 @@ interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(activity: ActivityEntity): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(activities: List<ActivityEntity>)
+
     @Update
     suspend fun update(activity: ActivityEntity)
 
@@ -73,6 +76,9 @@ interface ActivityDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
 
     @Query("DELETE FROM activity_tag_binding WHERE activityId = :activityId")
     suspend fun deleteActivityTagBindingsForActivity(activityId: Long)

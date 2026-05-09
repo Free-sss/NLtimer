@@ -9,5 +9,10 @@ package com.nltimer.core.data.model
 enum class BehaviorNature(val key: String) {
     PENDING("pending"),
     ACTIVE("active"),
-    COMPLETED("completed"),
+    COMPLETED("completed");
+
+    companion object {
+        private val keyMap = entries.associateBy { it.key }
+        fun fromKey(key: String): BehaviorNature = keyMap[key] ?: PENDING
+    }
 }

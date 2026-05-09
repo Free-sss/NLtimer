@@ -61,8 +61,12 @@ class TagRepositoryImpl @Inject constructor(
     override suspend fun setActivityTagBindings(tagId: Long, activityIds: List<Long>) {
         database.withTransaction {
             tagDao.deleteActivityTagBindingsForTag(tagId)
-            activityIds.forEach { activityId ->
-                tagDao.insertActivityTagBinding(ActivityTagBindingEntity(activityId = activityId, tagId = tagId))
+            if (activityIds.isNotEmpty()) {
+                tagDao.insertActivityTagBindings(
+                    activityIds.map { activityId ->
+                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId)
+                    }
+                )
             }
         }
     }
