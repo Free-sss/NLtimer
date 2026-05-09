@@ -25,6 +25,7 @@ include(
     "app",
     "core:designsystem",
     "core:data",
+    "core:behaviorui",
     "core:tools",
     "feature:home",
     "feature:sub",
@@ -33,5 +34,6 @@ include(
     "feature:categories",
     "feature:management_activities",
     "feature:tag_management",
+    "feature:behavior_management",
     "feature:debug",
 )

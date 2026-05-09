@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness5
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
@@ -52,6 +53,7 @@ internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
     DrawerMenuItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
     DrawerMenuItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.Default.List),
     DrawerMenuItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.Default.Label),
+    DrawerMenuItem(NLtimerRoutes.BEHAVIOR_MANAGEMENT, "行为管理", Icons.Default.EventNote),
     DrawerMenuItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 ))
 

@@ -253,4 +253,24 @@ interface BehaviorDao {
         """
     )
     fun getActivityStatsSync(activityId: Long): Flow<ActivityStatsRow>
+
+    /** 按时间范围查询行为（流式，用于 UI 观察） */
+    @Query(
+        """
+        SELECT * FROM behaviors
+        WHERE startTime >= :startTime AND startTime < :endTime
+        ORDER BY startTime ASC
+        """
+    )
+    fun getByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorEntity>>
+
+    /** 按时间范围同步查询行为（用于导出） */
+    @Query(
+        """
+        SELECT * FROM behaviors
+        WHERE startTime >= :startTime AND startTime < :endTime
+        ORDER BY startTime ASC
+        """
+    )
+    suspend fun getByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorEntity>
 }

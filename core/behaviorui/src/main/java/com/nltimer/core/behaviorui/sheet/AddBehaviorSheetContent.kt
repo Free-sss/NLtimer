@@ -1,0 +1,507 @@
+package com.nltimer.core.behaviorui.sheet
+
+import android.widget.Toast
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.Tag
+import java.time.Duration
+import java.time.LocalTime
+import kotlin.math.roundToInt
+
+@Suppress("LongParameterList", "LongMethod")
+@Composable
+internal fun AddBehaviorSheetContent(
+    modifier: Modifier = Modifier,
+    mode: BehaviorNature = BehaviorNature.COMPLETED,
+    activities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
+    allTags: List<Tag>,
+    dialogConfig: DialogGridConfig,
+    initialStartTime: LocalTime? = null,
+    initialEndTime: LocalTime? = null,
+    initialActivityId: Long? = null,
+    initialTagIds: List<Long> = emptyList(),
+    initialNote: String? = null,
+    editBehaviorId: Long? = null,
+    existingBehaviors: List<Behavior> = emptyList(),
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onDismiss: () -> Unit,
+    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
+    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+) {
+    val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
+
+    val emphasisColor = MaterialTheme.colorScheme.secondary
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { state.boxPositionInWindow = it.positionInWindow() }
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            BehaviorSheetBackground(
+                pathDrawMode = state.effectiveMode,
+                emphasisColor = emphasisColor,
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                ) {
+                    SheetMainContent(
+                        state = state,
+                        mode = mode,
+                        activities = activities,
+                        allTags = allTags,
+                        dialogConfig = dialogConfig,
+                        emphasisColor = emphasisColor,
+                        onConfirm = onConfirm,
+                        onDismiss = onDismiss,
+                    )
+                }
+            }
+        }
+
+        if (state.showTimeAdjustments && mode != BehaviorNature.PENDING) {
+            TimeAdjustmentOverlay(
+                mode = mode,
+                startTime = state.startTime,
+                endTime = state.endTime,
+                innerBoxPositionInWindow = state.innerBoxPositionInWindow,
+                boxPositionInWindow = state.boxPositionInWindow,
+                onStartTimeChanged = { state.startTime = it },
+                onEndTimeChanged = { state.endTime = it },
+            )
+        }
+
+        if (state.isDragging) {
+            DragOptionsOverlay(state = state)
+        }
+    }
+
+    SheetPickerDialogs(
+        showAddActivityDialog = state.showAddActivityDialog,
+        showAddTagDialog = state.showAddTagDialog,
+        showActivityPicker = state.showActivityPicker,
+        showTagPicker = state.showTagPicker,
+        activities = activities,
+        activityGroups = activityGroups,
+        allTags = allTags,
+        selectedActivityId = state.selectedActivityId,
+        selectedTagIds = state.selectedTagIds,
+        onAddActivityDialogDismiss = { state.showAddActivityDialog = false },
+        onAddTagDialogDismiss = { state.showAddTagDialog = false },
+        onActivityPickerDismiss = { state.showActivityPicker = false },
+        onTagPickerDismiss = { state.showTagPicker = false },
+        onActivitySelected = { state.selectedActivityId = it },
+        onTagsSelected = { state.selectedTagIds = it },
+        onAddActivity = onAddActivity,
+        onAddTag = onAddTag,
+        onShowAddActivityDialog = { state.showAddActivityDialog = true },
+        onShowAddTagDialog = { state.showAddTagDialog = true },
+    )
+}
+
+@Suppress("LongParameterList", "LongMethod")
+@Composable
+private fun SheetMainContent(
+    state: AddBehaviorState,
+    mode: BehaviorNature,
+    activities: List<Activity>,
+    allTags: List<Tag>,
+    dialogConfig: DialogGridConfig,
+    emphasisColor: Color,
+    onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val activityChips = remember(activities) { activities.map { ChipItem(it) } }
+    val tagChips = remember(allTags) { allTags.map { ChipItem(it) } }
+    val horizontalLinesForActivities = remember(dialogConfig.activityHorizontalLines) {
+        if (dialogConfig.activityHorizontalLines == 0) Int.MAX_VALUE else dialogConfig.activityHorizontalLines
+    }
+    val horizontalLinesForTags = remember(dialogConfig.tagHorizontalLines) {
+        if (dialogConfig.tagHorizontalLines == 0) Int.MAX_VALUE else dialogConfig.tagHorizontalLines
+    }
+
+    val blurRadius by animateDpAsState(
+        targetValue = if (state.showTimeAdjustments) 8.dp else 0.dp,
+        animationSpec = tween(durationMillis = 300),
+        label = "blur_animation"
+    )
+    val contentAlpha by animateFloatAsState(
+        targetValue = if (state.showTimeAdjustments) 0.7f else 1f,
+        animationSpec = tween(durationMillis = 300),
+        label = "alpha_animation"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 8.dp)
+            .then(
+                if (state.showTimeAdjustments) {
+                    Modifier.pointerInput(state.showTimeAdjustments) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Main)
+                                if (event.type == PointerEventType.Press) {
+                                    state.showTimeAdjustments = false
+                                }
+                            }
+                        }
+                    }
+                } else Modifier
+            )
+    ) {
+        if (mode == BehaviorNature.COMPLETED) {
+            DurationDisplayRow(duration = state.duration, emphasisColor = emphasisColor)
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { state.innerBoxPositionInWindow = it.positionInWindow() }
+        ) {
+            Column {
+                TimePickerSection(
+                    mode = mode,
+                    state = state,
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .blur(blurRadius)
+                .graphicsLayer { alpha = contentAlpha }
+        ) {
+            Spacer(modifier = Modifier.height(1.dp))
+            ActivityGridComponent(
+                chips = activityChips,
+                onChipClick = { id -> state.selectedActivityId = id },
+                selectedId = state.selectedActivityId,
+                displayMode = dialogConfig.activityDisplayMode,
+                layoutMode = dialogConfig.activityLayoutMode,
+                maxLinesPerColumn = dialogConfig.activityColumnLines,
+                maxLinesHorizontal = horizontalLinesForActivities,
+                useActivityColorForText = dialogConfig.activityUseColorForText,
+                functionChipLabel = "活动",
+                functionChipIcon = {
+                    Icon(Icons.Default.Settings, contentDescription = "活动", modifier = Modifier.size(14.dp))
+                },
+                functionChipOnClick = { state.showActivityPicker = true },
+                functionChipOnLongClick = { state.showAddActivityDialog = true },
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            ActivityGridComponent(
+                chips = tagChips,
+                onChipClick = { tagId ->
+                    state.selectedTagIds = if (tagId in state.selectedTagIds) {
+                        state.selectedTagIds - tagId
+                    } else {
+                        state.selectedTagIds + tagId
+                    }
+                },
+                selectedIds = state.selectedTagIds,
+                multiSelect = true,
+                displayMode = dialogConfig.tagDisplayMode,
+                layoutMode = dialogConfig.tagLayoutMode,
+                maxLinesPerColumn = dialogConfig.tagColumnLines,
+                maxLinesHorizontal = horizontalLinesForTags,
+                useActivityColorForText = dialogConfig.tagUseColorForText,
+                functionChipLabel = "标签",
+                functionChipIcon = {
+                    Icon(Icons.AutoMirrored.Filled.Label, contentDescription = "标签", modifier = Modifier.size(14.dp))
+                },
+                functionChipOnClick = { state.showTagPicker = true },
+                functionChipOnLongClick = { state.showAddTagDialog = true },
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            NoteInputComponent(
+                note = state.note,
+                onNoteChange = { state.note = it },
+                onTopButton = { },
+                onBottomButton = { },
+            )
+
+            ConfirmButtonRow(
+                state = state,
+                mode = mode,
+                onConfirm = onConfirm,
+                onDismiss = onDismiss,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+}
+
+@Composable
+private fun DurationDisplayRow(
+    duration: Duration,
+    emphasisColor: Color,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val durationText: String by remember {
+            derivedStateOf {
+                val totalMinutes = duration.toMinutes()
+                val hours = totalMinutes / 60
+                val minutes = totalMinutes % 60
+                "${hours}时${minutes}分"
+            }
+        }
+        Text(
+            text = "用时：$durationText",
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = FontWeight.Bold,
+                color = emphasisColor,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun TimePickerSection(
+    mode: BehaviorNature,
+    state: AddBehaviorState,
+) {
+    when (mode) {
+        BehaviorNature.COMPLETED -> {
+            DualTimePicker(
+                startTime = state.startTime,
+                endTime = state.endTime,
+                animate = !state.showTimeAdjustments,
+                onTimesChanged = { start, end ->
+                    if (state.startTime != start) state.startTime = start
+                    if (state.endTime != end) state.endTime = end
+                },
+                onLeftCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
+                onRightCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
+            )
+        }
+        BehaviorNature.ACTIVE -> {
+            SingleTimePicker(
+                startTime = state.startTime,
+                animate = !state.showTimeAdjustments,
+                onTimeChanged = { state.startTime = it },
+                onCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
+            )
+        }
+        BehaviorNature.PENDING -> {}
+    }
+}
+
+@Suppress("LongMethod")
+@Composable
+private fun ConfirmButtonRow(
+    state: AddBehaviorState,
+    mode: BehaviorNature,
+    onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { state.buttonRowPositionInWindow = it.positionInWindow() },
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
+        TextButton(
+            onClick = onDismiss,
+            modifier = Modifier
+                .weight(2f)
+                .height(40.dp)
+                .onGloballyPositioned { layoutCoordinates ->
+                    buttonPositionInWindow = layoutCoordinates.positionInWindow()
+                }
+                .offset {
+                    IntOffset(
+                        state.dragOffset.x.roundToInt(),
+                        state.dragOffset.y.roundToInt()
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures(
+                        onDragStart = { state.isDragging = true },
+                        onDragEnd = {
+                            if (state.hoveredOption != null) {
+                                Toast.makeText(context, "触发功能: ${state.hoveredOption}", Toast.LENGTH_SHORT).show()
+                            }
+                            state.isDragging = false
+                            state.dragOffset = Offset.Zero
+                            state.hoveredOption = null
+                        },
+                        onDragCancel = {
+                            state.isDragging = false
+                            state.dragOffset = Offset.Zero
+                            state.hoveredOption = null
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            state.dragOffset += dragAmount
+                            val currentPointerPosition = buttonPositionInWindow + state.dragOffset + change.position
+                            val hit = state.optionsLayoutBounds.entries.find { entry ->
+                                entry.value.contains(currentPointerPosition)
+                            }?.key
+                            if (hit != state.hoveredOption) {
+                                state.hoveredOption = hit
+                            }
+                        }
+                    )
+                },
+        ) {
+            Text("Gesture", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+        }
+        Button(
+            onClick = {
+                if (mode == BehaviorNature.COMPLETED
+                    && !state.startTime.toLocalTime().isBefore(state.endTime.toLocalTime())
+                ) {
+                    Toast.makeText(context, "开始时间必须早于结束时间", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                state.selectedActivityId?.let { activityId ->
+                    onConfirm(
+                        activityId,
+                        state.selectedTagIds.toList(),
+                        state.startTime.toLocalTime(),
+                        if (mode == BehaviorNature.COMPLETED) state.endTime.toLocalTime() else null,
+                        mode,
+                        state.note.ifBlank { null }
+                    )
+                }
+            },
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.weight(1f).height(40.dp),
+            enabled = state.selectedActivityId != null,
+        ) {
+            Text(text = "确认", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+        }
+    }
+}
+
+@Composable
+private fun DragOptionsOverlay(state: AddBehaviorState) {
+    val density = LocalDensity.current
+    val gapPx = with(density) { 8.dp.toPx() }
+    val optionsY = state.buttonRowPositionInWindow.y - state.boxPositionInWindow.y - state.optionsRowHeight - gapPx
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 8.dp, end = 8.dp)
+            .offset { IntOffset(0, optionsY.roundToInt()) }
+            .onGloballyPositioned { coords ->
+                state.optionsRowHeight = coords.size.height.toFloat()
+            },
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
+        options.forEach { option ->
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .onGloballyPositioned { layoutCoordinates ->
+                        val position = layoutCoordinates.positionInWindow()
+                        val size = layoutCoordinates.size
+                        state.optionsLayoutBounds[option] = Rect(
+                            position.x,
+                            position.y,
+                            position.x + size.width,
+                            position.y + size.height
+                        )
+                    },
+                shape = RoundedCornerShape(8.dp),
+                color = if (state.hoveredOption == option)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.surfaceVariant,
+                tonalElevation = 4.dp,
+                shadowElevation = 4.dp
+            ) {
+                Box(
+                    modifier = Modifier.padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = option,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (state.hoveredOption == option)
+                            MaterialTheme.colorScheme.onPrimary
+                        else
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+            }
+        }
+    }
+}

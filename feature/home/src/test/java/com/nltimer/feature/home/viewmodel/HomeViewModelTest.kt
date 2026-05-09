@@ -514,6 +514,8 @@ class HomeViewModelTest {
             updateBehaviorCalled = true
         }
         override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
+        override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> = flowOf(emptyList())
+        override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
     }
 

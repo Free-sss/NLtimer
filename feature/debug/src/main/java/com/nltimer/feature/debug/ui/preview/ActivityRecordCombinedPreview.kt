@@ -81,11 +81,11 @@ import java.time.LocalDateTime
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
-import com.nltimer.feature.home.ui.sheet.ActivityGridComponent
-import com.nltimer.feature.home.ui.sheet.ChipItem
-import com.nltimer.feature.home.ui.sheet.DualTimePicker
-import com.nltimer.feature.home.ui.sheet.NoteInputComponent
-import com.nltimer.feature.home.ui.sheet.TimeAdjustmentComponent
+import com.nltimer.core.behaviorui.sheet.ActivityGridComponent
+import com.nltimer.core.behaviorui.sheet.ChipItem
+import com.nltimer.core.behaviorui.sheet.DualTimePicker
+import com.nltimer.core.behaviorui.sheet.NoteInputComponent
+import com.nltimer.core.behaviorui.sheet.TimeAdjustmentComponent
 
 data class GridConfig(
     val displayMode: MutableState<ChipDisplayMode>,

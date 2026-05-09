@@ -52,6 +52,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.SETTINGS -> "设置"
         NLtimerRoutes.THEME_SETTINGS -> "主题配置"
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
+        NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         else -> "NLtimer"
     }
     var showSettingsPopup by remember { mutableStateOf(false) }

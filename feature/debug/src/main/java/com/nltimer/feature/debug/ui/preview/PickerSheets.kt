@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
-import com.nltimer.feature.home.ui.sheet.TagPicker
+import com.nltimer.core.behaviorui.sheet.TagPicker
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

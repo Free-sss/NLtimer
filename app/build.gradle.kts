@@ -62,6 +62,7 @@ dependencies {
     implementation(projects.feature.categories)
     implementation(projects.feature.managementActivities)
     implementation(projects.feature.tagManagement)
+    implementation(projects.feature.behaviorManagement)
     debugImplementation(projects.feature.debug)
 
     implementation(libs.androidx.core.ktx)
