@@ -3,8 +3,6 @@ package com.nltimer.feature.behavior_management.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,12 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +39,7 @@ import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BehaviorManagementScreen(
     viewModel: BehaviorManagementViewModel,
@@ -93,8 +89,17 @@ fun BehaviorManagementScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
+                    TimeRangeSelector(
+                        currentPreset = uiState.timeRange,
+                        currentDate = uiState.rangeStartDate,
+                        onPresetChange = viewModel::setTimeRange,
+                        onDateChange = viewModel::setRangeStartDate,
+                        onNavigate = viewModel::navigateRange,
+                        modifier = Modifier.weight(1f),
+                    )
                     IconButton(onClick = onImport) {
                         Icon(Icons.Default.FileDownload, contentDescription = "导入")
                     }
@@ -103,14 +108,6 @@ fun BehaviorManagementScreen(
                     }
                 }
             }
-            TimeRangeSelector(
-                currentPreset = uiState.timeRange,
-                currentDate = uiState.rangeStartDate,
-                onPresetChange = viewModel::setTimeRange,
-                onDateChange = viewModel::setRangeStartDate,
-                onNavigate = viewModel::navigateRange,
-                modifier = Modifier.padding(horizontal = 8.dp),
-            )
 
             FilterBar(
                 activityGroups = activityGroups.map { it.name },
@@ -119,30 +116,14 @@ fun BehaviorManagementScreen(
                 selectedTagCategory = uiState.selectedTagCategory,
                 selectedStatus = uiState.selectedStatus,
                 searchQuery = uiState.searchQuery,
+                viewMode = uiState.viewMode,
                 onActivityGroupChange = viewModel::setActivityGroupFilter,
                 onTagCategoryChange = viewModel::setTagCategoryFilter,
                 onStatusChange = viewModel::setStatusFilter,
                 onSearchQueryChange = viewModel::setSearchQuery,
+                onViewModeChange = viewModel::setViewMode,
                 modifier = Modifier.padding(horizontal = 8.dp),
             )
-
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                FilterChip(
-                    selected = uiState.viewMode == ViewMode.LIST,
-                    onClick = { viewModel.setViewMode(ViewMode.LIST) },
-                    label = { Text("列表", style = MaterialTheme.typography.labelMedium) },
-                )
-                FilterChip(
-                    selected = uiState.viewMode == ViewMode.TIMELINE,
-                    onClick = { viewModel.setViewMode(ViewMode.TIMELINE) },
-                    label = { Text("时间轴", style = MaterialTheme.typography.labelMedium) },
-                )
-            }
 
             if (uiState.behaviors.isEmpty()) {
                 Box(

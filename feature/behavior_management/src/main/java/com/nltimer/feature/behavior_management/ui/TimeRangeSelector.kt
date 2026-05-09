@@ -1,6 +1,7 @@
 package com.nltimer.feature.behavior_management.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -8,13 +9,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -47,47 +51,56 @@ fun TimeRangeSelector(
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        OutlinedButton(onClick = { presetExpanded = true }) {
-            Text(text = currentPreset.label, style = MaterialTheme.typography.labelMedium)
-            Icon(
-                imageVector = Icons.Default.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp),
+        Box {
+            AssistChip(
+                onClick = { presetExpanded = true },
+                label = {
+                    Text(text = currentPreset.label, style = MaterialTheme.typography.labelMedium)
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(AssistChipDefaults.IconSize),
+                    )
+                },
             )
-        }
-
-        androidx.compose.material3.DropdownMenu(
-            expanded = presetExpanded,
-            onDismissRequest = { presetExpanded = false },
-        ) {
-            TimeRangePreset.entries.forEach { preset ->
-                androidx.compose.material3.DropdownMenuItem(
-                    text = { Text(preset.label) },
-                    onClick = {
-                        onPresetChange(preset)
-                        presetExpanded = false
-                    },
-                )
+            DropdownMenu(
+                expanded = presetExpanded,
+                onDismissRequest = { presetExpanded = false },
+            ) {
+                TimeRangePreset.entries.forEach { preset ->
+                    DropdownMenuItem(
+                        text = { Text(preset.label) },
+                        onClick = {
+                            onPresetChange(preset)
+                            presetExpanded = false
+                        },
+                    )
+                }
             }
         }
 
-        IconButton(onClick = { onNavigate(-1) }) {
+        IconButton(onClick = { onNavigate(-1) }, modifier = Modifier.size(36.dp)) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "前一天",
             )
         }
 
-        OutlinedButton(onClick = { showDatePicker = true }) {
-            Text(
-                text = formatDate(currentDate),
-                style = MaterialTheme.typography.labelMedium,
-            )
-        }
+        AssistChip(
+            onClick = { showDatePicker = true },
+            label = {
+                Text(
+                    text = formatDate(currentDate),
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            },
+        )
 
-        IconButton(onClick = { onNavigate(1) }) {
+        IconButton(onClick = { onNavigate(1) }, modifier = Modifier.size(36.dp)) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "后一天",
@@ -131,3 +144,4 @@ fun TimeRangeSelector(
 private fun formatDate(date: LocalDate): String {
     return "${date.year}/${date.monthValue}/${date.dayOfMonth}"
 }
+
