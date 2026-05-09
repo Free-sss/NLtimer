@@ -2,6 +2,7 @@ package com.nltimer.feature.settings.ui
 
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
@@ -101,6 +102,21 @@ class DialogConfigViewModelTest {
         viewModel.updateConfig(DialogGridConfig())
         advanceUntilIdle()
         assertTrue(fakeSettingsPrefs.updateDialogConfigCalled)
+    }
+
+    @Test
+    fun `dialogConfig default secondsStrategy is OPEN_TIME`() = runTest {
+        advanceUntilIdle()
+        val config = viewModel.dialogConfig.value
+        assertEquals(SecondsStrategy.OPEN_TIME, config.secondsStrategy)
+    }
+
+    @Test
+    fun `updateConfig with secondsStrategy CONFIRM_TIME is preserved`() = runTest {
+        val newConfig = DialogGridConfig(secondsStrategy = SecondsStrategy.CONFIRM_TIME)
+        viewModel.updateConfig(newConfig)
+        advanceUntilIdle()
+        assertEquals(SecondsStrategy.CONFIRM_TIME, fakeSettingsPrefs.lastDialogConfig?.secondsStrategy)
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {
