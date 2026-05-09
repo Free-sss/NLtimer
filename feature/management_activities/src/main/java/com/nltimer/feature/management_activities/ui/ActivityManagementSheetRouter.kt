@@ -8,7 +8,7 @@ import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.ui.components.ActivityDetailSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.AddGroupDialog
-import com.nltimer.feature.management_activities.ui.components.dialogs.ConfirmDialog
+import com.nltimer.core.designsystem.component.ConfirmDialog
 import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityFormSheet
 import com.nltimer.feature.management_activities.ui.components.dialogs.MoveToGroupDialog
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
