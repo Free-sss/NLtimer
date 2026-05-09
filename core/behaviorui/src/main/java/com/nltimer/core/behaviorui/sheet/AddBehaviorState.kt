@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Rect
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.theme.PathDrawMode
 import java.time.Duration
@@ -67,12 +68,14 @@ internal class AddBehaviorState(
     var selectedActivityId by mutableStateOf(initialActivityId)
     var selectedTagIds by mutableStateOf(initialTagIds.toSet())
 
-    private val now = LocalDateTime.now().withSecond(0).withNano(0)
+    val sheetOpenTime: LocalDateTime = LocalDateTime.now()
+    private val now = sheetOpenTime
+    var userAdjustedTime by mutableStateOf(false)
     var startTime by mutableStateOf(
-        initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute) } ?: now
+        initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
     )
     var endTime by mutableStateOf(
-        initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute) } ?: now
+        initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
     )
 
     val duration: Duration by derivedStateOf {
@@ -129,4 +132,16 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
     var buttonRowPositionInWindow by mutableStateOf(Offset.Zero)
     var optionsRowHeight by mutableFloatStateOf(0f)
+
+    fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
+        return if (userAdjustedTime) {
+            startTime.withSecond(0).withNano(0)
+        } else {
+            val sourceSeconds = when (strategy) {
+                SecondsStrategy.OPEN_TIME -> sheetOpenTime.second
+                SecondsStrategy.CONFIRM_TIME -> confirmTime.second
+            }
+            startTime.withSecond(sourceSeconds).withNano(0)
+        }
+    }
 }

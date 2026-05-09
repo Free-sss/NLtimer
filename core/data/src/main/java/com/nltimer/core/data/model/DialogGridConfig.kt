@@ -5,6 +5,11 @@ import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
 
+enum class SecondsStrategy {
+    OPEN_TIME,
+    CONFIRM_TIME,
+}
+
 @Immutable
 data class DialogGridConfig(
     val activityDisplayMode: ChipDisplayMode = ChipDisplayMode.Filled,
@@ -19,5 +24,5 @@ data class DialogGridConfig(
     val tagUseColorForText: Boolean = true,
     val showBehaviorNature: Boolean = true,
     val pathDrawMode: PathDrawMode = PathDrawMode.StartToEnd,
-    val secondsStrategy: SecondsStrategy = SecondsStrategy.OPEN_TIME,
+    val secondsStrategy: SecondsStrategy = SecondsStrategy.CONFIRM_TIME,
 )
