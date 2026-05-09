@@ -21,11 +21,17 @@ import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.PaletteStyle
 import com.nltimer.core.designsystem.theme.PathDrawMode
+import com.nltimer.core.designsystem.theme.CardColorStrategy
+import com.nltimer.core.designsystem.theme.ExpressivenessPreset
+import com.nltimer.core.designsystem.theme.IconContainerSize
+import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
+import com.nltimer.core.designsystem.theme.TimerTypography
+import com.nltimer.core.designsystem.theme.WavyProgressLevel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -61,6 +67,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
                 cornerScale = prefs[cornerScaleCustomKey],
                 borderScale = prefs[borderScaleCustomKey],
                 alphaScale = prefs[alphaScaleCustomKey],
+                expressiveness = try { ExpressivenessPreset.valueOf(prefs[expressivenessKey] ?: ExpressivenessPreset.SUBDUED.name) } catch (_: IllegalArgumentException) { ExpressivenessPreset.SUBDUED },
+                cardColorStrategy = try { CardColorStrategy.valueOf(prefs[cardColorStrategyKey] ?: CardColorStrategy.SURFACE.name) } catch (_: IllegalArgumentException) { CardColorStrategy.SURFACE },
+                iconContainerSize = try { IconContainerSize.valueOf(prefs[iconContainerSizeKey] ?: IconContainerSize.NONE.name) } catch (_: IllegalArgumentException) { IconContainerSize.NONE },
+                timerTypography = try { TimerTypography.valueOf(prefs[timerTypographyKey] ?: TimerTypography.HEADLINE.name) } catch (_: IllegalArgumentException) { TimerTypography.HEADLINE },
+                pressedShape = try { PressedShapeLevel.valueOf(prefs[pressedShapeKey] ?: PressedShapeLevel.OFF.name) } catch (_: IllegalArgumentException) { PressedShapeLevel.OFF },
+                wavyProgress = try { WavyProgressLevel.valueOf(prefs[wavyProgressKey] ?: WavyProgressLevel.OFF.name) } catch (_: IllegalArgumentException) { WavyProgressLevel.OFF },
             ),
         )
     }
@@ -82,6 +94,12 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             val cornerScale = theme.style.cornerScale; if (cornerScale != null) prefs[cornerScaleCustomKey] = cornerScale else prefs.remove(cornerScaleCustomKey)
             val borderScale = theme.style.borderScale; if (borderScale != null) prefs[borderScaleCustomKey] = borderScale else prefs.remove(borderScaleCustomKey)
             val alphaScale = theme.style.alphaScale; if (alphaScale != null) prefs[alphaScaleCustomKey] = alphaScale else prefs.remove(alphaScaleCustomKey)
+            prefs[expressivenessKey] = theme.style.expressiveness.name
+            prefs[cardColorStrategyKey] = theme.style.cardColorStrategy.name
+            prefs[iconContainerSizeKey] = theme.style.iconContainerSize.name
+            prefs[timerTypographyKey] = theme.style.timerTypography.name
+            prefs[pressedShapeKey] = theme.style.pressedShape.name
+            prefs[wavyProgressKey] = theme.style.wavyProgress.name
         }
     }
 
@@ -111,6 +129,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showBehaviorNature = prefs[showNatureKey] ?: true,
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
             secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
+            durationPresets = parseDurationPresets(prefs[durationPresetsKey]),
         )
     }
 
@@ -129,6 +148,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name
+            prefs[durationPresetsKey] = config.durationPresets.joinToString(",")
         }
     }
 
@@ -147,6 +167,16 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getHasSeenIntroFlow(): Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[hasSeenIntroKey] == true
+    }
+
+    override suspend fun setHasSeenIntro(seen: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[hasSeenIntroKey] = seen
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -159,6 +189,11 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             style = try { TimeLabelStyle.valueOf(parts[1]) } catch (_: IllegalArgumentException) { TimeLabelStyle.PILL },
             format = try { TimeLabelFormat.valueOf(parts[2]) } catch (_: IllegalArgumentException) { TimeLabelFormat.HH_MM },
         )
+    }
+
+    private fun parseDurationPresets(raw: String?): List<Long> {
+        if (raw.isNullOrBlank()) return listOf(5L, 15L, 25L, 45L, 60L)
+        return raw.split(",").mapNotNull { it.trim().toLongOrNull() }
     }
 
     companion object {
@@ -195,5 +230,13 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val cornerScaleCustomKey = floatPreferencesKey("corner_scale_custom")
         private val borderScaleCustomKey = floatPreferencesKey("border_scale_custom")
         private val alphaScaleCustomKey = floatPreferencesKey("alpha_scale_custom")
+        private val expressivenessKey = stringPreferencesKey("expressiveness_key")
+        private val cardColorStrategyKey = stringPreferencesKey("card_color_strategy_key")
+        private val iconContainerSizeKey = stringPreferencesKey("icon_container_size_key")
+        private val timerTypographyKey = stringPreferencesKey("timer_typography_key")
+        private val pressedShapeKey = stringPreferencesKey("pressed_shape_key")
+        private val wavyProgressKey = stringPreferencesKey("wavy_progress_key")
+        private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
+        private val durationPresetsKey = stringPreferencesKey("duration_presets")
     }
 }

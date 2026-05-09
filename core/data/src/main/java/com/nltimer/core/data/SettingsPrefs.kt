@@ -29,4 +29,9 @@ interface SettingsPrefs {
     fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig>
     /** 更新时间标签配置并持久化 */
     suspend fun updateTimeLabelConfig(config: TimeLabelConfig)
+
+    /** 以 Flow 形式监听是否已看过引导页 */
+    fun getHasSeenIntroFlow(): Flow<Boolean>
+    /** 设置已看过引导页 */
+    suspend fun setHasSeenIntro(seen: Boolean)
 }
