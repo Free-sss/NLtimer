@@ -18,7 +18,6 @@ fun HomeRoute(
     val uiState by viewModel.uiState.collectAsState()
     val activities by viewModel.activities.collectAsState()
     val activityGroups by viewModel.activityGroups.collectAsState()
-    val tagsForSelectedActivity by viewModel.tagsForSelectedActivity.collectAsState()
     val allTags by viewModel.allTags.collectAsState()
     val dialogConfig by viewModel.dialogConfig.collectAsState()
     val timeLabelConfig by viewModel.timeLabelConfig.collectAsState()
@@ -78,7 +77,6 @@ fun HomeRoute(
         uiState = uiState,
         activities = activities,
         activityGroups = activityGroups,
-        tagsForSelectedActivity = tagsForSelectedActivity,
         allTags = allTags,
         dialogConfig = dialogConfig,
         onEmptyCellClick = onEmptyCellClick,

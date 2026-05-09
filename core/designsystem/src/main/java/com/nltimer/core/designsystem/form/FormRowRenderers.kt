@@ -210,7 +210,6 @@ internal fun iconColorRenderer(
 }
 
 @Composable
-@Composable
 internal fun labelActionRenderer(row: FormRow.LabelAction) {
     Row(
         modifier = Modifier

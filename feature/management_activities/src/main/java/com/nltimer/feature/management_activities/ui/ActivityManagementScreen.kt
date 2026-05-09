@@ -16,37 +16,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
-import com.nltimer.core.data.model.ActivityGroup
-import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
-import com.nltimer.feature.management_activities.ui.components.ActivityDetailSheet
 import com.nltimer.feature.management_activities.ui.components.GroupCard
-import com.nltimer.feature.management_activities.ui.components.dialogs.AddActivityFormSheet
-import com.nltimer.feature.management_activities.ui.components.dialogs.AddGroupDialog
-import com.nltimer.core.designsystem.component.ConfirmDialog
-import com.nltimer.feature.management_activities.ui.components.dialogs.EditActivityFormSheet
-import com.nltimer.feature.management_activities.ui.components.dialogs.MoveToGroupDialog
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -172,141 +157,8 @@ fun ActivityManagementScreen(
         }
     }
 
-    when (val dialog = uiState.dialogState) {
-        is DialogState.AddActivity -> {
-            AddActivityFormSheet(
-                allGroups = uiState.allGroups,
-                allTags = uiState.allTags,
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, iconKey, color, groupId, keywords, tagIds ->
-                    viewModel.addActivity(name, iconKey, color, groupId, keywords, tagIds)
-                },
-            )
-        }
-
-        is DialogState.AddActivityToGroup -> {
-            AddActivityFormSheet(
-                allGroups = uiState.allGroups,
-                allTags = uiState.allTags,
-                initialGroupId = dialog.group.id,
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name, iconKey, color, groupId, keywords, tagIds ->
-                    viewModel.addActivity(name, iconKey, color, groupId, keywords, tagIds)
-                },
-            )
-        }
-
-        is DialogState.EditActivity -> {
-            EditActivityFormSheet(
-                activity = dialog.activity,
-                allGroups = uiState.allGroups,
-                allTags = uiState.allTags,
-                initialTagIds = dialog.tagIds,
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { updatedActivity, tagIds ->
-                    viewModel.updateActivity(updatedActivity, tagIds)
-                },
-                onDelete = { viewModel.showDeleteActivityDialog(dialog.activity) },
-            )
-        }
-
-        is DialogState.AddGroup -> {
-            AddGroupDialog(
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { name -> viewModel.addGroup(name) },
-            )
-        }
-
-        is DialogState.RenameGroup -> {
-            RenameGroupDialog(
-                currentName = dialog.group.name,
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { newName ->
-                    viewModel.renameGroup(dialog.group.id, newName)
-                },
-            )
-        }
-
-        is DialogState.DeleteGroup -> {
-            ConfirmDialog(
-                title = "删除分组",
-                message = "确定要删除「${dialog.group.name}」吗？\n该分组下的所有活动将变为未分类状态。",
-                confirmText = "删除",
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { viewModel.deleteGroup(dialog.group.id) },
-            )
-        }
-
-        is DialogState.DeleteActivity -> {
-            ConfirmDialog(
-                title = "删除活动",
-                message = "确定要删除「${dialog.activity.name}」吗？此操作不可撤销。",
-                confirmText = "删除",
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { viewModel.deleteActivity(dialog.activity.id) },
-            )
-        }
-
-        is DialogState.MoveToGroup -> {
-            MoveToGroupDialog(
-                activity = dialog.activity,
-                allGroups = uiState.allGroups,
-                onDismiss = { viewModel.dismissDialog() },
-                onConfirm = { targetGroupId ->
-                    viewModel.moveActivityToGroup(dialog.activity.id, targetGroupId)
-                },
-            )
-        }
-
-        is DialogState.ActivityDetail -> {
-            val stats by viewModel.currentActivityStats.collectAsState()
-            ActivityDetailSheet(
-                activity = dialog.activity,
-                stats = stats,
-                allGroups = uiState.allGroups,
-                onDismiss = { viewModel.dismissDialog() },
-                onEdit = { viewModel.showEditActivityDialog(it) },
-                onDelete = { viewModel.showDeleteActivityDialog(dialog.activity) },
-            )
-        }
-
-        null -> {}
-    }
-}
-
-@Composable
-private fun RenameGroupDialog(
-    currentName: String,
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
-) {
-    var name by remember(currentName) { mutableStateOf(currentName) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("重命名分组") },
-        text = {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("新名称") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = appOutlinedTextFieldColors(),
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirm(name.trim()) },
-                enabled = name.isNotBlank() && name != currentName,
-            ) {
-                Text("确定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
+    ActivityManagementSheetRouter(
+        uiState = uiState,
+        viewModel = viewModel,
     )
 }

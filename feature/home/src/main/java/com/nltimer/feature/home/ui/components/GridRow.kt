@@ -22,6 +22,8 @@ import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
 
+private val GRID_MIN_HEIGHT = 100.dp
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GridRow(
@@ -33,7 +35,7 @@ fun GridRow(
 ) {
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val gridMinHeight  = 100.dp
+    val gridMinHeight = GRID_MIN_HEIGHT
     Box(modifier = modifier.fillMaxWidth()) {
         Column {
             if (row.cells.isNotEmpty() && timeLabelConfig.visible) {

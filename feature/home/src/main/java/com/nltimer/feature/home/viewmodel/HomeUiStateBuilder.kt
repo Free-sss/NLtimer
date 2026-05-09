@@ -1,0 +1,229 @@
+package com.nltimer.feature.home.viewmodel
+
+import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.Behavior
+import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.Tag
+import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.GridRowUiState
+import com.nltimer.feature.home.model.HomeUiState
+import com.nltimer.feature.home.model.TagUiState
+import java.time.Instant
+import java.time.LocalTime
+import java.time.ZoneId
+
+class HomeUiStateBuilder {
+
+    companion object {
+        const val GRID_COLUMNS = 4
+        const val STATE_TIMEOUT_MS = 5_000L
+        private const val ROW_ID_FORMAT = "row-%d-%s"
+    }
+
+    fun buildUiState(
+        behaviors: List<Behavior>,
+        activities: List<Activity>,
+        tagsByBehaviorId: Map<Long, List<Tag>>,
+        now: LocalTime,
+        currentTimeMs: Long,
+    ): HomeUiState {
+        if (behaviors.isEmpty()) {
+            return buildEmptyState(now)
+        }
+
+        val hasActive = calculateCurrentBehavior(behaviors)
+        val activityMap = activities.associateBy { it.id }
+        val sortedBehaviors = buildTimelineBehaviors(behaviors)
+        val cells = buildMomentBehaviors(sortedBehaviors, activityMap, tagsByBehaviorId, currentTimeMs)
+        val addCell = buildAddCell(cells, now)
+        val allCells = cells + addCell
+        val (rows, currentRowId) = buildGridRows(allCells, sortedBehaviors, now)
+        val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors)
+
+        return HomeUiState(
+            rows = rows,
+            currentRowId = currentRowId,
+            isLoading = false,
+            selectedTimeHour = now.hour,
+            hasActiveBehavior = hasActive,
+            lastBehaviorEndTime = lastBehaviorEndTime,
+        )
+    }
+
+    private fun buildEmptyState(now: LocalTime): HomeUiState {
+        val addCell = GridCellUiState(
+            behaviorId = null,
+            activityIconKey = null,
+            activityName = null,
+            tags = emptyList(),
+            status = null,
+            isCurrent = false,
+            isAddPlaceholder = true,
+        )
+        val row = GridRowUiState(
+            rowId = "empty-row",
+            startTime = now,
+            isCurrentRow = true,
+            isLocked = false,
+            cells = listOf(addCell),
+        )
+        return HomeUiState(
+            rows = listOf(row),
+            currentRowId = row.rowId,
+            isLoading = false,
+            selectedTimeHour = now.hour,
+            hasActiveBehavior = false,
+        )
+    }
+
+    private fun buildTimelineBehaviors(behaviors: List<Behavior>): List<Behavior> {
+        val nonPending = behaviors
+            .filter { it.status != BehaviorNature.PENDING }
+            .sortedBy { it.startTime }
+        val pending = behaviors
+            .filter { it.status == BehaviorNature.PENDING }
+            .sortedBy { it.sequence }
+        return nonPending + pending
+    }
+
+    private fun buildMomentBehaviors(
+        sortedBehaviors: List<Behavior>,
+        activityMap: Map<Long, Activity>,
+        tagsByBehaviorId: Map<Long, List<Tag>>,
+        currentTimeMs: Long,
+    ): List<GridCellUiState> {
+        return sortedBehaviors.map { behavior ->
+            val activity = activityMap[behavior.activityId]
+            val tags = tagsByBehaviorId[behavior.id].orEmpty()
+            val isActive = behavior.status == BehaviorNature.ACTIVE
+            val isPending = behavior.status == BehaviorNature.PENDING
+            // PENDING 的 startTime 在数据库里是 0L，用 Instant.ofEpochMilli(0) 在 UTC+N 时区下
+            // 会被解析成 08:00 之类的幽灵值（中国时区 UTC+8 → 1970-01-01 08:00）。
+            // 因此这里直接置 null，避免详情弹窗里出现伪造的开始时间。
+            val startLocal = if (isPending || behavior.startTime <= 0L) {
+                null
+            } else {
+                Instant.ofEpochMilli(behavior.startTime)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
+            val endLocal = behavior.endTime?.let {
+                Instant.ofEpochMilli(it)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
+
+            GridCellUiState(
+                behaviorId = behavior.id,
+                activityIconKey = activity?.iconKey,
+                activityName = activity?.name,
+                tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) },
+                status = behavior.status,
+                isCurrent = isActive,
+                wasPlanned = behavior.wasPlanned,
+                achievementLevel = behavior.achievementLevel,
+                estimatedDuration = behavior.estimatedDuration,
+                actualDuration = behavior.actualDuration,
+                durationMs = if (isActive && behavior.startTime > 0) {
+                    currentTimeMs - behavior.startTime
+                } else null,
+                startTime = startLocal,
+                endTime = endLocal,
+                startEpochMs = if (isPending || behavior.startTime <= 0L) null else behavior.startTime,
+                endEpochMs = behavior.endTime,
+                note = behavior.note,
+                pomodoroCount = behavior.pomodoroCount,
+            )
+        }
+    }
+
+    private fun buildAddCell(cells: List<GridCellUiState>, now: LocalTime): GridCellUiState {
+        val lastEnd = cells.lastOrNull()?.endTime
+        val idleStart = lastEnd ?: now
+        val idleEnd = now
+
+        return GridCellUiState(
+            behaviorId = null,
+            activityIconKey = null,
+            activityName = null,
+            tags = emptyList(),
+            status = null,
+            isCurrent = false,
+            isAddPlaceholder = true,
+            startTime = idleStart,
+            endTime = idleEnd,
+        )
+    }
+
+    private fun buildGridRows(
+        allCells: List<GridCellUiState>,
+        sortedBehaviors: List<Behavior>,
+        now: LocalTime,
+    ): Pair<List<GridRowUiState>, String?> {
+        val rows = mutableListOf<GridRowUiState>()
+        var currentRowId: String? = null
+
+        allCells.chunked(GRID_COLUMNS).forEachIndexed { rowIndex, rowCells ->
+            val rowId = ROW_ID_FORMAT.format(rowIndex, rowCells.firstOrNull()?.behaviorId ?: "add")
+            val hasCurrentInRow = rowCells.any { it.isCurrent }
+            if (hasCurrentInRow) currentRowId = rowId
+
+            val timeForRow = if (rowIndex < allCells.size / GRID_COLUMNS) {
+                val behavior = sortedBehaviors.getOrNull(rowIndex * GRID_COLUMNS)
+                if (behavior != null
+                    && behavior.status != BehaviorNature.PENDING
+                    && behavior.startTime > 0L
+                ) {
+                    Instant.ofEpochMilli(behavior.startTime)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalTime()
+                } else {
+                    now
+                }
+            } else {
+                now
+            }
+
+            val paddedCells = rowCells.toMutableList()
+            while (paddedCells.size < GRID_COLUMNS) {
+                paddedCells.add(
+                    GridCellUiState(
+                        behaviorId = null,
+                        activityIconKey = null,
+                        activityName = null,
+                        tags = emptyList(),
+                        status = null,
+                        isCurrent = false,
+                    )
+                )
+            }
+
+            rows.add(
+                GridRowUiState(
+                    rowId = rowId,
+                    startTime = timeForRow,
+                    isCurrentRow = hasCurrentInRow,
+                    isLocked = false,
+                    cells = paddedCells,
+                )
+            )
+        }
+
+        return rows to currentRowId
+    }
+
+    private fun calculateCurrentBehavior(behaviors: List<Behavior>): Boolean {
+        return behaviors.any { it.status == BehaviorNature.ACTIVE }
+    }
+
+    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>): LocalTime? {
+        return behaviors
+            .filter { it.endTime != null }
+            .maxByOrNull { it.endTime ?: 0 }
+            ?.let {
+                Instant.ofEpochMilli(it.endTime!!)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalTime()
+            }
+    }
+}

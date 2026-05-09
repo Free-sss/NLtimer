@@ -156,6 +156,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun delete(id: Long) = behaviorDao.delete(id)
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
+        // TODO: Implement day settlement
     }
 
 
@@ -170,10 +171,10 @@ class BehaviorRepositoryImpl @Inject constructor(
         database.withTransaction {
             behaviorDao.update(id, activityId, startTime, endTime, status, note)
 
-            if (status == "completed" && endTime != null && startTime > 0) {
+            if (status == BehaviorNature.COMPLETED.key && endTime != null && startTime > 0) {
                 val duration = endTime - startTime
                 behaviorDao.setActualDuration(id, duration)
-            } else if (status == "active" && startTime > 0) {
+            } else if (status == BehaviorNature.ACTIVE.key && startTime > 0) {
                 val duration = clockService.currentTimeMillis() - startTime
                 behaviorDao.setActualDuration(id, duration)
             } else {

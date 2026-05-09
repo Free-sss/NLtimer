@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Accessible
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timelapse
@@ -44,6 +41,8 @@ import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledCorner
+
+private const val POPUP_WIDTH_RATIO = 0.45f
 
 /**
  * RouteSettingsPopup 调试预览入口
@@ -83,7 +82,7 @@ fun RouteSettingsPopup(
     // 根据屏幕宽度计算弹窗宽度，不超过屏幕的一半
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
-    val popupWidth = screenWidth * 0.45f
+    val popupWidth = screenWidth * POPUP_WIDTH_RATIO
     // 获取当前主页布局类型
     val currentLayout = LocalTheme.current.homeLayout
     // 控制布局选项的展开/折叠状态
@@ -163,27 +162,6 @@ fun RouteSettingsPopup(
                 // 未展开布局选项时，显示通用快捷操作列表
                 if (!showLayoutOptions) {
                     //TODO: 其他路由的快捷操作列表
-                
-                    // PopupItem(
-                    //     icon = Icons.Default.Search,
-                    //     label = "搜索",
-                    //     onClick = { /* TODO */ onDismiss() }
-                    // )
-                    // PopupItem(
-                    //     icon = Icons.AutoMirrored.Filled.List,
-                    //     label = "活动管理",
-                    //     onClick = { /* TODO */ onDismiss() }
-                    // )
-                    // PopupItem(
-                    //     icon = Icons.AutoMirrored.Filled.Label,
-                    //     label = "标签管理",
-                    //     onClick = { /* TODO */ onDismiss() }
-                    // )
-                    // PopupItem(
-                    //     icon = Icons.AutoMirrored.Filled.Accessible,
-                    //     label = "导出今日记录",
-                    //     onClick = { /* TODO */ onDismiss() }
-                    // )
                 }
             }
         }

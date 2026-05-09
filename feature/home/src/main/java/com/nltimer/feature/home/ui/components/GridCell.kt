@@ -31,6 +31,11 @@ import com.nltimer.core.designsystem.theme.styledBorder
 import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 
+private const val PLATINUM_RED_BASE = 0.78f
+private const val PLATINUM_GREEN_BASE = 0.69f
+private const val PLATINUM_RED_STRENGTH = 0.22f
+private const val PLATINUM_GREEN_STRENGTH = 0.31f
+
 /**
  * 网格视图中的行为单元格 Composable。
  * 根据行为状态渲染不同的背景色、边框色和白金成就效果。
@@ -66,8 +71,8 @@ fun GridCell(
                         isPlatinum -> {
                             val strength = platinumStrength
                             Color(
-                                red = (0.78f + 0.22f * strength),
-                                green = (0.69f + 0.31f * strength),
+                                red = (PLATINUM_RED_BASE + PLATINUM_RED_STRENGTH * strength),
+                                green = (PLATINUM_GREEN_BASE + PLATINUM_GREEN_STRENGTH * strength),
                                 blue = 1.0f,
                                 alpha = styledAlpha(0.5f) + 0.5f * strength,
                             )
