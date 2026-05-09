@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.LocalTimerTypography
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
@@ -100,7 +101,7 @@ internal fun ActiveCard(
                 )
                 Text(
                     text = cell.activityName ?: "",
-                    style = MaterialTheme.typography.headlineLarge.copy(
+                    style = LocalTimerTypography.current.timeStyle.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -127,7 +128,7 @@ internal fun ActiveCard(
             ) {
                 Text(
                     text = durationText,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = LocalTimerTypography.current.timeStyle,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.8f)),
                 )
                 Text(
