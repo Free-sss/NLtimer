@@ -57,8 +57,10 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.Tag
 import java.time.Duration
+import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.math.roundToInt
 
@@ -287,6 +289,7 @@ private fun SheetMainContent(
             ConfirmButtonRow(
                 state = state,
                 mode = mode,
+                secondsStrategy = dialogConfig.secondsStrategy,
                 onConfirm = onConfirm,
                 onDismiss = onDismiss,
             )
@@ -361,6 +364,7 @@ private fun TimePickerSection(
 private fun ConfirmButtonRow(
     state: AddBehaviorState,
     mode: BehaviorNature,
+    secondsStrategy: SecondsStrategy,
     onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -428,12 +432,17 @@ private fun ConfirmButtonRow(
                     Toast.makeText(context, "开始时间必须早于结束时间", Toast.LENGTH_SHORT).show()
                     return@Button
                 }
+                val confirmTime = LocalDateTime.now()
+                val resolvedStartTime = state.resolveStartTime(secondsStrategy, confirmTime)
+                val resolvedEndTime = if (mode == BehaviorNature.COMPLETED) {
+                    if (state.userAdjustedTime) state.endTime.withSecond(0).withNano(0) else state.endTime.withSecond(confirmTime.second).withNano(0)
+                } else null
                 state.selectedActivityId?.let { activityId ->
                     onConfirm(
                         activityId,
                         state.selectedTagIds.toList(),
-                        state.startTime.toLocalTime(),
-                        if (mode == BehaviorNature.COMPLETED) state.endTime.toLocalTime() else null,
+                        resolvedStartTime.toLocalTime(),
+                        resolvedEndTime?.toLocalTime(),
                         mode,
                         state.note.ifBlank { null }
                     )
