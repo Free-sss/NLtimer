@@ -69,7 +69,7 @@ fun BehaviorTimelineItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
-            .padding(start = 8.dp, end = 16.dp, top = 2.dp, bottom = 2.dp),
+            .padding(start = 8.dp, end = 12.dp, top = 2.dp, bottom = 2.dp),
     ) {
         Box(
             modifier = Modifier.width(48.dp),

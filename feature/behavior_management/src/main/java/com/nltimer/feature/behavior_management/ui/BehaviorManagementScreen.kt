@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
@@ -79,8 +81,11 @@ fun BehaviorManagementScreen(
                         style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.weight(1f),
                     )
-                    IconButton(onClick = viewModel::exitMultiSelect) {
+                    IconButton(onClick = viewModel::deleteSelectedBehaviors) {
                         Icon(Icons.Default.Delete, contentDescription = "删除")
+                    }
+                    IconButton(onClick = viewModel::exitMultiSelect) {
+                        Icon(Icons.Default.Close, contentDescription = "取消")
                     }
                 }
             } else {

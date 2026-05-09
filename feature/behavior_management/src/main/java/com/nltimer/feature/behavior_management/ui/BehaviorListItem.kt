@@ -49,7 +49,7 @@ fun BehaviorListItem(
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val dotColor = activity.color?.let { c ->
