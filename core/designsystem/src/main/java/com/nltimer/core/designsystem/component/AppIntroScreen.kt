@@ -15,7 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.WavingHand
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -25,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +43,7 @@ import kotlinx.coroutines.launch
 
 private data class IntroPage(
     val backgroundColor: Color,
-    val icon: String,
+    val icon: ImageVector,
     val title: String,
     val subtitle: String,
 )
@@ -42,37 +51,37 @@ private data class IntroPage(
 private val introPages = listOf(
     IntroPage(
         backgroundColor = Color(0xFF093A8F),
-        icon = "👋",
+        icon = Icons.Filled.WavingHand,
         title = "欢迎",
         subtitle = "开始你的行为追踪之旅",
     ),
     IntroPage(
         backgroundColor = Color(0xFF1565C0),
-        icon = "📋",
+        icon = Icons.Filled.Create,
         title = "创建活动",
         subtitle = "定义你的日常行为类型",
     ),
     IntroPage(
         backgroundColor = Color(0xFF00695C),
-        icon = "⏱",
+        icon = Icons.Filled.Timer,
         title = "开始计时",
         subtitle = "记录每一段行为时间",
     ),
     IntroPage(
         backgroundColor = Color(0xFF4A148C),
-        icon = "📊",
+        icon = Icons.Filled.Check,
         title = "查看统计",
         subtitle = "洞察你的时间分配",
     ),
     IntroPage(
         backgroundColor = Color(0xFFE65100),
-        icon = "🎨",
+        icon = Icons.Filled.Palette,
         title = "个性化主题",
         subtitle = "种子色、风格、表达力",
     ),
     IntroPage(
         backgroundColor = Color(0xFF1B5E20),
-        icon = "🚀",
+        icon = Icons.Filled.PlayArrow,
         title = "准备就绪",
         subtitle = "开始记录你的第一天",
     ),
@@ -145,9 +154,11 @@ private fun IntroPageContent(introPage: IntroPage) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(
-                text = introPage.icon,
-                style = MaterialTheme.typography.displayLarge,
+            Icon(
+                imageVector = introPage.icon,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = Color.White,
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(

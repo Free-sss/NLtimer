@@ -1,11 +1,14 @@
 package com.nltimer.core.designsystem.component
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -36,9 +39,12 @@ fun AppBottomSheet(
     ) {
         Column(
             modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = 500.dp)
                 .animateContentSize()
                 .padding(horizontal = contentPadding)
                 .padding(bottom = contentPadding),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (title != null) {
                 Text(
