@@ -109,9 +109,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override suspend fun initializePresets() {
         val existingPresets = activityDao.getAllPresetsSync()
         if (existingPresets.isEmpty()) {
-            PRESET_ACTIVITIES.forEach { preset ->
-                activityDao.insert(preset.toEntity())
-            }
+            activityDao.insertAll(PRESET_ACTIVITIES.map { it.toEntity() })
         }
     }
 
@@ -121,8 +119,12 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {
         database.withTransaction {
             activityDao.deleteActivityTagBindingsForActivity(activityId)
-            tagIds.forEach { tagId ->
-                activityDao.insertActivityTagBinding(ActivityTagBindingEntity(activityId = activityId, tagId = tagId))
+            if (tagIds.isNotEmpty()) {
+                activityDao.insertActivityTagBindings(
+                    tagIds.map { tagId ->
+                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId)
+                    }
+                )
             }
         }
     }

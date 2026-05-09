@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -54,7 +55,7 @@ class CategoriesViewModel @Inject constructor(
     val uiState: StateFlow<CategoriesUiState> = combine(
         categoryRepository.getDistinctActivityCategories(),
         categoryRepository.getDistinctTagCategories(),
-        _searchQuery,
+        _searchQuery.debounce(300),
         _dialogState,
         _addedTagCategories,
     ) { activityCats, tagCats, query, dialog, addedTag ->

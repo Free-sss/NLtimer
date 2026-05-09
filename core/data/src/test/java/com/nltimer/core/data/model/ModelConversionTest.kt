@@ -186,20 +186,15 @@ class ModelConversionTest {
     }
 
     @Test
-    fun `BehaviorNature can be found by key`() {
-        val pending = BehaviorNature.entries.firstOrNull { it.key == "pending" }
-        val active = BehaviorNature.entries.firstOrNull { it.key == "active" }
-        val completed = BehaviorNature.entries.firstOrNull { it.key == "completed" }
-
-        assertEquals(BehaviorNature.PENDING, pending)
-        assertEquals(BehaviorNature.ACTIVE, active)
-        assertEquals(BehaviorNature.COMPLETED, completed)
+    fun `BehaviorNature can be found by key via fromKey`() {
+        assertEquals(BehaviorNature.PENDING, BehaviorNature.fromKey("pending"))
+        assertEquals(BehaviorNature.ACTIVE, BehaviorNature.fromKey("active"))
+        assertEquals(BehaviorNature.COMPLETED, BehaviorNature.fromKey("completed"))
     }
 
     @Test
-    fun `BehaviorNature unknown key returns null`() {
-        val result = BehaviorNature.entries.firstOrNull { it.key == "unknown" }
-        assertNull(result)
+    fun `BehaviorNature unknown key returns PENDING fallback`() {
+        assertEquals(BehaviorNature.PENDING, BehaviorNature.fromKey("unknown"))
     }
 
     // --- ActivityStats ---

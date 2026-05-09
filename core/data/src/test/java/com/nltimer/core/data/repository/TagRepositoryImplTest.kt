@@ -105,6 +105,7 @@ class TagRepositoryImplTest {
         override suspend fun getDistinctCategoriesSync(): List<String> = emptyList()
         override suspend fun getActivityIdsForTagSync(tagId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
     }
 

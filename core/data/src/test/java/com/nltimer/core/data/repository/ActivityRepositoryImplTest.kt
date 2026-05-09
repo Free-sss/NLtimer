@@ -91,8 +91,10 @@ class ActivityRepositoryImplTest {
         override suspend fun getAllPresetsSync(): List<ActivityEntity> = emptyList()
         override suspend fun getTagIdsForActivitySync(activityId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) {}
         override suspend fun getAllActiveSync(): List<ActivityEntity> = activityEntities.filter { !it.isArchived }
+        override suspend fun insertAll(activities: List<ActivityEntity>) {}
     }
 
     private val fakeGroupDao = object : ActivityGroupDao {

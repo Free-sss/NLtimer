@@ -89,6 +89,9 @@ interface TagDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
+
     @Query("DELETE FROM activity_tag_binding WHERE tagId = :tagId")
     suspend fun deleteActivityTagBindingsForTag(tagId: Long)
 }

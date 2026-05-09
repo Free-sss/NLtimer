@@ -1,13 +1,11 @@
 package com.nltimer.core.data.repository
 
 import com.nltimer.core.data.database.dao.ActivityDao
-import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.ActivityStatsRow
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.BehaviorTagRow
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.ActivityEntity
-import com.nltimer.core.data.database.entity.ActivityGroupEntity
 import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
@@ -56,7 +54,6 @@ class BehaviorRepositoryImplTest {
         mockkStatic("androidx.room.RoomDatabaseKt")
         coEvery { fakeDatabase.withTransaction(any<suspend () -> Unit>()) } coAnswers {
             (args[0] as suspend () -> Unit).invoke()
-            Unit
         }
         clockService = SystemClockService()
         repository = BehaviorRepositoryImpl(fakeBehaviorDao, fakeActivityDao, fakeTagDao, clockService, fakeDatabase)
@@ -197,7 +194,7 @@ class BehaviorRepositoryImplTest {
 
     // --- insert ---
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `insert creates behavior and returns id`() = runTest {
         val behavior = createBehavior(startTime = 1000, status = BehaviorNature.COMPLETED)
@@ -208,7 +205,7 @@ class BehaviorRepositoryImplTest {
         assertEquals(1, fakeBehaviorDao.insertedEntities.size)
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `insert with tag ids creates cross refs`() = runTest {
         val behavior = createBehavior(startTime = 1000)
@@ -220,7 +217,7 @@ class BehaviorRepositoryImplTest {
         assertEquals(20L, fakeBehaviorDao.insertedCrossRefs[1].tagId)
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `insert with empty tag ids does not create cross refs`() = runTest {
         val behavior = createBehavior(startTime = 1000)
@@ -232,7 +229,7 @@ class BehaviorRepositoryImplTest {
 
     // --- completeCurrentAndStartNext ---
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext sets end time and status`() = runTest {
         val startTime = System.currentTimeMillis() - 60_000
@@ -247,7 +244,7 @@ class BehaviorRepositoryImplTest {
         assertNotNull(fakeBehaviorDao.actualDurations[1L])
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext with idle mode does not start next`() = runTest {
         val startTime = System.currentTimeMillis() - 60_000
@@ -261,7 +258,7 @@ class BehaviorRepositoryImplTest {
         assertEquals(0, fakeBehaviorDao.activatedPendingIds.size)
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext starts next pending when not idle`() = runTest {
         val startTime = System.currentTimeMillis() - 60_000
@@ -279,14 +276,14 @@ class BehaviorRepositoryImplTest {
         assertEquals(2L, fakeBehaviorDao.activatedPendingIds.firstOrNull())
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext returns null when behavior not found`() = runTest {
         val result = repository.completeCurrentAndStartNext(999L, idleMode = false)
         assertNull(result)
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext calculates achievement level for planned behavior`() = runTest {
         val startTime = System.currentTimeMillis() - 60 * 60_000
@@ -304,7 +301,7 @@ class BehaviorRepositoryImplTest {
         assertTrue("Achievement level should be >= 90 but was $level", level!! >= 90)
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext clamps end time when before start`() = runTest {
         val futureTime = System.currentTimeMillis() + 100_000
@@ -317,7 +314,7 @@ class BehaviorRepositoryImplTest {
         assertNotNull(fakeBehaviorDao.endTimeUpdates[1L])
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `completeCurrentAndStartNext returns null when no next pending`() = runTest {
         val startTime = System.currentTimeMillis() - 60_000
@@ -369,7 +366,7 @@ class BehaviorRepositoryImplTest {
 
     // --- updateBehavior ---
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `updateBehavior recalculates duration for completed status`() = runTest {
         repository.updateBehavior(1L, 10L, 1000L, 5000L, "completed", "备注")
@@ -377,7 +374,7 @@ class BehaviorRepositoryImplTest {
         assertEquals(4000L, fakeBehaviorDao.actualDurations[1L])
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `updateBehavior sets zero duration for pending status`() = runTest {
         repository.updateBehavior(1L, 10L, 0L, null, "pending", null)
@@ -387,7 +384,7 @@ class BehaviorRepositoryImplTest {
 
     // --- updateTagsForBehavior ---
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `updateTagsForBehavior deletes old and inserts new`() = runTest {
         repository.updateTagsForBehavior(1L, listOf(10L, 20L, 30L))
@@ -397,7 +394,7 @@ class BehaviorRepositoryImplTest {
         assertTrue(fakeBehaviorDao.insertedCrossRefs.all { it.behaviorId == 1L })
     }
 
-    @Ignore("MockK cannot mock Room's inline withTransaction; use instrumented test")
+    @Ignore("MockK cannot mock Room's inline withTransaction returning non-Unit; use instrumented test")
     @Test
     fun `updateTagsForBehavior with empty list clears all tags`() = runTest {
         repository.updateTagsForBehavior(1L, emptyList())
@@ -624,8 +621,10 @@ class BehaviorRepositoryImplTest {
         override suspend fun getAllPresetsSync(): List<ActivityEntity> = emptyList()
         override suspend fun getTagIdsForActivitySync(activityId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForActivity(activityId: Long) {}
         override suspend fun getAllActiveSync(): List<ActivityEntity> = activities.filter { !it.isArchived }
+        override suspend fun insertAll(activities: List<ActivityEntity>) {}
     }
 
     private class FakeTagDao : TagDao {
@@ -650,6 +649,7 @@ class BehaviorRepositoryImplTest {
         override suspend fun getDistinctCategoriesSync(): List<String> = emptyList()
         override suspend fun getActivityIdsForTagSync(tagId: Long): List<Long> = emptyList()
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
     }
 

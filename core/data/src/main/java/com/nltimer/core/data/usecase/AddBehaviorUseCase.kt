@@ -53,9 +53,10 @@ class AddBehaviorUseCase @Inject constructor(
         val finalEnd = snapResult.adjustedEnd
 
         val wasPlanned = status == BehaviorNature.PENDING
-        val newSequence = calculateSequence(status, finalStart)
+        val dayBehaviors = getDayBehaviors(status, finalStart)
+        val newSequence = calculateSequence(status, finalStart, dayBehaviors)
 
-        updateSubsequentSequences(status, finalStart, newSequence)
+        updateSubsequentSequences(status, newSequence, dayBehaviors)
 
         val actualDuration = calculateActualDuration(status, finalStart, finalEnd)
 
@@ -129,34 +130,28 @@ class AddBehaviorUseCase @Inject constructor(
         )
     }
 
-    private suspend fun calculateSequence(status: BehaviorNature, finalStart: Long): Int {
-        if (status == BehaviorNature.PENDING) {
-            return behaviorRepository.getMaxSequence() + 1
-        }
+    private suspend fun getDayBehaviors(status: BehaviorNature, finalStart: Long): List<Behavior> {
+        if (status == BehaviorNature.PENDING) return emptyList()
         val dayStart = getDayStartMillis(finalStart)
         val dayEnd = dayStart + 24 * 60 * 60 * 1000
-        val dayBehaviors = behaviorRepository
+        return behaviorRepository
             .getByDayRange(dayStart, dayEnd)
             .firstOrNull()
             .orEmpty()
             .filter { it.status != BehaviorNature.PENDING }
             .sortedBy { it.startTime }
+    }
 
+    private suspend fun calculateSequence(status: BehaviorNature, finalStart: Long, dayBehaviors: List<Behavior>): Int {
+        if (status == BehaviorNature.PENDING) {
+            return behaviorRepository.getMaxSequence() + 1
+        }
         val insertIndex = dayBehaviors.indexOfFirst { it.startTime > finalStart }
         return if (insertIndex == -1) dayBehaviors.size else insertIndex
     }
 
-    private suspend fun updateSubsequentSequences(status: BehaviorNature, finalStart: Long, newSequence: Int) {
+    private suspend fun updateSubsequentSequences(status: BehaviorNature, newSequence: Int, dayBehaviors: List<Behavior>) {
         if (status == BehaviorNature.PENDING) return
-        val dayStart = getDayStartMillis(finalStart)
-        val dayEnd = dayStart + 24 * 60 * 60 * 1000
-        val dayBehaviors = behaviorRepository
-            .getByDayRange(dayStart, dayEnd)
-            .firstOrNull()
-            .orEmpty()
-            .filter { it.status != BehaviorNature.PENDING }
-            .sortedBy { it.startTime }
-
         dayBehaviors.forEachIndexed { index, behavior ->
             if (index >= newSequence) {
                 behaviorRepository.setSequence(behavior.id, index + 1)

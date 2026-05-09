@@ -166,4 +166,33 @@ class TimeConflictUtilsTest {
         )
         assertTrue(hasTimeConflict(2500, 3500, BehaviorNature.COMPLETED, existing, ignoreBehaviorId = 1))
     }
+
+    @Test
+    fun `empty existing list never conflicts`() {
+        assertFalse(hasTimeConflict(1000, 2000, BehaviorNature.COMPLETED, emptyList()))
+    }
+
+    @Test
+    fun `two active behaviors always conflict`() {
+        val existing = listOf(createBehavior(1, 1000, null, BehaviorNature.ACTIVE))
+        assertTrue(hasTimeConflict(2000, null, BehaviorNature.ACTIVE, existing, currentTime = 5000))
+    }
+
+    @Test
+    fun `endTime equal to existing startTime does not conflict`() {
+        val existing = listOf(createBehavior(1, 2000, 3000, BehaviorNature.COMPLETED))
+        assertFalse(hasTimeConflict(1000, 2000, BehaviorNature.COMPLETED, existing))
+    }
+
+    @Test
+    fun `startTime equal to existing endTime does not conflict`() {
+        val existing = listOf(createBehavior(1, 1000, 2000, BehaviorNature.COMPLETED))
+        assertFalse(hasTimeConflict(2000, 3000, BehaviorNature.COMPLETED, existing))
+    }
+
+    @Test
+    fun `very large time range conflicts`() {
+        val existing = listOf(createBehavior(1, Long.MAX_VALUE - 1000, null, BehaviorNature.ACTIVE))
+        assertTrue(hasTimeConflict(Long.MAX_VALUE - 500, null, BehaviorNature.ACTIVE, existing, currentTime = Long.MAX_VALUE))
+    }
 }

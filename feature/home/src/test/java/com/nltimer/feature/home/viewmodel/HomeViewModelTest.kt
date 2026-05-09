@@ -20,6 +20,7 @@ import com.nltimer.core.data.util.SystemClockService
 import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.feature.home.match.KeywordMatchStrategy
+import com.nltimer.feature.home.model.GridCellUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -383,6 +384,67 @@ class HomeViewModelTest {
         assertEquals(BehaviorNature.PENDING, behaviorRepository.insertedBehaviors[0].status)
     }
 
+    @Test
+    fun `addBehavior with editBehaviorId calls updateBehavior`() = runTest {
+        viewModel.showEditSheet(GridCellUiState(
+            behaviorId = 42L,
+            activityIconKey = null,
+            activityName = null,
+            tags = emptyList(),
+            status = BehaviorNature.COMPLETED,
+            isCurrent = false,
+            wasPlanned = false,
+        ))
+        viewModel.addBehavior(
+            activityId = 1L,
+            tagIds = listOf(10L),
+            startTime = System.currentTimeMillis() - 3600_000,
+            endTime = System.currentTimeMillis(),
+            status = BehaviorNature.COMPLETED,
+            note = "edited note",
+        )
+        advanceUntilIdle()
+
+        assertTrue(behaviorRepository.updateBehaviorCalled)
+    }
+
+    @Test
+    fun `startBehavior sets ACTIVE status and start time`() = runTest {
+        viewModel.startBehavior(5L)
+        advanceUntilIdle()
+
+        assertTrue(behaviorRepository.setStatusCalled)
+        assertTrue(behaviorRepository.setStartTimeCalled)
+    }
+
+    @Test
+    fun `startNextPending does nothing when no pending behavior`() = runTest {
+        viewModel.startNextPending()
+        advanceUntilIdle()
+
+        assertFalse(behaviorRepository.setStatusCalled)
+    }
+
+    @Test
+    fun `completeBehavior passes idleMode state to repository`() = runTest {
+        viewModel.toggleIdleMode()
+        viewModel.completeBehavior(1L)
+        advanceUntilIdle()
+
+        assertTrue(behaviorRepository.completeCurrentAndStartNextCalled)
+    }
+
+    @Test
+    fun `hideAddSheet clears edit state`() = runTest {
+        viewModel.showAddSheet()
+        viewModel.hideAddSheet()
+
+        val state = viewModel.uiState.value
+        assertEquals(null, state.addSheetMode)
+        assertEquals(null, state.editBehaviorId)
+        assertEquals(emptyList<Long>(), state.editInitialTagIds)
+    }
+
     private class FakeBehaviorRepository : BehaviorRepository {
         val insertedBehaviors = mutableListOf<Behavior>()
         val dayRangeBehaviors = mutableListOf<Behavior>()
@@ -394,6 +456,7 @@ class HomeViewModelTest {
         var nextPending: Behavior? = null
         var setStatusCalled = false
         var setStartTimeCalled = false
+        var updateBehaviorCalled = false
         var reorderedIds: List<Long>? = null
 
         override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(
@@ -439,7 +502,9 @@ class HomeViewModelTest {
             deleteCalled = true
         }
         override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
-        override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {}
+        override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {
+            updateBehaviorCalled = true
+        }
         override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
     }
