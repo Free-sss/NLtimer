@@ -31,6 +31,12 @@ data class StyleConfig(
     val cornerScale: Float? = null,
     val borderScale: Float? = null,
     val alphaScale: Float? = null,
+    val expressiveness: ExpressivenessPreset = ExpressivenessPreset.DEFAULT,
+    val cardColorStrategy: CardColorStrategy = CardColorStrategy.DEFAULT,
+    val iconContainerSize: IconContainerSize = IconContainerSize.DEFAULT,
+    val timerTypography: TimerTypography = TimerTypography.DEFAULT,
+    val pressedShape: PressedShapeLevel = PressedShapeLevel.DEFAULT,
+    val wavyProgress: WavyProgressLevel = WavyProgressLevel.DEFAULT,
 )
 
 fun StyleConfig.effectiveCornerScale(): Float = cornerScale ?: cornerPreset.scale

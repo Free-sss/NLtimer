@@ -8,6 +8,7 @@ object ShapeTokens {
     const val CORNER_EXTRA_LARGE = 28
     const val CORNER_FULL = 32
     const val CORNER_PILL = 36
+    const val CORNER_SUPER_LARGE = 36
 }
 
 object BorderTokens {
