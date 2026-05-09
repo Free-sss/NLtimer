@@ -62,3 +62,22 @@ sealed class FormRow {
         val range: IntRange = 0..99,
     ) : FormRow()
 }
+
+fun parseColorHex(colorHex: String?): Long? = colorHex?.let {
+    try { it.toULong(16).toLong() } catch (_: Exception) { null }
+}
+
+fun FormSpec.withUpdatedLabelAction(key: String, actionText: String): FormSpec =
+    copy(
+        sections = sections.map { section ->
+            section.copy(
+                rows = section.rows.map { row ->
+                    if (row is FormRow.LabelAction && row.key == key) {
+                        row.copy(actionText = actionText)
+                    } else {
+                        row
+                    }
+                }
+            )
+        }
+    )

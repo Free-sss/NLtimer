@@ -26,6 +26,7 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.designsystem.form.parseColorHex
 import com.nltimer.feature.debug.ui.components.FieldDetailDialog
 import com.nltimer.feature.debug.ui.components.toFieldInfoList
 import com.nltimer.feature.debug.ui.components.toJsonString
@@ -49,6 +50,7 @@ fun EditTagFormSheet(
     val activityName = allActivities.find { it.id == selectedActivityId }?.name
     val activityCountText = activityName ?: "+ 增加"
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.editTag().copy(
         sections = ActivityFormSpecs.editTag().sections.map { section ->
             section.copy(
@@ -89,9 +91,7 @@ fun EditTagFormSheet(
             val priority = formState["priority"]?.toIntOrNull() ?: tag.priority
             val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: tag.isArchived
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
-            val color = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val color = parseColorHex(colorHex)
             onConfirm(
                 tag.copy(
                     name = name,

@@ -13,13 +13,15 @@ import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.data.model.AddActivityCallback
+import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
 fun AddActivityDialog(
     allGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onConfirm: AddActivityCallback,
 ) {
     var selectedGroupId by remember { mutableStateOf(null as Long?) }
     var selectedTagIds by remember { mutableStateOf(emptySet<Long>()) }
@@ -30,6 +32,7 @@ fun AddActivityDialog(
     val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
     val groupItems = listOf(null to "未分类") + allGroups.map { it.id to it.name }
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createActivity.copy(
         sections = ActivityFormSpecs.createActivity.sections.map { section ->
             section.copy(
@@ -59,9 +62,7 @@ fun AddActivityDialog(
             val iconKey = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
-            val color = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val color = parseColorHex(colorHex)
             if (name.isNotBlank()) {
                 onConfirm(name, iconKey, color, selectedGroupId, keywords, selectedTagIds.toList())
             }

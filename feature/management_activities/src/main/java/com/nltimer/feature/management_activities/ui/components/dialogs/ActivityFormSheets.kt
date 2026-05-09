@@ -15,10 +15,13 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.data.model.AddActivityCallback
+import com.nltimer.core.designsystem.component.GroupPickerPopup
 import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
 fun AddActivityFormSheet(
@@ -26,7 +29,7 @@ fun AddActivityFormSheet(
     allTags: List<Tag>,
     initialGroupId: Long? = null,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
+    onConfirm: AddActivityCallback,
 ) {
     var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
     var selectedTagIds by remember { mutableStateOf(emptySet<Long>()) }
@@ -36,6 +39,7 @@ fun AddActivityFormSheet(
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
     val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createActivity.copy(
         sections = ActivityFormSpecs.createActivity.sections.map { section ->
             section.copy(
@@ -65,15 +69,13 @@ fun AddActivityFormSheet(
             val iconKey = formState["icon"]?.trim()?.ifBlank { null }
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
-            val color = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val color = parseColorHex(colorHex)
             onConfirm(name, iconKey, color, selectedGroupId, keywords, selectedTagIds.toList())
         },
         overlay = {
             if (showGroupPicker) {
                 GroupPickerPopup(
-                    groups = allGroups,
+                    groups = allGroups.map { it.id to it.name },
                     selectedId = selectedGroupId,
                     onSelected = { selectedGroupId = it },
                     onDismiss = { showGroupPicker = false },
@@ -112,6 +114,7 @@ fun EditActivityFormSheet(
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
     val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
 
+    // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.editActivity().copy(
         sections = ActivityFormSpecs.editActivity().sections.map { section ->
             section.copy(
@@ -150,9 +153,7 @@ fun EditActivityFormSheet(
             val colorHex = formState["color"]?.trim()?.ifBlank { null }
             val keywords = formState["keywords"]?.trim()?.ifBlank { null }
             val isArchived = formState["isArchived"]?.toBooleanStrictOrNull() ?: activity.isArchived
-            val colorLong = colorHex?.let {
-                try { it.toULong(16).toLong() } catch (_: Exception) { null }
-            }
+            val colorLong = parseColorHex(colorHex)
             onConfirm(
                 activity.copy(
                     name = name,
@@ -168,7 +169,7 @@ fun EditActivityFormSheet(
         overlay = {
             if (showGroupPicker) {
                 GroupPickerPopup(
-                    groups = allGroups,
+                    groups = allGroups.map { it.id to it.name },
                     selectedId = selectedGroupId,
                     onSelected = { selectedGroupId = it },
                     onDismiss = { showGroupPicker = false },

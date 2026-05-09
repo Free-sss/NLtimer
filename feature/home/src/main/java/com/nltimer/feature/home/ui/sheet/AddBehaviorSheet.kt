@@ -82,6 +82,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.data.model.AddActivityCallback
+import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
@@ -121,8 +123,8 @@ fun AddBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
+    onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -162,8 +164,8 @@ fun AddCurrentBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
+    onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -201,8 +203,8 @@ fun AddTargetBehaviorSheet(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
+    onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -241,8 +243,8 @@ private fun BehaviorSheetWrapper(
     existingBehaviors: List<Behavior> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
+    onAddActivity: AddActivityCallback,
+    onAddTag: AddTagCallback,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -296,8 +298,8 @@ internal fun AddBehaviorSheetContent(
     existingBehaviors: List<Behavior> = emptyList(),
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
-    onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
-    onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
+    onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
 ) {
     var selectedActivityId by remember { mutableStateOf<Long?>(initialActivityId) }
     LaunchedEffect(initialActivityId) {

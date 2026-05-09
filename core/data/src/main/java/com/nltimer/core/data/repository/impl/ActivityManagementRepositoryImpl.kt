@@ -10,6 +10,7 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
+import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
@@ -48,16 +49,16 @@ class ActivityManagementRepositoryImpl @Inject constructor(
 
     // 实体转领域模型的基础查询
     override fun getAllActivities(): Flow<List<Activity>> =
-        activityDao.getAllActive().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getAllActive().mapList { Activity.fromEntity(it) }
 
     override fun getUncategorizedActivities(): Flow<List<Activity>> =
-        activityDao.getUncategorized().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getUncategorized().mapList { Activity.fromEntity(it) }
 
     override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> =
-        activityDao.getByGroup(groupId).map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getByGroup(groupId).mapList { Activity.fromEntity(it) }
 
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
-        groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
+        groupDao.getAll().mapList { ActivityGroup.fromEntity(it) }
 
     override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
         behaviorDao.getActivityStatsSync(activityId).map { row ->

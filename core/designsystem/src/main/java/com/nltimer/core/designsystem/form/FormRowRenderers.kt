@@ -1,40 +1,28 @@
-package com.nltimer.feature.debug.ui
+package com.nltimer.core.designsystem.form
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -43,155 +31,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.component.ColorPickerDialog
-import com.nltimer.feature.debug.model.FormRow
-import com.nltimer.feature.debug.model.FormSection
-import com.nltimer.feature.debug.model.FormSpec
 import kotlin.text.toBooleanStrictOrNull
 
-/**
- * 通用表单底部弹窗
- * 根据 [spec] 描述的表单结构动态渲染表单行，维护内部 [formState] Map，
- * 通过 [initialData] 区分新增/编辑模式，提交时通过 [onSubmit] 传出所有字段值。
- *
- * @param spec 表单结构描述
- * @param initialData 编辑模式的初始数据，新增模式传 null
- * @param onDismiss 弹窗关闭回调
- * @param onSubmit 提交回调，参数为字段 key→value 映射
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun GenericFormSheet(
-    spec: FormSpec,
-    initialData: Map<String, String>?,
-    onDismiss: () -> Unit,
-    onSubmit: (Map<String, String>) -> Unit,
-    overlay: @Composable (() -> Unit)? = null,
-) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    val formState = remember {
-        val defaults = spec.defaultValues().toMutableMap()
-        if (initialData != null) {
-            defaults.putAll(initialData)
-        }
-        mutableStateMapOf<String, String>().also { it.putAll(defaults) }
-    }
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        dragHandle = {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(
-                    modifier = Modifier
-                        .width(32.dp)
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)),
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = spec.title,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        },
-    ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                spec.sections.forEachIndexed { index, section ->
-                    if (index > 0) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Column {
-                            section.rows.forEach { row ->
-                                FormRowRenderer(
-                                    row = row,
-                                    formState = formState,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = { onSubmit(formState.toMap()) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 48.dp)
-                        .height(44.dp),
-                    shape = RoundedCornerShape(22.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = spec.submitLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            overlay?.invoke()
-        }
-    }
-}
+/** 共享表单行渲染器，供 GenericFormSheet 和 GenericFormDialog 复用。 */
 
 @Composable
-private fun FormRowRenderer(
+internal fun formRowRenderer(
     row: FormRow,
     formState: MutableMap<String, String>,
 ) {
     when (row) {
-        is FormRow.TextInput -> TextInputRenderer(
+        is FormRow.TextInput -> textInputRenderer(
             row = row,
             value = formState[row.key] ?: row.initialValue,
             onValueChange = { formState[row.key] = it },
         )
-        is FormRow.IconColor -> IconColorRenderer(
+        is FormRow.IconColor -> iconColorRenderer(
             row = row,
             emoji = formState[row.iconKey] ?: row.initialEmoji,
             colorValue = formState[row.colorKey] ?: "",
             onEmojiChange = { formState[row.iconKey] = it },
             onColorChange = { formState[row.colorKey] = it },
         )
-        is FormRow.LabelAction -> LabelActionRenderer(row = row)
-        is FormRow.Switch -> SwitchRenderer(
+        is FormRow.LabelAction -> labelActionRenderer(row = row)
+        is FormRow.Switch -> switchRenderer(
             row = row,
             checked = formState[row.key]?.toBooleanStrictOrNull() ?: row.initialChecked,
             onCheckedChange = { formState[row.key] = it.toString() },
         )
-        is FormRow.NumberInput -> NumberInputRenderer(
+        is FormRow.NumberInput -> numberInputRenderer(
             row = row,
             value = formState[row.key]?.toIntOrNull() ?: row.initialValue,
             onValueChange = { formState[row.key] = it.toString() },
@@ -200,7 +71,7 @@ private fun FormRowRenderer(
 }
 
 @Composable
-private fun TextInputRenderer(
+internal fun textInputRenderer(
     row: FormRow.TextInput,
     value: String,
     onValueChange: (String) -> Unit,
@@ -248,7 +119,7 @@ private fun TextInputRenderer(
 }
 
 @Composable
-private fun IconColorRenderer(
+internal fun iconColorRenderer(
     row: FormRow.IconColor,
     emoji: String,
     colorValue: String,
@@ -316,7 +187,7 @@ private fun IconColorRenderer(
     }
 
     if (showEmojiEditor) {
-        EmojiEditDialog(
+        emojiEditDialog(
             current = emoji,
             onConfirm = { newEmoji ->
                 onEmojiChange(newEmoji)
@@ -340,7 +211,7 @@ private fun IconColorRenderer(
 }
 
 @Composable
-private fun EmojiEditDialog(
+internal fun emojiEditDialog(
     current: String,
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -371,7 +242,7 @@ private fun EmojiEditDialog(
 }
 
 @Composable
-private fun LabelActionRenderer(row: FormRow.LabelAction) {
+internal fun labelActionRenderer(row: FormRow.LabelAction) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -410,7 +281,7 @@ private fun LabelActionRenderer(row: FormRow.LabelAction) {
 }
 
 @Composable
-private fun SwitchRenderer(
+internal fun switchRenderer(
     row: FormRow.Switch,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -435,7 +306,7 @@ private fun SwitchRenderer(
 }
 
 @Composable
-private fun NumberInputRenderer(
+internal fun numberInputRenderer(
     row: FormRow.NumberInput,
     value: Int,
     onValueChange: (Int) -> Unit,
@@ -469,22 +340,5 @@ private fun NumberInputRenderer(
             ),
             singleLine = true,
         )
-    }
-}
-
-private fun FormSpec.defaultValues(): Map<String, String> = buildMap {
-    sections.forEach { section ->
-        section.rows.forEach { row ->
-            when (row) {
-                is FormRow.TextInput -> put(row.key, row.initialValue)
-                is FormRow.IconColor -> {
-                    put(row.iconKey, row.initialEmoji)
-                    put(row.colorKey, "")
-                }
-                is FormRow.LabelAction -> {}
-                is FormRow.Switch -> put(row.key, row.initialChecked.toString())
-                is FormRow.NumberInput -> put(row.key, row.initialValue.toString())
-            }
-        }
     }
 }

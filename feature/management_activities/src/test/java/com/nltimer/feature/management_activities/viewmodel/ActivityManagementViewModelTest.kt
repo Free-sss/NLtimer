@@ -6,6 +6,7 @@ import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.feature.management_activities.model.DialogState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -40,7 +41,7 @@ class ActivityManagementViewModelTest {
         Dispatchers.setMain(testDispatcher)
         repository = FakeActivityManagementRepository()
         tagRepository = FakeTagRepository()
-        viewModel = ActivityManagementViewModel(repository, tagRepository)
+        viewModel = ActivityManagementViewModel(repository, AddActivityUseCase(repository), tagRepository)
     }
 
     @After

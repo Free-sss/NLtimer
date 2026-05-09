@@ -7,6 +7,7 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.feature.management_activities.model.ActivityManagementUiState
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.model.GroupWithActivities
@@ -32,6 +33,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ActivityManagementViewModel @Inject constructor(
     private val repository: ActivityManagementRepository,
+    private val addActivityUseCase: AddActivityUseCase,
     private val tagRepository: TagRepository,
 ) : ViewModel() {
 
@@ -140,18 +142,7 @@ class ActivityManagementViewModel @Inject constructor(
 
     fun addActivity(name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) {
         viewModelScope.launch {
-            val activity = Activity(
-                name = name.trim(),
-                iconKey = iconKey,
-                color = color,
-                groupId = groupId,
-                isPreset = false,
-                keywords = keywords,
-            )
-            val activityId = repository.addActivity(activity)
-            if (tagIds.isNotEmpty()) {
-                repository.setActivityTagBindings(activityId, tagIds)
-            }
+            addActivityUseCase(name, iconKey, color, groupId, keywords, tagIds)
             dismissDialog()
         }
     }

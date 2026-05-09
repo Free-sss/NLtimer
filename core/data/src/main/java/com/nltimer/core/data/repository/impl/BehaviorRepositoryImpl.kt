@@ -5,7 +5,6 @@ import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.BehaviorEntity
 import com.nltimer.core.data.database.entity.BehaviorTagCrossRefEntity
-import com.nltimer.core.data.database.entity.TagEntity
 import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
@@ -15,6 +14,7 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.util.BehaviorCalculator
 import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
@@ -39,26 +39,24 @@ class BehaviorRepositoryImpl @Inject constructor(
 ) : BehaviorRepository {
 
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
-        behaviorDao.getByDayRange(dayStart, dayEnd).map { list -> list.map { it.toModel() } }
+        behaviorDao.getByDayRange(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }
 
     override fun getCurrentBehavior(): Flow<Behavior?> =
-        behaviorDao.getCurrentBehavior().map { it?.toModel() }
+        behaviorDao.getCurrentBehavior().map { entity -> entity?.let { Behavior.fromEntity(it) } }
 
     override fun getHomeBehaviors(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
-        behaviorDao.getHomeBehaviors(dayStart, dayEnd).map { list -> list.map { it.toModel() } }
+        behaviorDao.getHomeBehaviors(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }
 
     override fun getTagsForBehavior(behaviorId: Long): Flow<List<Tag>> =
-        behaviorDao.getTagsForBehavior(behaviorId).map { list ->
-            list.map { Tag.fromEntity(it) }
-        }
+        behaviorDao.getTagsForBehavior(behaviorId).mapList { Tag.fromEntity(it) }
 
     override fun getPendingBehaviors(): Flow<List<Behavior>> =
-        behaviorDao.getPendingBehaviors().map { list -> list.map { it.toModel() } }
+        behaviorDao.getPendingBehaviors().mapList { Behavior.fromEntity(it) }
 
     override suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails? {
         // 查询行为、活动、标签三层数据组装完整详情
         val behaviorEntity = behaviorDao.getById(behaviorId) ?: return null
-        val behavior = behaviorEntity.toModel()
+        val behavior = Behavior.fromEntity(behaviorEntity)
         val activityEntity = activityDao.getById(behavior.activityId) ?: return null
         val activity = Activity.fromEntity(activityEntity)
         val tagEntities = tagDao.getTagsForBehaviorSync(behaviorId)
@@ -71,7 +69,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getNextPending(): Behavior? =
-        behaviorDao.getNextPending()?.toModel()
+        behaviorDao.getNextPending()?.let { Behavior.fromEntity(it) }
 
     override suspend fun getMaxSequence(): Int =
         behaviorDao.getMaxSequence()
@@ -145,7 +143,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             val nextNow = clockService.currentTimeMillis()
             behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
             behaviorDao.setStartTime(nextPending.id, nextNow)
-            nextPending.toModel()
+            nextPending.let { Behavior.fromEntity(it) }
         }
     }
 
@@ -160,36 +158,6 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
     }
 
-    // 数据库实体与领域模型互转
-    private fun BehaviorEntity.toModel() = Behavior(
-        id = id,
-        activityId = activityId,
-        startTime = startTime,
-        endTime = endTime,
-        status = BehaviorNature.fromKey(status),
-        note = note,
-        pomodoroCount = pomodoroCount,
-        sequence = sequence,
-        estimatedDuration = estimatedDuration,
-        actualDuration = actualDuration,
-        achievementLevel = achievementLevel,
-        wasPlanned = wasPlanned,
-    )
-
-    private fun Behavior.toEntity() = BehaviorEntity(
-        id = id,
-        activityId = activityId,
-        startTime = startTime,
-        endTime = endTime,
-        status = status.key,
-        note = note,
-        pomodoroCount = pomodoroCount,
-        sequence = sequence,
-        estimatedDuration = estimatedDuration,
-        actualDuration = actualDuration,
-        achievementLevel = achievementLevel,
-        wasPlanned = wasPlanned,
-    )
 
     override suspend fun updateBehavior(
         id: Long,
@@ -222,14 +190,13 @@ class BehaviorRepositoryImpl @Inject constructor(
     }
 
     override fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>> =
-        behaviorDao.getBehaviorsOverlappingRange(rangeStart, rangeEnd).map { list ->
-            list.map { it.toModel() }
-        }
+        behaviorDao.getBehaviorsOverlappingRange(rangeStart, rangeEnd).mapList { Behavior.fromEntity(it) }
 
     override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> {
         if (behaviorIds.isEmpty()) return emptyMap()
         val rows = behaviorDao.getTagsForBehaviorsSync(behaviorIds)
         return rows.groupBy { it.behaviorId }.mapValues { (_, rows) ->
+            // DIFF: BehaviorTagRow is a joined query result, not TagEntity, cannot use Tag.fromEntity()
             rows.map { row ->
                 Tag(
                     id = row.id,

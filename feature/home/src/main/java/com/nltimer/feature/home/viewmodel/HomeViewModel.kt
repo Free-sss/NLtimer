@@ -15,7 +15,9 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
+import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
@@ -55,6 +57,8 @@ class HomeViewModel @Inject constructor(
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
     private val addBehaviorUseCase: AddBehaviorUseCase,
+    private val addTagUseCase: AddTagUseCase,
+    private val addActivityUseCase: AddActivityUseCase,
     private val clockService: ClockService,
 ) : ViewModel() {
 
@@ -325,41 +329,13 @@ class HomeViewModel @Inject constructor(
     // 添加新活动到仓库
     fun addActivity(name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) {
         viewModelScope.launch {
-            val activity = Activity(
-                id = 0,
-                name = name,
-                iconKey = iconKey,
-                color = color,
-                groupId = groupId,
-                keywords = keywords,
-                isPreset = false,
-                isArchived = false,
-            )
-            val activityId = activityRepository.insert(activity)
-            if (tagIds.isNotEmpty()) {
-                activityManagementRepository.setActivityTagBindings(activityId, tagIds)
-            }
+            addActivityUseCase(name, iconKey, color, groupId, keywords, tagIds)
         }
     }
 
     fun addTag(name: String, color: Long?, iconKey: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) {
         viewModelScope.launch {
-            val tag = Tag(
-                id = 0,
-                name = name,
-                color = color,
-                iconKey = iconKey,
-                category = category,
-                priority = priority,
-                usageCount = 0,
-                sortOrder = 0,
-                keywords = keywords,
-                isArchived = false,
-            )
-            val tagId = tagRepository.insert(tag)
-            if (activityId != null) {
-                tagRepository.setActivityTagBindings(tagId, listOf(activityId))
-            }
+            addTagUseCase(name, color, iconKey, priority, category, keywords, activityId)
         }
     }
 
