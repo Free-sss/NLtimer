@@ -7,7 +7,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun styledCorner(baseDp: Int): Dp {
     val scale = LocalTheme.current.style.effectiveCornerScale()
-    return (baseDp * scale).coerceIn(0f, 50f).dp
+    return (baseDp * scale).coerceIn(0f, ShapeTokens.CORNER_SUPER_LARGE.toFloat()).dp
 }
 
 @Composable

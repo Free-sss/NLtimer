@@ -9,6 +9,7 @@ import com.nltimer.core.designsystem.R
 fun Fonts.toFontRes(): Int? = when (this) {
     Fonts.FIGTREE -> R.font.figtree
     Fonts.SYSTEM_DEFAULT -> null
+    Fonts.DM_SERIF_TEXT -> R.font.dm_serif_text
 }
 
 /**
@@ -17,6 +18,7 @@ fun Fonts.toFontRes(): Int? = when (this) {
 fun Fonts.toDisplayString(): String = when (this) {
     Fonts.FIGTREE -> "Figtree"
     Fonts.SYSTEM_DEFAULT -> "System Default"
+    Fonts.DM_SERIF_TEXT -> "DM Serif Text"
 }
 
 /**
