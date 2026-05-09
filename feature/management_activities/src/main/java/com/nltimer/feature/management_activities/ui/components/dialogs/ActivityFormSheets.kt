@@ -137,7 +137,7 @@ fun EditActivityFormSheet(
 
     val initialData = mapOf(
         "icon" to (activity.iconKey ?: "📖"),
-        "color" to (activity.color?.let { (it and 0xFFFFFFFF.toLong()).toString(16) } ?: ""),
+        "color" to (activity.color?.let { (it and 0xFFFFFFFF).toString(16) } ?: ""),
         "name" to activity.name,
         "keywords" to (activity.keywords ?: ""),
         "isArchived" to activity.isArchived.toString(),

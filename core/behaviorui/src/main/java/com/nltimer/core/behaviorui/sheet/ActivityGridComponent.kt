@@ -42,7 +42,7 @@ fun ChipItem(activity: Activity): ChipItem {
 }
 
 fun ChipItem(tag: Tag): ChipItem {
-    val color = tag.color?.let { Color(it.toLong()) } ?: Color.Gray
+    val color = tag.color?.let { Color(it) } ?: Color.Gray
     return ChipItem(id = tag.id, name = tag.name, color = color)
 }
 

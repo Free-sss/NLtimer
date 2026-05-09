@@ -9,9 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness5
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.EventNote
-import androidx.compose.material.icons.filled.Label
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.EventNote
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -51,9 +51,9 @@ internal val drawerMenuItems = CopyOnWriteArrayList(listOf(
     DrawerMenuItem(NLtimerRoutes.HOME, "主页", Icons.Default.Home),
     DrawerMenuItem(NLtimerRoutes.THEME_SETTINGS, "主题配置", Icons.Default.Brightness5),
     DrawerMenuItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
-    DrawerMenuItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.Default.List),
-    DrawerMenuItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.Default.Label),
-    DrawerMenuItem(NLtimerRoutes.BEHAVIOR_MANAGEMENT, "行为管理", Icons.Default.EventNote),
+    DrawerMenuItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.AutoMirrored.Filled.List),
+    DrawerMenuItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.AutoMirrored.Filled.Label),
+    DrawerMenuItem(NLtimerRoutes.BEHAVIOR_MANAGEMENT, "行为管理", Icons.AutoMirrored.Filled.EventNote),
     DrawerMenuItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 ))
 
