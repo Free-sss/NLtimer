@@ -1,5 +1,58 @@
 # 更新日志
 
+## v0.1.0 (2026-05-09)
+
+### 新功能
+
+- **行为管理模块**：全新 feature:behavior_management 模块，支持行为记录筛选栏与时间范围选择器 UI、列表项/时间轴项 UI 组件、四维过滤逻辑、导入预览/导出确认弹窗、JSON 导入导出（含时间+活动查重）、导航路由与侧边抽屉入口
+- **图标库系统**：统一图标渲染体系，包含 IconRenderer、IconPickerSheet（双 Tab 面板，含 Material Icons 和 Emoji 分类）、IconKeyResolver、MaterialIconCatalog/EmojiCatalog 数据源、i18n 字符串资源
+- **起始秒数策略**：新增 SecondsStrategy 枚举与 DialogGridConfig 字段，DataStore 持久化，弹窗配置页选择 UI，行为编辑流程保留精确秒数
+- **行为 UI 组件抽取**：创建 core:behaviorui 模块，将 Sheet 组件从 feature:home 移入，提供 AddBehaviorState 保留秒数、userAdjustedTime 标记、DualTimePicker 秒数回传
+- **数据库迁移 v11→v12**：behaviors 外键 onDelete 从 RESTRICT 改为 CASCADE，级联删除
+- **调试功能增强**：FieldDetailDialog（渲染/原生双 Tab）、FieldInfo 数据映射、标签/活动内容详情入口
+- **新增查询接口**：数据层新增按时间范围查询行为详情方法
+
+### 缺陷修复
+
+- 修复删除活动崩溃及时间线实时更新问题
+- 修复 IconPickerSheet 分类行重复"全部"标签，改为再次点击取消选中
+- 修复 ConfirmDialog import 路径及包名引用，适配 core:designsystem
+- 修复 .gitignore Icon 规则误忽略 icon 目录
+- 修复 IconRenderer 替代 Text 拼接显示 iconKey
+- 修复 GroupPickerPopup 解耦 ActivityGroup 编译问题
+- 修复 ViewModelTest 构造参数适配 UseCase 注入
+- 修复 debug 模块 sheet 组件 import 路径错误
+- 修复合并后编译错误、参数签名、toModel 转换
+- 修复行为管理模块多选删除逻辑及列表紧凑度
+
+### 重构
+
+- 全面 UI 重构 — 提取组件、拆分大文件、清理死代码
+- 提取 AddTagUseCase/AddActivityUseCase 消除 ViewModel 间 CRUD 重复
+- 提取共享 FormRowRenderers，消除 GenericForm 三重复制
+- 提取共享 ConfirmDialog、GroupPickerPopup 到 core:designsystem
+- 提取 Flow.mapList 扩展 + Behavior 转换逻辑移至 Model
+- IconPickerSheet 改为居中弹窗、调换 Tab 顺序、默认选中分类、自动聚焦键盘
+- 将所有 emoji 渲染替换为 IconRenderer
+- 将调试组件 JSON 序列化改用 toJsonString()
+- 调整 MomentView 排序逻辑
+
+### 性能优化
+
+- 性能优化 + 测试加固（b4ad03b）
+
+### 测试
+
+- 补充秒数策略默认值和持久化的单元测试
+- 补充 FakeBehaviorDao / FakeBehaviorRepository 缺失的接口方法实现
+
+### 文档
+
+- 行为管理页面设计规格与实现计划
+- 图标库集成实现计划
+- 计时起始秒数保留设计规格
+- TopBar V2 设计文档 — TopBarStyle 可配置化（STANDARD/NONE）
+
 ## v0.0.9 (2026-05-08)
 
 ### 新功能
