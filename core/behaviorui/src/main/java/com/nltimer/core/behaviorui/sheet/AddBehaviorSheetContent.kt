@@ -125,6 +125,7 @@ internal fun AddBehaviorSheetContent(
                 boxPositionInWindow = state.boxPositionInWindow,
                 onStartTimeChanged = { state.startTime = it },
                 onEndTimeChanged = { state.endTime = it },
+                onUserAdjusted = { state.userAdjustedTime = true },
             )
         }
 
@@ -336,8 +337,8 @@ private fun TimePickerSection(
                 endTime = state.endTime,
                 animate = !state.showTimeAdjustments,
                 onTimesChanged = { start, end ->
-                    if (state.startTime != start) state.startTime = start
-                    if (state.endTime != end) state.endTime = end
+                    if (state.startTime != start) { state.startTime = start; state.userAdjustedTime = true }
+                    if (state.endTime != end) { state.endTime = end; state.userAdjustedTime = true }
                 },
                 onLeftCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
                 onRightCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
@@ -347,7 +348,7 @@ private fun TimePickerSection(
             SingleTimePicker(
                 startTime = state.startTime,
                 animate = !state.showTimeAdjustments,
-                onTimeChanged = { state.startTime = it },
+                onTimeChanged = { state.startTime = it; state.userAdjustedTime = true },
                 onCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
             )
         }

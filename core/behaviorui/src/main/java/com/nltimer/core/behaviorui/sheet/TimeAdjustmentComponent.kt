@@ -26,6 +26,7 @@ fun TimeAdjustmentComponent(
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
     maxTime: LocalDateTime? = null,
+    onUserAdjusted: () -> Unit = {},
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -33,22 +34,25 @@ fun TimeAdjustmentComponent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         val row1 = listOf(
-            "重置" to { onTimeChanged(LocalDateTime.now().withSecond(0).withNano(0)) },
-            "-1" to { onTimeChanged(currentTime.plusMinutes(-1)) },
-            "-5" to { onTimeChanged(currentTime.plusMinutes(-5)) },
-            "-15" to { onTimeChanged(currentTime.plusMinutes(-15)) }
+            "重置" to { onUserAdjusted(); onTimeChanged(LocalDateTime.now().withSecond(0).withNano(0)) },
+            "-1" to { onUserAdjusted(); onTimeChanged(currentTime.plusMinutes(-1)) },
+            "-5" to { onUserAdjusted(); onTimeChanged(currentTime.plusMinutes(-5)) },
+            "-15" to { onUserAdjusted(); onTimeChanged(currentTime.plusMinutes(-15)) }
         )
         val row2 = listOf(
-            "现在" to { onTimeChanged(LocalDateTime.now().withSecond(0).withNano(0)) },
+            "现在" to { onUserAdjusted(); onTimeChanged(LocalDateTime.now().withSecond(0).withNano(0)) },
             "+1" to {
+                onUserAdjusted()
                 val newTime = currentTime.plusMinutes(1)
                 onTimeChanged(if (maxTime != null && newTime > maxTime) maxTime else newTime)
             },
             "+5" to {
+                onUserAdjusted()
                 val newTime = currentTime.plusMinutes(5)
                 onTimeChanged(if (maxTime != null && newTime > maxTime) maxTime else newTime)
             },
             "+15" to {
+                onUserAdjusted()
                 val newTime = currentTime.plusMinutes(15)
                 onTimeChanged(if (maxTime != null && newTime > maxTime) maxTime else newTime)
             }

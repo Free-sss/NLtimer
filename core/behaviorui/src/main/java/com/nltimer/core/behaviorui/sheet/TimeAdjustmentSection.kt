@@ -25,6 +25,7 @@ fun TimeAdjustmentCard(
     onTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
     maxTime: LocalDateTime? = null,
+    onUserAdjusted: () -> Unit = {},
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -42,6 +43,7 @@ fun TimeAdjustmentCard(
                 currentTime = currentTime,
                 onTimeChanged = onTimeChanged,
                 maxTime = maxTime,
+                onUserAdjusted = onUserAdjusted,
             )
         }
     }
@@ -57,6 +59,7 @@ internal fun TimeAdjustmentOverlay(
     onStartTimeChanged: (LocalDateTime) -> Unit,
     onEndTimeChanged: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier,
+    onUserAdjusted: () -> Unit = {},
 ) {
     if (mode == BehaviorNature.PENDING) return
 
@@ -77,13 +80,15 @@ internal fun TimeAdjustmentOverlay(
                 TimeAdjustmentCard(
                     currentTime = startTime,
                     onTimeChanged = onStartTimeChanged,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    onUserAdjusted = onUserAdjusted,
                 )
                 TimeAdjustmentCard(
                     currentTime = endTime,
                     onTimeChanged = onEndTimeChanged,
                     modifier = Modifier.weight(1f),
                     maxTime = LocalDateTime.now(),
+                    onUserAdjusted = onUserAdjusted,
                 )
             }
         }
@@ -105,6 +110,7 @@ internal fun TimeAdjustmentOverlay(
                     onTimeChanged = onStartTimeChanged,
                     modifier = Modifier.weight(1f),
                     maxTime = LocalDateTime.now(),
+                    onUserAdjusted = onUserAdjusted,
                 )
             }
         }
