@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -137,10 +136,7 @@ fun IconPickerSheet(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 4.dp)
-                                .focusRequester(searchFocusRequester)
-                                .onFocusChanged { focusState ->
-                                    if (!focusState.hasFocus && showSearch) showSearch = false
-                                },
+                                .focusRequester(searchFocusRequester),
                             shape = RoundedCornerShape(12.dp),
                             textStyle = MaterialTheme.typography.bodySmall,
                         )
@@ -166,10 +162,7 @@ fun IconPickerSheet(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(end = 4.dp)
-                                .focusRequester(manualFocusRequester)
-                                .onFocusChanged { focusState ->
-                                    if (!focusState.hasFocus && showManualInput && manualInput.isBlank()) showManualInput = false
-                                },
+                                .focusRequester(manualFocusRequester),
                             shape = RoundedCornerShape(12.dp),
                             textStyle = MaterialTheme.typography.bodySmall,
                         )
