@@ -592,6 +592,10 @@ class BehaviorRepositoryImplTest {
                 it.startTime < rangeEnd && (it.endTime == null || it.endTime >= rangeStart) && it.status != "pending" && it.startTime > 0
             })
 
+        override fun getByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorEntity>> =
+            MutableStateFlow(behaviors.filter { it.startTime in startTime until endTime })
+        override suspend fun getByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorEntity> =
+            behaviors.filter { it.startTime in startTime until endTime }
         override suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow> = emptyList()
         override fun getActivityStatsSync(activityId: Long): Flow<ActivityStatsRow> = flowOf(ActivityStatsRow())
     }

@@ -441,6 +441,8 @@ class HomeViewModelTest {
         override suspend fun settleDay(dayStart: Long, dayEnd: Long) {}
         override suspend fun updateBehavior(id: Long, activityId: Long, startTime: Long, endTime: Long?, status: String, note: String?) {}
         override suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>) {}
+        override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> = flowOf(emptyList())
+        override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
     }
 
