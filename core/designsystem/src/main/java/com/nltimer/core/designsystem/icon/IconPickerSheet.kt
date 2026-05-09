@@ -7,13 +7,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -26,19 +24,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Keyboard
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -48,16 +44,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.nltimer.core.designsystem.R
 import java.text.BreakIterator
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IconPickerSheet(
     currentIconKey: String?,
@@ -65,166 +65,200 @@ fun IconPickerSheet(
     onDismiss: () -> Unit,
     defaultEmoji: String = "📖",
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val initialTab = if (IconKeyResolver.isMaterialIconOrNull(currentIconKey)) 1 else 0
+    val initialTab = if (currentIconKey?.startsWith("mi:") == true) 0 else 0
     var selectedTab by rememberSaveable { mutableIntStateOf(initialTab) }
     var showSearch by rememberSaveable { mutableStateOf(false) }
     var showManualInput by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var manualInput by rememberSaveable { mutableStateOf("") }
+    val searchFocusRequester = remember { FocusRequester() }
+    val manualFocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    LaunchedEffect(showSearch) {
+        if (showSearch) searchFocusRequester.requestFocus()
+    }
+    LaunchedEffect(showManualInput) {
+        if (showManualInput) manualFocusRequester.requestFocus()
+    }
+
+    Dialog(
+        onDismissRequest = {
+            if (showSearch) {
+                showSearch = false
+                searchQuery = ""
+                focusManager.clearFocus()
+            } else if (showManualInput) {
+                showManualInput = false
+                manualInput = ""
+                focusManager.clearFocus()
+            } else {
+                onDismiss()
+            }
+        },
+        properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Column(
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            tonalElevation = 6.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(560.dp),
+                .height(560.dp)
+                .padding(horizontal = 16.dp),
         ) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .height(48.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.icon_picker_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-
-                if (showSearch) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-                            showManualInput = false
-                        },
-                        placeholder = { Text(stringResource(R.string.icon_picker_search), style = MaterialTheme.typography.bodySmall) },
-                        singleLine = true,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        textStyle = MaterialTheme.typography.bodySmall,
+                    .height(560.dp),
+            ) {                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .height(48.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.icon_picker_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
                     )
-                }
 
-                if (showManualInput) {
-                    OutlinedTextField(
-                        value = manualInput,
-                        onValueChange = { raw ->
-                            manualInput = truncateToCodePoints(raw, maxCodePoints = 4)
-                            showSearch = false
-                        },
-                        placeholder = { Text(stringResource(R.string.icon_picker_manual_input), style = MaterialTheme.typography.bodySmall) },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
+                    if (showSearch) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                showManualInput = false
+                            },
+                            placeholder = { Text(stringResource(R.string.icon_picker_search), style = MaterialTheme.typography.bodySmall) },
+                            singleLine = true,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
+                                .focusRequester(searchFocusRequester)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.hasFocus && showSearch) showSearch = false
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            textStyle = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+
+                    if (showManualInput) {
+                        OutlinedTextField(
+                            value = manualInput,
+                            onValueChange = { raw ->
+                                manualInput = truncateToCodePoints(raw, maxCodePoints = 4)
+                                showSearch = false
+                            },
+                            placeholder = { Text(stringResource(R.string.icon_picker_manual_input), style = MaterialTheme.typography.bodySmall) },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    if (manualInput.isNotBlank()) {
+                                        onIconSelected(manualInput)
+                                    }
+                                },
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 4.dp)
+                                .focusRequester(manualFocusRequester)
+                                .onFocusChanged { focusState ->
+                                    if (!focusState.hasFocus && showManualInput && manualInput.isBlank()) showManualInput = false
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            textStyle = MaterialTheme.typography.bodySmall,
+                        )
+                        TextButton(
+                            onClick = {
                                 if (manualInput.isNotBlank()) {
                                     onIconSelected(manualInput)
                                 }
                             },
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        textStyle = MaterialTheme.typography.bodySmall,
-                    )
-                    TextButton(
-                        onClick = {
-                            if (manualInput.isNotBlank()) {
-                                onIconSelected(manualInput)
-                            }
-                        },
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
-                    ) {
-                        Text(stringResource(R.string.icon_picker_confirm), style = MaterialTheme.typography.labelMedium)
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+                        ) {
+                            Text(stringResource(R.string.icon_picker_confirm), style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+
+                    if (!showManualInput) {
+                        IconButton(
+                            onClick = {
+                                showManualInput = !showManualInput
+                                if (showManualInput) showSearch = false
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Keyboard,
+                                contentDescription = stringResource(R.string.icon_picker_manual_input),
+                                tint = if (showManualInput) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    if (!showSearch) {
+                        IconButton(
+                            onClick = {
+                                showSearch = !showSearch
+                                if (showSearch) showManualInput = false
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Search,
+                                contentDescription = stringResource(R.string.icon_picker_search),
+                                tint = if (showSearch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    IconButton(onClick = { onIconSelected(null) }) {
+                        Icon(
+                            imageVector = Icons.Outlined.DeleteOutline,
+                            contentDescription = stringResource(R.string.icon_picker_reset),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
-
-                if (!showManualInput) {
-                    IconButton(
-                        onClick = {
-                            showManualInput = !showManualInput
-                            if (showManualInput) showSearch = false
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Keyboard,
-                            contentDescription = stringResource(R.string.icon_picker_manual_input),
-                            tint = if (showManualInput) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                val tabs = listOf(
+                    stringResource(R.string.icon_picker_tab_icons),
+                    stringResource(R.string.icon_picker_tab_emoji),
+                )
+                TabRow(selectedTabIndex = selectedTab) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(title) },
                         )
                     }
                 }
 
-                if (!showSearch) {
-                    IconButton(
-                        onClick = {
-                            showSearch = !showSearch
-                            if (showSearch) showManualInput = false
+                when (selectedTab) {
+                    0 -> MaterialIconTab(
+                        searchQuery = searchQuery,
+                        onIconSelected = {
+                            onIconSelected(it)
+                            onDismiss()
                         },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = stringResource(R.string.icon_picker_search),
-                            tint = if (showSearch) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
-
-                IconButton(onClick = { onIconSelected(null) }) {
-                    Icon(
-                        imageVector = Icons.Outlined.DeleteOutline,
-                        contentDescription = stringResource(R.string.icon_picker_reset),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    1 -> EmojiTab(
+                        currentIconKey = currentIconKey,
+                        defaultEmoji = defaultEmoji,
+                        searchQuery = searchQuery,
+                        onIconSelected = {
+                            onIconSelected(it)
+                            onDismiss()
+                        },
                     )
                 }
-            }
-
-            val tabs = listOf(
-                stringResource(R.string.icon_picker_tab_emoji),
-                stringResource(R.string.icon_picker_tab_icons),
-            )
-            TabRow(selectedTabIndex = selectedTab) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTab == index,
-                        onClick = { selectedTab = index },
-                        text = { Text(title) },
-                    )
-                }
-            }
-
-            when (selectedTab) {
-                0 -> EmojiTab(
-                    currentIconKey = currentIconKey,
-                    defaultEmoji = defaultEmoji,
-                    searchQuery = searchQuery,
-                    onIconSelected = {
-                        onIconSelected(it)
-                        onDismiss()
-                    },
-                )
-                1 -> MaterialIconTab(
-                    searchQuery = searchQuery,
-                    onIconSelected = {
-                        onIconSelected(it)
-                        onDismiss()
-                    },
-                )
             }
         }
     }
 }
-
 @Composable
 private fun EmojiTab(
     currentIconKey: String?,
@@ -232,14 +266,11 @@ private fun EmojiTab(
     searchQuery: String,
     onIconSelected: (String?) -> Unit,
 ) {
-    var selectedCategory by rememberSaveable { mutableStateOf<EmojiCategory?>(null) }
+    var selectedCategory by rememberSaveable { mutableStateOf(EmojiCategory.entries.first()) }
 
-    val allEmojis = remember { EmojiCategory.entries.flatMap { EmojiCatalog.findByCategory(it) } }
     val filteredEmojis = remember(searchQuery, selectedCategory) {
-        val byCategory = selectedCategory?.let { EmojiCatalog.findByCategory(it) } ?: allEmojis
-        if (searchQuery.isBlank()) byCategory else EmojiCatalog.searchEmoji(searchQuery).let { results ->
-            if (selectedCategory != null) results.filter { it.category == selectedCategory } else results
-        }
+        val byCategory = EmojiCatalog.findByCategory(selectedCategory)
+        if (searchQuery.isBlank()) byCategory else EmojiCatalog.searchEmoji(searchQuery)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -248,7 +279,7 @@ private fun EmojiTab(
             selectedCategory = selectedCategory,
             categoryLabel = { emojiCategoryLabel(it) },
             onCategorySelected = { cat ->
-                selectedCategory = if (selectedCategory == cat) null else cat
+                selectedCategory = cat
             },
         )
 
@@ -283,23 +314,18 @@ private fun EmojiTab(
         }
     }
 }
-
 @Composable
 private fun MaterialIconTab(
     searchQuery: String,
     onIconSelected: (String?) -> Unit,
 ) {
-    var selectedCategory by rememberSaveable { mutableStateOf<IconCategory?>(null) }
+    var selectedCategory by rememberSaveable { mutableStateOf(IconCategory.entries.first()) }
 
-    val allIcons = remember { MaterialIconCatalog.icons }
     val filteredIcons = remember(searchQuery, selectedCategory) {
-        val byCategory = selectedCategory?.let { cat -> allIcons.filter { it.category == cat } } ?: allIcons
+        val byCategory = MaterialIconCatalog.icons.filter { it.category == selectedCategory }
         if (searchQuery.isBlank()) byCategory else {
             val q = searchQuery.lowercase()
-            byCategory.filter { entry ->
-                entry.name.contains(q, ignoreCase = true) ||
-                    entry.keywords.any { it.contains(q, ignoreCase = true) }
-            }
+            byCategory.filter { it.name.contains(q, ignoreCase = true) || it.keywords.any { it.contains(q, ignoreCase = true) } }
         }
     }
 
@@ -309,7 +335,7 @@ private fun MaterialIconTab(
             selectedCategory = selectedCategory,
             categoryLabel = { iconCategoryLabel(it) },
             onCategorySelected = { cat ->
-                selectedCategory = if (selectedCategory == cat) null else cat
+                selectedCategory = cat
             },
         )
 
@@ -347,7 +373,7 @@ private fun MaterialIconTab(
 @Composable
 private fun <T> CategoryScrollRow(
     categories: List<T>,
-    selectedCategory: T?,
+    selectedCategory: T,
     categoryLabel: @Composable (T) -> String,
     onCategorySelected: (T) -> Unit,
 ) {
