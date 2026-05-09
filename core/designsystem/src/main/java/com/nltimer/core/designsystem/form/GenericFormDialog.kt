@@ -105,6 +105,7 @@ fun GenericFormDialog(
     )
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogFormRowRenderer(
     row: FormRow,
@@ -137,6 +138,7 @@ private fun dialogFormRowRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogTextInputRenderer(
     row: FormRow.TextInput,
@@ -184,6 +186,7 @@ private fun dialogTextInputRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogIconColorRenderer(
     row: FormRow.IconColor,
@@ -276,6 +279,7 @@ private fun dialogIconColorRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogEmojiEditDialog(
     current: String,
@@ -307,6 +311,7 @@ private fun dialogEmojiEditDialog(
     )
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogLabelActionRenderer(row: FormRow.LabelAction) {
     Row(
@@ -346,6 +351,7 @@ private fun dialogLabelActionRenderer(row: FormRow.LabelAction) {
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogSwitchRenderer(
     row: FormRow.Switch,
@@ -368,6 +374,7 @@ private fun dialogSwitchRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 private fun dialogNumberInputRenderer(
     row: FormRow.NumberInput,

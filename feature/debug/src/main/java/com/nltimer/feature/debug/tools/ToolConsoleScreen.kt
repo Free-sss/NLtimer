@@ -262,7 +262,7 @@ private fun ParameterField(
     param: ToolParameter,
     onChange: (Any?) -> Unit,
 ) {
-    var raw by remember(param.name) { mutableStateOf("") }
+    var rawInput by remember(param.name) { mutableStateOf("") }
     var bool by remember(param.name) { mutableStateOf(false) }
 
     val label = buildString {
@@ -274,9 +274,9 @@ private fun ParameterField(
     when (param.type) {
         ParameterType.STRING -> {
             OutlinedTextField(
-                value = raw,
+                value = rawInput,
                 onValueChange = {
-                    raw = it
+                    rawInput = it
                     onChange(it.takeIf { s -> s.isNotEmpty() })
                 },
                 label = { Text(label, fontSize = 12.sp) },
@@ -287,9 +287,9 @@ private fun ParameterField(
 
         ParameterType.NUMBER -> {
             OutlinedTextField(
-                value = raw,
+                value = rawInput,
                 onValueChange = {
-                    raw = it
+                    rawInput = it
                     onChange(it.toLongOrNull() ?: it.toDoubleOrNull())
                 },
                 label = { Text(label, fontSize = 12.sp) },
@@ -318,9 +318,9 @@ private fun ParameterField(
         else -> {
             // ARRAY / OBJECT / DATE_TIME / DURATION 暂用文本兜底，后续可扩展
             OutlinedTextField(
-                value = raw,
+                value = rawInput,
                 onValueChange = {
-                    raw = it
+                    rawInput = it
                     onChange(it.takeIf { s -> s.isNotEmpty() })
                 },
                 label = { Text("$label  (${param.type})", fontSize = 12.sp) },

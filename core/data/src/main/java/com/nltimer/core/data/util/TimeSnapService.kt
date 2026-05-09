@@ -29,8 +29,8 @@ class TimeSnapService {
             if (prevEnd != null && prevEnd >= adjustedStart) {
                 adjustedStart = prevEnd + 1
                 if (newStatus == BehaviorNature.COMPLETED && adjustedEnd != null) {
-                    if (newEnd != null && newEnd / 60_000 == prevEnd / 60_000) {
-                        adjustedEnd = prevEnd / 60_000 * 60_000 + 59_999
+                    if (newEnd != null && newEnd / MILLIS_PER_MINUTE == prevEnd / MILLIS_PER_MINUTE) {
+                        adjustedEnd = prevEnd / MILLIS_PER_MINUTE * MILLIS_PER_MINUTE + 59_999
                     }
                 }
             }

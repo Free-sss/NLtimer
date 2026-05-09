@@ -30,6 +30,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import java.util.concurrent.CopyOnWriteArrayList
 import com.nltimer.app.navigation.NLtimerRoutes
 
+private val MIN_DRAWER_WIDTH = 280.dp
+
 /**
  * 抽屉侧边栏菜单项数据模型
  *
@@ -71,7 +73,7 @@ fun AppDrawer(
     // 获取当前屏幕宽度，计算抽屉最大宽度为屏幕宽度一半，最低 280dp
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
-    val maxDrawerWidth = (screenWidthDp * 0.5f).coerceAtLeast(280.dp)
+    val maxDrawerWidth = (screenWidthDp * 0.5f).coerceAtLeast(MIN_DRAWER_WIDTH)
 
     // 获取当前路由，用于菜单项的高亮判断
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -79,7 +81,7 @@ fun AppDrawer(
 
     ModalDrawerSheet(
         modifier = modifier.widthIn(
-            min = 280.dp,
+            min = MIN_DRAWER_WIDTH,
             max = maxDrawerWidth,
         ),
     ) {

@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.map
 class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : SettingsPrefs {
 
     override fun getThemeFlow(): Flow<Theme> = dataStore.data.map { prefs ->
-        val seed = prefs[seedColorKey] ?: Color(0xFF1565C0).toArgb()
+        val seed = prefs[seedColorKey] ?: DEFAULT_SEED_COLOR
         val appThemeName = prefs[appThemeKey] ?: AppTheme.SYSTEM.name
         val paletteStyleName = prefs[paletteStyleKey] ?: PaletteStyle.TONALSPOT.name
         val fontName = prefs[fontKey] ?: Fonts.FIGTREE.name
@@ -78,9 +78,9 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[cornerPresetKey] = theme.style.cornerPreset.name
             prefs[borderPresetKey] = theme.style.borderPreset.name
             prefs[alphaPresetKey] = theme.style.alphaPreset.name
-            val cs = theme.style.cornerScale; if (cs != null) prefs[cornerScaleCustomKey] = cs else prefs.remove(cornerScaleCustomKey)
-            val bs = theme.style.borderScale; if (bs != null) prefs[borderScaleCustomKey] = bs else prefs.remove(borderScaleCustomKey)
-            val alphaSc = theme.style.alphaScale; if (alphaSc != null) prefs[alphaScaleCustomKey] = alphaSc else prefs.remove(alphaScaleCustomKey)
+            val cornerScale = theme.style.cornerScale; if (cornerScale != null) prefs[cornerScaleCustomKey] = cornerScale else prefs.remove(cornerScaleCustomKey)
+            val borderScale = theme.style.borderScale; if (borderScale != null) prefs[borderScaleCustomKey] = borderScale else prefs.remove(borderScaleCustomKey)
+            val alphaScale = theme.style.alphaScale; if (alphaScale != null) prefs[alphaScaleCustomKey] = alphaScale else prefs.remove(alphaScaleCustomKey)
         }
     }
 
@@ -159,6 +159,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
     }
 
     companion object {
+        private const val DEFAULT_SEED_COLOR = 0xFF1565C0.toInt()
         private val seedColorKey = intPreferencesKey("seed_color")
         private val appThemeKey = stringPreferencesKey("app_theme")
         private val isAmoledKey = booleanPreferencesKey("is_amoled")

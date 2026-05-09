@@ -15,7 +15,7 @@ object BehaviorCalculator {
     ): CompletionResult {
         val duration = (endTime - startTime).coerceAtLeast(0L)
         val achievementLevel = if (wasPlanned && estimatedDurationMinutes != null && estimatedDurationMinutes > 0) {
-            val estimatedMs = estimatedDurationMinutes * 60_000L
+            val estimatedMs = estimatedDurationMinutes * MILLIS_PER_MINUTE
             val diff = kotlin.math.abs(duration - estimatedMs)
             val ratio = (diff.toDouble() / estimatedMs).coerceAtMost(1.0)
             ((1.0 - ratio) * 100).toInt().coerceIn(0, 100)

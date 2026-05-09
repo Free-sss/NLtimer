@@ -21,9 +21,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
-import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
-import com.nltimer.feature.home.model.TagUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -58,23 +56,20 @@ class HomeViewModel @Inject constructor(
     private val clockService: ClockService,
 ) : ViewModel() {
 
-    // --- 暴露给 UI 的状态流 ---
+    private val uiStateBuilder = HomeUiStateBuilder()
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    // 活动列表流
     private val _activities = MutableStateFlow<List<Activity>>(emptyList())
     val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
 
-    // 活动分组流
     private val _activityGroups = MutableStateFlow<List<ActivityGroup>>(emptyList())
     val activityGroups: StateFlow<List<ActivityGroup>> = _activityGroups.asStateFlow()
 
-    // 全部标签流
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
-    // 当前选中的活动 ID（用于标签过滤）
     private val _selectedActivityId = MutableStateFlow<Long?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -82,25 +77,22 @@ class HomeViewModel @Inject constructor(
         .flatMapLatest { id ->
             if (id != null) tagRepository.getByActivityId(id) else flowOf(emptyList())
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), emptyList())
 
-    // 弹窗配置流
     val dialogConfig: StateFlow<DialogGridConfig> = settingsPrefs.getDialogConfigFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DialogGridConfig())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), DialogGridConfig())
 
     val timeLabelConfig: StateFlow<TimeLabelConfig> = settingsPrefs.getTimeLabelConfigFlow()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimeLabelConfig())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), TimeLabelConfig())
 
     private val today = LocalDate.now()
 
-    // 初始化时加载所有数据
     init {
         loadHomeBehaviors()
         loadActivitiesAndGroups()
         loadAllTags()
     }
 
-    // 从仓库加载活动列表和分组
     private fun loadActivitiesAndGroups() {
         viewModelScope.launch {
             combine(
@@ -115,7 +107,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 从仓库加载全部标签
     private fun loadAllTags() {
         viewModelScope.launch {
             tagRepository.getAllActive().collect { list ->
@@ -124,7 +115,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 从仓库加载当天行为数据，并构建 UI 状态
     private fun loadHomeBehaviors() {
         viewModelScope.launch {
             val dayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -138,191 +128,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 将领域行为数据转换为 UI 状态，包括分页、标签填充和占位单元格
     private suspend fun buildUiState(behaviors: List<Behavior>): HomeUiState {
         val now = LocalTime.now()
-        val hasActive = behaviors.any { it.status == BehaviorNature.ACTIVE }
-
-        if (behaviors.isEmpty()) {
-        val addCell = GridCellUiState(
-                behaviorId = null,
-                activityIconKey = null,
-                activityName = null,
-                tags = emptyList(),
-                status = null,
-                isCurrent = false,
-                isAddPlaceholder = true,
-            )
-            val row = GridRowUiState(
-                rowId = "empty-row",
-                startTime = now,
-                isCurrentRow = true,
-                isLocked = false,
-                cells = listOf(addCell),
-            )
-            return HomeUiState(
-                rows = listOf(row),
-                currentRowId = row.rowId,
-                isLoading = false,
-                selectedTimeHour = now.hour,
-                hasActiveBehavior = false,
-            )
-        }
-
-        val allActivities = _activities.value
-        val activityMap = allActivities.associateBy { it.id }
-
-        // 排序规则：COMPLETED + ACTIVE 按 startTime 升序在前；
-        // PENDING 目标按 sequence 升序（FIFO）追加在后。
-        // 不再依赖 DAO 默认 ORDER BY startTime（PENDING 的 startTime=0 会被错误地排到最前）。
-        val sortedBehaviors = run {
-            val nonPending = behaviors
-                .filter { it.status != BehaviorNature.PENDING }
-                .sortedBy { it.startTime }
-            val pending = behaviors
-                .filter { it.status == BehaviorNature.PENDING }
-                .sortedBy { it.sequence }
-            nonPending + pending
-        }
-
-        val rows = mutableListOf<GridRowUiState>()
-        val behaviorIds = sortedBehaviors.map { it.id }
+        val behaviorIds = behaviors.map { it.id }
         val tagsByBehaviorId = try {
             behaviorRepository.getTagsForBehaviors(behaviorIds)
         } catch (_: Exception) {
             emptyMap()
         }
 
-        val cells = sortedBehaviors.map { behavior ->
-            val activity = activityMap[behavior.activityId]
-            val tags = tagsByBehaviorId[behavior.id].orEmpty()
-            val isActive = behavior.status == BehaviorNature.ACTIVE
-            val isPending = behavior.status == BehaviorNature.PENDING
-            // PENDING 的 startTime 在数据库里是 0L，用 Instant.ofEpochMilli(0) 在 UTC+N 时区下
-            // 会被解析成 08:00 之类的幽灵值（中国时区 UTC+8 → 1970-01-01 08:00）。
-            // 因此这里直接置 null，避免详情弹窗里出现伪造的开始时间。
-            val startLocal = if (isPending || behavior.startTime <= 0L) {
-                null
-            } else {
-                java.time.Instant.ofEpochMilli(behavior.startTime)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalTime()
-            }
-            val endLocal = behavior.endTime?.let {
-                java.time.Instant.ofEpochMilli(it)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalTime()
-            }
-
-            GridCellUiState(
-                behaviorId = behavior.id,
-                activityIconKey = activity?.iconKey,
-                activityName = activity?.name,
-                tags = tags.map { TagUiState(id = it.id, name = it.name, color = it.color, isActive = !it.isArchived) },
-                status = behavior.status,
-                isCurrent = isActive,
-                wasPlanned = behavior.wasPlanned,
-                achievementLevel = behavior.achievementLevel,
-                estimatedDuration = behavior.estimatedDuration,
-                actualDuration = behavior.actualDuration,
-                durationMs = if (isActive && behavior.startTime > 0) {
-                    clockService.currentTimeMillis() - behavior.startTime
-                } else null,
-                startTime = startLocal,
-                endTime = endLocal,
-                startEpochMs = if (isPending || behavior.startTime <= 0L) null else behavior.startTime,
-                endEpochMs = behavior.endTime,
-                note = behavior.note,
-                pomodoroCount = behavior.pomodoroCount,
-            )
-        }
-
-        // 计算空闲区间：最后一条行为结束时间 → 下一条行为开始时间（或当前时间）
-        val lastEnd = cells.lastOrNull()?.endTime
-        val idleStart = lastEnd ?: now
-        val idleEnd = now
-
-        val addCell = GridCellUiState(
-            behaviorId = null,
-            activityIconKey = null,
-            activityName = null,
-            tags = emptyList(),
-            status = null,
-            isCurrent = false,
-            isAddPlaceholder = true,
-            startTime = idleStart,
-            endTime = idleEnd,
-        )
-        val allCells = cells + addCell
-
-        var currentRowId: String? = null
-        allCells.chunked(4).forEachIndexed { rowIndex, rowCells ->
-            val rowId = "row-$rowIndex-${rowCells.firstOrNull()?.behaviorId ?: "add"}"
-            val hasCurrentInRow = rowCells.any { it.isCurrent }
-            if (hasCurrentInRow) currentRowId = rowId
-
-            val timeForRow = if (rowIndex < allCells.size / 4) {
-                val behavior = sortedBehaviors.getOrNull(rowIndex * 4)
-                if (behavior != null
-                    && behavior.status != BehaviorNature.PENDING
-                    && behavior.startTime > 0L
-                ) {
-                    java.time.Instant.ofEpochMilli(behavior.startTime)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalTime()
-                } else {
-                    now
-                }
-            } else {
-                now
-            }
-
-            val paddedCells = rowCells.toMutableList()
-            while (paddedCells.size < 4) {
-                paddedCells.add(
-                    GridCellUiState(
-                        behaviorId = null,
-                        activityIconKey = null,
-                        activityName = null,
-                        tags = emptyList(),
-                        status = null,
-                        isCurrent = false,
-                    )
-                )
-            }
-
-            rows.add(
-                GridRowUiState(
-                    rowId = rowId,
-                    startTime = timeForRow,
-                    isCurrentRow = hasCurrentInRow,
-                    isLocked = false,
-                    cells = paddedCells,
-                )
-            )
-        }
-
-        // 获取最后一个已完成行为的结束时间
-        val lastBehaviorEndTime = behaviors
-            .filter { it.endTime != null }
-            .maxByOrNull { it.endTime ?: 0 }
-            ?.let {
-                java.time.Instant.ofEpochMilli(it.endTime!!)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalTime()
-            }
-
-        return HomeUiState(
-            rows = rows,
-            currentRowId = currentRowId,
-            isLoading = false,
-            selectedTimeHour = now.hour,
-            hasActiveBehavior = hasActive,
-            lastBehaviorEndTime = lastBehaviorEndTime,
+        return uiStateBuilder.buildUiState(
+            behaviors = behaviors,
+            activities = _activities.value,
+            tagsByBehaviorId = tagsByBehaviorId,
+            now = now,
+            currentTimeMs = clockService.currentTimeMillis(),
         )
     }
 
-    // 添加新活动到仓库
     fun addActivity(name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) {
         viewModelScope.launch {
             val activity = Activity(
@@ -385,7 +208,6 @@ class HomeViewModel @Inject constructor(
                 idleEndTime = cell.endTime,
             )
         }
-        // 加载行为的完整信息（包括活动ID）
         cell.behaviorId?.let { behaviorId ->
             viewModelScope.launch {
                 behaviorRepository.getBehaviorWithDetails(behaviorId)?.let { details ->
@@ -411,7 +233,6 @@ class HomeViewModel @Inject constructor(
         _selectedActivityId.value = null
     }
 
-    // 选中活动时加载其关联标签
     fun onActivitySelected(activityId: Long) {
         _selectedActivityId.value = activityId
     }
@@ -444,7 +265,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 完成指定行为（根据空闲模式决定后续行为处理）
     fun completeBehavior(behaviorId: Long) {
         viewModelScope.launch {
             val isIdle = _uiState.value.isIdleMode
@@ -452,12 +272,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 切换空闲模式开关
     fun toggleIdleMode() {
         _uiState.update { it.copy(isIdleMode = !it.isIdleMode) }
     }
 
-    // 启动下一个待办行为
     fun startBehavior(behaviorId: Long) {
         viewModelScope.launch {
             behaviorRepository.setStatus(behaviorId, BehaviorNature.ACTIVE.key)
@@ -473,26 +291,22 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 重新排序目标列表
     fun reorderGoals(orderedIds: List<Long>) {
         viewModelScope.launch {
             behaviorRepository.reorderGoals(orderedIds)
         }
     }
 
-    // 删除指定行为
     fun deleteBehavior(id: Long) {
         viewModelScope.launch {
             behaviorRepository.delete(id)
         }
     }
 
-    // 滚动到指定小时
     fun scrollToTime(hour: Int) {
         _uiState.update { it.copy(selectedTimeHour = hour) }
     }
 
-    // 更新主题中保存的首页布局模式
     fun onHomeLayoutChange(layout: HomeLayout) {
         viewModelScope.launch {
             settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->

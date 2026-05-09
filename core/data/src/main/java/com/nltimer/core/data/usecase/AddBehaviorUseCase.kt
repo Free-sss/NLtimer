@@ -4,6 +4,7 @@ import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.MILLIS_PER_DAY
 import com.nltimer.core.data.util.SnapResult
 import com.nltimer.core.data.util.TimeSnapService
 import kotlinx.coroutines.flow.firstOrNull
@@ -134,7 +135,7 @@ class AddBehaviorUseCase @Inject constructor(
             return behaviorRepository.getMaxSequence() + 1
         }
         val dayStart = getDayStartMillis(finalStart)
-        val dayEnd = dayStart + 24 * 60 * 60 * 1000
+        val dayEnd = dayStart + MILLIS_PER_DAY
         val dayBehaviors = behaviorRepository
             .getByDayRange(dayStart, dayEnd)
             .firstOrNull()
@@ -149,7 +150,7 @@ class AddBehaviorUseCase @Inject constructor(
     private suspend fun updateSubsequentSequences(status: BehaviorNature, finalStart: Long, newSequence: Int) {
         if (status == BehaviorNature.PENDING) return
         val dayStart = getDayStartMillis(finalStart)
-        val dayEnd = dayStart + 24 * 60 * 60 * 1000
+        val dayEnd = dayStart + MILLIS_PER_DAY
         val dayBehaviors = behaviorRepository
             .getByDayRange(dayStart, dayEnd)
             .firstOrNull()

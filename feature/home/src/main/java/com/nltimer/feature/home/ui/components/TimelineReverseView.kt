@@ -30,7 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
+
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -113,7 +113,7 @@ fun TimelineReverseView(
         ) {
             item {
                 LayoutMenuHeader(
-                    title = "\u65f6\u95f4\u8f74",
+                    title = "时间轴",
                     onLayoutChange = onLayoutChange,
                 )
             }
@@ -212,7 +212,7 @@ private fun TimelineIdleItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "\u2753 \u7a7a\u95f2 : $durationText",
+                text = "❓ 空闲 : $durationText",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -282,26 +282,24 @@ private fun TimelineBehaviorItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "${behavior.activityIconKey ?: "\u2753"} ${behavior.activityName ?: "\u672a\u77e5"}",
+                    text = "${behavior.activityIconKey ?: "❓"} ${behavior.activityName ?: "未知"}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
 
                 val duration = if (behavior.isCurrent && behavior.startEpochMs != null) {
-                    val elapsed by produceState(initialValue = System.currentTimeMillis() - behavior.startEpochMs) {
-                        while (true) {
-                            kotlinx.coroutines.delay(1000)
-                            value = System.currentTimeMillis() - behavior.startEpochMs
-                        }
-                    }
-                    elapsed
+                    LiveElapsedDuration(
+                        startEpochMs = behavior.startEpochMs,
+                        isCurrent = true,
+                        fallbackDurationMs = behavior.durationMs ?: (behavior.actualDuration ?: 0L),
+                    )
                 } else {
                     behavior.durationMs ?: (behavior.actualDuration ?: 0L)
                 }
                 if (duration > 0) {
                     Text(
-                        text = "\u23f1 ${formatDuration(duration)}",
+                        text = "⏱ ${formatDuration(duration)}",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
