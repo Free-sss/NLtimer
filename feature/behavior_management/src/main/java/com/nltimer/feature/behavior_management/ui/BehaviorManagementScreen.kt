@@ -202,7 +202,6 @@ fun BehaviorManagementScreen(
         AddBehaviorSheet(
             activities = activities,
             activityGroups = activityGroups,
-            tagsForActivity = emptyList(),
             allTags = allTags,
             initialStartTime = initialStartTime,
             initialEndTime = initialEndTime,

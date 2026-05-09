@@ -12,9 +12,9 @@ import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.HomeUiState
-import com.nltimer.feature.home.ui.sheet.AddBehaviorSheet
-import com.nltimer.feature.home.ui.sheet.AddCurrentBehaviorSheet
-import com.nltimer.feature.home.ui.sheet.AddTargetBehaviorSheet
+import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
+import com.nltimer.core.behaviorui.sheet.AddCurrentBehaviorSheet
+import com.nltimer.core.behaviorui.sheet.AddTargetBehaviorSheet
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId

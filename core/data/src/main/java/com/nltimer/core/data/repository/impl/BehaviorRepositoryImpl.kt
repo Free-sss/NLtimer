@@ -250,7 +250,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             }
         return entities.mapNotNull { entity ->
             val activityEntity = activityDao.getById(entity.activityId) ?: return@mapNotNull null
-            val behavior = entity.toModel()
+            val behavior = Behavior.fromEntity(entity)
             val activity = Activity.fromEntity(activityEntity)
             val tags = tagsMap[entity.id] ?: emptyList()
             BehaviorWithDetails(behavior = behavior, activity = activity, tags = tags)
