@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
@@ -22,10 +21,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
@@ -63,55 +58,46 @@ fun BehaviorManagementScreen(
 
     var selectedHandling by remember { mutableStateOf(DuplicateHandling.SKIP) }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-
     val editBehavior = remember(uiState.editBehaviorId, uiState.behaviors) {
         uiState.behaviors.find { it.behavior.id == uiState.editBehaviorId }
     }
 
-    Scaffold(
-        topBar = {
-            if (uiState.isMultiSelectMode) {
-                TopAppBar(
-                    title = { Text("已选 ${uiState.selectedBehaviorIds.size} 项") },
-                    navigationIcon = {
-                        IconButton(onClick = viewModel::exitMultiSelect) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "取消")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = viewModel::deleteSelectedBehaviors) {
-                            Icon(Icons.Default.Delete, contentDescription = "删除")
-                        }
-                    },
-                )
-            } else {
-                TopAppBar(
-                    title = { Text("行为管理") },
-                    navigationIcon = {
-                        IconButton(onClick = onNavigateBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onImport) {
-                            Icon(Icons.Default.FileDownload, contentDescription = "导入")
-                        }
-                        IconButton(onClick = onExport) {
-                            Icon(Icons.Default.FileUpload, contentDescription = "导出")
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
-            }
-        },
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-    ) { padding ->
+    Box(modifier = modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier = Modifier.fillMaxSize(),
         ) {
+            if (uiState.isMultiSelectMode) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = "已选 ${uiState.selectedBehaviorIds.size} 项",
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.weight(1f),
+                    )
+                    IconButton(onClick = viewModel::exitMultiSelect) {
+                        Icon(Icons.Default.Delete, contentDescription = "删除")
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    IconButton(onClick = onImport) {
+                        Icon(Icons.Default.FileDownload, contentDescription = "导入")
+                    }
+                    IconButton(onClick = onExport) {
+                        Icon(Icons.Default.FileUpload, contentDescription = "导出")
+                    }
+                }
+            }
             TimeRangeSelector(
                 currentPreset = uiState.timeRange,
                 currentDate = uiState.rangeStartDate,
