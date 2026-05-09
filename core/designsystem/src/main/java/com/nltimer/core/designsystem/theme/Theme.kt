@@ -44,7 +44,10 @@ fun NLtimerTheme(
         typography = typography,
     ) {
         // 将完整主题配置注入 CompostionLocal，供子组件按需读取
-        CompositionLocalProvider(LocalTheme provides theme) {
+        CompositionLocalProvider(
+            LocalTheme provides theme,
+            LocalTimerTypography provides resolveTimerTextStyle(),
+        ) {
             @Suppress("UnusedCrossfadeTargetStateParameter")
             Crossfade(targetState = theme.appTheme to theme.isAmoled, label = "theme") {
                 content()
