@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.AlphaPreset
 import com.nltimer.core.designsystem.theme.BorderPreset
@@ -109,6 +110,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             tagUseColorForText = prefs[tagUseColorKey] ?: true,
             showBehaviorNature = prefs[showNatureKey] ?: true,
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
+            secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
         )
     }
 
@@ -126,6 +128,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[tagUseColorKey] = config.tagUseColorForText
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
+            prefs[secondsStrategyKey] = config.secondsStrategy.name
         }
     }
 
@@ -183,6 +186,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val tagUseColorKey = booleanPreferencesKey("tag_use_color")
         private val showNatureKey = booleanPreferencesKey("show_nature_selector")
         private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
+        private val secondsStrategyKey = stringPreferencesKey("seconds_strategy")
         private val timeLabelConfigKey = stringPreferencesKey("time_label_config")
 
         private val cornerPresetKey = stringPreferencesKey("corner_preset")
