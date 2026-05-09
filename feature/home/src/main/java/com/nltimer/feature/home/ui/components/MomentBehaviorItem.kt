@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.icon.IconRenderer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,12 +61,24 @@ internal fun MomentBehaviorItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "${behavior.activityIconKey ?: ""} ${behavior.activityName ?: ""}",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 modifier = Modifier.weight(1f),
-            )
+            ) {
+                IconRenderer(
+                    iconKey = behavior.activityIconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 18.dp,
+                )
+                Text(
+                    text = behavior.activityName ?: "",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
 
             when {
                 isActive -> {

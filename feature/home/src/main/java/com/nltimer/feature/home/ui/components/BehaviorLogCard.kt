@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledCorner
@@ -57,12 +59,22 @@ internal fun BehaviorLogCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "${behavior.activityIconKey ?: "❓"} ${behavior.activityName ?: "未知"}",
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f)
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.weight(1f),
+            ) {
+                IconRenderer(
+                    iconKey = behavior.activityIconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 18.dp,
+                )
+                Text(
+                    text = behavior.activityName ?: "未知",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
 
             behavior.status?.let { status ->
                 val (bgColor, textColor) = when (status) {
