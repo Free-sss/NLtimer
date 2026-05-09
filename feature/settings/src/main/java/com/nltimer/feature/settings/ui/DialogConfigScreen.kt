@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
@@ -123,6 +124,11 @@ private fun LazyListScope.DialogConfigContent(
                     PathDrawModeSelector(
                         currentMode = config.pathDrawMode,
                         onModeChange = { onUpdateConfig(config.copy(pathDrawMode = it)) },
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    SecondsStrategySelector(
+                        currentStrategy = config.secondsStrategy,
+                        onStrategyChange = { onUpdateConfig(config.copy(secondsStrategy = it)) },
                     )
                 }
             }
@@ -364,6 +370,40 @@ internal fun ToggleControl(
                 color = if (checked) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             )
+        }
+    }
+}
+
+@Composable
+private fun SecondsStrategySelector(
+    currentStrategy: SecondsStrategy,
+    onStrategyChange: (SecondsStrategy) -> Unit,
+) {
+    Text(
+        text = "未调整时间时的秒数策略",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    Spacer(modifier = Modifier.height(4.dp))
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        SecondsStrategy.entries.forEach { strategy ->
+            Surface(
+                onClick = { onStrategyChange(strategy) },
+                shape = RoundedCornerShape(6.dp),
+                color = if (strategy == currentStrategy) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
+            ) {
+                Text(
+                    text = when (strategy) {
+                        SecondsStrategy.OPEN_TIME -> "打开时"
+                        SecondsStrategy.CONFIRM_TIME -> "确认时"
+                    },
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = if (strategy == currentStrategy) FontWeight.Bold else FontWeight.Normal,
+                    ),
+                    color = if (strategy == currentStrategy) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            }
         }
     }
 }
