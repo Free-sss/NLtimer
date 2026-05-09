@@ -36,6 +36,7 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.util.formatDurationMinutes
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.feature.debug.ui.components.FieldDetailDialog
 import com.nltimer.feature.debug.ui.components.toFieldInfoList
 import com.nltimer.feature.debug.ui.components.toJsonString
@@ -73,9 +74,10 @@ fun ActivityDetailSheet(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = activity.iconKey ?: "📌",
-                        style = MaterialTheme.typography.headlineLarge
+                    IconRenderer(
+                        iconKey = activity.iconKey,
+                        defaultEmoji = "📌",
+                        iconSize = 48.dp,
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(

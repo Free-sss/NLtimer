@@ -14,13 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.HelpOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +31,8 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.component.ColorPickerDialog
+import com.nltimer.core.designsystem.icon.IconPickerSheet
+import com.nltimer.core.designsystem.icon.IconRenderer
 import kotlin.text.toBooleanStrictOrNull
 
 /** 共享表单行渲染器，供 GenericFormSheet 和 GenericFormDialog 复用。 */
@@ -136,7 +135,7 @@ internal fun iconColorRenderer(
         }
     }
 
-    var showEmojiEditor by remember { mutableStateOf(false) }
+    var showIconPicker by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
 
     Row(
@@ -160,10 +159,10 @@ internal fun iconColorRenderer(
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .clickable { showEmojiEditor = true },
+                    .clickable { showIconPicker = true },
                 contentAlignment = Alignment.Center,
             ) {
-                Text(emoji, style = MaterialTheme.typography.titleMedium)
+                IconRenderer(iconKey = emoji.ifBlank { null }, iconSize = 20.dp)
             }
         }
         Row(
@@ -186,14 +185,14 @@ internal fun iconColorRenderer(
         }
     }
 
-    if (showEmojiEditor) {
-        emojiEditDialog(
-            current = emoji,
-            onConfirm = { newEmoji ->
-                onEmojiChange(newEmoji)
-                showEmojiEditor = false
+    if (showIconPicker) {
+        IconPickerSheet(
+            currentIconKey = emoji.ifBlank { null },
+            onIconSelected = { newIconKey ->
+                onEmojiChange(newIconKey ?: "")
+                showIconPicker = false
             },
-            onDismiss = { showEmojiEditor = false },
+            onDismiss = { showIconPicker = false },
         )
     }
 
@@ -211,36 +210,6 @@ internal fun iconColorRenderer(
 }
 
 @Composable
-internal fun emojiEditDialog(
-    current: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var text by remember { mutableStateOf(current) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("编辑图标") },
-        text = {
-            OutlinedTextField(
-                value = text,
-                onValueChange = { if (it.length <= 4) text = it },
-                label = { Text("Emoji") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(text.ifBlank { current }) }) {
-                Text("确定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
-        },
-    )
-}
-
 @Composable
 internal fun labelActionRenderer(row: FormRow.LabelAction) {
     Row(

@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.icon.IconRenderer
 import kotlin.math.roundToInt
 
 /**
@@ -393,13 +394,12 @@ private fun <T : CategorizableItem> ItemChip(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (item.iconKey != null) {
-                Text(
-                    text = item.iconKey!!,
-                    fontSize = 12.sp,
-                )
-                Spacer(modifier = Modifier.width(2.dp))
-            }
+            IconRenderer(
+                iconKey = item.iconKey,
+                defaultEmoji = "❓",
+                iconSize = 20.dp,
+            )
+            Spacer(modifier = Modifier.width(2.dp))
             Text(
                 text = item.itemName,
                 fontSize = 12.sp,
