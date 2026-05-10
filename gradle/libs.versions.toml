@@ -31,6 +31,7 @@ uiautomator = "2.3.0"
 benchmark_macro_junit4 = "1.4.0"
 animation = "1.11.0"
 kotlinx-collections-immutable = "0.3.7"
+compose_material3_expressive = "1.5.0-alpha12"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -45,6 +46,7 @@ androidx_test_runner = { module = "androidx.test:runner", version.ref = "android
 androidx_test_ext_junit = { module = "androidx.test.ext:junit", version.ref = "androidx_test_ext" }
 compose_bom = { module = "androidx.compose:compose-bom", version.ref = "compose_bom" }
 compose_material3 = { module = "androidx.compose.material3:material3" }
+compose_material3_expressive = { module = "androidx.compose.material3:material3", version.ref = "compose_material3_expressive" }
 compose_material_icons_extended = { module = "androidx.compose.material:material-icons-extended" }
 compose_ui = { module = "androidx.compose.ui:ui" }
 compose_ui_tooling = { module = "androidx.compose.ui:ui-tooling" }

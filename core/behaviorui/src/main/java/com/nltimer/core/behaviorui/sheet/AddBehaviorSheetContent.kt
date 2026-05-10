@@ -64,6 +64,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.minutes
 
 @Suppress("LongParameterList", "LongMethod")
 @Composable
@@ -216,7 +217,7 @@ private fun SheetMainContent(
         if (mode == BehaviorNature.COMPLETED) {
             DurationDisplayRow(duration = state.duration, emphasisColor = emphasisColor)
             if (dialogConfig.durationPresets.isNotEmpty()) {
-                val kotlinDuration = kotlin.time.Duration.minutes(state.duration.toMinutes())
+                val kotlinDuration = state.duration.toMinutes().minutes
                 DurationAssistChipRow(
                     durations = dialogConfig.durationPresets,
                     selectedDuration = if (state.duration.isZero) null else kotlinDuration,
