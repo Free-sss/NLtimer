@@ -318,3 +318,5 @@ docs/Android-SimpleTimeTracker/
 .gradle-home/
 .mindfs/
 .zed/settings.json
+.kilo/kilo.jsonc
+.kilo/plans/
