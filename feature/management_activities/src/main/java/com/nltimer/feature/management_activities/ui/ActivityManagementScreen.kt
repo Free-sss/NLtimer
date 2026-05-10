@@ -18,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -28,7 +27,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.component.DragActionFab
+import com.nltimer.core.designsystem.component.FabDragOptions
+import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
 import com.nltimer.feature.management_activities.ui.components.GroupCard
@@ -40,125 +44,143 @@ fun ActivityManagementScreen(
     modifier: Modifier = Modifier,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val dragFabState = rememberDragFabState()
 
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.showAddActivityDialog() }) {
-                Icon(Icons.Default.Add, contentDescription = "添加活动")
-            }
-        },
-        modifier = modifier,
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            if (uiState.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
+    Box(
+        modifier = modifier
+            .onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
+    ) {
+        Scaffold(
+            floatingActionButton = {
+                DragActionFab(
+                    state = dragFabState,
+                    icon = Icons.Default.Add,
+                    onClick = { viewModel.showAddActivityDialog() },
+                    onOptionSelected = { option ->
+                        when (option) {
+                            "添加活动" -> viewModel.showAddActivityDialog()
+                            "添加分组" -> viewModel.showAddGroupDialog()
+                        }
+                    },
                 )
-            } else if (
-                uiState.uncategorizedActivities.isEmpty() &&
-                uiState.groups.isEmpty()
+            },
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.align(Alignment.Center),
-                ) {
-                    Text("暂无活动", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "点击右下角按钮添加活动",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
                     )
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                } else if (
+                    uiState.uncategorizedActivities.isEmpty() &&
+                    uiState.groups.isEmpty()
                 ) {
-                    item {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.align(Alignment.Center),
+                    ) {
+                        Text("暂无活动", style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "未分类",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 8.dp),
+                            "点击右下角按钮添加活动",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-
-                        if (uiState.uncategorizedActivities.isEmpty()) {
+                    }
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        item {
                             Text(
-                                "暂无未分类活动",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                text = "未分类",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(bottom = 8.dp),
                             )
-                        } else {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                uiState.uncategorizedActivities.forEach { activity ->
-                                    ActivityChip(
-                                        activity = activity,
-                                        onClick = { viewModel.showActivityDetail(activity) },
-                                        onLongClick = {
-                                            viewModel.showMoveToGroupDialog(activity)
-                                        },
-                                    )
+
+                            if (uiState.uncategorizedActivities.isEmpty()) {
+                                Text(
+                                    "暂无未分类活动",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            } else {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    uiState.uncategorizedActivities.forEach { activity ->
+                                        ActivityChip(
+                                            activity = activity,
+                                            onClick = { viewModel.showActivityDetail(activity) },
+                                            onLongClick = {
+                                                viewModel.showMoveToGroupDialog(activity)
+                                            },
+                                        )
+                                    }
                                 }
+                            }
+
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "自定义分组",
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "自定义分组",
-                                style = MaterialTheme.typography.titleMedium,
+                        items(items = uiState.groups, key = { it.group.id }) { groupWithActivities ->
+                            GroupCard(
+                                group = groupWithActivities.group,
+                                activities = groupWithActivities.activities,
+                                isExpanded = uiState.expandedGroupIds.contains(groupWithActivities.group.id),
+                                onToggleExpand = {
+                                    viewModel.toggleGroupExpand(groupWithActivities.group.id)
+                                },
+                                onAddActivity = {
+                                    viewModel.showAddActivityToGroupDialog(groupWithActivities.group)
+                                },
+                                onRename = {
+                                    viewModel.showRenameGroupDialog(groupWithActivities.group)
+                                },
+                                onDelete = {
+                                    viewModel.showDeleteGroupDialog(groupWithActivities.group)
+                                },
+                                onActivityClick = { activity ->
+                                    viewModel.showActivityDetail(activity)
+                                },
+                                onActivityLongClick = { activity ->
+                                    viewModel.showMoveToGroupDialog(activity)
+                                },
                             )
                         }
-                    }
 
-                    items(items = uiState.groups, key = { it.group.id }) { groupWithActivities ->
-                        GroupCard(
-                            group = groupWithActivities.group,
-                            activities = groupWithActivities.activities,
-                            isExpanded = uiState.expandedGroupIds.contains(groupWithActivities.group.id),
-                            onToggleExpand = {
-                                viewModel.toggleGroupExpand(groupWithActivities.group.id)
-                            },
-                            onAddActivity = {
-                                viewModel.showAddActivityToGroupDialog(groupWithActivities.group)
-                            },
-                            onRename = {
-                                viewModel.showRenameGroupDialog(groupWithActivities.group)
-                            },
-                            onDelete = {
-                                viewModel.showDeleteGroupDialog(groupWithActivities.group)
-                            },
-                            onActivityClick = { activity ->
-                                viewModel.showActivityDetail(activity)
-                            },
-                            onActivityLongClick = { activity ->
-                                viewModel.showMoveToGroupDialog(activity)
-                            },
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(80.dp))
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp))
+                        }
                     }
                 }
             }
         }
-    }
 
-    ActivityManagementSheetRouter(
-        uiState = uiState,
-        viewModel = viewModel,
-    )
+        FabDragOptions(
+            state = dragFabState,
+            options = listOf("添加活动", "添加分组"),
+        )
+
+        ActivityManagementSheetRouter(
+            uiState = uiState,
+            viewModel = viewModel,
+        )
+    }
 }

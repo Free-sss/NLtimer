@@ -18,12 +18,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.AddActivityCallback
@@ -31,6 +36,9 @@ import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.component.DragActionFab
+import com.nltimer.core.designsystem.component.FabDragOptions
+import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -41,14 +49,11 @@ import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
 import com.nltimer.feature.home.ui.components.BehaviorLogView
-import com.nltimer.feature.home.ui.components.DragActionFab
-import com.nltimer.feature.home.ui.components.FabDragOptions
 import com.nltimer.feature.home.ui.components.MomentView
 import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
-import com.nltimer.feature.home.ui.components.rememberDragFabState
 import java.time.LocalTime
 
 private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "+自定义")
@@ -115,13 +120,29 @@ fun HomeScreen(
             floatingActionButton = {
                 DragActionFab(
                     state = dragFabState,
-                    hasActiveBehavior = uiState.hasActiveBehavior,
-                    activeBehaviorId = activeBehaviorId,
-                    onCompleteActive = { activeBehaviorId?.let { onCompleteBehavior(it) } },
-                    onShowAddSheet = onShowAddSheet,
-                    onFabClick = { onEmptyCellClick(null, null) },
-                    onUnhandledOption = { option ->
-                        Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
+                    icon = if (uiState.hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+                    label = if (uiState.hasActiveBehavior) "完成行为" else null,
+                    containerColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+                    cornerRadius = if (uiState.hasActiveBehavior) 16.dp else 28.dp,
+                    onClick = if (uiState.hasActiveBehavior) {
+                        { activeBehaviorId?.let { onCompleteBehavior(it) } }
+                    } else {
+                        { onEmptyCellClick(null, null) }
+                    },
+                    onOptionSelected = { option ->
+                        when (option) {
+                            "完成" -> {
+                                if (uiState.hasActiveBehavior) {
+                                    activeBehaviorId?.let { onCompleteBehavior(it) }
+                                } else {
+                                    onShowAddSheet(AddSheetMode.COMPLETED)
+                                }
+                            }
+                            "当前" -> onShowAddSheet(AddSheetMode.CURRENT)
+                            "目标" -> onShowAddSheet(AddSheetMode.TARGET)
+                            else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
+                        }
                     },
                 )
             }
