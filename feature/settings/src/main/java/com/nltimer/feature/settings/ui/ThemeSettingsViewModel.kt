@@ -18,6 +18,8 @@ import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimerTypography
+import com.nltimer.core.designsystem.theme.TopBarMode
+import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.WavyProgressLevel
 import com.nltimer.core.designsystem.theme.toStyleConfig
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -111,4 +113,8 @@ class ThemeSettingsViewModel @Inject constructor(
     fun onWavyProgressChange(level: WavyProgressLevel) = updateTheme { copy(style = style.copy(wavyProgress = level)) }
 
     fun onResetStyleConfig() = updateTheme { copy(showBorders = true, style = StyleConfig()) }
+
+    fun onTopBarModeChange(mode: TopBarMode) = updateTheme { copy(topBarMode = mode) }
+
+    fun onBottomBarModeChange(mode: BottomBarMode) = updateTheme { copy(bottomBarMode = mode) }
 }
