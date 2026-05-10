@@ -24,7 +24,6 @@ import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.designsystem.theme.CardColorStrategy
 import com.nltimer.core.designsystem.theme.ExpressivenessPreset
 import com.nltimer.core.designsystem.theme.IconContainerSize
-import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
@@ -75,7 +74,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
                 cardColorStrategy = try { CardColorStrategy.valueOf(prefs[cardColorStrategyKey] ?: CardColorStrategy.SURFACE.name) } catch (_: IllegalArgumentException) { CardColorStrategy.SURFACE },
                 iconContainerSize = try { IconContainerSize.valueOf(prefs[iconContainerSizeKey] ?: IconContainerSize.NONE.name) } catch (_: IllegalArgumentException) { IconContainerSize.NONE },
                 timerTypography = try { TimerTypography.valueOf(prefs[timerTypographyKey] ?: TimerTypography.HEADLINE.name) } catch (_: IllegalArgumentException) { TimerTypography.HEADLINE },
-                pressedShape = try { PressedShapeLevel.valueOf(prefs[pressedShapeKey] ?: PressedShapeLevel.OFF.name) } catch (_: IllegalArgumentException) { PressedShapeLevel.OFF },
                 wavyProgress = try { WavyProgressLevel.valueOf(prefs[wavyProgressKey] ?: WavyProgressLevel.OFF.name) } catch (_: IllegalArgumentException) { WavyProgressLevel.OFF },
             ),
         )
@@ -102,7 +100,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[cardColorStrategyKey] = theme.style.cardColorStrategy.name
             prefs[iconContainerSizeKey] = theme.style.iconContainerSize.name
             prefs[timerTypographyKey] = theme.style.timerTypography.name
-            prefs[pressedShapeKey] = theme.style.pressedShape.name
             prefs[wavyProgressKey] = theme.style.wavyProgress.name
             prefs[topBarModeKey] = theme.topBarMode.name
             prefs[bottomBarModeKey] = theme.bottomBarMode.name
@@ -240,7 +237,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val cardColorStrategyKey = stringPreferencesKey("card_color_strategy_key")
         private val iconContainerSizeKey = stringPreferencesKey("icon_container_size_key")
         private val timerTypographyKey = stringPreferencesKey("timer_typography_key")
-        private val pressedShapeKey = stringPreferencesKey("pressed_shape_key")
         private val wavyProgressKey = stringPreferencesKey("wavy_progress_key")
         private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
         private val durationPresetsKey = stringPreferencesKey("duration_presets")

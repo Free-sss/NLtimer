@@ -100,12 +100,6 @@ fun TimerTypography.toDisplayString(): String = when (this) {
     TimerTypography.DISPLAY_LARGE_SERIF -> "衬线展示"
 }
 
-fun PressedShapeLevel.toDisplayString(): String = when (this) {
-    PressedShapeLevel.OFF -> "关闭"
-    PressedShapeLevel.MILD -> "轻微"
-    PressedShapeLevel.FULL_MORPH -> "完全形变"
-}
-
 fun WavyProgressLevel.toDisplayString(): String = when (this) {
     WavyProgressLevel.OFF -> "关闭"
     WavyProgressLevel.ON -> "波浪"

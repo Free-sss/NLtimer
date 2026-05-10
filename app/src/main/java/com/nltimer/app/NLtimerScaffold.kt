@@ -64,10 +64,11 @@ fun NLtimerScaffold(
     }
     var showSettingsPopup by remember { mutableStateOf(false) }
     val theme = LocalTheme.current
-    val topBarScrollBehavior = if (theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage) {
+    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
+    val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     } else {
-        TopAppBarDefaults.pinnedScrollBehavior()
+        null
     }
 
     ModalNavigationDrawer(
@@ -82,29 +83,18 @@ fun NLtimerScaffold(
         },
     ) {
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-            // 底栏（在内容层之下）
-            if (theme.bottomBarMode == BottomBarMode.FLOATING) {
-                AppFloatingBottomBar(
-                    navController = navController,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
-            } else {
-                AppBottomNavigation(
-                    navController = navController,
-                    modifier = Modifier.align(Alignment.BottomCenter),
-                )
-            }
+            val isFloating = theme.bottomBarMode == BottomBarMode.FLOATING && !isSecondaryPage
 
-            // 顶栏 + 页面内容（在底栏之上）
+            // 顶栏 + 页面内容
             Scaffold(
                 modifier = Modifier.then(
-                    if (!isSecondaryPage) Modifier.padding(bottom = 80.dp) else Modifier
+                    if (!isSecondaryPage && !isFloating) Modifier.padding(bottom = 80.dp) else Modifier
                 ).then(
-                    if (theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage)
+                    if (topBarScrollBehavior != null)
                         Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
                     else Modifier
                 ),
-                containerColor = Color.Transparent,
+                containerColor = if (isFloating) Color.Transparent else Color.Transparent,
                 topBar = {
                     if (isSecondaryPage) {
                         TopAppBar(
@@ -119,7 +109,7 @@ fun NLtimerScaffold(
                             },
                         )
                     } else {
-                        if (theme.topBarMode == TopBarMode.COLLAPSED) {
+                        if (topBarScrollBehavior != null) {
                             AppCollapsedTopAppBar(
                                 title = topBarTitle,
                                 scrollBehavior = topBarScrollBehavior,
@@ -150,8 +140,24 @@ fun NLtimerScaffold(
                         .fillMaxSize()
                         .padding(
                             top = padding.calculateTopPadding(),
-                            bottom = if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
+                            bottom = if (isFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                         ),
+                )
+            }
+
+            // 标准底栏（在内容层之下，有背景遮挡）
+            if (!isFloating && !isSecondaryPage) {
+                AppBottomNavigation(
+                    navController = navController,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+
+            // 悬浮底栏（在内容层之上，空隙可透出列表内容）
+            if (isFloating) {
+                AppFloatingBottomBar(
+                    navController = navController,
+                    modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
 

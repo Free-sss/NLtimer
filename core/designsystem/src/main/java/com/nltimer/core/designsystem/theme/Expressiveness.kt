@@ -28,13 +28,6 @@ enum class TimerTypography {
     companion object { val DEFAULT = HEADLINE }
 }
 
-enum class PressedShapeLevel {
-    OFF,
-    MILD,
-    FULL_MORPH;
-    companion object { val DEFAULT = OFF }
-}
-
 enum class WavyProgressLevel {
     OFF,
     ON,
@@ -51,8 +44,6 @@ fun ExpressivenessPreset.toStyleConfig(): StyleConfig = when (this) {
         cardColorStrategy = CardColorStrategy.SURFACE,
         iconContainerSize = IconContainerSize.NONE,
         timerTypography = TimerTypography.HEADLINE,
-        pressedShape = PressedShapeLevel.OFF,
-        wavyProgress = WavyProgressLevel.OFF,
     )
     ExpressivenessPreset.STANDARD -> StyleConfig(
         cornerPreset = CornerPreset.STANDARD,
@@ -62,7 +53,6 @@ fun ExpressivenessPreset.toStyleConfig(): StyleConfig = when (this) {
         cardColorStrategy = CardColorStrategy.TINTED_PRIMARY,
         iconContainerSize = IconContainerSize.CIRCLE_SMALL,
         timerTypography = TimerTypography.DISPLAY_SMALL,
-        pressedShape = PressedShapeLevel.MILD,
         wavyProgress = WavyProgressLevel.ON,
     )
     ExpressivenessPreset.EXPRESSIVE -> StyleConfig(
@@ -73,7 +63,6 @@ fun ExpressivenessPreset.toStyleConfig(): StyleConfig = when (this) {
         cardColorStrategy = CardColorStrategy.MULTI_CONTAINER,
         iconContainerSize = IconContainerSize.CIRCLE_LARGE,
         timerTypography = TimerTypography.DISPLAY_LARGE_SERIF,
-        pressedShape = PressedShapeLevel.FULL_MORPH,
         wavyProgress = WavyProgressLevel.PROMINENT,
     )
 }

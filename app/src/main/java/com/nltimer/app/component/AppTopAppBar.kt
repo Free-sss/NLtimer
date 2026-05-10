@@ -51,7 +51,7 @@ fun AppTopAppBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
         ),
         modifier = modifier,
     )
@@ -94,7 +94,7 @@ fun AppCollapsedTopAppBar(
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.background,
         ),
         modifier = modifier,
     )

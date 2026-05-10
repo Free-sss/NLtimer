@@ -14,7 +14,6 @@ import com.nltimer.core.designsystem.theme.Fonts
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.IconContainerSize
 import com.nltimer.core.designsystem.theme.PaletteStyle
-import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimerTypography
@@ -107,8 +106,6 @@ class ThemeSettingsViewModel @Inject constructor(
     fun onIconContainerSizeChange(size: IconContainerSize) = updateTheme { copy(style = style.copy(iconContainerSize = size)) }
 
     fun onTimerTypographyChange(typography: TimerTypography) = updateTheme { copy(style = style.copy(timerTypography = typography)) }
-
-    fun onPressedShapeChange(level: PressedShapeLevel) = updateTheme { copy(style = style.copy(pressedShape = level)) }
 
     fun onWavyProgressChange(level: WavyProgressLevel) = updateTheme { copy(style = style.copy(wavyProgress = level)) }
 

@@ -76,7 +76,6 @@ import com.nltimer.core.designsystem.theme.CardColorStrategy
 import com.nltimer.core.designsystem.theme.CornerPreset
 import com.nltimer.core.designsystem.theme.ExpressivenessPreset
 import com.nltimer.core.designsystem.theme.IconContainerSize
-import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.TimerTypography
@@ -132,7 +131,6 @@ fun ThemeSettingsRoute(
         onCardColorStrategyChange = viewModel::onCardColorStrategyChange,
         onIconContainerSizeChange = viewModel::onIconContainerSizeChange,
         onTimerTypographyChange = viewModel::onTimerTypographyChange,
-        onPressedShapeChange = viewModel::onPressedShapeChange,
         onWavyProgressChange = viewModel::onWavyProgressChange,
         onResetStyleConfig = viewModel::onResetStyleConfig,
         onTopBarModeChange = viewModel::onTopBarModeChange,
@@ -175,7 +173,6 @@ fun ThemeSettingsScreen(
     onCardColorStrategyChange: (CardColorStrategy) -> Unit,
     onIconContainerSizeChange: (IconContainerSize) -> Unit,
     onTimerTypographyChange: (TimerTypography) -> Unit,
-    onPressedShapeChange: (PressedShapeLevel) -> Unit,
     onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
     onTopBarModeChange: (TopBarMode) -> Unit,
@@ -216,7 +213,6 @@ fun ThemeSettingsScreen(
             onCardColorStrategyChange = onCardColorStrategyChange,
             onIconContainerSizeChange = onIconContainerSizeChange,
             onTimerTypographyChange = onTimerTypographyChange,
-            onPressedShapeChange = onPressedShapeChange,
             onWavyProgressChange = onWavyProgressChange,
             onResetStyleConfig = onResetStyleConfig,
             onTopBarModeChange = onTopBarModeChange,
@@ -246,7 +242,6 @@ private fun LazyListScope.ThemeSettingsContent(
     onCardColorStrategyChange: (CardColorStrategy) -> Unit,
     onIconContainerSizeChange: (IconContainerSize) -> Unit,
     onTimerTypographyChange: (TimerTypography) -> Unit,
-    onPressedShapeChange: (PressedShapeLevel) -> Unit,
     onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
     onTopBarModeChange: (TopBarMode) -> Unit,
@@ -489,7 +484,6 @@ private fun LazyListScope.ThemeSettingsContent(
                         onCardColorStrategyChange = onCardColorStrategyChange,
                         onIconContainerSizeChange = onIconContainerSizeChange,
                         onTimerTypographyChange = onTimerTypographyChange,
-                        onPressedShapeChange = onPressedShapeChange,
                         onWavyProgressChange = onWavyProgressChange,
                     )
 
@@ -667,7 +661,6 @@ private fun ExpressivenessSection(
     onCardColorStrategyChange: (CardColorStrategy) -> Unit,
     onIconContainerSizeChange: (IconContainerSize) -> Unit,
     onTimerTypographyChange: (TimerTypography) -> Unit,
-    onPressedShapeChange: (PressedShapeLevel) -> Unit,
     onWavyProgressChange: (WavyProgressLevel) -> Unit,
 ) {
     val currentPreset = styleConfig.expressiveness
@@ -675,7 +668,6 @@ private fun ExpressivenessSection(
     val isCustom = styleConfig.cardColorStrategy != presetConfig.cardColorStrategy
             || styleConfig.iconContainerSize != presetConfig.iconContainerSize
             || styleConfig.timerTypography != presetConfig.timerTypography
-            || styleConfig.pressedShape != presetConfig.pressedShape
             || styleConfig.wavyProgress != presetConfig.wavyProgress
 
     Column(modifier = Modifier.clip(middleItemShape())) {
@@ -742,18 +734,6 @@ private fun ExpressivenessSection(
                         selected = styleConfig.timerTypography == typography,
                     ) {
                         Text(text = typography.toDisplayString())
-                    }
-                }
-            }
-
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                PressedShapeLevel.entries.forEachIndexed { index, level ->
-                    SegmentedButton(
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = PressedShapeLevel.entries.size),
-                        onClick = { onPressedShapeChange(level) },
-                        selected = styleConfig.pressedShape == level,
-                    ) {
-                        Text(text = level.toDisplayString())
                     }
                 }
             }

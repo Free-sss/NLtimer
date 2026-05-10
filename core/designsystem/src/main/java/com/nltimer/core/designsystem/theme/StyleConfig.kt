@@ -35,7 +35,6 @@ data class StyleConfig(
     val cardColorStrategy: CardColorStrategy = CardColorStrategy.DEFAULT,
     val iconContainerSize: IconContainerSize = IconContainerSize.DEFAULT,
     val timerTypography: TimerTypography = TimerTypography.DEFAULT,
-    val pressedShape: PressedShapeLevel = PressedShapeLevel.DEFAULT,
     val wavyProgress: WavyProgressLevel = WavyProgressLevel.DEFAULT,
 )
 
