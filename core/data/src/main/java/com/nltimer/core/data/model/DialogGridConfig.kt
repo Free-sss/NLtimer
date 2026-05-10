@@ -20,5 +20,4 @@ data class DialogGridConfig(
     val showBehaviorNature: Boolean = true,
     val pathDrawMode: PathDrawMode = PathDrawMode.StartToEnd,
     val secondsStrategy: SecondsStrategy = SecondsStrategy.OPEN_TIME,
-    val durationPresets: List<Long> = listOf(5L, 15L, 25L, 45L, 60L),
 )

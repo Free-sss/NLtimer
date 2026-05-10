@@ -59,7 +59,6 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.Tag
-import com.nltimer.core.designsystem.component.DurationAssistChipRow
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -216,18 +215,7 @@ private fun SheetMainContent(
     ) {
         if (mode == BehaviorNature.COMPLETED) {
             DurationDisplayRow(duration = state.duration, emphasisColor = emphasisColor)
-            if (dialogConfig.durationPresets.isNotEmpty()) {
-                val kotlinDuration = state.duration.toMinutes().minutes
-                DurationAssistChipRow(
-                    durations = dialogConfig.durationPresets,
-                    selectedDuration = if (state.duration.isZero) null else kotlinDuration,
-                    onDurationSelect = { selected ->
-                        state.endTime = state.startTime.plusMinutes(selected.inWholeMinutes)
-                    },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+
         }
 
         Box(

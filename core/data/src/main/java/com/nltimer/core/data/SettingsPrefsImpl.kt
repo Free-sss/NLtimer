@@ -132,7 +132,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showBehaviorNature = prefs[showNatureKey] ?: true,
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
             secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
-            durationPresets = parseDurationPresets(prefs[durationPresetsKey]),
+
         )
     }
 
@@ -151,7 +151,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name
-            prefs[durationPresetsKey] = config.durationPresets.joinToString(",")
+
         }
     }
 
@@ -194,11 +194,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         )
     }
 
-    private fun parseDurationPresets(raw: String?): List<Long> {
-        if (raw.isNullOrBlank()) return listOf(5L, 15L, 25L, 45L, 60L)
-        return raw.split(",").mapNotNull { it.trim().toLongOrNull() }
-    }
-
     companion object {
         private const val DEFAULT_SEED_COLOR = 0xFF1565C0.toInt()
         private val seedColorKey = intPreferencesKey("seed_color")
@@ -239,7 +234,6 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val timerTypographyKey = stringPreferencesKey("timer_typography_key")
         private val wavyProgressKey = stringPreferencesKey("wavy_progress_key")
         private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
-        private val durationPresetsKey = stringPreferencesKey("duration_presets")
         private val topBarModeKey = stringPreferencesKey("top_bar_mode")
         private val bottomBarModeKey = stringPreferencesKey("bottom_bar_mode")
     }
