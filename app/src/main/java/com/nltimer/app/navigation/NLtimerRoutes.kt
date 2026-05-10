@@ -13,9 +13,10 @@ object NLtimerRoutes {
     const val THEME_SETTINGS = "theme_settings"
     const val DIALOG_CONFIG = "dialog_config"
     const val BEHAVIOR_MANAGEMENT = "behavior_management"
+    const val DATA_MANAGEMENT = "data_management"
 
     val PRIMARY_ROUTES = setOf(HOME, SUB, STATS, CATEGORIES, MANAGEMENT_ACTIVITIES, SETTINGS)
-    val SETTINGS_FULLSCREEN_ROUTES = setOf(THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT)
+    val SETTINGS_FULLSCREEN_ROUTES = setOf(THEME_SETTINGS, DIALOG_CONFIG, BEHAVIOR_MANAGEMENT, DATA_MANAGEMENT)
 }
 
 data class RouteConfig(

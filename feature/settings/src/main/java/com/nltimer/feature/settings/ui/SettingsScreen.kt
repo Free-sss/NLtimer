@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,10 +33,12 @@ import androidx.compose.ui.unit.dp
 fun SettingsRoute(
     onNavigateToThemeSettings: () -> Unit = {},
     onNavigateToDialogConfig: () -> Unit = {},
+    onNavigateToDataManagement: () -> Unit = {},
 ) {
     SettingsScreen(
         onNavigateToThemeSettings = onNavigateToThemeSettings,
         onNavigateToDialogConfig = onNavigateToDialogConfig,
+        onNavigateToDataManagement = onNavigateToDataManagement,
     )
 }
 
@@ -44,6 +47,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier,
     onNavigateToThemeSettings: () -> Unit = {},
     onNavigateToDialogConfig: () -> Unit = {},
+    onNavigateToDataManagement: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -65,6 +69,15 @@ fun SettingsScreen(
                 title = "弹窗配置",
                 subtitle = "调整弹窗网格布局与显示方式",
                 onClick = onNavigateToDialogConfig,
+            )
+        }
+
+        item {
+            SettingsEntryCard(
+                icon = Icons.Default.Storage,
+                title = "数据管理",
+                subtitle = "导出、导入与迁移应用数据",
+                onClick = onNavigateToDataManagement,
             )
         }
     }
