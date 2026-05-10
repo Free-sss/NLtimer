@@ -44,9 +44,7 @@ fun IconRenderer(
                     modifier = modifier,
                 )
             } else {
-                if (android.util.Log.isLoggable("IconRenderer", android.util.Log.WARN)) {
-                    android.util.Log.w("IconRenderer", "Failed to resolve: $iconKey")
-                }
+                android.util.Log.w("IconRenderer", "Failed to resolve: $iconKey")
                 Text(
                     text = defaultEmoji,
                     fontSize = resolvedFontSize,

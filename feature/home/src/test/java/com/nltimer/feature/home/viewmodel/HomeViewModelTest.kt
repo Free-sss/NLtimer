@@ -578,6 +578,8 @@ class HomeViewModelTest {
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {
             updateTimeLabelConfigCalled = true
         }
+        override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
+        override suspend fun setHasSeenIntro(seen: Boolean) {}
     }
 
     private class FakeActivityManagementRepository : ActivityManagementRepository {

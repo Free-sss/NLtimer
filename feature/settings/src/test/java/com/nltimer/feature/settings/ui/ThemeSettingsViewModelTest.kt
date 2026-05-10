@@ -152,5 +152,7 @@ class ThemeSettingsViewModelTest {
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
 
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
+        override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
+        override suspend fun setHasSeenIntro(seen: Boolean) {}
     }
 }

@@ -60,13 +60,13 @@ fun rememberDragFabState(): DragFabState = remember { DragFabState() }
 fun DragActionFab(
     state: DragFabState,
     icon: ImageVector,
+    modifier: Modifier = Modifier,
     label: String? = null,
     containerColor: Color = MaterialTheme.colorScheme.primaryContainer,
     contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     cornerRadius: Dp = 28.dp,
     onClick: () -> Unit,
     onOptionSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
     val screenWidthPx = with(density) { LocalConfiguration.current.screenWidthDp.dp.toPx() }

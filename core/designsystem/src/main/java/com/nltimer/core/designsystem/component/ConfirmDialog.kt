@@ -25,11 +25,11 @@ import androidx.compose.ui.graphics.Color
 fun ConfirmDialog(
     title: String,
     message: String,
+    modifier: Modifier = Modifier,
     confirmText: String = "确定",
     dismissText: String = "取消",
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    modifier: Modifier = Modifier,
     confirmTextColor: Color? = null,
 ) {
     AlertDialog(

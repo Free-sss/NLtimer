@@ -410,5 +410,7 @@ class TagManagementViewModelTest {
         override suspend fun updateDialogConfig(config: com.nltimer.core.data.model.DialogGridConfig) {}
         override fun getTimeLabelConfigFlow(): Flow<com.nltimer.core.designsystem.theme.TimeLabelConfig> = flowOf(com.nltimer.core.designsystem.theme.TimeLabelConfig())
         override suspend fun updateTimeLabelConfig(config: com.nltimer.core.designsystem.theme.TimeLabelConfig) {}
+        override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
+        override suspend fun setHasSeenIntro(seen: Boolean) {}
     }
 }

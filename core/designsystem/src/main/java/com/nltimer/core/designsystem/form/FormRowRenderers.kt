@@ -37,6 +37,7 @@ import kotlin.text.toBooleanStrictOrNull
 
 /** 共享表单行渲染器，供 GenericFormSheet 和 GenericFormDialog 复用。 */
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun formRowRenderer(
     row: FormRow,
@@ -69,6 +70,7 @@ internal fun formRowRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun textInputRenderer(
     row: FormRow.TextInput,
@@ -117,6 +119,7 @@ internal fun textInputRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun iconColorRenderer(
     row: FormRow.IconColor,
@@ -209,6 +212,7 @@ internal fun iconColorRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun labelActionRenderer(row: FormRow.LabelAction) {
     Row(
@@ -248,6 +252,7 @@ internal fun labelActionRenderer(row: FormRow.LabelAction) {
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun switchRenderer(
     row: FormRow.Switch,
@@ -273,6 +278,7 @@ internal fun switchRenderer(
     }
 }
 
+@Suppress("ComposableNaming")
 @Composable
 internal fun numberInputRenderer(
     row: FormRow.NumberInput,
