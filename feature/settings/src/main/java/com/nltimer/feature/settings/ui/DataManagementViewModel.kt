@@ -14,13 +14,18 @@ import com.nltimer.core.data.usecase.ExportScope
 import com.nltimer.core.data.usecase.ImportDataUseCase
 import com.nltimer.core.data.usecase.ImportScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
+
+data class ExportEvent(val data: ExportData, val scope: ExportScope)
 
 data class DataManagementUiState(
     val isExporting: Boolean = false,
@@ -28,8 +33,7 @@ data class DataManagementUiState(
     val snackbarMessage: String? = null,
     val pendingImportData: ExportData? = null,
     val pendingImportScope: ImportScope? = null,
-    val lastExportData: ExportData? = null,
-    val lastExportScope: ExportScope? = null,
+    val pendingExportData: ExportData? = null,
 )
 
 @HiltViewModel
@@ -43,53 +47,37 @@ class DataManagementViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(DataManagementUiState())
     val uiState: StateFlow<DataManagementUiState> = _uiState.asStateFlow()
 
+    private val _exportEvents = MutableSharedFlow<ExportEvent>(extraBufferCapacity = 1)
+    val exportEvents: SharedFlow<ExportEvent> = _exportEvents.asSharedFlow()
+
     fun exportData(scope: ExportScope) {
         _uiState.update { it.copy(isExporting = true) }
         viewModelScope.launch {
             try {
                 val data = exportDataUseCase(scope)
-                _uiState.update {
-                    it.copy(
-                        isExporting = false,
-                        lastExportData = data,
-                        lastExportScope = scope,
-                    )
-                }
+                _uiState.update { it.copy(isExporting = false, pendingExportData = data) }
+                _exportEvents.tryEmit(ExportEvent(data, scope))
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(
-                        isExporting = false,
-                        snackbarMessage = e.message ?: "Export failed",
-                    )
+                    it.copy(isExporting = false, snackbarMessage = "导出失败")
                 }
             }
         }
     }
 
-    fun writeExportToFile(context: Context, uri: Uri, data: ExportData) {
+    fun writeExportToFileForLauncher(context: Context, uri: Uri) {
+        val data = _uiState.value.pendingExportData ?: return
         viewModelScope.launch {
             try {
                 val content = json.encodeToString(ExportData.serializer(), data)
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
                     outputStream.write(content.toByteArray())
                 }
-                _uiState.update {
-                    it.copy(
-                        lastExportData = null,
-                        lastExportScope = null,
-                        snackbarMessage = "Export saved successfully",
-                    )
-                }
+                _uiState.update { it.copy(pendingExportData = null, snackbarMessage = "数据已导出") }
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(snackbarMessage = e.message ?: "Write failed")
-                }
+                _uiState.update { it.copy(snackbarMessage = "导出失败") }
             }
         }
-    }
-
-    fun triggerImportFileSelection(scope: ImportScope) {
-        _uiState.update { it.copy(pendingImportScope = scope) }
     }
 
     fun onFileSelectedForImport(context: Context, uri: Uri) {
@@ -97,15 +85,17 @@ class DataManagementViewModel @Inject constructor(
             try {
                 val content = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     inputStream.readBytes().decodeToString()
-                } ?: throw IllegalStateException("Cannot read file")
+                } ?: throw IllegalStateException("无法读取文件")
                 val data = json.decodeFromString(ExportData.serializer(), content)
                 _uiState.update { it.copy(pendingImportData = data) }
             } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(snackbarMessage = e.message ?: "Failed to parse import file")
-                }
+                _uiState.update { it.copy(snackbarMessage = "文件格式无效") }
             }
         }
+    }
+
+    fun triggerImport(scope: ImportScope) {
+        _uiState.update { it.copy(pendingImportScope = scope) }
     }
 
     fun confirmImport(mode: ImportMode) {
@@ -120,18 +110,11 @@ class DataManagementViewModel @Inject constructor(
                         isImporting = false,
                         pendingImportData = null,
                         pendingImportScope = null,
-                        snackbarMessage = buildString {
-                            val parts = mutableListOf<String>()
-                            if (result.activityGroupsImported > 0) parts.add("${result.activityGroupsImported} groups")
-                            if (result.activitiesImported > 0) parts.add("${result.activitiesImported} activities")
-                            if (result.tagsImported > 0) parts.add("${result.tagsImported} tags")
-                            if (result.tagCategoriesImported > 0) parts.add("${result.tagCategoriesImported} categories")
-                            if (parts.isEmpty()) "No data imported" else parts.joinToString(", ") + " imported"
-                        },
+                        snackbarMessage = buildImportMessage(result),
                     )
                     is ImportResult.Error -> it.copy(
                         isImporting = false,
-                        snackbarMessage = result.message,
+                        snackbarMessage = "导入失败：${result.message}",
                     )
                 }
             }
@@ -140,10 +123,7 @@ class DataManagementViewModel @Inject constructor(
 
     fun dismissImportDialog() {
         _uiState.update {
-            it.copy(
-                pendingImportData = null,
-                pendingImportScope = null,
-            )
+            it.copy(pendingImportData = null, pendingImportScope = null)
         }
     }
 
@@ -185,5 +165,14 @@ class DataManagementViewModel @Inject constructor(
 
     fun clearSnackbar() {
         _uiState.update { it.copy(snackbarMessage = null) }
+    }
+
+    private fun buildImportMessage(result: ImportResult.Success): String {
+        val parts = mutableListOf<String>()
+        if (result.activitiesImported > 0) parts.add("${result.activitiesImported} 条活动")
+        if (result.tagsImported > 0) parts.add("${result.tagsImported} 条标签")
+        if (result.activityGroupsImported > 0) parts.add("${result.activityGroupsImported} 个分组")
+        if (result.tagCategoriesImported > 0) parts.add("${result.tagCategoriesImported} 个标签分类")
+        return if (parts.isEmpty()) "无新数据导入" else "已导入 " + parts.joinToString("、")
     }
 }

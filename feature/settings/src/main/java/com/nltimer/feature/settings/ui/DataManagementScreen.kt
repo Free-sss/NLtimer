@@ -64,8 +64,7 @@ fun DataManagementRoute(
         contract = ActivityResultContracts.CreateDocument("application/json"),
     ) { uri ->
         if (uri != null) {
-            val data = uiState.lastExportData ?: return@rememberLauncherForActivityResult
-            viewModel.writeExportToFile(context, uri, data)
+            viewModel.writeExportToFileForLauncher(context, uri)
         }
     }
 
@@ -77,15 +76,13 @@ fun DataManagementRoute(
         }
     }
 
-    LaunchedEffect(uiState.lastExportData) {
-        val data = uiState.lastExportData
-        if (data != null && !uiState.isExporting) {
-            val scopeName = when (uiState.lastExportScope) {
+    LaunchedEffect(Unit) {
+        viewModel.exportEvents.collect { event ->
+            val scopeName = when (event.scope) {
                 ExportScope.ALL -> "all"
                 ExportScope.ACTIVITIES -> "activities"
                 ExportScope.TAGS -> "tags"
                 ExportScope.CATEGORIES -> "categories"
-                null -> "all"
             }
             val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
                 .format(java.util.Date())
@@ -117,7 +114,7 @@ fun DataManagementRoute(
             showImportDialog = uiState.pendingImportData != null,
             onExport = { scope -> viewModel.exportData(scope) },
             onImport = { scope ->
-                viewModel.triggerImportFileSelection(scope)
+                viewModel.triggerImport(scope)
                 importLauncher.launch(arrayOf("application/json"))
             },
             onExportToClipboard = { scope -> viewModel.exportToClipboard(context, scope) },
@@ -150,42 +147,12 @@ fun DataManagementScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            ActionCard(
-                icon = Icons.Default.Storage,
-                title = "导出到文件",
-                subtitle = "导出全部数据为一个 JSON 文件",
-                loading = isExporting,
-                onClick = { onExport(ExportScope.ALL) },
-            )
-        }
-
-        item {
-            ActionCard(
-                icon = Icons.Default.Storage,
-                title = "从文件导入",
-                subtitle = "从 JSON 文件导入全部数据",
-                loading = isImporting,
-                onClick = { onImport(ImportScope.ALL) },
-            )
-        }
-
-        item {
-            ActionCard(
-                icon = Icons.Default.Storage,
-                title = "导出到剪贴板",
-                subtitle = "复制全部数据到剪贴板",
-                loading = isExporting,
-                onClick = { onExportToClipboard(ExportScope.ALL) },
-            )
-        }
-
-        item {
-            ActionCard(
-                icon = Icons.Default.Storage,
-                title = "从剪贴板导入",
-                subtitle = "从剪贴板粘贴导入全部数据",
-                loading = isImporting,
-                onClick = { onImportFromClipboard(ImportScope.ALL) },
+            ExpandableSection(
+                title = "总数据",
+                onExport = { onExport(ExportScope.ALL) },
+                onImport = { onImport(ImportScope.ALL) },
+                onExportToClipboard = { onExportToClipboard(ExportScope.ALL) },
+                onImportFromClipboard = { onImportFromClipboard(ImportScope.ALL) },
             )
         }
 
