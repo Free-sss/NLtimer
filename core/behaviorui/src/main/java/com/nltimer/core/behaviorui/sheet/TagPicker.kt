@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.theme.styledAlpha
 
 /**
  * 标签多选选择器 Composable。
@@ -44,7 +45,7 @@ fun TagPicker(
             val isSelected = tag.id in selectedTagIds
             val tagColor = tag.color?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
             val backgroundColor = if (isSelected) {
-                tagColor.copy(alpha = 0.2f)
+                tagColor.copy(alpha = styledAlpha(0.2f))
             } else {
                 MaterialTheme.colorScheme.surfaceContainerHigh
             }

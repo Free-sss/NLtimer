@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.designsystem.theme.styledAlpha
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -37,7 +38,7 @@ fun BehaviorTimelineItem(
     val activity = bwd.activity
     val tags = bwd.tags
 
-    val lineColor = MaterialTheme.colorScheme.outlineVariant
+    val lineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f))
     val dotColor = activity.color?.let { c ->
         android.graphics.Color.valueOf(c).let { cc ->
             Color(cc.red(), cc.green(), cc.blue(), cc.alpha())
@@ -122,7 +123,10 @@ fun BehaviorTimelineItem(
             ) {
                 Text(
                     text = activity.name,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

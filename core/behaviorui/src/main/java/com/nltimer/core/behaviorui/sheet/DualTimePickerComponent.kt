@@ -24,15 +24,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.theme.styledAlpha
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 private val ColonTextColor = Color(0xFF0A1034)
+
+@Composable
+private fun colonTextColor() = if (MaterialTheme.colorScheme.surface.luminance() > 0.5f) {
+    ColonTextColor
+} else {
+    MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
+}
 
 @Composable
 fun DualTimePicker(
@@ -394,7 +403,7 @@ private fun TimePickerWheelsRow(
 private fun TimePickerColon() {
     Text(
         text = ":",
-        color = ColonTextColor,
+        color = colonTextColor(),
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
         modifier = Modifier.padding(bottom = 0.dp),

@@ -35,6 +35,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.theme.styledAlpha
 
 @Composable
 fun NoteInputComponent(
@@ -70,13 +71,13 @@ fun NoteInputComponent(
                     modifier = Modifier.fillMaxSize(),
                     textStyle = TextStyle(
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.7f))
                     ),
                     decorationBox = { innerTextField ->
                         Box(modifier = Modifier.fillMaxSize()) {
                             Text(
                                 text = "${note.length}/$maxCharLimit",
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.3f)),
                                 fontSize = 9.sp,
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -92,7 +93,7 @@ fun NoteInputComponent(
                                 if (note.isEmpty()) {
                                     Text(
                                         text = "请输入备注",
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.3f)),
                                         fontSize = 14.sp,
                                         modifier = Modifier.offset(y = (-4).dp),
                                     )

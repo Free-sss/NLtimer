@@ -5,8 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -18,10 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -39,6 +40,7 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.DragActionFab
 import com.nltimer.core.designsystem.component.FabDragOptions
 import com.nltimer.core.designsystem.component.rememberDragFabState
+import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
@@ -83,7 +85,9 @@ fun HomeScreen(
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val layout = LocalTheme.current.homeLayout
+    val theme = LocalTheme.current
+    val layout = theme.homeLayout
+    val isFloatingBottomBar = theme.bottomBarMode == BottomBarMode.FLOATING
     var showTimeLabelSettings by remember { mutableStateOf(false) }
 
     val activeBehaviorId by remember(uiState.rows) {
@@ -144,6 +148,7 @@ fun HomeScreen(
                             else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
                         }
                     },
+                    modifier = if (isFloatingBottomBar) Modifier.padding(bottom = 80.dp) else Modifier,
                 )
             }
         ) { padding ->

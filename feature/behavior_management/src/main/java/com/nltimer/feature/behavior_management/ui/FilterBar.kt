@@ -42,6 +42,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appAssistChipBorder
+import com.nltimer.core.designsystem.theme.appInputChipBorder
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.feature.behavior_management.model.ViewMode
 
@@ -228,6 +230,7 @@ private fun SearchChip(
                     modifier = Modifier.size(AssistChipDefaults.IconSize),
                 )
             },
+            border = appAssistChipBorder(),
         )
     } else {
         InputChip(
@@ -256,6 +259,7 @@ private fun SearchChip(
                         .clickable(onClick = onClear),
                 )
             },
+            border = appInputChipBorder(selected = true),
         )
     }
 }

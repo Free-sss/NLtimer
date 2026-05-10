@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.icon.IconRenderer
+import com.nltimer.core.designsystem.theme.styledAlpha
 import kotlin.math.roundToInt
 
 private const val APPROX_ITEM_HEIGHT = 80f
@@ -67,7 +68,7 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
             .animateContentSize(),
         shape = RoundedCornerShape(8.dp),
         color = if (isDragging) {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.8f))
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         },
@@ -107,7 +108,7 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
                 Text(
                     text = "${items.size}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
                 )
             }
             Spacer(modifier = Modifier.height(6.dp))

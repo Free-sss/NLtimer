@@ -78,10 +78,18 @@ fun BehaviorManagementScreen(
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(onClick = viewModel::deleteSelectedBehaviors) {
-                        Icon(Icons.Default.Delete, contentDescription = "删除")
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "删除",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     IconButton(onClick = viewModel::exitMultiSelect) {
-                        Icon(Icons.Default.Close, contentDescription = "取消")
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "取消",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             } else {
@@ -101,10 +109,18 @@ fun BehaviorManagementScreen(
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(onClick = onImport) {
-                        Icon(Icons.Default.FileDownload, contentDescription = "导入")
+                        Icon(
+                            Icons.Default.FileDownload,
+                            contentDescription = "导入",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     IconButton(onClick = onExport) {
-                        Icon(Icons.Default.FileUpload, contentDescription = "导出")
+                        Icon(
+                            Icons.Default.FileUpload,
+                            contentDescription = "导出",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }

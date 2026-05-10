@@ -30,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.appAssistChipBorder
 import com.nltimer.feature.behavior_management.model.TimeRangePreset
 import java.time.Instant
 import java.time.LocalDate
@@ -66,6 +67,7 @@ fun TimeRangeSelector(
                         modifier = Modifier.size(AssistChipDefaults.IconSize),
                     )
                 },
+                border = appAssistChipBorder(),
             )
             DropdownMenu(
                 expanded = presetExpanded,
@@ -87,6 +89,7 @@ fun TimeRangeSelector(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "前一天",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -98,12 +101,14 @@ fun TimeRangeSelector(
                     style = MaterialTheme.typography.labelMedium,
                 )
             },
+            border = appAssistChipBorder(),
         )
 
         IconButton(onClick = { onNavigate(1) }, modifier = Modifier.size(36.dp)) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "后一天",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

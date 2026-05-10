@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.designsystem.icon.IconRenderer
+import com.nltimer.core.designsystem.theme.styledAlpha
 
 /**
  * 活动选择器 Composable。
@@ -70,7 +71,7 @@ fun ActivityPicker(
                 Text(
                     text = groupName,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
                 )
 
                 // FlowRow 排列每个分组下的活动按钮

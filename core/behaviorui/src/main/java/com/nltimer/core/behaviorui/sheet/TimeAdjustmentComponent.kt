@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.theme.styledAlpha
 import java.time.LocalDateTime
 
 @Composable
@@ -86,7 +87,7 @@ private fun TimeButton(
         modifier = modifier
             .height(26.dp)
             .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.8f))
+            .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = styledAlpha(0.8f)))
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
