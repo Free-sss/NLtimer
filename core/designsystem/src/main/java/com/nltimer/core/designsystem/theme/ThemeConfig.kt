@@ -18,5 +18,7 @@ data class Theme(
     val showBorders: Boolean = true,
     val homeLayout: HomeLayout = HomeLayout.GRID,
     val showTimeSideBar: Boolean = true,
+    val topBarMode: TopBarMode = TopBarMode.PINNED,
+    val bottomBarMode: BottomBarMode = BottomBarMode.STANDARD,
     val style: StyleConfig = StyleConfig(),
 )
