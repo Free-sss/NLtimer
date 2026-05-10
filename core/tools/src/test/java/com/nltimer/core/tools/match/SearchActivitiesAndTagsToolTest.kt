@@ -1,7 +1,6 @@
 package com.nltimer.core.tools.match
 
 import com.nltimer.core.data.model.Activity
-import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.tools.ToolError
@@ -31,25 +30,6 @@ class SearchActivitiesAndTagsToolTest {
         tool = SearchActivitiesAndTagsTool(activityRepository, tagRepository)
     }
 
-    private fun tag(
-        id: Long,
-        name: String,
-        keywords: String? = null,
-        isArchived: Boolean = false,
-    ) = Tag(
-        id = id,
-        name = name,
-        color = null,
-        iconKey = null,
-        category = null,
-        priority = 0,
-        usageCount = 0,
-        sortOrder = 0,
-        isArchived = isArchived,
-        archivedAt = if (isArchived) 0L else null,
-        keywords = keywords,
-    )
-
     @Test
     fun `query 天 hits all three day activities by substring`() = runTest {
         every { activityRepository.getAllActive() } returns flowOf(
@@ -64,12 +44,9 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "天"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
+        val data = result.successData()
         assertEquals("search", data["mode"])
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val activities = data.activityRows()
         assertEquals(setOf(1L, 2L, 3L), activities.map { it["id"] as Long }.toSet())
         activities.forEach { assertEquals("name", it["matchedField"]) }
     }
@@ -86,11 +63,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "跑"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertEquals(1, activities.size)
         assertEquals(1L, activities[0]["id"])
         assertEquals("keywords", activities[0]["matchedField"])
@@ -107,11 +81,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "计划"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertTrue(activities.isEmpty())
     }
 
@@ -126,11 +97,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "WORK"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertEquals(1, activities.size)
     }
 
@@ -145,11 +113,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "WORK", "caseSensitive" to true))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertTrue(activities.isEmpty())
     }
 
@@ -166,11 +131,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "天\$", "useRegex" to true))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertEquals(setOf(1L, 2L), activities.map { it["id"] as Long }.toSet())
     }
 
@@ -186,19 +148,15 @@ class SearchActivitiesAndTagsToolTest {
     fun `scope tags only queries tag repository`() = runTest {
         every { tagRepository.getAllActive() } returns flowOf(
             listOf(
-                tag(id = 1, name = "工作"),
+                tagFixture(id = 1, name = "工作"),
             )
         )
 
         val result = tool.execute(mapOf("query" to "工", "scope" to "tags"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
-        @Suppress("UNCHECKED_CAST")
-        val tags = data["tags"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
+        val tags = data.tagRows()
         assertTrue(activities.isEmpty())
         assertEquals(1, tags.size)
     }
@@ -213,13 +171,9 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "工", "scope" to "activities"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
-        @Suppress("UNCHECKED_CAST")
-        val tags = data["tags"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
+        val tags = data.tagRows()
         assertEquals(1, activities.size)
         assertTrue(tags.isEmpty())
     }
@@ -235,11 +189,8 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "归", "includeArchived" to true))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
-        @Suppress("UNCHECKED_CAST")
-        val activities = data["activities"] as List<Map<String, Any>>
+        val data = result.successData()
+        val activities = data.activityRows()
         assertEquals(1, activities.size)
     }
 
@@ -250,9 +201,7 @@ class SearchActivitiesAndTagsToolTest {
 
         val result = tool.execute(mapOf("query" to "x"))
 
-        assertTrue(result is ToolResult.Success)
-        @Suppress("UNCHECKED_CAST")
-        val data = (result as ToolResult.Success).data as Map<String, Any>
+        val data = result.successData()
         assertEquals("search", data["mode"])
     }
 }

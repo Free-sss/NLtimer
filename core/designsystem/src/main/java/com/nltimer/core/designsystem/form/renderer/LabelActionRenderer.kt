@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +39,7 @@ internal fun labelActionRenderer(row: FormRow.LabelAction) {
         if (row.showHelp) {
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
-                imageVector = Icons.Outlined.HelpOutline,
+                imageVector = Icons.AutoMirrored.Outlined.HelpOutline,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
                 modifier = Modifier.size(16.dp),

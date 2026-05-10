@@ -1,6 +1,45 @@
 package com.nltimer.core.designsystem.icon
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.Comment
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
+import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
+import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
+import androidx.compose.material.icons.automirrored.filled.FormatIndentDecrease
+import androidx.compose.material.icons.automirrored.filled.FormatIndentIncrease
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
+import androidx.compose.material.icons.automirrored.filled.Forward
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.Launch
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.Message
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
+import androidx.compose.material.icons.automirrored.filled.Notes
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.PhoneForwarded
+import androidx.compose.material.icons.automirrored.filled.PhoneMissed
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.automirrored.filled.ReplyAll
+import androidx.compose.material.icons.automirrored.filled.ScreenShare
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.StarHalf
+import androidx.compose.material.icons.automirrored.filled.Undo
+import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.automirrored.filled.VolumeDown
+import androidx.compose.material.icons.automirrored.filled.VolumeMute
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.AccessAlarms
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AccountCircle
@@ -15,11 +54,7 @@ import androidx.compose.material.icons.filled.AirplanemodeActive
 import androidx.compose.material.icons.filled.AirplanemodeInactive
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBackIos
 import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.AttachEmail
 import androidx.compose.material.icons.filled.AttachFile
@@ -57,7 +92,6 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ColorLens
-import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Computer
 import androidx.compose.material.icons.filled.Construction
 import androidx.compose.material.icons.filled.ContactMail
@@ -80,13 +114,11 @@ import androidx.compose.material.icons.filled.DeveloperBoard
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Dialpad
-import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.filled.DirectionsBoat
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.DirectionsRailway
 import androidx.compose.material.icons.filled.DirectionsSubway
-import androidx.compose.material.icons.filled.DirectionsWalk
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.filled.Download
@@ -126,18 +158,12 @@ import androidx.compose.material.icons.filled.FolderShared
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.FormatAlignCenter
 import androidx.compose.material.icons.filled.FormatAlignJustify
-import androidx.compose.material.icons.filled.FormatAlignLeft
-import androidx.compose.material.icons.filled.FormatAlignRight
 import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatIndentDecrease
-import androidx.compose.material.icons.filled.FormatIndentIncrease
 import androidx.compose.material.icons.filled.FormatItalic
-import androidx.compose.material.icons.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.FormatStrikethrough
 import androidx.compose.material.icons.filled.FormatUnderlined
-import androidx.compose.material.icons.filled.Forward
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Gif
@@ -151,8 +177,6 @@ import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material.icons.filled.Hd
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.HeadsetMic
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HomeRepairService
@@ -164,13 +188,10 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Keyboard
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Laptop
-import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Link
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocalAirport
 import androidx.compose.material.icons.filled.LocalAtm
 import androidx.compose.material.icons.filled.LocalBar
@@ -195,14 +216,11 @@ import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.Login
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.MarkEmailUnread
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.ModeComment
@@ -214,26 +232,20 @@ import androidx.compose.material.icons.filled.MovieCreation
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.MusicOff
 import androidx.compose.material.icons.filled.MyLocation
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.NightsStay
-import androidx.compose.material.icons.filled.Notes
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsNone
 import androidx.compose.material.icons.filled.NotificationsOff
-import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Outbox
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.PhoneForwarded
 import androidx.compose.material.icons.filled.PhoneInTalk
-import androidx.compose.material.icons.filled.PhoneMissed
 import androidx.compose.material.icons.filled.PhonePaused
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -243,7 +255,6 @@ import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.PinDrop
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Podcasts
 import androidx.compose.material.icons.filled.PointOfSale
 import androidx.compose.material.icons.filled.Power
@@ -261,20 +272,16 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material.icons.filled.RemoveCircleOutline
 import androidx.compose.material.icons.filled.Reorder
-import androidx.compose.material.icons.filled.Reply
-import androidx.compose.material.icons.filled.ReplyAll
 import androidx.compose.material.icons.filled.Room
 import androidx.compose.material.icons.filled.Router
 import androidx.compose.material.icons.filled.Sd
 import androidx.compose.material.icons.filled.SdCard
 import androidx.compose.material.icons.filled.ScreenRotation
-import androidx.compose.material.icons.filled.ScreenShare
 import androidx.compose.material.icons.filled.Scanner
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsSuggest
 import androidx.compose.material.icons.filled.Share
@@ -303,7 +310,6 @@ import androidx.compose.material.icons.filled.SportsTennis
 import androidx.compose.material.icons.filled.SportsVolleyball
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
-import androidx.compose.material.icons.filled.StarHalf
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Store
@@ -321,20 +327,14 @@ import androidx.compose.material.icons.filled.ToggleOn
 import androidx.compose.material.icons.filled.Traffic
 import androidx.compose.material.icons.filled.TripOrigin
 import androidx.compose.material.icons.filled.Unarchive
-import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.VideocamOff
-import androidx.compose.material.icons.filled.ViewList
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Voicemail
-import androidx.compose.material.icons.filled.VolumeDown
-import androidx.compose.material.icons.filled.VolumeMute
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.material.icons.filled.Warning
@@ -395,11 +395,11 @@ object MaterialIconCatalog {
         IconEntry("AirplanemodeInactive", "filled", { Icons.Filled.AirplanemodeInactive }, IconCategory.DEVICE, listOf("airplane", "off", "flight")),
         IconEntry("Apartment", "filled", { Icons.Filled.Apartment }, IconCategory.PLACES, listOf("apartment", "building", "home")),
         IconEntry("Archive", "filled", { Icons.Filled.Archive }, IconCategory.CONTENT, listOf("archive", "box", "save")),
-        IconEntry("ArrowBack", "filled", { Icons.Filled.ArrowBack }, IconCategory.NAVIGATION, listOf("arrow", "back", "return")),
-        IconEntry("ArrowBackIos", "filled", { Icons.Filled.ArrowBackIos }, IconCategory.NAVIGATION, listOf("arrow", "back", "ios")),
+        IconEntry("ArrowBack", "filled", { Icons.AutoMirrored.Filled.ArrowBack }, IconCategory.NAVIGATION, listOf("arrow", "back", "return")),
+        IconEntry("ArrowBackIos", "filled", { Icons.AutoMirrored.Filled.ArrowBackIos }, IconCategory.NAVIGATION, listOf("arrow", "back", "ios")),
         IconEntry("ArrowDownward", "filled", { Icons.Filled.ArrowDownward }, IconCategory.NAVIGATION, listOf("arrow", "down")),
-        IconEntry("ArrowForward", "filled", { Icons.Filled.ArrowForward }, IconCategory.NAVIGATION, listOf("arrow", "forward", "next")),
-        IconEntry("ArrowForwardIos", "filled", { Icons.Filled.ArrowForwardIos }, IconCategory.NAVIGATION, listOf("arrow", "forward", "ios")),
+        IconEntry("ArrowForward", "filled", { Icons.AutoMirrored.Filled.ArrowForward }, IconCategory.NAVIGATION, listOf("arrow", "forward", "next")),
+        IconEntry("ArrowForwardIos", "filled", { Icons.AutoMirrored.Filled.ArrowForwardIos }, IconCategory.NAVIGATION, listOf("arrow", "forward", "ios")),
         IconEntry("ArrowUpward", "filled", { Icons.Filled.ArrowUpward }, IconCategory.NAVIGATION, listOf("arrow", "up")),
         IconEntry("AttachEmail", "filled", { Icons.Filled.AttachEmail }, IconCategory.COMMUNICATION, listOf("attach", "email", "mail")),
         IconEntry("AttachFile", "filled", { Icons.Filled.AttachFile }, IconCategory.CONTENT, listOf("attach", "file", "clip")),
@@ -437,7 +437,7 @@ object MaterialIconCatalog {
         IconEntry("CloudUpload", "filled", { Icons.Filled.CloudUpload }, IconCategory.ACTION, listOf("cloud", "upload")),
         IconEntry("Code", "filled", { Icons.Filled.Code }, IconCategory.ACTION, listOf("code", "programming", "developer")),
         IconEntry("ColorLens", "filled", { Icons.Filled.ColorLens }, IconCategory.IMAGE, listOf("color", "palette", "paint")),
-        IconEntry("Comment", "filled", { Icons.Filled.Comment }, IconCategory.COMMUNICATION, listOf("comment", "chat", "message")),
+        IconEntry("Comment", "filled", { Icons.AutoMirrored.Filled.Comment }, IconCategory.COMMUNICATION, listOf("comment", "chat", "message")),
         IconEntry("Computer", "filled", { Icons.Filled.Computer }, IconCategory.HARDWARE, listOf("computer", "desktop", "pc")),
         IconEntry("Construction", "filled", { Icons.Filled.Construction }, IconCategory.ACTION, listOf("construction", "build", "tool")),
         IconEntry("ContactMail", "filled", { Icons.Filled.ContactMail }, IconCategory.COMMUNICATION, listOf("contact", "mail", "email")),
@@ -460,13 +460,13 @@ object MaterialIconCatalog {
         IconEntry("DeveloperMode", "filled", { Icons.Filled.DeveloperMode }, IconCategory.DEVICE, listOf("developer", "mode")),
         IconEntry("Devices", "filled", { Icons.Filled.Devices }, IconCategory.DEVICE, listOf("devices", "hardware")),
         IconEntry("Dialpad", "filled", { Icons.Filled.Dialpad }, IconCategory.COMMUNICATION, listOf("dial", "pad", "phone")),
-        IconEntry("DirectionsBike", "filled", { Icons.Filled.DirectionsBike }, IconCategory.MAPS, listOf("bike", "bicycle", "direction")),
+        IconEntry("DirectionsBike", "filled", { Icons.AutoMirrored.Filled.DirectionsBike }, IconCategory.MAPS, listOf("bike", "bicycle", "direction")),
         IconEntry("DirectionsBoat", "filled", { Icons.Filled.DirectionsBoat }, IconCategory.MAPS, listOf("boat", "ship", "direction")),
         IconEntry("DirectionsBus", "filled", { Icons.Filled.DirectionsBus }, IconCategory.MAPS, listOf("bus", "direction")),
         IconEntry("DirectionsCar", "filled", { Icons.Filled.DirectionsCar }, IconCategory.MAPS, listOf("car", "direction")),
         IconEntry("DirectionsRailway", "filled", { Icons.Filled.DirectionsRailway }, IconCategory.MAPS, listOf("railway", "train", "direction")),
         IconEntry("DirectionsSubway", "filled", { Icons.Filled.DirectionsSubway }, IconCategory.MAPS, listOf("subway", "metro", "direction")),
-        IconEntry("DirectionsWalk", "filled", { Icons.Filled.DirectionsWalk }, IconCategory.MAPS, listOf("walk", "direction")),
+        IconEntry("DirectionsWalk", "filled", { Icons.AutoMirrored.Filled.DirectionsWalk }, IconCategory.MAPS, listOf("walk", "direction")),
         IconEntry("Done", "filled", { Icons.Filled.Done }, IconCategory.ACTION, listOf("done", "check", "complete")),
         IconEntry("DoneAll", "filled", { Icons.Filled.DoneAll }, IconCategory.ACTION, listOf("done", "all", "complete")),
         IconEntry("Download", "filled", { Icons.Filled.Download }, IconCategory.ACTION, listOf("download", "save")),
@@ -506,18 +506,18 @@ object MaterialIconCatalog {
         IconEntry("Forum", "filled", { Icons.Filled.Forum }, IconCategory.COMMUNICATION, listOf("forum", "discussion")),
         IconEntry("FormatAlignCenter", "filled", { Icons.Filled.FormatAlignCenter }, IconCategory.EDITOR, listOf("format", "align", "center")),
         IconEntry("FormatAlignJustify", "filled", { Icons.Filled.FormatAlignJustify }, IconCategory.EDITOR, listOf("format", "align", "justify")),
-        IconEntry("FormatAlignLeft", "filled", { Icons.Filled.FormatAlignLeft }, IconCategory.EDITOR, listOf("format", "align", "left")),
-        IconEntry("FormatAlignRight", "filled", { Icons.Filled.FormatAlignRight }, IconCategory.EDITOR, listOf("format", "align", "right")),
+        IconEntry("FormatAlignLeft", "filled", { Icons.AutoMirrored.Filled.FormatAlignLeft }, IconCategory.EDITOR, listOf("format", "align", "left")),
+        IconEntry("FormatAlignRight", "filled", { Icons.AutoMirrored.Filled.FormatAlignRight }, IconCategory.EDITOR, listOf("format", "align", "right")),
         IconEntry("FormatBold", "filled", { Icons.Filled.FormatBold }, IconCategory.EDITOR, listOf("format", "bold")),
-        IconEntry("FormatIndentDecrease", "filled", { Icons.Filled.FormatIndentDecrease }, IconCategory.EDITOR, listOf("format", "indent", "decrease")),
-        IconEntry("FormatIndentIncrease", "filled", { Icons.Filled.FormatIndentIncrease }, IconCategory.EDITOR, listOf("format", "indent", "increase")),
+        IconEntry("FormatIndentDecrease", "filled", { Icons.AutoMirrored.Filled.FormatIndentDecrease }, IconCategory.EDITOR, listOf("format", "indent", "decrease")),
+        IconEntry("FormatIndentIncrease", "filled", { Icons.AutoMirrored.Filled.FormatIndentIncrease }, IconCategory.EDITOR, listOf("format", "indent", "increase")),
         IconEntry("FormatItalic", "filled", { Icons.Filled.FormatItalic }, IconCategory.EDITOR, listOf("format", "italic")),
-        IconEntry("FormatListBulleted", "filled", { Icons.Filled.FormatListBulleted }, IconCategory.EDITOR, listOf("format", "list", "bullet")),
+        IconEntry("FormatListBulleted", "filled", { Icons.AutoMirrored.Filled.FormatListBulleted }, IconCategory.EDITOR, listOf("format", "list", "bullet")),
         IconEntry("FormatListNumbered", "filled", { Icons.Filled.FormatListNumbered }, IconCategory.EDITOR, listOf("format", "list", "number")),
         IconEntry("FormatSize", "filled", { Icons.Filled.FormatSize }, IconCategory.EDITOR, listOf("format", "size")),
         IconEntry("FormatStrikethrough", "filled", { Icons.Filled.FormatStrikethrough }, IconCategory.EDITOR, listOf("format", "strikethrough")),
         IconEntry("FormatUnderlined", "filled", { Icons.Filled.FormatUnderlined }, IconCategory.EDITOR, listOf("format", "underline")),
-        IconEntry("Forward", "filled", { Icons.Filled.Forward }, IconCategory.CONTENT, listOf("forward", "send")),
+        IconEntry("Forward", "filled", { Icons.AutoMirrored.Filled.Forward }, IconCategory.CONTENT, listOf("forward", "send")),
         IconEntry("Fullscreen", "filled", { Icons.Filled.Fullscreen }, IconCategory.NAVIGATION, listOf("fullscreen", "expand")),
         IconEntry("FullscreenExit", "filled", { Icons.Filled.FullscreenExit }, IconCategory.NAVIGATION, listOf("fullscreen", "exit")),
         IconEntry("Gif", "filled", { Icons.Filled.Gif }, IconCategory.AV, listOf("gif", "animation")),
@@ -531,8 +531,8 @@ object MaterialIconCatalog {
         IconEntry("Hd", "filled", { Icons.Filled.Hd }, IconCategory.AV, listOf("hd", "high", "definition")),
         IconEntry("Headphones", "filled", { Icons.Filled.Headphones }, IconCategory.HARDWARE, listOf("headphones", "audio", "music")),
         IconEntry("HeadsetMic", "filled", { Icons.Filled.HeadsetMic }, IconCategory.HARDWARE, listOf("headset", "mic")),
-        IconEntry("Help", "filled", { Icons.Filled.Help }, IconCategory.ACTION, listOf("help", "question")),
-        IconEntry("HelpOutline", "filled", { Icons.Filled.HelpOutline }, IconCategory.ACTION, listOf("help", "question", "outline")),
+        IconEntry("Help", "filled", { Icons.AutoMirrored.Filled.Help }, IconCategory.ACTION, listOf("help", "question")),
+        IconEntry("HelpOutline", "filled", { Icons.AutoMirrored.Filled.HelpOutline }, IconCategory.ACTION, listOf("help", "question", "outline")),
         IconEntry("HighQuality", "filled", { Icons.Filled.HighQuality }, IconCategory.AV, listOf("high", "quality")),
         IconEntry("Home", "filled", { Icons.Filled.Home }, IconCategory.NAVIGATION, listOf("home", "house")),
         IconEntry("HomeRepairService", "filled", { Icons.Filled.HomeRepairService }, IconCategory.PLACES, listOf("home", "repair", "service")),
@@ -544,13 +544,13 @@ object MaterialIconCatalog {
         IconEntry("Inbox", "filled", { Icons.Filled.Inbox }, IconCategory.CONTENT, listOf("inbox", "mail")),
         IconEntry("Key", "filled", { Icons.Filled.Key }, IconCategory.CONTENT, listOf("key", "password")),
         IconEntry("Keyboard", "filled", { Icons.Filled.Keyboard }, IconCategory.HARDWARE, listOf("keyboard", "input")),
-        IconEntry("Label", "filled", { Icons.Filled.Label }, IconCategory.CONTENT, listOf("label", "tag")),
+        IconEntry("Label", "filled", { Icons.AutoMirrored.Filled.Label }, IconCategory.CONTENT, listOf("label", "tag")),
         IconEntry("Laptop", "filled", { Icons.Filled.Laptop }, IconCategory.HARDWARE, listOf("laptop", "computer")),
-        IconEntry("Launch", "filled", { Icons.Filled.Launch }, IconCategory.NAVIGATION, listOf("launch", "open", "external")),
+        IconEntry("Launch", "filled", { Icons.AutoMirrored.Filled.Launch }, IconCategory.NAVIGATION, listOf("launch", "open", "external")),
         IconEntry("Layers", "filled", { Icons.Filled.Layers }, IconCategory.MAPS, listOf("layers", "map")),
         IconEntry("LightMode", "filled", { Icons.Filled.LightMode }, IconCategory.DEVICE, listOf("light", "mode", "sun")),
         IconEntry("Link", "filled", { Icons.Filled.Link }, IconCategory.CONTENT, listOf("link", "url")),
-        IconEntry("List", "filled", { Icons.Filled.List }, IconCategory.ACTION, listOf("list")),
+        IconEntry("List", "filled", { Icons.AutoMirrored.Filled.List }, IconCategory.ACTION, listOf("list")),
         IconEntry("LocalAirport", "filled", { Icons.Filled.LocalAirport }, IconCategory.MAPS, listOf("airport", "flight")),
         IconEntry("LocalAtm", "filled", { Icons.Filled.LocalAtm }, IconCategory.MAPS, listOf("atm", "money")),
         IconEntry("LocalBar", "filled", { Icons.Filled.LocalBar }, IconCategory.MAPS, listOf("bar", "drink")),
@@ -575,14 +575,14 @@ object MaterialIconCatalog {
         IconEntry("LocationOn", "filled", { Icons.Filled.LocationOn }, IconCategory.MAPS, listOf("location", "place", "pin")),
         IconEntry("Lock", "filled", { Icons.Filled.Lock }, IconCategory.ACTION, listOf("lock", "secure")),
         IconEntry("LockOpen", "filled", { Icons.Filled.LockOpen }, IconCategory.ACTION, listOf("lock", "open", "unlock")),
-        IconEntry("Login", "filled", { Icons.Filled.Login }, IconCategory.ACTION, listOf("login", "sign", "in")),
-        IconEntry("Logout", "filled", { Icons.Filled.Logout }, IconCategory.ACTION, listOf("logout", "sign", "out")),
+        IconEntry("Login", "filled", { Icons.AutoMirrored.Filled.Login }, IconCategory.ACTION, listOf("login", "sign", "in")),
+        IconEntry("Logout", "filled", { Icons.AutoMirrored.Filled.Logout }, IconCategory.ACTION, listOf("logout", "sign", "out")),
         IconEntry("Map", "filled", { Icons.Filled.Map }, IconCategory.MAPS, listOf("map")),
         IconEntry("MarkEmailRead", "filled", { Icons.Filled.MarkEmailRead }, IconCategory.COMMUNICATION, listOf("email", "read")),
         IconEntry("MarkEmailUnread", "filled", { Icons.Filled.MarkEmailUnread }, IconCategory.COMMUNICATION, listOf("email", "unread")),
         IconEntry("Memory", "filled", { Icons.Filled.Memory }, IconCategory.HARDWARE, listOf("memory", "ram")),
         IconEntry("Menu", "filled", { Icons.Filled.Menu }, IconCategory.NAVIGATION, listOf("menu", "hamburger")),
-        IconEntry("Message", "filled", { Icons.Filled.Message }, IconCategory.COMMUNICATION, listOf("message", "chat")),
+        IconEntry("Message", "filled", { Icons.AutoMirrored.Filled.Message }, IconCategory.COMMUNICATION, listOf("message", "chat")),
         IconEntry("Mic", "filled", { Icons.Filled.Mic }, IconCategory.AV, listOf("mic", "microphone")),
         IconEntry("MicOff", "filled", { Icons.Filled.MicOff }, IconCategory.AV, listOf("mic", "off", "mute")),
         IconEntry("ModeComment", "filled", { Icons.Filled.ModeComment }, IconCategory.COMMUNICATION, listOf("comment", "chat")),
@@ -594,26 +594,26 @@ object MaterialIconCatalog {
         IconEntry("MusicNote", "filled", { Icons.Filled.MusicNote }, IconCategory.AV, listOf("music", "note")),
         IconEntry("MusicOff", "filled", { Icons.Filled.MusicOff }, IconCategory.AV, listOf("music", "off")),
         IconEntry("MyLocation", "filled", { Icons.Filled.MyLocation }, IconCategory.MAPS, listOf("location", "gps")),
-        IconEntry("NavigateBefore", "filled", { Icons.Filled.NavigateBefore }, IconCategory.NAVIGATION, listOf("navigate", "before", "back")),
-        IconEntry("NavigateNext", "filled", { Icons.Filled.NavigateNext }, IconCategory.NAVIGATION, listOf("navigate", "next")),
+        IconEntry("NavigateBefore", "filled", { Icons.AutoMirrored.Filled.NavigateBefore }, IconCategory.NAVIGATION, listOf("navigate", "before", "back")),
+        IconEntry("NavigateNext", "filled", { Icons.AutoMirrored.Filled.NavigateNext }, IconCategory.NAVIGATION, listOf("navigate", "next")),
         IconEntry("Navigation", "filled", { Icons.Filled.Navigation }, IconCategory.MAPS, listOf("navigation", "direction")),
         IconEntry("NearMe", "filled", { Icons.Filled.NearMe }, IconCategory.NAVIGATION, listOf("near", "location")),
         IconEntry("NightsStay", "filled", { Icons.Filled.NightsStay }, IconCategory.DEVICE, listOf("night", "dark")),
-        IconEntry("Notes", "filled", { Icons.Filled.Notes }, IconCategory.ACTION, listOf("notes", "write")),
+        IconEntry("Notes", "filled", { Icons.AutoMirrored.Filled.Notes }, IconCategory.ACTION, listOf("notes", "write")),
         IconEntry("Notifications", "filled", { Icons.Filled.Notifications }, IconCategory.SOCIAL, listOf("notification", "bell")),
         IconEntry("NotificationsActive", "filled", { Icons.Filled.NotificationsActive }, IconCategory.SOCIAL, listOf("notification", "active")),
         IconEntry("NotificationsNone", "filled", { Icons.Filled.NotificationsNone }, IconCategory.SOCIAL, listOf("notification", "none")),
         IconEntry("NotificationsOff", "filled", { Icons.Filled.NotificationsOff }, IconCategory.SOCIAL, listOf("notification", "off")),
-        IconEntry("OpenInNew", "filled", { Icons.Filled.OpenInNew }, IconCategory.ACTION, listOf("open", "new", "external")),
+        IconEntry("OpenInNew", "filled", { Icons.AutoMirrored.Filled.OpenInNew }, IconCategory.ACTION, listOf("open", "new", "external")),
         IconEntry("Outbox", "filled", { Icons.Filled.Outbox }, IconCategory.CONTENT, listOf("outbox", "mail")),
         IconEntry("Palette", "filled", { Icons.Filled.Palette }, IconCategory.IMAGE, listOf("palette", "color")),
         IconEntry("Person", "filled", { Icons.Filled.Person }, IconCategory.SOCIAL, listOf("person", "user")),
         IconEntry("PersonAdd", "filled", { Icons.Filled.PersonAdd }, IconCategory.SOCIAL, listOf("person", "add")),
         IconEntry("PersonRemove", "filled", { Icons.Filled.PersonRemove }, IconCategory.SOCIAL, listOf("person", "remove")),
         IconEntry("Phone", "filled", { Icons.Filled.Phone }, IconCategory.COMMUNICATION, listOf("phone", "call")),
-        IconEntry("PhoneForwarded", "filled", { Icons.Filled.PhoneForwarded }, IconCategory.COMMUNICATION, listOf("phone", "forwarded")),
+        IconEntry("PhoneForwarded", "filled", { Icons.AutoMirrored.Filled.PhoneForwarded }, IconCategory.COMMUNICATION, listOf("phone", "forwarded")),
         IconEntry("PhoneInTalk", "filled", { Icons.Filled.PhoneInTalk }, IconCategory.COMMUNICATION, listOf("phone", "talk")),
-        IconEntry("PhoneMissed", "filled", { Icons.Filled.PhoneMissed }, IconCategory.COMMUNICATION, listOf("phone", "missed")),
+        IconEntry("PhoneMissed", "filled", { Icons.AutoMirrored.Filled.PhoneMissed }, IconCategory.COMMUNICATION, listOf("phone", "missed")),
         IconEntry("PhonePaused", "filled", { Icons.Filled.PhonePaused }, IconCategory.COMMUNICATION, listOf("phone", "paused")),
         IconEntry("Photo", "filled", { Icons.Filled.Photo }, IconCategory.IMAGE, listOf("photo", "image")),
         IconEntry("PhotoCamera", "filled", { Icons.Filled.PhotoCamera }, IconCategory.IMAGE, listOf("photo", "camera")),
@@ -623,7 +623,7 @@ object MaterialIconCatalog {
         IconEntry("PinDrop", "filled", { Icons.Filled.PinDrop }, IconCategory.MAPS, listOf("pin", "drop", "location")),
         IconEntry("Place", "filled", { Icons.Filled.Place }, IconCategory.MAPS, listOf("place", "location")),
         IconEntry("PlayArrow", "filled", { Icons.Filled.PlayArrow }, IconCategory.AV, listOf("play", "video")),
-        IconEntry("PlaylistAdd", "filled", { Icons.Filled.PlaylistAdd }, IconCategory.AV, listOf("playlist", "add")),
+        IconEntry("PlaylistAdd", "filled", { Icons.AutoMirrored.Filled.PlaylistAdd }, IconCategory.AV, listOf("playlist", "add")),
         IconEntry("Podcasts", "filled", { Icons.Filled.Podcasts }, IconCategory.AV, listOf("podcast")),
         IconEntry("PointOfSale", "filled", { Icons.Filled.PointOfSale }, IconCategory.PLACES, listOf("pos", "sale", "store")),
         IconEntry("Power", "filled", { Icons.Filled.Power }, IconCategory.DEVICE, listOf("power", "on")),
@@ -641,20 +641,20 @@ object MaterialIconCatalog {
         IconEntry("RemoveCircle", "filled", { Icons.Filled.RemoveCircle }, IconCategory.CONTENT, listOf("remove", "circle")),
         IconEntry("RemoveCircleOutline", "filled", { Icons.Filled.RemoveCircleOutline }, IconCategory.CONTENT, listOf("remove", "circle", "outline")),
         IconEntry("Reorder", "filled", { Icons.Filled.Reorder }, IconCategory.ACTION, listOf("reorder", "sort")),
-        IconEntry("Reply", "filled", { Icons.Filled.Reply }, IconCategory.CONTENT, listOf("reply")),
-        IconEntry("ReplyAll", "filled", { Icons.Filled.ReplyAll }, IconCategory.CONTENT, listOf("reply", "all")),
+        IconEntry("Reply", "filled", { Icons.AutoMirrored.Filled.Reply }, IconCategory.CONTENT, listOf("reply")),
+        IconEntry("ReplyAll", "filled", { Icons.AutoMirrored.Filled.ReplyAll }, IconCategory.CONTENT, listOf("reply", "all")),
         IconEntry("Room", "filled", { Icons.Filled.Room }, IconCategory.MAPS, listOf("room", "location")),
         IconEntry("Router", "filled", { Icons.Filled.Router }, IconCategory.HARDWARE, listOf("router", "network")),
         IconEntry("Sd", "filled", { Icons.Filled.Sd }, IconCategory.AV, listOf("sd", "card")),
         IconEntry("SdCard", "filled", { Icons.Filled.SdCard }, IconCategory.DEVICE, listOf("sd", "card")),
         IconEntry("ScreenRotation", "filled", { Icons.Filled.ScreenRotation }, IconCategory.DEVICE, listOf("screen", "rotation")),
-        IconEntry("ScreenShare", "filled", { Icons.Filled.ScreenShare }, IconCategory.DEVICE, listOf("screen", "share")),
+        IconEntry("ScreenShare", "filled", { Icons.AutoMirrored.Filled.ScreenShare }, IconCategory.DEVICE, listOf("screen", "share")),
         IconEntry("Scanner", "filled", { Icons.Filled.Scanner }, IconCategory.HARDWARE, listOf("scanner")),
         IconEntry("School", "filled", { Icons.Filled.School }, IconCategory.SOCIAL, listOf("school", "education")),
         IconEntry("Search", "filled", { Icons.Filled.Search }, IconCategory.ACTION, listOf("search", "find")),
         IconEntry("SearchOff", "filled", { Icons.Filled.SearchOff }, IconCategory.ACTION, listOf("search", "off")),
         IconEntry("Security", "filled", { Icons.Filled.Security }, IconCategory.ACTION, listOf("security", "shield")),
-        IconEntry("Send", "filled", { Icons.Filled.Send }, IconCategory.CONTENT, listOf("send", "submit")),
+        IconEntry("Send", "filled", { Icons.AutoMirrored.Filled.Send }, IconCategory.CONTENT, listOf("send", "submit")),
         IconEntry("Settings", "filled", { Icons.Filled.Settings }, IconCategory.ACTION, listOf("settings", "config")),
         IconEntry("SettingsSuggest", "filled", { Icons.Filled.SettingsSuggest }, IconCategory.ACTION, listOf("settings", "suggest")),
         IconEntry("Share", "filled", { Icons.Filled.Share }, IconCategory.SOCIAL, listOf("share")),
@@ -683,7 +683,7 @@ object MaterialIconCatalog {
         IconEntry("SportsVolleyball", "filled", { Icons.Filled.SportsVolleyball }, IconCategory.SOCIAL, listOf("sports", "volleyball")),
         IconEntry("Star", "filled", { Icons.Filled.Star }, IconCategory.ACTION, listOf("star", "favorite", "rate")),
         IconEntry("StarBorder", "filled", { Icons.Filled.StarBorder }, IconCategory.ACTION, listOf("star", "border", "outline")),
-        IconEntry("StarHalf", "filled", { Icons.Filled.StarHalf }, IconCategory.ACTION, listOf("star", "half")),
+        IconEntry("StarHalf", "filled", { Icons.AutoMirrored.Filled.StarHalf }, IconCategory.ACTION, listOf("star", "half")),
         IconEntry("Stop", "filled", { Icons.Filled.Stop }, IconCategory.AV, listOf("stop")),
         IconEntry("Storage", "filled", { Icons.Filled.Storage }, IconCategory.DEVICE, listOf("storage", "database")),
         IconEntry("Store", "filled", { Icons.Filled.Store }, IconCategory.PLACES, listOf("store", "shop")),
@@ -702,20 +702,20 @@ object MaterialIconCatalog {
         IconEntry("Traffic", "filled", { Icons.Filled.Traffic }, IconCategory.MAPS, listOf("traffic", "signal")),
         IconEntry("TripOrigin", "filled", { Icons.Filled.TripOrigin }, IconCategory.MAPS, listOf("trip", "origin")),
         IconEntry("Unarchive", "filled", { Icons.Filled.Unarchive }, IconCategory.CONTENT, listOf("unarchive", "extract")),
-        IconEntry("Undo", "filled", { Icons.Filled.Undo }, IconCategory.CONTENT, listOf("undo")),
+        IconEntry("Undo", "filled", { Icons.AutoMirrored.Filled.Undo }, IconCategory.CONTENT, listOf("undo")),
         IconEntry("Upload", "filled", { Icons.Filled.Upload }, IconCategory.ACTION, listOf("upload")),
         IconEntry("Usb", "filled", { Icons.Filled.Usb }, IconCategory.DEVICE, listOf("usb")),
         IconEntry("VerifiedUser", "filled", { Icons.Filled.VerifiedUser }, IconCategory.ACTION, listOf("verified", "user", "shield")),
         IconEntry("Videocam", "filled", { Icons.Filled.Videocam }, IconCategory.AV, listOf("video", "camera")),
         IconEntry("VideocamOff", "filled", { Icons.Filled.VideocamOff }, IconCategory.AV, listOf("video", "camera", "off")),
-        IconEntry("ViewList", "filled", { Icons.Filled.ViewList }, IconCategory.ACTION, listOf("view", "list")),
+        IconEntry("ViewList", "filled", { Icons.AutoMirrored.Filled.ViewList }, IconCategory.ACTION, listOf("view", "list")),
         IconEntry("Visibility", "filled", { Icons.Filled.Visibility }, IconCategory.ACTION, listOf("visibility", "eye", "show")),
         IconEntry("VisibilityOff", "filled", { Icons.Filled.VisibilityOff }, IconCategory.ACTION, listOf("visibility", "off", "hide")),
         IconEntry("Voicemail", "filled", { Icons.Filled.Voicemail }, IconCategory.COMMUNICATION, listOf("voicemail")),
-        IconEntry("VolumeDown", "filled", { Icons.Filled.VolumeDown }, IconCategory.AV, listOf("volume", "down")),
-        IconEntry("VolumeMute", "filled", { Icons.Filled.VolumeMute }, IconCategory.AV, listOf("volume", "mute")),
-        IconEntry("VolumeOff", "filled", { Icons.Filled.VolumeOff }, IconCategory.AV, listOf("volume", "off")),
-        IconEntry("VolumeUp", "filled", { Icons.Filled.VolumeUp }, IconCategory.AV, listOf("volume", "up")),
+        IconEntry("VolumeDown", "filled", { Icons.AutoMirrored.Filled.VolumeDown }, IconCategory.AV, listOf("volume", "down")),
+        IconEntry("VolumeMute", "filled", { Icons.AutoMirrored.Filled.VolumeMute }, IconCategory.AV, listOf("volume", "mute")),
+        IconEntry("VolumeOff", "filled", { Icons.AutoMirrored.Filled.VolumeOff }, IconCategory.AV, listOf("volume", "off")),
+        IconEntry("VolumeUp", "filled", { Icons.AutoMirrored.Filled.VolumeUp }, IconCategory.AV, listOf("volume", "up")),
         IconEntry("Watch", "filled", { Icons.Filled.Watch }, IconCategory.HARDWARE, listOf("watch")),
         IconEntry("WatchLater", "filled", { Icons.Filled.WatchLater }, IconCategory.ACTION, listOf("watch", "later", "time")),
         IconEntry("Warning", "filled", { Icons.Filled.Warning }, IconCategory.ACTION, listOf("warning", "alert")),
