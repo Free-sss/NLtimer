@@ -38,6 +38,13 @@ import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.nltimer.app.component.AppCollapsedTopAppBar
+import com.nltimer.app.component.AppFloatingBottomBar
+import com.nltimer.core.designsystem.theme.LocalTheme
+import com.nltimer.core.designsystem.theme.TopBarMode
+import com.nltimer.core.designsystem.theme.BottomBarMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NLtimerScaffold(
@@ -56,6 +63,12 @@ fun NLtimerScaffold(
         else -> "NLtimer"
     }
     var showSettingsPopup by remember { mutableStateOf(false) }
+    val theme = LocalTheme.current
+    val topBarScrollBehavior = if (theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    } else {
+        TopAppBarDefaults.pinnedScrollBehavior()
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -70,15 +83,26 @@ fun NLtimerScaffold(
     ) {
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             // 底栏（在内容层之下）
-            AppBottomNavigation(
-                navController = navController,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
+            if (theme.bottomBarMode == BottomBarMode.FLOATING) {
+                AppFloatingBottomBar(
+                    navController = navController,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            } else {
+                AppBottomNavigation(
+                    navController = navController,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
 
             // 顶栏 + 页面内容（在底栏之上）
             Scaffold(
                 modifier = Modifier.then(
                     if (!isSecondaryPage) Modifier.padding(bottom = 80.dp) else Modifier
+                ).then(
+                    if (theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage)
+                        Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                    else Modifier
                 ),
                 containerColor = Color.Transparent,
                 topBar = {
@@ -95,15 +119,28 @@ fun NLtimerScaffold(
                             },
                         )
                     } else {
-                        AppTopAppBar(
-                            title = topBarTitle,
-                            onMenuClick = {
-                                coroutineScope.launch { drawerState.open() }
-                            },
-                            onSettingClick = {
-                                showSettingsPopup = true
-                            },
-                        )
+                        if (theme.topBarMode == TopBarMode.COLLAPSED) {
+                            AppCollapsedTopAppBar(
+                                title = topBarTitle,
+                                scrollBehavior = topBarScrollBehavior,
+                                onMenuClick = {
+                                    coroutineScope.launch { drawerState.open() }
+                                },
+                                onSettingClick = {
+                                    showSettingsPopup = true
+                                },
+                            )
+                        } else {
+                            AppTopAppBar(
+                                title = topBarTitle,
+                                onMenuClick = {
+                                    coroutineScope.launch { drawerState.open() }
+                                },
+                                onSettingClick = {
+                                    showSettingsPopup = true
+                                },
+                            )
+                        }
                     }
                 },
             ) { padding ->
