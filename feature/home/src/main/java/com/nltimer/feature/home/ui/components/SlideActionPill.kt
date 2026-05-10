@@ -1,8 +1,10 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +35,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.LocalTheme
+import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledCorner
@@ -49,6 +53,8 @@ fun SlideActionPill(
     activatedIcon: ImageVector = Icons.Filled.Check,
     pillWidth: Dp = 200.dp,
 ) {
+    val pressedLevel = LocalTheme.current.style.pressedShape
+    val isExpressive = pressedLevel == PressedShapeLevel.FULL_MORPH
     val thumbSize = 60.dp
     val padding = 6.dp
     val maxOffset = with(LocalDensity.current) { (pillWidth - thumbSize - padding * 2).toPx() }
@@ -58,10 +64,14 @@ fun SlideActionPill(
 
     val animatedOffset = animateFloatAsState(
         targetValue = if (isDraggingState.value) offsetXState.value else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
+        animationSpec = if (isExpressive) {
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        } else {
+            tween(durationMillis = 150)
+        },
         label = "thumb_offset"
     )
 
@@ -95,7 +105,11 @@ fun SlideActionPill(
                 )
             },
         shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_PILL)),
-        color = MaterialTheme.colorScheme.primary.copy(alpha = styledAlpha(0.3f) + progress * 0.4f)
+        color = if (isExpressive) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = progress * 0.3f)
+        } else {
+            MaterialTheme.colorScheme.primary.copy(alpha = styledAlpha(0.3f) + progress * 0.4f)
+        }
     ) {
         Box(
             modifier = Modifier
@@ -141,18 +155,32 @@ fun SlideActionPill(
                     .offset { IntOffset(animatedOffset.value.roundToInt(), 0) },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primary,
-                shadowElevation = 4.dp + (4.dp * progress)
+                shadowElevation = if (isExpressive) 4.dp * progress else 4.dp + (4.dp * progress)
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Icon(
-                        if (progress > 0.5f) activatedIcon else leadingIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
+                    if (isExpressive) {
+                        AnimatedContent(
+                            targetState = progress > 0.7f,
+                            label = "thumb_icon"
+                        ) { showActivated ->
+                            Icon(
+                                if (showActivated) activatedIcon else leadingIcon,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    } else {
+                        Icon(
+                            if (progress > 0.5f) activatedIcon else leadingIcon,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
