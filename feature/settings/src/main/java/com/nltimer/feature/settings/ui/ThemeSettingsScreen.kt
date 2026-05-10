@@ -80,6 +80,8 @@ import com.nltimer.core.designsystem.theme.PressedShapeLevel
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.StyleConfig
 import com.nltimer.core.designsystem.theme.TimerTypography
+import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.WavyProgressLevel
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.effectiveAlphaScale
@@ -133,6 +135,8 @@ fun ThemeSettingsRoute(
         onPressedShapeChange = viewModel::onPressedShapeChange,
         onWavyProgressChange = viewModel::onWavyProgressChange,
         onResetStyleConfig = viewModel::onResetStyleConfig,
+        onTopBarModeChange = viewModel::onTopBarModeChange,
+        onBottomBarModeChange = viewModel::onBottomBarModeChange,
     )
 }
 
@@ -174,6 +178,8 @@ fun ThemeSettingsScreen(
     onPressedShapeChange: (PressedShapeLevel) -> Unit,
     onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
+    onTopBarModeChange: (TopBarMode) -> Unit,
+    onBottomBarModeChange: (BottomBarMode) -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
@@ -213,6 +219,8 @@ fun ThemeSettingsScreen(
             onPressedShapeChange = onPressedShapeChange,
             onWavyProgressChange = onWavyProgressChange,
             onResetStyleConfig = onResetStyleConfig,
+            onTopBarModeChange = onTopBarModeChange,
+            onBottomBarModeChange = onBottomBarModeChange,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
         )
@@ -241,6 +249,8 @@ private fun LazyListScope.ThemeSettingsContent(
     onPressedShapeChange: (PressedShapeLevel) -> Unit,
     onWavyProgressChange: (WavyProgressLevel) -> Unit,
     onResetStyleConfig: () -> Unit,
+    onTopBarModeChange: (TopBarMode) -> Unit,
+    onBottomBarModeChange: (BottomBarMode) -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
 ) {
@@ -425,7 +435,53 @@ private fun LazyListScope.ThemeSettingsContent(
                         },
                         colors = listItemColors(),
                         modifier = Modifier.clip(middleItemShape()),
-                    )
+                     )
+
+                    Column(modifier = Modifier.clip(middleItemShape())) {
+                        ListItem(
+                            headlineContent = { Text(text = "栏位模式") },
+                            colors = listItemColors(),
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(listItemColors().containerColor)
+                                .padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                TopBarMode.entries.forEachIndexed { index, mode ->
+                                    SegmentedButton(
+                                        shape = SegmentedButtonDefaults.itemShape(
+                                            index = index,
+                                            count = TopBarMode.entries.size
+                                        ),
+                                        onClick = { onTopBarModeChange(mode) },
+                                        selected = theme.topBarMode == mode,
+                                    ) {
+                                        Text(text = mode.toDisplayString())
+                                    }
+                                }
+                            }
+
+                            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                                BottomBarMode.entries.forEachIndexed { index, mode ->
+                                    SegmentedButton(
+                                        shape = SegmentedButtonDefaults.itemShape(
+                                            index = index,
+                                            count = BottomBarMode.entries.size
+                                        ),
+                                        onClick = { onBottomBarModeChange(mode) },
+                                        selected = theme.bottomBarMode == mode,
+                                    ) {
+                                        Text(text = mode.toDisplayString())
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
 
                     ExpressivenessSection(
                         styleConfig = theme.style,
