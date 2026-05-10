@@ -111,3 +111,13 @@ fun WavyProgressLevel.toDisplayString(): String = when (this) {
     WavyProgressLevel.ON -> "波浪"
     WavyProgressLevel.PROMINENT -> "醒目波浪"
 }
+
+fun TopBarMode.toDisplayString(): String = when (this) {
+    TopBarMode.PINNED -> "固定"
+    TopBarMode.COLLAPSED -> "折叠"
+}
+
+fun BottomBarMode.toDisplayString(): String = when (this) {
+    BottomBarMode.STANDARD -> "标准"
+    BottomBarMode.FLOATING -> "悬浮"
+}
