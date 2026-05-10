@@ -1,6 +1,7 @@
 plugins {
     id("nltimer.android.library")
     id("nltimer.android.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -18,6 +19,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
 
     implementation(libs.materialkolor)
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.material3)

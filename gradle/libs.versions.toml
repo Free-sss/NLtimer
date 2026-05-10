@@ -32,6 +32,7 @@ benchmark_macro_junit4 = "1.4.0"
 animation = "1.11.0"
 kotlinx-collections-immutable = "0.3.7"
 compose_material3_expressive = "1.5.0-alpha12"
+kotlinx_serialization = "1.8.1"
 
 [libraries]
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -80,6 +81,7 @@ plugin-hilt = { module = "com.google.dagger:hilt-android-gradle-plugin", version
 plugin-ksp = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
+kotlinx_serialization_json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx_serialization" }
 
 [plugins]
 android_application = { id = "com.android.application", version.ref = "agp" }
@@ -90,3 +92,4 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 compose_compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt_android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+kotlin_serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
