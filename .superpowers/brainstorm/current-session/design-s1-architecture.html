@@ -1,0 +1,93 @@
+<h2>设计 §1：ExpressivenessPreset 架构</h2>
+<p class="subtitle">新增"表达力预设"作为主旋钮，联动所有视觉维度</p>
+
+<div class="section">
+<h3>核心理念</h3>
+<p style="font-size:14px;line-height:1.6;opacity:0.9">
+ExpressivenessPreset 是一个"主预设"——切换它时自动设置下面所有子维度的推荐值。<br>
+高级用户仍可单独微调每个子维度（就像现在 cornerPreset/borderPreset 一样）。<br>
+<b>一键切换氛围，精细控制不丢。</b>
+</p>
+</div>
+
+<div class="section">
+<h3>三档预设参数映射</h3>
+<div style="overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+  <thead>
+    <tr style="background:rgba(255,255,255,0.06)">
+      <th style="padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)">维度</th>
+      <th style="padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);color:#90CAF9">SUBDUED<br>克制</th>
+      <th style="padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);color:#FFE082">STANDARD<br>标准</th>
+      <th style="padding:8px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);color:#EF9A9A">EXPRESSIVE<br>表达</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">📐 cornerPreset</td><td style="text-align:center;padding:6px">COMPACT (0.25x)</td><td style="text-align:center;padding:6px">STANDARD (1x)</td><td style="text-align:center;padding:6px">SOFT (3x)</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">🔲 borderPreset</td><td style="text-align:center;padding:6px">STANDARD (1x)</td><td style="text-align:center;padding:6px">THIN (0.5x)</td><td style="text-align:center;padding:6px">NONE (0x)</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">🎨 alphaPreset</td><td style="text-align:center;padding:6px">SUBTLE (0.5x)</td><td style="text-align:center;padding:6px">STANDARD (1x)</td><td style="text-align:center;padding:6px">VIVID (1.5x)</td></tr>
+    <tr style="background:rgba(187,134,252,0.08)"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">🃏 cardColorStrategy</td><td style="text-align:center;padding:6px">surface（灰底）</td><td style="text-align:center;padding:6px">tintedPrimary<br>（主色浅染）</td><td style="text-align:center;padding:6px">multiContainer<br>（多色拼盘）</td></tr>
+    <tr style="background:rgba(187,134,252,0.08)"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">⭕ iconContainer</td><td style="text-align:center;padding:6px">none</td><td style="text-align:center;padding:6px">circleSmall<br>（36dp）</td><td style="text-align:center;padding:6px">circleLarge<br>（44dp）</td></tr>
+    <tr style="background:rgba(187,134,252,0.08)"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">✍️ timerTypography</td><td style="text-align:center;padding:6px">headlineLarge<br>32sp sans</td><td style="text-align:center;padding:6px">displaySmall<br>36sp sans</td><td style="text-align:center;padding:6px">displayLarge<br>57sp serif</td></tr>
+    <tr style="background:rgba(187,134,252,0.08)"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">👆 pressedShape</td><td style="text-align:center;padding:6px">off</td><td style="text-align:center;padding:6px">mild<br>（微缩放）</td><td style="text-align:center;padding:6px">full morph<br>（圆→方）</td></tr>
+    <tr style="background:rgba(187,134,252,0.08)"><td style="padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">🌊 wavyProgress</td><td style="text-align:center;padding:6px">off（线性）</td><td style="text-align:center;padding:6px">on（小波）</td><td style="text-align:center;padding:6px">prominent<br>（大波）</td></tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:11px;opacity:0.5;margin-top:8px">* 紫色行 = 新增维度；白色行 = 现有 preset 由主预设联动设置</p>
+</div>
+
+<div class="section">
+<h3>数据模型变更</h3>
+<div style="background:rgba(255,255,255,0.04);padding:16px;border-radius:12px;font-family:monospace;font-size:13px;line-height:1.7;overflow-x:auto">
+<pre style="margin:0;color:#e0e0e0">
+// 新增枚举
+enum class ExpressivenessPreset {
+    SUBDUED, STANDARD, EXPRESSIVE
+}
+
+// 新增卡片色策略
+enum class CardColorStrategy {
+    SURFACE,              // 纯 surfaceContainer 灰底
+    TINTED_PRIMARY,       // primaryContainer 浅染
+    MULTI_CONTAINER       // primary/secondary/tertiaryContainer 拼盘
+}
+
+// StyleConfig 扩展
+data class StyleConfig(
+    val cornerPreset: CornerPreset = STANDARD,
+    val borderPreset: BorderPreset = STANDARD,
+    val alphaPreset: AlphaPreset = STANDARD,
+    val expressiveness: ExpressivenessPreset = SUBDUED,  // 新
+    val cardColorStrategy: CardColorStrategy = SURFACE,   // 新
+    val iconContainerSize: IconContainerSize = NONE,      // 新
+    val timerTypography: TimerTypography = HEADLINE,       // 新
+    val pressedShape: PressedShapeLevel = OFF,            // 新
+    val wavyProgress: WavyProgressLevel = OFF,            // 新
+)
+
+// 一键设置函数
+fun ExpressivenessPreset.toStyleConfig(): StyleConfig = when (this) {
+    SUBDUED    -> StyleConfig(COMPACT, STANDARD, SUBTLE, ...)
+    STANDARD   -> StyleConfig(STANDARD, THIN, STANDARD, ...)
+    EXPRESSIVE -> StyleConfig(SOFT, NONE, VIVID, ...)
+}
+</pre>
+</div>
+</div>
+
+<div class="section">
+<h3>UI 控件设计</h3>
+<div style="background:rgba(255,255,255,0.04);padding:16px;border-radius:12px">
+  <div style="font-size:13px;margin-bottom:10px;opacity:0.7">主题设置页新增区域：</div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <div style="background:rgba(144,202,249,0.15);border:1px solid rgba(144,202,249,0.4);padding:8px 16px;border-radius:10px;font-size:13px;color:#90CAF9">克制 ✓</div>
+    <div style="background:rgba(255,255,255,0.06);padding:8px 16px;border-radius:10px;font-size:13px">标准</div>
+    <div style="background:rgba(255,255,255,0.06);padding:8px 16px;border-radius:10px;font-size:13px">表达 🔥</div>
+  </div>
+  <div style="font-size:12px;opacity:0.5">
+    选中预设后自动填充下方所有子项；用户仍可手动覆盖任意子项<br>
+    手动覆盖后，预设显示"自定义"标签（与 Android 壁纸设置同理）
+  </div>
+</div>
+</div>

@@ -1,0 +1,120 @@
+<h2>三种融合策略</h2>
+<p class="subtitle">如何将 12 个借鉴点组织成统一设计方案</p>
+<div class="section">
+<div class="split">
+<div class="mockup" data-choice="a" onclick="toggleSelect(this)">
+<div class="mockup-header">方案 A：Reef 风格主导</div>
+<div class="mockup-body" style="background:#1a1a2e;color:#e0e0e0;padding:16px;border-radius:24px;min-height:380px">
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <div style="background:#BB86FC;padding:12px;border-radius:28px;flex:1;min-height:80px">
+      <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:6px;font-size:18px">🎯</div>
+      <div style="font-family:serif;font-size:15px;font-weight:bold">当前行为</div>
+      <div style="font-size:11px;opacity:0.8">专注中 · 已进行23分</div>
+    </div>
+    <div style="background:#03DAC6;padding:12px;border-radius:28px;flex:1;min-height:80px">
+      <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:6px;font-size:18px">📊</div>
+      <div style="font-family:serif;font-size:15px;font-weight:bold">今日统计</div>
+      <div style="font-size:11px;opacity:0.8">4项行为 · 3.5h</div>
+    </div>
+  </div>
+  <div style="background:#CF6679;padding:16px;border-radius:28px;margin-bottom:10px">
+    <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:20px">⏱</div>
+    <div style="font-family:'DM Serif Text',serif;font-size:44px;font-weight:bold;line-height:1">88:23</div>
+    <div style="font-size:12px;opacity:0.8;margin-top:4px">剩余时间</div>
+  </div>
+  <div style="background:rgba(255,255,255,0.1);padding:14px;border-radius:24px;margin-bottom:10px">
+    <div style="background:#BB86FC;height:6px;border-radius:3px;width:60%;position:relative;overflow:hidden">
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);animation:wave 2s infinite"></div>
+    </div>
+    <div style="font-size:11px;margin-top:6px;opacity:0.7">~~ 波浪进度 ~~</div>
+  </div>
+  <div style="background:rgba(255,255,255,0.15);padding:10px 16px;border-radius:36px;display:flex;align-items:center;gap:8px">
+    <div style="width:48px;height:48px;background:#BB86FC;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px">▶</div>
+    <div style="flex:1;font-size:13px;opacity:0.7">→ 滑动开始专注</div>
+  </div>
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:16px;font-size:11px">5分</span>
+    <span style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:16px;font-size:11px">15分</span>
+    <span style="background:#BB86FC;padding:4px 10px;border-radius:6px;font-size:11px">30分 ✓</span>
+    <span style="background:rgba(255,255,255,0.1);padding:4px 10px;border-radius:16px;font-size:11px">60分</span>
+  </div>
+</div>
+</div>
+<div class="mockup" data-choice="b" onclick="toggleSelect(this)">
+<div class="mockup-header">方案 B：克制融合</div>
+<div class="mockup-body" style="background:#1c1c1e;color:#e0e0e0;padding:16px;border-radius:16px;min-height:380px">
+  <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:16px;margin-bottom:10px;display:flex;align-items:center;gap:10px">
+    <div style="width:36px;height:36px;background:rgba(187,134,252,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">🎯</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">当前行为</div>
+      <div style="font-size:11px;opacity:0.6">专注中 · 已进行23分</div>
+    </div>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:16px;margin-bottom:10px;display:flex;align-items:center;gap:10px">
+    <div style="width:36px;height:36px;background:rgba(3,218,198,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">📊</div>
+    <div>
+      <div style="font-size:14px;font-weight:600">今日统计</div>
+      <div style="font-size:11px;opacity:0.6">4项行为 · 3.5h</div>
+    </div>
+  </div>
+  <div style="background:rgba(187,134,252,0.12);padding:16px;border-radius:20px;margin-bottom:10px;border:1px solid rgba(187,134,252,0.2)">
+    <div style="font-family:'DM Serif Text',serif;font-size:38px;font-weight:bold;line-height:1;color:#BB86FC">88:23</div>
+    <div style="font-size:12px;opacity:0.6;margin-top:4px">剩余时间 · 衬线点缀</div>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);padding:4px;border-radius:8px;margin-bottom:10px">
+    <div style="background:#BB86FC;height:4px;border-radius:4px;width:60%"></div>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);padding:10px 14px;border-radius:16px;display:flex;align-items:center;gap:8px">
+    <div style="width:44px;height:44px;background:rgba(187,134,252,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px">▶</div>
+    <div style="flex:1;font-size:12px;opacity:0.5">→ 滑动开始</div>
+  </div>
+  <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:12px;font-size:11px">5分</span>
+    <span style="background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:12px;font-size:11px">15分</span>
+    <span style="background:rgba(187,134,252,0.2);padding:4px 10px;border-radius:12px;font-size:11px;border:1px solid rgba(187,134,252,0.3)">30分</span>
+    <span style="background:rgba(255,255,255,0.06);padding:4px 10px;border-radius:12px;font-size:11px">60分</span>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" style="margin-top:24px">
+<div class="mockup" data-choice="c" onclick="toggleSelect(this)">
+<div class="mockup-header">方案 C：可切换表达力</div>
+<div class="mockup-body" style="background:#1a1a2e;color:#e0e0e0;padding:16px;border-radius:20px;min-height:300px">
+  <div style="display:flex;gap:4px;margin-bottom:16px;background:rgba(255,255,255,0.06);padding:4px;border-radius:12px">
+    <span style="background:rgba(255,255,255,0.15);padding:6px 14px;border-radius:10px;font-size:12px;font-weight:600">克制</span>
+    <span style="padding:6px 14px;border-radius:10px;font-size:12px">标准</span>
+    <span style="padding:6px 14px;border-radius:10px;font-size:12px;color:#BB86FC">表达 🔥</span>
+  </div>
+  <p style="font-size:12px;opacity:0.6;margin-bottom:12px">← 新增 "表达力预设" 滑块，控制以下维度：</p>
+  <div style="font-size:12px;line-height:2;opacity:0.8">
+    <div>📐 圆角：12dp → 24dp → 36dp</div>
+    <div>🎨 卡片色：灰 → 主色容器 → 多色拼盘</div>
+    <div>⭕ 图标容器：无 → CircleShape 小 → CircleShape 大</div>
+    <div>✍️ 计时字号：标准 → 大 → 88sp 衬线</div>
+    <div>👆 按下变形：无 → 轻 → 圆变方</div>
+    <div>🌊 波浪进度：关 → 小波 → 大波</div>
+  </div>
+  <div style="margin-top:12px;padding:10px;background:rgba(255,255,255,0.04);border-radius:12px;font-size:11px;opacity:0.6">
+    扩展现有 StyleConfig (cornerPreset/borderPreset/alphaPreset) → 新增 expressivenessPreset<br>
+    用户一键切换"氛围感"，所有视觉元素联动变化
+  </div>
+</div>
+</div>
+</div>
+<div class="section" style="margin-top:20px">
+<h3>权衡对比</h3>
+<div class="pros-cons">
+  <div class="pros"><h4>方案 A 优点</h4><ul><li>视觉冲击力最强</li><li>Reef 已验证的设计语言</li><li>"彩色磁贴"信息层次分明</li></ul></div>
+  <div class="cons"><h4>方案 A 缺点</h4><ul><li>与 NLtimer 现有"克制灰"风格反差大</li><li>多色卡片可能与行为颜色冲突</li><li>88sp 计时在 grid 布局中放不下</li></ul></div>
+</div>
+<div class="pros-cons" style="margin-top:8px">
+  <div class="pros"><h4>方案 B 优点</h4><ul><li>改动最小，渐进融入</li><li>保留 NLtimer 现有气质</li><li>衬线只用点睛，不做全套</li></ul></div>
+  <div class="cons"><h4>方案 B 缺点</h4><ul><li>视觉变化不够明显</li><li>部分借鉴点融入效果弱</li><li>"半吊子"感——既不够克制也不够表达</li></ul></div>
+</div>
+<div class="pros-cons" style="margin-top:8px">
+  <div class="pros"><h4>方案 C 优点</h4><ul><li>用户自主选择表达力度</li><li>延续 StyleConfig 可配置基因</li><li>所有12点都能在不同档位体现</li><li>与现有 cornerPreset/borderPreset 架构自然扩展</li></ul></div>
+  <div class="cons"><h4>方案 C 缺点</h4><ul><li>实现复杂度最高</li><li>需要定义 3 档预设的参数映射</li><li>多一维配置增加测试面</li></ul></div>
+</div>
+</div>

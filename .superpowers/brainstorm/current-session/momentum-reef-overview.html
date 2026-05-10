@@ -1,0 +1,104 @@
+<h2>Momentum × Reef → NLtimer 精华融合</h2>
+<p class="subtitle">12个可借鉴点总览，按影响力分组</p>
+
+<div class="section">
+  <h3 style="color:#4CAF50">🔴 高影响 · 视觉核心（改变整体观感）</h3>
+  <div class="options">
+    <div class="option" data-choice="big-radius" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h3>大圆角 24~36dp</h3>
+        <p><b>来源：Reef</b> — 当前 NLtimer 主流 12~16dp，Reef 用 24~36dp 更"软糖"感。可通过现有 StyleConfig.cornerPreset 的 ROUNDED/SOFT 预设实现</p>
+      </div>
+    </div>
+    <div class="option" data-choice="colorful-cards" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h3>多色容器卡片</h3>
+        <p><b>来源：Reef</b> — primary/secondary/tertiaryContainer 做卡片底色，信息层次强。当前 NLtimer 全用 surfaceContainer 灰底</p>
+      </div>
+    </div>
+    <div class="option" data-choice="circle-icon" onclick="toggleSelect(this)">
+      <div class="letter">3</div>
+      <div class="content">
+        <h3>圆形图标容器</h3>
+        <p><b>来源：Reef</b> — 几乎每个卡片左上角 CircleShape + 色块 + Icon，视觉锚点强、辨识度高</p>
+      </div>
+    </div>
+    <div class="option" data-choice="serif-timer" onclick="toggleSelect(this)">
+      <div class="letter">4</div>
+      <div class="content">
+        <h3>计时大字号 + 衬线点缀</h3>
+        <p><b>来源：Reef</b> — 88sp Bold + DM Serif 衬线做计时读秒，视觉震撼。当前 NLtimer 读秒字号偏小</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3 style="color:#FF9800">🟡 中影响 · 交互体验（增强触感/仪式感）</h3>
+  <div class="options">
+    <div class="option" data-choice="slide-pill" onclick="toggleSelect(this)">
+      <div class="letter">5</div>
+      <div class="content">
+        <h3>滑动解锁胶囊</h3>
+        <p><b>来源：Reef</b> — FocusTogglePill，拖动 70% 触发，弹簧动画 + 进度色。NLtimer 已有 SlideActionPill 可增强</p>
+      </div>
+    </div>
+    <div class="option" data-choice="pressed-shape" onclick="toggleSelect(this)">
+      <div class="letter">6</div>
+      <div class="content">
+        <h3>按下变形 pressedShape</h3>
+        <p><b>来源：Reef</b> — 圆→方 / 椭圆→矩形，M3 Expressive 标志性动效。NLtimer 已用 M3 Expressive</p>
+      </div>
+    </div>
+    <div class="option" data-choice="assist-chip" onclick="toggleSelect(this)">
+      <div class="letter">7</div>
+      <div class="content">
+        <h3>快捷时长 AssistChip</h3>
+        <p><b>来源：Reef</b> — 5/15/30/60/90 分钟预设 Chip，快速配置计时。适合 NLtimer 的行为计时配置</p>
+      </div>
+    </div>
+    <div class="option" data-choice="wavy-progress" onclick="toggleSelect(this)">
+      <div class="letter">8</div>
+      <div class="content">
+        <h3>波浪进度条</h3>
+        <p><b>来源：Momentum</b> — LinearWavyProgressIndicator，M3 Expressive 组件。计时/番茄循环进度可视化</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3 style="color:#2196F3">🔵 实用 · 架构/组件（代码质量提升）</h3>
+  <div class="options">
+    <div class="option" data-choice="settings-card" onclick="toggleSelect(this)">
+      <div class="letter">9</div>
+      <div class="content">
+        <h3>SettingsCard 自动圆角</h3>
+        <p><b>来源：Reef</b> — 一个组件根据 index/listSize 自动算圆角，比 NLtimer 现有的 3 个 shape 函数更优雅</p>
+      </div>
+    </div>
+    <div class="option" data-choice="bottom-sheet" onclick="toggleSelect(this)">
+      <div class="letter">10</div>
+      <div class="content">
+        <h3>通用 BottomSheet 封装</h3>
+        <p><b>来源：Momentum</b> — max 500dp + 32dp padding + animateContentSize，统一底部弹窗体验</p>
+      </div>
+    </div>
+    <div class="option" data-choice="app-intro" onclick="toggleSelect(this)">
+      <div class="letter">11</div>
+      <div class="content">
+        <h3>纯色全屏引导页</h3>
+        <p><b>来源：Reef</b> — 6 屏 AppIntro 每屏全屏纯色背景，"大厂感"首次启动体验</p>
+      </div>
+    </div>
+    <div class="option" data-choice="sunny-shape" onclick="toggleSelect(this)">
+      <div class="letter">12</div>
+      <div class="content">
+        <h3>选中态形状 VerySunny</h3>
+        <p><b>来源：Momentum</b> — MaterialShapes.VerySunny 用作选中态 Chip 形状，视觉锚点</p>
+      </div>
+    </div>
+  </div>
+</div>

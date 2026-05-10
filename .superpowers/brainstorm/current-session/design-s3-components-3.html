@@ -1,0 +1,163 @@
+<h2>设计 §3：架构/组件类（⑨⑩⑪⑫）</h2>
+<p class="subtitle">设置卡片 · 底部弹窗 · 引导页 · 选中态形状</p>
+
+<div class="section">
+<h3>⑨ SettingsCard 自动圆角</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">现有：3个 shape 函数</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;font-family:monospace;font-size:12px;line-height:1.8;color:#aaa;min-height:180px">
+  <div style="color:#EF9A9A">leadingItemShape()</div>
+  <div style="color:#FFE082">middleItemShape()</div>
+  <div style="color:#90CAF9">endItemShape()</div>
+  <div style="color:#A5D6A7">detachedItemShape()</div>
+  <div style="margin-top:12px;font-family:sans-serif;font-size:11px;opacity:0.4">
+    需要3+1个函数 + 手动判断位置<br>
+    每个列表分组都要显式调用
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">融入后：GroupCard 组件</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;font-family:monospace;font-size:12px;line-height:1.8;min-height:180px">
+  <div style="color:#BB86FC">GroupCard</div>
+  <div style="padding-left:16px;color:#e0e0e0">
+    items: List&lt;Composable&gt;<br>
+    cornerStrategy: auto<span style="color:#888">(基于index/size)</span>
+  </div>
+  <div style="margin-top:8px;color:#A5D6A7">// 内部自动算：</div>
+  <div style="color:#EF9A9A;padding-left:16px">size==1 &#8594; 全圆角</div>
+  <div style="color:#FFE082;padding-left:16px">index==0 &#8594; 上圆下直</div>
+  <div style="color:#90CAF9;padding-left:16px">index==last &#8594; 上直下圆</div>
+  <div style="color:#A5D6A7;padding-left:16px">else &#8594; 直角(6dp)</div>
+  <div style="margin-top:12px;font-family:sans-serif;font-size:11px;opacity:0.4">
+    一个组件替代3个函数 + 手动判断<br>
+    圆角值跟随 styledCorner() 三档联动
+  </div>
+</div>
+</div>
+</div>
+<div style="background:rgba(255,152,0,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#FFE082">
+  替代 <code>leadingItemShape/middleItemShape/endItemShape</code>，保留 <code>detachedItemShape</code> 用于单独项
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑩ 通用 BottomSheet 封装</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">Momentum 方案</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:160px">
+  <div style="background:rgba(255,255,255,0.06);border-radius:20px 20px 0 0;padding:20px;max-width:320px;margin:0 auto">
+    <div style="width:32px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">标题</div>
+    <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:12px;margin-bottom:6px;font-size:12px;opacity:0.6">选项 A</div>
+    <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:12px;margin-bottom:6px;font-size:12px;opacity:0.6">选项 B</div>
+    <div style="background:rgba(255,255,255,0.04);padding:10px;border-radius:12px;font-size:12px;opacity:0.6">选项 C</div>
+  </div>
+  <div style="font-size:10px;opacity:0.3;margin-top:8px;text-align:center">maxWidth=500dp · padding=32dp · spacedBy=8dp</div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">NLtimer 适配版 AppBottomSheet</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;min-height:160px">
+  <div style="background:rgba(187,134,252,0.08);border-radius:styledCorner(28dp);padding:20px;max-width:500px;margin:0 auto;border:1px solid rgba(187,134,252,0.15)">
+    <div style="width:32px;height:4px;background:rgba(187,134,252,0.3);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">标题</div>
+    <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:styledCorner(12dp);margin-bottom:8px;font-size:12px;opacity:0.7">选项 A</div>
+    <div style="background:rgba(255,255,255,0.04);padding:12px;border-radius:styledCorner(12dp);font-size:12px;opacity:0.7">选项 B</div>
+  </div>
+  <div style="font-size:10px;opacity:0.3;margin-top:8px;text-align:center">maxWidth=500dp · padding 联动 StyleConfig · animateContentSize</div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  &#10003; <b>AppBottomSheet</b> 封装：统一 dragHandle + title + content + maxWidth(500dp) + animateContentSize<br>
+  替代目前散落各处的 BottomSheet 调用。圆角/border 跟随 StyleConfig
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑪ 纯色全屏引导页 AppIntro</h3>
+<div class="mockup">
+<div class="mockup-header">6屏引导设计</div>
+<div class="mockup-body" style="min-height:220px;display:flex;gap:8px;overflow-x:auto;padding:16px">
+  <div style="min-width:140px;background:#093A8F;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#128075;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">欢迎</div>
+      <div style="font-size:10px;opacity:0.7;color:white">开始你的行为追踪之旅</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">1/6</div>
+  </div>
+  <div style="min-width:140px;background:#1565C0;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#127919;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">创建活动</div>
+      <div style="font-size:10px;opacity:0.7;color:white">定义你的日常行为类型</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">2/6</div>
+  </div>
+  <div style="min-width:140px;background:#00695C;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#9201;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">开始计时</div>
+      <div style="font-size:10px;opacity:0.7;color:white">记录每一段行为时间</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">3/6</div>
+  </div>
+  <div style="min-width:140px;background:#4A148C;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#128200;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">查看统计</div>
+      <div style="font-size:10px;opacity:0.7;color:white">洞察你的时间分配</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">4/6</div>
+  </div>
+  <div style="min-width:140px;background:#E65100;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#127912;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">个性化主题</div>
+      <div style="font-size:10px;opacity:0.7;color:white">种子色、风格、表达力</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">5/6</div>
+  </div>
+  <div style="min-width:140px;background:#1B5E20;border-radius:16px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;flex-shrink:0">
+    <div style="font-size:28px;opacity:0.8">&#9889;</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;color:white">准备就绪</div>
+      <div style="font-size:10px;opacity:0.7;color:white">开始记录你的第一天</div>
+    </div>
+    <div style="font-size:10px;opacity:0.3;color:white">6/6</div>
+  </div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  &#10003; <b>AppIntroScreen</b>：HorizontalPager + 每屏全屏纯色背景(取自 seedColor 派生6色) + 大图标 + 标题(DMSerif) + 副文 + 页码指示器<br>
+  SharedFlow 标记已看，首次启动显示。可跳过
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑫ 选中态形状 VerySunny</h3>
+<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;justify-content:center">
+  <div style="text-align:center">
+    <div style="width:56px;height:56px;background:rgba(255,255,255,0.06);border-radius:28px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:14px">未选中</div>
+    <div style="font-size:10px;opacity:0.4">圆形 Chip</div>
+  </div>
+  <div style="font-size:24px;opacity:0.3">&#8594;</div>
+  <div style="text-align:center">
+    <div style="width:56px;height:56px;background:rgba(187,134,252,0.3);border-radius:12px 20px 16px 24px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:14px;border:2px solid #BB86FC">&#10003;</div>
+    <div style="font-size:10px;opacity:0.4">VerySunny 形状</div>
+  </div>
+  <div style="font-size:12px;opacity:0.6;max-width:300px">
+    M3 Expressive <code>MaterialShapes.VerySunny</code><br>
+    用途：选项卡选中态、调色板 Chip 选中、分类筛选 Chip<br>
+    仅在 EXPRESSIVE 档启用，SUBDUED/STANDARD 用默认圆角选中态
+  </div>
+</div>
+<div style="background:rgba(255,152,0,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:12px;color:#FFE082">
+  依赖 <code>androidx.compose.material3.shapes.MaterialShapes</code>（M3 Expressive API）。封装为 <code>selectedShape(expressiveness)</code> 工具函数
+</div>
+</div>
