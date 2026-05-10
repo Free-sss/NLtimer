@@ -18,6 +18,9 @@ interface ActivityGroupDao {
     @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
     fun getAll(): Flow<List<ActivityGroupEntity>>
 
+    @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
+    suspend fun getAllSync(): List<ActivityGroupEntity>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(group: ActivityGroupEntity): Long
 

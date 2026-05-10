@@ -74,6 +74,9 @@ interface TagDao {
     @Query("SELECT DISTINCT category FROM tags WHERE category IS NOT NULL AND category != '' ORDER BY category")
     suspend fun getDistinctCategoriesSync(): List<String>
 
+    @Query("SELECT * FROM tags ORDER BY name")
+    suspend fun getAllDistinctSync(): List<TagEntity>
+
     @Query("UPDATE tags SET category = :newName WHERE category = :oldName")
     suspend fun renameCategory(oldName: String, newName: String)
 
