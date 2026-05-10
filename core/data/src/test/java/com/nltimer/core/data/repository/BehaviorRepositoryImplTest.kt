@@ -655,6 +655,7 @@ class BehaviorRepositoryImplTest {
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
         override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
+        override suspend fun getAllDistinctSync(): List<TagEntity> = emptyList()
     }
 
 }

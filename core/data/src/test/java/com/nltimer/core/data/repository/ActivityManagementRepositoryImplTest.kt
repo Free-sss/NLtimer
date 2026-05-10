@@ -369,6 +369,7 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun deleteAll() {}
         override suspend fun getMaxSortOrder(): Int? = groups.maxOfOrNull { it.sortOrder }
         override suspend fun getById(id: Long): ActivityGroupEntity? = groups.find { it.id == id }
+        override suspend fun getAllSync(): List<ActivityGroupEntity> = emptyList()
     }
 
     private class FakeBehaviorDao : BehaviorDao {

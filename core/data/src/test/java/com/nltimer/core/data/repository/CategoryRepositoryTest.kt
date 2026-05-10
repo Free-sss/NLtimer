@@ -76,6 +76,7 @@ class CategoryRepositoryTest {
 
         override suspend fun getMaxSortOrder(): Int? = groupEntities.maxOfOrNull { it.sortOrder }
         override suspend fun getById(id: Long): ActivityGroupEntity? = groupEntities.find { it.id == id }
+        override suspend fun getAllSync(): List<ActivityGroupEntity> = emptyList()
     }
 
     private val fakeTagDao = object : TagDao {
@@ -138,6 +139,7 @@ class CategoryRepositoryTest {
         override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
         override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
         override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
+        override suspend fun getAllDistinctSync(): List<TagEntity> = emptyList()
     }
 
     private val fakeDatabase: NLtimerDatabase = mockk<NLtimerDatabase>(relaxed = true).also {

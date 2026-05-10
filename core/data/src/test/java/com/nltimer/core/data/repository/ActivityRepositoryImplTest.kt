@@ -141,6 +141,7 @@ class ActivityRepositoryImplTest {
 
         override suspend fun getMaxSortOrder(): Int? = groupEntities.maxOfOrNull { it.sortOrder }
         override suspend fun getById(id: Long): ActivityGroupEntity? = groupEntities.find { it.id == id }
+        override suspend fun getAllSync(): List<ActivityGroupEntity> = emptyList()
     }
 
     private val repository = ActivityRepositoryImpl(fakeActivityDao, fakeGroupDao)
