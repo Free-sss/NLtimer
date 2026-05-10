@@ -32,6 +32,8 @@ import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
 import com.nltimer.core.designsystem.theme.TimerTypography
 import com.nltimer.core.designsystem.theme.WavyProgressLevel
+import com.nltimer.core.designsystem.theme.TopBarMode
+import com.nltimer.core.designsystem.theme.BottomBarMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -60,6 +62,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showBorders = prefs[showBordersKey] != false,
             homeLayout = try { HomeLayout.valueOf(homeLayoutName) } catch (_: IllegalArgumentException) { HomeLayout.GRID },
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
+            topBarMode = try { TopBarMode.valueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name) } catch (_: IllegalArgumentException) { TopBarMode.PINNED },
+            bottomBarMode = try { BottomBarMode.valueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name) } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
             style = StyleConfig(
                 cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
                 borderPreset = try { BorderPreset.valueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name) } catch (_: IllegalArgumentException) { BorderPreset.STANDARD },
@@ -100,6 +104,8 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[timerTypographyKey] = theme.style.timerTypography.name
             prefs[pressedShapeKey] = theme.style.pressedShape.name
             prefs[wavyProgressKey] = theme.style.wavyProgress.name
+            prefs[topBarModeKey] = theme.topBarMode.name
+            prefs[bottomBarModeKey] = theme.bottomBarMode.name
         }
     }
 
@@ -238,5 +244,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val wavyProgressKey = stringPreferencesKey("wavy_progress_key")
         private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
         private val durationPresetsKey = stringPreferencesKey("duration_presets")
+        private val topBarModeKey = stringPreferencesKey("top_bar_mode")
+        private val bottomBarModeKey = stringPreferencesKey("bottom_bar_mode")
     }
 }
