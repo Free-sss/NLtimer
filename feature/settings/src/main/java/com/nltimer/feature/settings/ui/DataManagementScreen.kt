@@ -120,6 +120,8 @@ fun DataManagementRoute(
                 viewModel.triggerImportFileSelection(scope)
                 importLauncher.launch(arrayOf("application/json"))
             },
+            onExportToClipboard = { scope -> viewModel.exportToClipboard(context, scope) },
+            onImportFromClipboard = { scope -> viewModel.importFromClipboard(context, scope) },
             onConfirmImport = { mode -> viewModel.confirmImport(mode) },
             onDismissImportDialog = { viewModel.dismissImportDialog() },
             onNavigateToBehaviorManagement = onNavigateToBehaviorManagement,
@@ -135,6 +137,8 @@ fun DataManagementScreen(
     showImportDialog: Boolean,
     onExport: (ExportScope) -> Unit,
     onImport: (ImportScope) -> Unit,
+    onExportToClipboard: (ExportScope) -> Unit,
+    onImportFromClipboard: (ImportScope) -> Unit,
     onConfirmImport: (ImportMode) -> Unit,
     onDismissImportDialog: () -> Unit,
     onNavigateToBehaviorManagement: () -> Unit,
@@ -166,10 +170,32 @@ fun DataManagementScreen(
         }
 
         item {
+            ActionCard(
+                icon = Icons.Default.Storage,
+                title = "导出到剪贴板",
+                subtitle = "复制全部数据到剪贴板",
+                loading = isExporting,
+                onClick = { onExportToClipboard(ExportScope.ALL) },
+            )
+        }
+
+        item {
+            ActionCard(
+                icon = Icons.Default.Storage,
+                title = "从剪贴板导入",
+                subtitle = "从剪贴板粘贴导入全部数据",
+                loading = isImporting,
+                onClick = { onImportFromClipboard(ImportScope.ALL) },
+            )
+        }
+
+        item {
             ExpandableSection(
                 title = "活动数据",
                 onExport = { onExport(ExportScope.ACTIVITIES) },
                 onImport = { onImport(ImportScope.ACTIVITIES) },
+                onExportToClipboard = { onExportToClipboard(ExportScope.ACTIVITIES) },
+                onImportFromClipboard = { onImportFromClipboard(ImportScope.ACTIVITIES) },
             )
         }
 
@@ -178,6 +204,8 @@ fun DataManagementScreen(
                 title = "标签数据",
                 onExport = { onExport(ExportScope.TAGS) },
                 onImport = { onImport(ImportScope.TAGS) },
+                onExportToClipboard = { onExportToClipboard(ExportScope.TAGS) },
+                onImportFromClipboard = { onImportFromClipboard(ImportScope.TAGS) },
             )
         }
 
@@ -187,6 +215,8 @@ fun DataManagementScreen(
                 subtitle = "活动分组 + 标签分类",
                 onExport = { onExport(ExportScope.CATEGORIES) },
                 onImport = { onImport(ImportScope.CATEGORIES) },
+                onExportToClipboard = { onExportToClipboard(ExportScope.CATEGORIES) },
+                onImportFromClipboard = { onImportFromClipboard(ImportScope.CATEGORIES) },
             )
         }
 
@@ -273,6 +303,8 @@ private fun ExpandableSection(
     subtitle: String? = null,
     onExport: () -> Unit,
     onImport: () -> Unit,
+    onExportToClipboard: () -> Unit,
+    onImportFromClipboard: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -287,8 +319,8 @@ private fun ExpandableSection(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp).clickable { expanded = !expanded }
-                    ,
+                    .clickable { expanded = !expanded }
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
@@ -317,14 +349,20 @@ private fun ExpandableSection(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        .padding(start = 8.dp, end = 8.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    TextButton(onClick = onExport) {
-                        Text(text = "导出")
+                    TextButton(onClick = onExport, modifier = Modifier.weight(1f)) {
+                        Text(text = "导出", style = MaterialTheme.typography.labelSmall)
                     }
-                    TextButton(onClick = onImport) {
-                        Text(text = "导入")
+                    TextButton(onClick = onImport, modifier = Modifier.weight(1f)) {
+                        Text(text = "导入", style = MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(onClick = onExportToClipboard, modifier = Modifier.weight(1f)) {
+                        Text(text = "复制", style = MaterialTheme.typography.labelSmall)
+                    }
+                    TextButton(onClick = onImportFromClipboard, modifier = Modifier.weight(1f)) {
+                        Text(text = "粘贴", style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

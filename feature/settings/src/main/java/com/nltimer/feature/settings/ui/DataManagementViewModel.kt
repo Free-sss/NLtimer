@@ -1,5 +1,7 @@
 package com.nltimer.feature.settings.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -142,6 +144,42 @@ class DataManagementViewModel @Inject constructor(
                 pendingImportData = null,
                 pendingImportScope = null,
             )
+        }
+    }
+
+    fun exportToClipboard(context: Context, scope: ExportScope) {
+        _uiState.update { it.copy(isExporting = true) }
+        viewModelScope.launch {
+            try {
+                val data = exportDataUseCase(scope)
+                val content = json.encodeToString(ExportData.serializer(), data)
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("NLtimer Export", content))
+                _uiState.update {
+                    it.copy(isExporting = false, snackbarMessage = "已复制到剪贴板")
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(isExporting = false, snackbarMessage = "导出到剪贴板失败")
+                }
+            }
+        }
+    }
+
+    fun importFromClipboard(context: Context, scope: ImportScope) {
+        _uiState.update { it.copy(pendingImportScope = scope) }
+        viewModelScope.launch {
+            try {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val content = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+                    ?: throw IllegalStateException("剪贴板为空")
+                val data = json.decodeFromString(ExportData.serializer(), content)
+                _uiState.update { it.copy(pendingImportData = data) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(snackbarMessage = "剪贴板数据格式无效", pendingImportScope = null)
+                }
+            }
         }
     }
 

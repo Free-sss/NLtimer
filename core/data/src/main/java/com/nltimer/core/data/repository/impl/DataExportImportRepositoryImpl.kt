@@ -81,8 +81,12 @@ class DataExportImportRepositoryImpl @Inject constructor(
     }
 
     override suspend fun exportCategories(): ExportData {
+        val groups = activityGroupDao.getAllSync()
         val categories = tagDao.getDistinctCategoriesSync()
-        return ExportData(tagCategories = categories)
+        return ExportData(
+            activityGroups = groups.map { it.toExported() },
+            tagCategories = categories,
+        )
     }
 
     override suspend fun importAll(data: ExportData, mode: ImportMode): ImportResult {
