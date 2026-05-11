@@ -50,8 +50,8 @@ fun MomentView(
     }
 
     var filterTab by remember { mutableStateOf(MomentFilterTab.ALL) }
+    var menuExpanded by remember { mutableStateOf(false) }
     var sortMode by remember { mutableStateOf(MomentSortMode.TIME_DESC) }
-    var sortMenuExpanded by remember { mutableStateOf(false) }
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val behaviors = remember(cells, filterTab, sortMode) {
@@ -99,10 +99,10 @@ fun MomentView(
             MomentFilterSortBar(
                 filterTab = filterTab,
                 onFilterChange = { filterTab = it },
+                menuExpanded = menuExpanded,
+                onMenuExpandedChange = { menuExpanded = it },
                 sortMode = sortMode,
                 onSortChange = { sortMode = it },
-                sortMenuExpanded = sortMenuExpanded,
-                onSortMenuExpandedChange = { sortMenuExpanded = it },
             )
         }
 
