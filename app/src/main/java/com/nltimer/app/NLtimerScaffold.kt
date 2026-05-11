@@ -35,6 +35,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.component.AppBottomNavigation
 import com.nltimer.app.component.AppCollapsedTopAppBar
 import com.nltimer.app.component.AppDrawer
+import com.nltimer.app.component.AppCenterFabBottomBar
 import com.nltimer.app.component.AppFloatingBottomBar
 import com.nltimer.app.component.AppTopAppBar
 import com.nltimer.app.component.RouteSettingsPopup
@@ -88,10 +89,12 @@ fun NLtimerScaffold(
     ) {
         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             val isFloating = theme.bottomBarMode == BottomBarMode.FLOATING && !isSecondaryPage
+            val isCenterFab = theme.bottomBarMode == BottomBarMode.CENTER_FAB && !isSecondaryPage
+            val isAnyFloating = isFloating || isCenterFab
 
             Scaffold(
                 modifier = Modifier.then(
-                    if (!isSecondaryPage && !isFloating) Modifier.padding(bottom = 80.dp) else Modifier
+                    if (!isSecondaryPage && !isAnyFloating) Modifier.padding(bottom = 80.dp) else Modifier
                 ).then(
                     if (topBarScrollBehavior != null)
                         Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
@@ -135,12 +138,12 @@ fun NLtimerScaffold(
                         .fillMaxSize()
                         .padding(
                             top = padding.calculateTopPadding(),
-                            bottom = if (isFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
+                            bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                         ),
                 )
             }
 
-            if (!isFloating && !isSecondaryPage) {
+            if (!isAnyFloating && !isSecondaryPage) {
                 AppBottomNavigation(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
@@ -170,6 +173,21 @@ fun NLtimerScaffold(
                 )
             }
 
+            if (isCenterFab) {
+                AppCenterFabBottomBar(
+                    navController = navController,
+                    onSettingsClick = { showSettingsPopup = true },
+                    onSettingsLongClick = {
+                        navController.navigate(NLtimerRoutes.SETTINGS) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+
             if (showSettingsPopup) {
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
@@ -177,7 +195,7 @@ fun NLtimerScaffold(
                     onDismiss = { showSettingsPopup = false },
                     onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) },
                     onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) },
-                    popupOffsetY = if (isFloating) -160 else -100,
+                    popupOffsetY = if (isAnyFloating) -160 else -100,
                 )
             }
         }
