@@ -466,7 +466,9 @@ private fun DragOptionsOverlay(state: AddBehaviorState) {
     val gapPx = with(density) { 8.dp.toPx() }
     val optionsY = state.buttonRowPositionInWindow.y - state.boxPositionInWindow.y - state.optionsRowHeight - gapPx
 
-    Row(
+    val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp)
@@ -474,46 +476,66 @@ private fun DragOptionsOverlay(state: AddBehaviorState) {
             .onGloballyPositioned { coords ->
                 state.optionsRowHeight = coords.size.height.toFloat()
             },
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
-        options.forEach { option ->
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        val position = layoutCoordinates.positionInWindow()
-                        val size = layoutCoordinates.size
-                        state.optionsLayoutBounds[option] = Rect(
-                            position.x,
-                            position.y,
-                            position.x + size.width,
-                            position.y + size.height
-                        )
-                    },
-                shape = RoundedCornerShape(8.dp),
-                color = if (state.hoveredOption == option)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 4.dp,
-                shadowElevation = 4.dp
+        options.chunked(3).reversed().forEach { rowOptions ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = option,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (state.hoveredOption == option)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                rowOptions.forEach { option ->
+                    DragOptionCell(state, option, Modifier.weight(1f))
+                }
+                repeat(3 - rowOptions.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DragOptionCell(
+    state: AddBehaviorState,
+    option: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .onGloballyPositioned { layoutCoordinates ->
+                val position = layoutCoordinates.positionInWindow()
+                val size = layoutCoordinates.size
+                state.optionsLayoutBounds[option] = Rect(
+                    position.x,
+                    position.y,
+                    position.x + size.width,
+                    position.y + size.height
+                )
+            },
+        shape = RoundedCornerShape(8.dp),
+        color = if (state.hoveredOption == option)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = 4.dp,
+        shadowElevation = 4.dp
+    ) {
+        Box(
+            modifier = Modifier.padding(vertical = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = option,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = if (state.hoveredOption == option)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
         }
     }
 }

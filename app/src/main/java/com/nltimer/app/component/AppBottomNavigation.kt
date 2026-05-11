@@ -32,12 +32,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.core.designsystem.component.LocalNavBarWidth
 
 internal data class NavItem(
     val route: String,
@@ -227,6 +230,8 @@ fun AppCenterFabBottomBar(
         initialValue = navController.currentBackStackEntry,
     )
     val currentDestination = currentBackStackEntry?.destination
+    val navBarWidthState = LocalNavBarWidth.current
+    val density = LocalDensity.current
 
     Box(
         modifier = modifier
@@ -238,7 +243,10 @@ fun AppCenterFabBottomBar(
         Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(bottom = 4.dp),
+                .padding(bottom = 4.dp)
+                .onGloballyPositioned { coords ->
+                    navBarWidthState.value = with(density) { coords.size.width.toDp() }
+                },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Surface(
