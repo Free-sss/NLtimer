@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -37,8 +36,7 @@ import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
-import com.nltimer.core.designsystem.component.DragActionFab
-import com.nltimer.core.designsystem.component.FabDragOptions
+import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
@@ -159,9 +157,10 @@ fun HomeScreen(
             )
         }
 
-        DragActionFab(
+        BottomBarDragFab(
             state = dragFabState,
             icon = if (uiState.hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+            dragOptions = dragOptions,
             label = if (uiState.hasActiveBehavior) "完成行为" else null,
             containerColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
             contentColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
@@ -185,15 +184,6 @@ fun HomeScreen(
                     else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
                 }
             },
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .navigationBarsPadding()
-                .padding(start = 12.dp, bottom = 8.dp),
-        )
-
-        FabDragOptions(
-            state = dragFabState,
-            options = dragOptions,
         )
 
         if (showTimeLabelSettings) {
