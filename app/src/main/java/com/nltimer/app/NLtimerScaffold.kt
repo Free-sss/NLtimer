@@ -132,6 +132,13 @@ fun NLtimerScaffold(
                 AppBottomNavigation(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
+                    onSettingsLongClick = {
+                        navController.navigate(NLtimerRoutes.SETTINGS) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
@@ -140,6 +147,13 @@ fun NLtimerScaffold(
                 AppFloatingBottomBar(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
+                    onSettingsLongClick = {
+                        navController.navigate(NLtimerRoutes.SETTINGS) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }

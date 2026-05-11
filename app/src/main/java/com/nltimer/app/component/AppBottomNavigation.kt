@@ -1,24 +1,23 @@
 package com.nltimer.app.component
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -51,10 +50,12 @@ internal val navItems = listOf(
     NavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppBottomNavigation(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
+    onSettingsLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsStateWithLifecycle(
@@ -65,19 +66,36 @@ fun AppBottomNavigation(
     NavigationBar(modifier = modifier) {
         navItems.forEach { item ->
             val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = null,
-                    )
-                },
-                label = { Text(item.label) },
-                selected = selected,
-                onClick = {
-                    if (item.route == NLtimerRoutes.SETTINGS) {
-                        onSettingsClick()
-                    } else {
+            if (item.route == NLtimerRoutes.SETTINGS) {
+                NavigationBarItem(
+                    icon = {
+                        Box(
+                            modifier = Modifier.combinedClickable(
+                                onLongClick = onSettingsClick,
+                                onClick = onSettingsLongClick,
+                            ),
+                        ) {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = null,
+                            )
+                        }
+                    },
+                    label = { Text(item.label) },
+                    selected = selected,
+                    onClick = onSettingsClick,
+                )
+            } else {
+                NavigationBarItem(
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = null,
+                        )
+                    },
+                    label = { Text(item.label) },
+                    selected = selected,
+                    onClick = {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
@@ -85,18 +103,19 @@ fun AppBottomNavigation(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun AppFloatingBottomBar(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
+    onSettingsLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsStateWithLifecycle(
@@ -134,20 +153,29 @@ fun AppFloatingBottomBar(
             }
         }
 
-        IconButton(
-            onClick = onSettingsClick,
+        Surface(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(bottom = 4.dp),
-            colors = IconButtonDefaults.iconButtonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ),
+                .padding(bottom = 4.dp)
+                .size(40.dp)
+                .clip(CircleShape)
+                .combinedClickable(
+                    onLongClick = onSettingsClick,
+                    onClick = onSettingsLongClick,
+                ),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            shape = CircleShape,
         ) {
-            Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "菜单",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "菜单",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
