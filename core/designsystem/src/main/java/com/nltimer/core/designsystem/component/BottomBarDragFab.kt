@@ -39,10 +39,10 @@ fun BoxScope.BottomBarDragFab(
         onClick = onClick,
         onOptionSelected = onOptionSelected,
         modifier = modifier
-            .align(if (isCenterFab) Alignment.BottomCenter else Alignment.BottomStart)
+            .align(if (isCenterFab) Alignment.BottomEnd else Alignment.BottomStart)
             .navigationBarsPadding()
             .then(
-                if (isCenterFab) Modifier.padding(bottom = 8.dp)
+                if (isCenterFab) Modifier.padding(end = 24.dp, bottom = 8.dp)
                 else Modifier.padding(start = 12.dp, bottom = 8.dp)
             ),
     )
