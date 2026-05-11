@@ -1,4 +1,4 @@
-package com.nltimer.feature.debug.ui.components
+package com.nltimer.core.debugui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,14 +37,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
-/**
- * 字段详细调试弹窗
- *
- * @param title 弹窗标题，如 "活动字段详情"
- * @param fields 字段信息列表
- * @param rawJson 完整的 JSON 字符串
- * @param onDismiss 关闭弹窗的回调
- */
 @Composable
 fun FieldDetailDialog(
     title: String,
@@ -65,7 +57,7 @@ fun FieldDetailDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                TabRow(selectedTabIndex = selectedTab) {
+                PrimaryTabRow(selectedTabIndex = selectedTab) {
                     tabs.forEachIndexed { index, tabTitle ->
                         Tab(
                             selected = selectedTab == index,
@@ -85,11 +77,6 @@ fun FieldDetailDialog(
     )
 }
 
-/**
- * 渲染 Tab 内容
- *
- * 显示当前 UI 上展示的字段，以及缺失字段的汇总
- */
 @Composable
 private fun RenderTab(fields: List<FieldInfo>) {
     val displayedFields = fields.filter { it.isDisplayed }
@@ -101,12 +88,10 @@ private fun RenderTab(fields: List<FieldInfo>) {
             .padding(top = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // 显示 UI 展示的字段
         items(displayedFields) { field ->
             FieldRow(field = field)
         }
 
-        // 缺失字段汇总区域
         if (missingFields.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -116,9 +101,6 @@ private fun RenderTab(fields: List<FieldInfo>) {
     }
 }
 
-/**
- * 单个字段行
- */
 @Composable
 private fun FieldRow(field: FieldInfo) {
     Row(
@@ -131,7 +113,7 @@ private fun FieldRow(field: FieldInfo) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
-            text = field.value?.toString() ?: "—",
+            text = field.value?.toString() ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
             color = if (field.isMissing) {
@@ -147,9 +129,6 @@ private fun FieldRow(field: FieldInfo) {
     )
 }
 
-/**
- * 缺失字段汇总区域
- */
 @Composable
 private fun MissingFieldsSummary(missingFields: List<FieldInfo>) {
     Column(
@@ -176,11 +155,6 @@ private fun MissingFieldsSummary(missingFields: List<FieldInfo>) {
     }
 }
 
-/**
- * 原生 Tab 内容
- *
- * 显示完整的 JSON 字符串，支持复制到剪贴板
- */
 @Composable
 private fun NativeTab(rawJson: String) {
     val clipboardManager = LocalClipboardManager.current

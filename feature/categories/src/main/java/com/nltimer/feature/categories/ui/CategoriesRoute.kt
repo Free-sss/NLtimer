@@ -1,9 +1,9 @@
 package com.nltimer.feature.categories.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.feature.categories.viewmodel.CategoriesViewModel
 
 /**
@@ -17,8 +17,8 @@ fun CategoriesRoute(
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
     // 收集 ViewModel 中的 UI 状态流和重命名冲突状态流
-    val uiState by viewModel.uiState.collectAsState()
-    val renameConflict by viewModel.renameConflict.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val renameConflict by viewModel.renameConflict.collectAsStateWithLifecycle()
 
     CategoriesScreen(
         uiState = uiState,

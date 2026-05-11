@@ -1,16 +1,10 @@
-package com.nltimer.feature.debug.ui.components
+package com.nltimer.core.debugui
 
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.Tag
 
 /**
- * 字段信息数据类，用于描述单个字段的调试信息
- *
- * @param name 字段名，如 "name", "iconKey"
- * @param displayName 显示名，如 "名称", "图标"
- * @param value 字段值
- * @param isDisplayed 是否在 UI 上展示
- * @param isMissing 是否缺失（null/空/默认值）
+ * 字段信息数据类，用于描述单个字段的调试信息。
  */
 data class FieldInfo(
     val name: String,
@@ -20,13 +14,6 @@ data class FieldInfo(
     val isMissing: Boolean,
 )
 
-/**
- * 判断字段值是否为缺失状态
- * - null 值视为缺失
- * - 空字符串视为缺失
- * - Int/Long 类型的 0 视为缺失（排除 id 字段）
- * - Boolean 类型的 false 视为缺失
- */
 fun Any?.isFieldMissing(fieldName: String): Boolean = when (this) {
     null -> true
     is String -> isBlank()
@@ -36,9 +23,6 @@ fun Any?.isFieldMissing(fieldName: String): Boolean = when (this) {
     else -> false
 }
 
-/**
- * 将 Activity 对象转换为 FieldInfo 列表
- */
 fun Activity.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("id", "ID", id, isDisplayed = false, isMissing = id == 0L),
     FieldInfo("name", "名称", name, isDisplayed = true, isMissing = name.isFieldMissing("name")),
@@ -52,9 +36,6 @@ fun Activity.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("usageCount", "使用次数", usageCount, isDisplayed = true, isMissing = usageCount.isFieldMissing("usageCount")),
 )
 
-/**
- * 将 Tag 对象转换为 FieldInfo 列表
- */
 fun Tag.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("id", "ID", id, isDisplayed = false, isMissing = id == 0L),
     FieldInfo("name", "名称", name, isDisplayed = true, isMissing = name.isFieldMissing("name")),
@@ -69,20 +50,15 @@ fun Tag.toFieldInfoList(): List<FieldInfo> = listOf(
     FieldInfo("archivedAt", "归档时间", archivedAt, isDisplayed = false, isMissing = archivedAt.isFieldMissing("archivedAt")),
 )
 
-/**
- * 将 FieldInfo 列表转换为格式化的 JSON 字符串
- *
- * 自动处理字符串转义和 null 值
- */
 fun List<FieldInfo>.toJsonString(): String = buildString {
     append("{\n")
     this@toJsonString.forEachIndexed { index, field ->
-        val valueStr = when (val v = field.value) {
+        val valueStr = when (val value = field.value) {
             null -> "null"
-            is String -> "\"${v.replace("\\", "\\\\").replace("\"", "\\\"")}\""
-            is Boolean -> v.toString()
-            is Number -> v.toString()
-            else -> "\"$v\""
+            is String -> "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+            is Boolean -> value.toString()
+            is Number -> value.toString()
+            else -> "\"$value\""
         }
         append("  \"${field.name}\": $valueStr")
         if (index < this@toJsonString.size - 1) append(",")

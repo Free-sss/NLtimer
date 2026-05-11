@@ -24,7 +24,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +37,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.tools.AccessLevel
 import com.nltimer.core.tools.ParameterType
 import com.nltimer.core.tools.ToolCategory
@@ -62,8 +62,8 @@ fun ToolConsoleScreen(
     viewModel: ToolConsoleViewModel = hiltViewModel(),
 ) {
     val tools = viewModel.tools
-    val result by viewModel.result.collectAsState()
-    val isRunning by viewModel.isRunning.collectAsState()
+    val result by viewModel.result.collectAsStateWithLifecycle()
+    val isRunning by viewModel.isRunning.collectAsStateWithLifecycle()
 
     var selectedCategory by remember { mutableStateOf<ToolCategory?>(null) }
     var expandedTool by remember { mutableStateOf<String?>(null) }

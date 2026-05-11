@@ -1,10 +1,10 @@
 package com.nltimer.feature.home.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.viewmodel.HomeViewModel
 import java.time.LocalDate
@@ -15,12 +15,12 @@ import java.time.ZoneId
 fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val activities by viewModel.activities.collectAsState()
-    val activityGroups by viewModel.activityGroups.collectAsState()
-    val allTags by viewModel.allTags.collectAsState()
-    val dialogConfig by viewModel.dialogConfig.collectAsState()
-    val timeLabelConfig by viewModel.timeLabelConfig.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val activities by viewModel.activities.collectAsStateWithLifecycle()
+    val activityGroups by viewModel.activityGroups.collectAsStateWithLifecycle()
+    val allTags by viewModel.allTags.collectAsStateWithLifecycle()
+    val dialogConfig by viewModel.dialogConfig.collectAsStateWithLifecycle()
+    val timeLabelConfig by viewModel.timeLabelConfig.collectAsStateWithLifecycle()
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalTime?, idleEnd: LocalTime? ->

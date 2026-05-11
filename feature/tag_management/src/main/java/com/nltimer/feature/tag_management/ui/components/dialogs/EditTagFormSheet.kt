@@ -27,9 +27,9 @@ import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
 import com.nltimer.core.designsystem.form.parseColorHex
-import com.nltimer.feature.debug.ui.components.FieldDetailDialog
-import com.nltimer.feature.debug.ui.components.toFieldInfoList
-import com.nltimer.feature.debug.ui.components.toJsonString
+import com.nltimer.core.debugui.FieldDetailDialog
+import com.nltimer.core.debugui.toFieldInfoList
+import com.nltimer.core.debugui.toJsonString
 
 @Composable
 fun EditTagFormSheet(

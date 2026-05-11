@@ -37,9 +37,9 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.util.formatDurationMinutes
 import com.nltimer.core.designsystem.icon.IconRenderer
-import com.nltimer.feature.debug.ui.components.FieldDetailDialog
-import com.nltimer.feature.debug.ui.components.toFieldInfoList
-import com.nltimer.feature.debug.ui.components.toJsonString
+import com.nltimer.core.debugui.FieldDetailDialog
+import com.nltimer.core.debugui.toFieldInfoList
+import com.nltimer.core.debugui.toJsonString
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

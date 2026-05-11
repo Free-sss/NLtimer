@@ -1,8 +1,8 @@
 package com.nltimer.feature.management_activities.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.feature.management_activities.model.ActivityManagementUiState
 import com.nltimer.feature.management_activities.model.DialogState
 import com.nltimer.feature.management_activities.ui.components.ActivityDetailSheet
@@ -105,7 +105,7 @@ fun ActivityManagementSheetRouter(
         }
 
         is DialogState.ActivityDetail -> {
-            val stats by viewModel.currentActivityStats.collectAsState()
+            val stats by viewModel.currentActivityStats.collectAsStateWithLifecycle()
             ActivityDetailSheet(
                 activity = dialog.activity,
                 stats = stats,

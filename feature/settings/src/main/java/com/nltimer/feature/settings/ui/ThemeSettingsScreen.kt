@@ -48,7 +48,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +62,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.materialkolor.dynamicColorScheme
 import com.nltimer.core.designsystem.component.ColorPickerDialog
 import com.nltimer.core.designsystem.theme.AppTheme
@@ -110,7 +110,7 @@ fun ThemeSettingsRoute(
     viewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
     // 从ViewModel中收集主题状态，重组时自动订阅
-    val theme by viewModel.theme.collectAsState()
+    val theme by viewModel.theme.collectAsStateWithLifecycle()
     // 将ViewModel的方法指针传入UI层，分离逻辑与视图
     ThemeSettingsScreen(
         theme = theme,

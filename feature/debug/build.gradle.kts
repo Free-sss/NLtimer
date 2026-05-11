@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
+    implementation(projects.core.debugui)
     implementation(projects.core.tools)
     implementation(projects.feature.home)
     implementation(projects.core.behaviorui)
@@ -26,4 +27,5 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.runtime.compose)
 }

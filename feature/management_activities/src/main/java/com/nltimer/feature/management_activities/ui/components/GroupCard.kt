@@ -1,20 +1,14 @@
 package com.nltimer.feature.management_activities.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -27,11 +21,11 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
+import com.nltimer.core.designsystem.component.ExpandableGroupCard
 
 /**
  * 分组卡片组件
@@ -66,91 +60,67 @@ fun GroupCard(
     // 控制三点菜单的展开状态
     var showMenu by remember { mutableStateOf(false) }
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // 顶部行：分组名称 + 展开指示器 + 三点菜单按钮
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onToggleExpand() },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "📂 ${group.name}",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f),
-                )
+    ExpandableGroupCard(
+        title = "📂 ${group.name}",
+        expanded = isExpanded,
+        onToggleExpanded = onToggleExpand,
+        modifier = modifier,
+        menu = {
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
+                }
 
-                // 展开/折叠状态指示器
-                Text(
-                    text = if (isExpanded) "▼" else "▶",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(end = 8.dp),
-                )
-
-                // 三点更多操作菜单
-                Box {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
-                    }
-
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false },
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("添加活动") },
-                            onClick = {
-                                showMenu = false
-                                onAddActivity()
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("重命名") },
-                            onClick = {
-                                showMenu = false
-                                onRename()
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
-                            onClick = {
-                                showMenu = false
-                                onDelete()
-                            },
-                        )
-                    }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("添加活动") },
+                        onClick = {
+                            showMenu = false
+                            onAddActivity()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("重命名") },
+                        onClick = {
+                            showMenu = false
+                            onRename()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        },
+                    )
                 }
             }
+        },
+    ) {
+        Spacer(modifier = Modifier.height(12.dp))
 
-            // 展开时显示分组内活动列表（使用 FlowRow 自动换行）
-            if (isExpanded) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                if (activities.isEmpty()) {
-                    Text(
-                        text = "暂无活动",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 8.dp),
+        if (activities.isEmpty()) {
+            Text(
+                text = "暂无活动",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        } else {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                activities.forEach { activity -> key(activity.id) {
+                    ActivityChip(
+                        activity = activity,
+                        onClick = { onActivityClick(activity) },
+                        onLongClick = { onActivityLongClick(activity) },
                     )
-                } else {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        activities.forEach { activity -> key(activity.id) {
-                            ActivityChip(
-                                activity = activity,
-                                onClick = { onActivityClick(activity) },
-                                onLongClick = { onActivityLongClick(activity) },
-                            )
-                        } }
-                    }
-                }
+                } }
             }
         }
     }

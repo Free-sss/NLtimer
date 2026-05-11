@@ -13,9 +13,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SortByAlpha
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -151,7 +151,7 @@ private fun CategoryPickerTitle(
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             SortChip(
                 label = "频率",
-                icon = Icons.Default.TrendingUp,
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
                 selected = currentSortMode == SortMode.FREQUENCY,
                 onClick = { onSortModeChange(SortMode.FREQUENCY) },
             )
