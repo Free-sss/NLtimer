@@ -71,6 +71,9 @@ fun HomeRoute(
     val onTimeLabelConfigChange = remember(viewModel) {
         { config: com.nltimer.core.designsystem.theme.TimeLabelConfig -> viewModel.onTimeLabelConfigChange(config) }
     }
+    val onMatchNote = remember(viewModel) {
+        { note: String -> viewModel.matchNoteFromText(note) }
+    }
 
     HomeScreen(
         uiState = uiState,
@@ -92,5 +95,6 @@ fun HomeRoute(
         onHourClick = onHourClick,
         timeLabelConfig = timeLabelConfig,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
+        onMatchNote = onMatchNote,
     )
 }

@@ -43,6 +43,7 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
@@ -80,6 +81,7 @@ fun HomeScreen(
     onHourClick: (Int) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     modifier: Modifier = Modifier,
 ) {
     val theme = LocalTheme.current
@@ -154,6 +156,7 @@ fun HomeScreen(
                 onAddBehavior = onAddBehavior,
                 onAddActivity = onAddActivity,
                 onAddTag = onAddTag,
+                onMatchNote = onMatchNote,
             )
         }
 

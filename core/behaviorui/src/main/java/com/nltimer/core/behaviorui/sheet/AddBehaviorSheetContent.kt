@@ -59,6 +59,7 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -85,6 +86,7 @@ internal fun AddBehaviorSheetContent(
     onDismiss: () -> Unit,
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
 
@@ -114,6 +116,7 @@ internal fun AddBehaviorSheetContent(
                         emphasisColor = emphasisColor,
                         onConfirm = onConfirm,
                         onDismiss = onDismiss,
+                        onMatchNote = onMatchNote,
                     )
                 }
             }
@@ -171,6 +174,7 @@ private fun SheetMainContent(
     emphasisColor: Color,
     onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
+    onMatchNote: (String) -> NoteScanResult,
 ) {
     val context = LocalContext.current
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
@@ -284,7 +288,23 @@ private fun SheetMainContent(
             NoteInputComponent(
                 note = state.note,
                 onNoteChange = { state.note = it },
-                onTopButton = { },
+                onTopButton = {
+                    val result = onMatchNote(state.note)
+                    val outcome = state.applyNoteScan(result)
+                    val message = when {
+                        outcome.hasAnyChange -> buildString {
+                            append("识别到")
+                            if (outcome.activityAdded) append(" 1 个活动")
+                            if (outcome.tagsAdded > 0) {
+                                if (outcome.activityAdded) append(" +")
+                                append(" ${outcome.tagsAdded} 个标签")
+                            }
+                        }
+                        outcome.activityHeld -> "已保留你选中的活动"
+                        else -> "未识别到匹配项"
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
                 onBottomButton = { },
             )
 
