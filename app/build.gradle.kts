@@ -56,7 +56,6 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
     implementation(projects.feature.home)
-    implementation(projects.feature.sub)
     implementation(projects.feature.stats)
     implementation(projects.feature.settings)
     implementation(projects.feature.categories)

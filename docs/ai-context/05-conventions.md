@@ -30,6 +30,7 @@
 - Screen 接收 UiState 和事件回调，纯展示
 - `@Immutable` 标注所有 UiState 数据类
 - 使用 `collectAsStateWithLifecycle` 收集 Flow
+- **禁止删除 `getValue` / `setValue` import**：`by` 委托语法（`by mutableStateOf`、`by animateXxxAsState`、`by derivedStateOf`、`by remember`）依赖 `import androidx.compose.runtime.getValue` 和 `import androidx.compose.runtime.setValue`，编辑文件时绝不可移除这两个 import
 
 ## 主题约定
 
