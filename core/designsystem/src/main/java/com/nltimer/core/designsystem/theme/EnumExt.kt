@@ -114,4 +114,5 @@ fun TopBarMode.toDisplayString(): String = when (this) {
 fun BottomBarMode.toDisplayString(): String = when (this) {
     BottomBarMode.STANDARD -> "标准"
     BottomBarMode.FLOATING -> "悬浮"
+    BottomBarMode.CENTER_FAB -> "悬浮居中"
 }

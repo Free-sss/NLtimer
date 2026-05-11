@@ -2,6 +2,7 @@ package com.nltimer.app.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
@@ -35,11 +37,10 @@ fun AppTopAppBar(
 
     CenterAlignedTopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.Bottom) {
                 Text(title)
                 if (layoutLabel != null) {
-                    val baseFontSize = MaterialTheme.typography.titleLarge.fontSize
-                    val subtitleFontSize = baseFontSize * 5f / 6f
+                    val subtitleFontSize = 10.sp
                     Text(
                         text = " $layoutLabel",
                         style = TextStyle(fontSize = subtitleFontSize),
@@ -87,7 +88,7 @@ fun AppCollapsedTopAppBar(
 
     TopAppBar(
         title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.Bottom,modifier=Modifier.padding(bottom = 5.dp)) {
                 Text(
                     title,
                     style = MaterialTheme.typography.headlineMedium.copy(
@@ -96,7 +97,7 @@ fun AppCollapsedTopAppBar(
                     ),
                 )
                 if (layoutLabel != null) {
-                    val subtitleFontSize = 32.sp * 5f / 6f
+                    val subtitleFontSize = 10.sp
                     Text(
                         text = " $layoutLabel",
                         style = TextStyle(fontSize = subtitleFontSize),

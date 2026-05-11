@@ -157,7 +157,7 @@ fun AppFloatingBottomBar(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(bottom = 4.dp)
-                .size(40.dp)
+                .size(48.dp)
                 .clip(CircleShape)
                 .combinedClickable(
                     onLongClick = onSettingsClick,
@@ -174,6 +174,7 @@ fun AppFloatingBottomBar(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "菜单",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
                 )
             }
         }
