@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,47 +33,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.navigation.NavHostController
 import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
-import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledCorner
 
 private const val POPUP_WIDTH_RATIO = 0.45f
 
-/**
- * RouteSettingsPopup 调试预览入口
- * 为开发者提供当前弹窗在 home 路由下的预览快照
- */
-@Preview(showBackground = true)
-@Composable
-fun RouteSettingsPopupPreview() {
-    NLtimerTheme {
-        RouteSettingsPopup(
-            currentRoute = NLtimerRoutes.HOME,
-            onDismiss = {},
-            onHomeLayoutChange = {},
-            onShowTimeSideBarChange = {}
-        )
-    }
-}
+private data class NavPopupItem(
+    val route: String,
+    val label: String,
+    val icon: ImageVector,
+)
 
-/**
- * 页面设置弹出菜单 Composable
- * 根据当前路由显示对应的配置项：home 路由下可切换布局，其他路由显示通用快捷操作
- *
- * @param currentRoute 当前路由名称，用于判定显示哪些设置项
- * @param onDismiss 关闭弹窗的回调
- * @param onHomeLayoutChange 主页布局变更回调
- * @param modifier Modifier 修饰符
- */
+private val navPopupItems = listOf(
+    NavPopupItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
+    NavPopupItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.AutoMirrored.Filled.List),
+    NavPopupItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.AutoMirrored.Filled.Label),
+    NavPopupItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
+)
+
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun RouteSettingsPopup(
@@ -77,22 +67,21 @@ fun RouteSettingsPopup(
     onDismiss: () -> Unit,
     onHomeLayoutChange: (HomeLayout) -> Unit,
     onShowTimeSideBarChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    navController: NavHostController,
+    popupOffsetY: Int = -100,
+    modifier: Modifier = Modifier,
 ) {
-    // 根据屏幕宽度计算弹窗宽度，不超过屏幕的一半
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val popupWidth = screenWidth * POPUP_WIDTH_RATIO
-    // 获取当前主页布局类型
     val currentLayout = LocalTheme.current.homeLayout
-    // 控制布局选项的展开/折叠状态
     var showLayoutOptions by remember { mutableStateOf(false) }
 
     Popup(
-        alignment = Alignment.TopEnd,
-        offset = IntOffset(x = 0, y = 100), // 相对顶栏的偏移量，使弹窗出现在顶栏下方
+        alignment = Alignment.BottomStart,
+        offset = IntOffset(x = 16, y = popupOffsetY),
         onDismissRequest = onDismiss,
-        properties = PopupProperties(focusable = true)
+        properties = PopupProperties(focusable = true),
     ) {
         Surface(
             modifier = modifier
@@ -100,38 +89,26 @@ fun RouteSettingsPopup(
                 .wrapContentHeight(),
             shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
             tonalElevation = 8.dp,
-            shadowElevation = 8.dp
+            shadowElevation = 8.dp,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 8.dp),
             ) {
-                // 弹窗标题，显示当前页面名称
-                Text(
-                    text = "页面设置: ${currentRoute ?: "未知"}",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                
-                HorizontalDivider()
-
-                // home 路由专属：布局切换功能
                 if (currentRoute == NLtimerRoutes.HOME) {
                     PopupItem(
                         icon = Icons.Default.Dashboard,
                         label = if (showLayoutOptions) "返回设置" else "更改布局",
-                        onClick = { showLayoutOptions = !showLayoutOptions }
+                        onClick = { showLayoutOptions = !showLayoutOptions },
                     )
-                    
-                    // 展开布局选项子菜单，遍历所有布局枚举供用户选择
+
                     if (showLayoutOptions) {
                         HomeLayout.entries.forEach { layout ->
                             val isSelected = currentLayout == layout
                             PopupItem(
                                 icon = if (isSelected) Icons.Default.Search else Icons.Default.Dashboard,
-                                label = when(layout) {
+                                label = when (layout) {
                                     HomeLayout.GRID -> "网格时间"
                                     HomeLayout.TIMELINE_REVERSE -> "时间轴(反)"
                                     HomeLayout.LOG -> "行为日志"
@@ -141,12 +118,11 @@ fun RouteSettingsPopup(
                                     onHomeLayoutChange(layout)
                                     onDismiss()
                                 },
-                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
 
-                    // 侧边时间轴开关，仅在 GRID 布局下显示
                     if (!showLayoutOptions && currentLayout == HomeLayout.GRID) {
                         PopupSwitchItem(
                             icon = Icons.Default.Timelapse,
@@ -154,53 +130,60 @@ fun RouteSettingsPopup(
                             checked = LocalTheme.current.showTimeSideBar,
                             onCheckedChange = {
                                 onShowTimeSideBarChange(it)
-                            }
+                            },
                         )
+                    }
+
+                    if (!showLayoutOptions) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                     }
                 }
 
-                // 未展开布局选项时，显示通用快捷操作列表
                 if (!showLayoutOptions) {
-                    //TODO: 其他路由的快捷操作列表
+                    navPopupItems.forEach { item ->
+                        PopupItem(
+                            icon = item.icon,
+                            label = item.label,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                                onDismiss()
+                            },
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-/**
- * 弹窗内单行菜单项 Composable
- * 显示图标和文本标签，支持点击事件和自定义着色
- *
- * @param icon 菜单项图标
- * @param label 菜单项文本标签
- * @param onClick 点击回调
- * @param tint 图标和文本的颜色
- */
 @Composable
 private fun PopupItem(
     icon: ImageVector,
     label: String,
     onClick: () -> Unit,
-    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.padding(end = 12.dp),
-            tint = tint
+            tint = tint,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = tint
+            color = tint,
         )
     }
 }
@@ -211,7 +194,7 @@ private fun PopupSwitchItem(
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     Row(
         modifier = Modifier
@@ -219,22 +202,22 @@ private fun PopupSwitchItem(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .background(
                 color = if (checked) MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.5f)) else Color.Transparent,
-                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL))
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
             )
             .clickable { onCheckedChange(!checked) },
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
             modifier = Modifier.padding(end = 12.dp),
-            tint = tint
+            tint = tint,
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = tint,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
     }
 }

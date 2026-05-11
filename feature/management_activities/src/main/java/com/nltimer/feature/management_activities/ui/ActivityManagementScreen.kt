@@ -30,8 +30,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nltimer.core.designsystem.component.DragActionFab
-import com.nltimer.core.designsystem.component.FabDragOptions
+import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
@@ -51,19 +50,6 @@ fun ActivityManagementScreen(
             .onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
         Scaffold(
-            floatingActionButton = {
-                DragActionFab(
-                    state = dragFabState,
-                    icon = Icons.Default.Add,
-                    onClick = { viewModel.showAddActivityDialog() },
-                    onOptionSelected = { option ->
-                        when (option) {
-                            "添加活动" -> viewModel.showAddActivityDialog()
-                            "添加分组" -> viewModel.showAddGroupDialog()
-                        }
-                    },
-                )
-            },
         ) { padding ->
             Box(
                 modifier = Modifier
@@ -173,9 +159,17 @@ fun ActivityManagementScreen(
             }
         }
 
-        FabDragOptions(
+        BottomBarDragFab(
             state = dragFabState,
-            options = listOf("添加活动", "添加分组"),
+            icon = Icons.Default.Add,
+            dragOptions = listOf("添加活动", "添加分组"),
+            onClick = { viewModel.showAddActivityDialog() },
+            onOptionSelected = { option ->
+                when (option) {
+                    "添加活动" -> viewModel.showAddActivityDialog()
+                    "添加分组" -> viewModel.showAddGroupDialog()
+                }
+            },
         )
 
         ActivityManagementSheetRouter(

@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
-import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.LocalTime
 
@@ -39,9 +38,24 @@ fun MomentView(
     onStartBehavior: (Long) -> Unit,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val momentFilterState = LocalMomentFilterState.current
+    val filterTab = remember(momentFilterState.filterKey) {
+        when (momentFilterState.filterKey) {
+            "COMPLETED" -> MomentFilterTab.COMPLETED
+            "PENDING" -> MomentFilterTab.PENDING
+            else -> MomentFilterTab.ALL
+        }
+    }
+    val sortMode = remember(momentFilterState.sortKey) {
+        when (momentFilterState.sortKey) {
+            "TIME_ASC" -> MomentSortMode.TIME_ASC
+            "DURATION" -> MomentSortMode.DURATION
+            else -> MomentSortMode.TIME_DESC
+        }
+    }
+
     val activeCell = remember(cells) {
         cells.firstOrNull {
             it.isCurrent && it.behaviorId != null && it.status == BehaviorNature.ACTIVE
@@ -51,9 +65,6 @@ fun MomentView(
         cells.firstOrNull { it.behaviorId != null && it.status == BehaviorNature.PENDING }
     }
 
-    var filterTab by remember { mutableStateOf(MomentFilterTab.ALL) }
-    var sortMode by remember { mutableStateOf(MomentSortMode.TIME_DESC) }
-    var sortMenuExpanded by remember { mutableStateOf(false) }
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val behaviors = remember(cells, filterTab, sortMode) {
@@ -87,13 +98,6 @@ fun MomentView(
         ),
     ) {
         item {
-            LayoutMenuHeader(
-                title = "当前时刻",
-                onLayoutChange = onLayoutChange,
-            )
-        }
-
-        item {
             MomentFocusCard(
                 activeCell = activeCell,
                 nextPendingCell = nextPendingCell,
@@ -101,17 +105,6 @@ fun MomentView(
                 onStartNextPending = onStartNextPending,
                 onStartBehavior = onStartBehavior,
                 onEmptyCellClick = { onEmptyCellClick(null, null) },
-            )
-        }
-
-        item {
-            MomentFilterSortBar(
-                filterTab = filterTab,
-                onFilterChange = { filterTab = it },
-                sortMode = sortMode,
-                onSortChange = { sortMode = it },
-                sortMenuExpanded = sortMenuExpanded,
-                onSortMenuExpandedChange = { sortMenuExpanded = it },
             )
         }
 

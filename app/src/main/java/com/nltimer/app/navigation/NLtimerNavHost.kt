@@ -15,7 +15,6 @@ import com.nltimer.feature.settings.ui.DialogConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
-import com.nltimer.feature.sub.ui.SubRoute
 import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
 import com.nltimer.feature.settings.ui.DataManagementRoute
 import com.nltimer.feature.tag_management.ui.TagManagementRoute
@@ -38,7 +37,6 @@ fun NLtimerNavHost(
         modifier = modifier,
     ) {
         composable(NLtimerRoutes.HOME) { HomeRoute() }
-        composable(NLtimerRoutes.SUB) { SubRoute() }
         composable(NLtimerRoutes.STATS) { StatsRoute() }
         composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
         composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }

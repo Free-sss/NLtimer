@@ -26,8 +26,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nltimer.core.designsystem.component.DragActionFab
-import com.nltimer.core.designsystem.component.FabDragOptions
+import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 import com.nltimer.feature.tag_management.ui.components.CategoryCard
@@ -46,19 +45,6 @@ fun TagManagementScreen(
             .onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
         Scaffold(
-            floatingActionButton = {
-                DragActionFab(
-                    state = dragFabState,
-                    icon = Icons.Default.Add,
-                    onClick = { viewModel.showAddCategoryDialog() },
-                    onOptionSelected = { option ->
-                        when (option) {
-                            "添加分类" -> viewModel.showAddCategoryDialog()
-                            "添加标签" -> viewModel.showAddTagDialog(null)
-                        }
-                    },
-                )
-            },
         ) { padding ->
             Box(
                 modifier = Modifier
@@ -123,9 +109,17 @@ fun TagManagementScreen(
             }
         }
 
-        FabDragOptions(
+        BottomBarDragFab(
             state = dragFabState,
-            options = listOf("添加分类", "添加标签"),
+            icon = Icons.Default.Add,
+            dragOptions = listOf("添加分类", "添加标签"),
+            onClick = { viewModel.showAddCategoryDialog() },
+            onOptionSelected = { option ->
+                when (option) {
+                    "添加分类" -> viewModel.showAddCategoryDialog()
+                    "添加标签" -> viewModel.showAddTagDialog(null)
+                }
+            },
         )
 
         TagManagementSheetRouter(

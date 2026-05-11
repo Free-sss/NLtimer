@@ -2,7 +2,9 @@ package com.nltimer.core.designsystem.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -17,17 +19,20 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
 private val OptionsRowPaddingHorizontal = 16.dp
 private val OptionsGap = 8.dp
-private val OptionsGapFromFab = 8.dp
+private val OptionsGapFromFab = 68.dp
 private val OptionCornerRadius = 8.dp
 private val OptionPaddingVertical = 12.dp
 private val OptionTonalElevation = 4.dp
 private val OptionShadowElevation = 4.dp
+private const val MaxOptionsPerRow = 3
 
 @Composable
 fun FabDragOptions(
@@ -42,7 +47,7 @@ fun FabDragOptions(
     val fabBottomPx = state.fabLayoutPosition.y + state.fabSize.height
     val optionsY = fabBottomPx - state.optionsRowHeight - gapPx - state.boxPositionInWindow.y
 
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = OptionsRowPaddingHorizontal)
@@ -50,45 +55,66 @@ fun FabDragOptions(
             .onGloballyPositioned { coords ->
                 state.optionsRowHeight = coords.size.height.toFloat()
             },
-        horizontalArrangement = Arrangement.spacedBy(OptionsGap)
+        verticalArrangement = Arrangement.spacedBy(OptionsGap)
     ) {
-        options.forEach { option ->
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .onGloballyPositioned { layoutCoordinates ->
-                        val position = layoutCoordinates.positionInWindow()
-                        val size = layoutCoordinates.size
-                        state.optionsLayoutBounds[option] = Rect(
-                            position.x,
-                            position.y,
-                            position.x + size.width,
-                            position.y + size.height
-                        )
-                    },
-                shape = RoundedCornerShape(OptionCornerRadius),
-                color = if (state.hoveredOption == option)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = OptionTonalElevation,
-                shadowElevation = OptionShadowElevation
+        options.chunked(MaxOptionsPerRow).reversed().forEach { rowOptions ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(OptionsGap)
             ) {
-                Box(
-                    modifier = Modifier.padding(vertical = OptionPaddingVertical),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = option,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (state.hoveredOption == option)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
-                    )
+                rowOptions.forEach { option ->
+                    OptionCell(state, option, Modifier.weight(1f))
+                }
+                repeat(MaxOptionsPerRow - rowOptions.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun OptionCell(
+    state: DragFabState,
+    option: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier
+            .onGloballyPositioned { layoutCoordinates ->
+                val position = layoutCoordinates.positionInWindow()
+                val size = layoutCoordinates.size
+                state.optionsLayoutBounds[option] = Rect(
+                    position.x,
+                    position.y,
+                    position.x + size.width,
+                    position.y + size.height
+                )
+            },
+        shape = RoundedCornerShape(OptionCornerRadius),
+        color = if (state.hoveredOption == option)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.surfaceVariant,
+        tonalElevation = OptionTonalElevation,
+        shadowElevation = OptionShadowElevation
+    ) {
+        Box(
+            modifier = Modifier.padding(vertical = OptionPaddingVertical),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = option,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                color = if (state.hoveredOption == option)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1
+            )
         }
     }
 }

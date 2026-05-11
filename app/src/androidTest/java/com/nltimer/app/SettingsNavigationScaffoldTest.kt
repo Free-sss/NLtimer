@@ -1,6 +1,5 @@
 package com.nltimer.app
 
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -14,13 +13,19 @@ class SettingsNavigationScaffoldTest {
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun settingsRoute_showsGlobalBars_butThemeRouteHidesThem() {
+    fun settingsPopup_showsNavigationItems() {
         composeTestRule.onNodeWithText("设置").performClick()
 
-        composeTestRule.onNodeWithContentDescription("打开侧边栏").assertExists()
+        composeTestRule.onNodeWithText("主题配置").assertExists()
+        composeTestRule.onNodeWithText("分类管理").assertExists()
+        composeTestRule.onNodeWithText("数据管理").assertExists()
+    }
+
+    @Test
+    fun themeSettingsRoute_showsBackButton() {
+        composeTestRule.onNodeWithText("设置").performClick()
         composeTestRule.onNodeWithText("主题配置").performClick()
 
-        composeTestRule.onNodeWithContentDescription("打开侧边栏").assertDoesNotExist()
         composeTestRule.onNodeWithText("主题配置").assertExists()
         composeTestRule.onNodeWithContentDescription("返回").assertExists()
     }
