@@ -11,6 +11,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.LocalTheme
 
 @Composable
 fun BoxScope.BottomBarDragFab(
@@ -25,6 +27,8 @@ fun BoxScope.BottomBarDragFab(
     onClick: () -> Unit,
     onOptionSelected: (String) -> Unit,
 ) {
+    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
+
     DragActionFab(
         state = state,
         icon = icon,
@@ -35,9 +39,12 @@ fun BoxScope.BottomBarDragFab(
         onClick = onClick,
         onOptionSelected = onOptionSelected,
         modifier = modifier
-            .align(Alignment.BottomStart)
+            .align(if (isCenterFab) Alignment.BottomCenter else Alignment.BottomStart)
             .navigationBarsPadding()
-            .padding(start = 12.dp, bottom = 8.dp),
+            .then(
+                if (isCenterFab) Modifier.padding(bottom = 8.dp)
+                else Modifier.padding(start = 12.dp, bottom = 8.dp)
+            ),
     )
 
     FabDragOptions(
