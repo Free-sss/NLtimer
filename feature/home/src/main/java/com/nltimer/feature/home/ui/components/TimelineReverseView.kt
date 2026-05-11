@@ -43,7 +43,6 @@ import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
-import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.styledAlpha
@@ -59,7 +58,6 @@ fun TimelineReverseView(
     cells: List<GridCellUiState>,
     onAddClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val timeFormatter = hhmmFormatter
@@ -112,13 +110,6 @@ fun TimelineReverseView(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item {
-                LayoutMenuHeader(
-                    title = "时间轴",
-                    onLayoutChange = onLayoutChange,
-                )
-            }
-
             items(items = timelineItems, key = { item ->
                 when (item) {
                     is TimelineItemData.Behavior -> "b_${item.behavior.behaviorId}"

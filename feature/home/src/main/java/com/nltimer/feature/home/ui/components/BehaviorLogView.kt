@@ -20,14 +20,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.hhmmFormatter
-import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.model.GridCellUiState
-
 @Composable
 fun BehaviorLogView(
     cells: List<GridCellUiState>,
     onCellLongClick: (GridCellUiState) -> Unit = {},
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val timeFormatter = hhmmFormatter
@@ -46,13 +43,6 @@ fun BehaviorLogView(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                LayoutMenuHeader(
-                    title = "行为日志",
-                    onLayoutChange = onLayoutChange,
-                )
-            }
-
             if (behaviors.isEmpty()) {
                 item {
                     Box(

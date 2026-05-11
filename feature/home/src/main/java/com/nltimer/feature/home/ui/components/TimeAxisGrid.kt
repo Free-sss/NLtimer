@@ -5,14 +5,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
@@ -35,7 +31,6 @@ fun TimeAxisGrid(
     rows: List<GridRowUiState>,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
-    onLayoutChange: (HomeLayout) -> Unit,
     currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
@@ -56,22 +51,6 @@ fun TimeAxisGrid(
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
     ) {
-        item {
-            LayoutMenuHeader(
-                title = "网格时间",
-                onLayoutChange = onLayoutChange,
-                extraMenuItems = {
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("时间标题外观") },
-                        onClick = {
-                            onTimeLabelSettingsClick()
-                        }
-                    )
-                },
-            )
-        }
-
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(
                 row = row,

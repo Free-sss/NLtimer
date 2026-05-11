@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 
 private val OptionsRowPaddingHorizontal = 16.dp
 private val OptionsGap = 8.dp
-private val OptionsGapFromFab = 8.dp
+private val OptionsGapFromFab = 68.dp
 private val OptionCornerRadius = 8.dp
 private val OptionPaddingVertical = 12.dp
 private val OptionTonalElevation = 4.dp

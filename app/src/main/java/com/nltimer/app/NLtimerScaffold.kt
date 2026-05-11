@@ -40,8 +40,10 @@ import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
 import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
+import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +62,11 @@ fun NLtimerScaffold(
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         else -> "NLtimer"
     }
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
     var showSettingsPopup by remember { mutableStateOf(false) }
     val theme = LocalTheme.current
+    val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
+    val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
     val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -108,10 +113,14 @@ fun NLtimerScaffold(
                             AppCollapsedTopAppBar(
                                 title = topBarTitle,
                                 scrollBehavior = topBarScrollBehavior,
+                                layoutLabel = layoutLabel,
+                                onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                             )
                         } else {
                             AppTopAppBar(
                                 title = topBarTitle,
+                                layoutLabel = layoutLabel,
+                                onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                             )
                         }
                     }
@@ -159,7 +168,6 @@ fun NLtimerScaffold(
             }
 
             if (showSettingsPopup) {
-                val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
                     navController = navController,

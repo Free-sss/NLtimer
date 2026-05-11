@@ -68,7 +68,6 @@ fun HomeRoute(
         }
     }
     val onHourClick = remember(viewModel) { { hour: Int -> viewModel.scrollToTime(hour) } }
-    val onLayoutChange = remember(viewModel) { { layout: com.nltimer.core.designsystem.theme.HomeLayout -> viewModel.onHomeLayoutChange(layout) } }
     val onTimeLabelConfigChange = remember(viewModel) {
         { config: com.nltimer.core.designsystem.theme.TimeLabelConfig -> viewModel.onTimeLabelConfigChange(config) }
     }
@@ -91,7 +90,6 @@ fun HomeRoute(
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
         onHourClick = onHourClick,
-        onLayoutChange = onLayoutChange,
         timeLabelConfig = timeLabelConfig,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
     )

@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -80,7 +80,6 @@ fun HomeScreen(
     onAddActivity: AddActivityCallback,
     onAddTag: AddTagCallback,
     onHourClick: (Int) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -120,37 +119,6 @@ fun HomeScreen(
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             snackbarHost = { SnackbarHost(snackbarHostState) },
-            floatingActionButtonPosition = FabPosition.End,
-            floatingActionButton = {
-                DragActionFab(
-                    state = dragFabState,
-                    icon = if (uiState.hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
-                    label = if (uiState.hasActiveBehavior) "完成行为" else null,
-                    containerColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
-                    cornerRadius = if (uiState.hasActiveBehavior) 16.dp else 28.dp,
-                    onClick = if (uiState.hasActiveBehavior) {
-                        { activeBehaviorId?.let { onCompleteBehavior(it) } }
-                    } else {
-                        { onEmptyCellClick(null, null) }
-                    },
-                    onOptionSelected = { option ->
-                        when (option) {
-                            "完成" -> {
-                                if (uiState.hasActiveBehavior) {
-                                    activeBehaviorId?.let { onCompleteBehavior(it) }
-                                } else {
-                                    onShowAddSheet(AddSheetMode.COMPLETED)
-                                }
-                            }
-                            "当前" -> onShowAddSheet(AddSheetMode.CURRENT)
-                            "目标" -> onShowAddSheet(AddSheetMode.TARGET)
-                            else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = if (isFloatingBottomBar) Modifier.padding(bottom = 80.dp) else Modifier,
-                )
-            }
         ) { padding ->
             if (uiState.isLoading) {
                 Box(
@@ -168,7 +136,6 @@ fun HomeScreen(
                         onEmptyCellClick = onEmptyCellClick,
                         onCellLongClick = onCellLongClick,
                         onHourClick = onHourClick,
-                        onLayoutChange = onLayoutChange,
                         onCompleteBehavior = onCompleteBehavior,
                         onStartNextPending = onStartNextPending,
                         onStartBehavior = onStartBehavior,
@@ -191,6 +158,38 @@ fun HomeScreen(
                 onAddTag = onAddTag,
             )
         }
+
+        DragActionFab(
+            state = dragFabState,
+            icon = if (uiState.hasActiveBehavior) Icons.Default.Check else Icons.Default.Add,
+            label = if (uiState.hasActiveBehavior) "完成行为" else null,
+            containerColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
+            contentColor = if (uiState.hasActiveBehavior) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
+            cornerRadius = if (uiState.hasActiveBehavior) 16.dp else 28.dp,
+            onClick = if (uiState.hasActiveBehavior) {
+                { activeBehaviorId?.let { onCompleteBehavior(it) } }
+            } else {
+                { onEmptyCellClick(null, null) }
+            },
+            onOptionSelected = { option ->
+                when (option) {
+                    "完成" -> {
+                        if (uiState.hasActiveBehavior) {
+                            activeBehaviorId?.let { onCompleteBehavior(it) }
+                        } else {
+                            onShowAddSheet(AddSheetMode.COMPLETED)
+                        }
+                    }
+                    "当前" -> onShowAddSheet(AddSheetMode.CURRENT)
+                    "目标" -> onShowAddSheet(AddSheetMode.TARGET)
+                    else -> Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .navigationBarsPadding()
+                .padding(start = 12.dp, bottom = 8.dp),
+        )
 
         FabDragOptions(
             state = dragFabState,
@@ -215,7 +214,6 @@ private fun HomeLayoutContent(
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
@@ -229,7 +227,6 @@ private fun HomeLayoutContent(
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
             onHourClick = onHourClick,
-            onLayoutChange = onLayoutChange,
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             modifier = modifier,
@@ -238,13 +235,11 @@ private fun HomeLayoutContent(
             uiState = uiState,
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
-            onLayoutChange = onLayoutChange,
             modifier = modifier,
         )
         HomeLayout.LOG -> LogContent(
             uiState = uiState,
             onCellLongClick = onCellLongClick,
-            onLayoutChange = onLayoutChange,
             modifier = modifier,
         )
         HomeLayout.MOMENT -> MomentContent(
@@ -252,7 +247,6 @@ private fun HomeLayoutContent(
             activeBehaviorId = activeBehaviorId,
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
-            onLayoutChange = onLayoutChange,
             onCompleteBehavior = onCompleteBehavior,
             onStartNextPending = onStartNextPending,
             onStartBehavior = onStartBehavior,
@@ -267,7 +261,6 @@ private fun GridContent(
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -279,7 +272,6 @@ private fun GridContent(
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
             currentHour = uiState.selectedTimeHour,
-            onLayoutChange = onLayoutChange,
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
@@ -308,7 +300,6 @@ private fun TimelineReverseContent(
     uiState: HomeUiState,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
@@ -316,7 +307,6 @@ private fun TimelineReverseContent(
         cells = allCells,
         onAddClick = onEmptyCellClick,
         onCellLongClick = onCellLongClick,
-        onLayoutChange = onLayoutChange,
         modifier = modifier
     )
 }
@@ -325,14 +315,12 @@ private fun TimelineReverseContent(
 private fun LogContent(
     uiState: HomeUiState,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
     BehaviorLogView(
         cells = allCells,
         onCellLongClick = onCellLongClick,
-        onLayoutChange = onLayoutChange,
         modifier = modifier
     )
 }
@@ -343,7 +331,6 @@ private fun MomentContent(
     activeBehaviorId: Long?,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
@@ -359,7 +346,6 @@ private fun MomentContent(
         onStartBehavior = onStartBehavior,
         onEmptyCellClick = onEmptyCellClick,
         onCellLongClick = onCellLongClick,
-        onLayoutChange = onLayoutChange,
         modifier = modifier,
     )
 }
@@ -416,7 +402,6 @@ private fun HomeScreenPreview() {
             onAddActivity = { _, _, _, _, _, _ -> },
             onAddTag = { _, _, _, _, _, _, _ -> },
             onHourClick = {},
-            onLayoutChange = {}
         )
     }
 }

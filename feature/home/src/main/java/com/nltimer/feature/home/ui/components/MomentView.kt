@@ -13,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
-import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.LocalTime
 
@@ -39,7 +38,6 @@ fun MomentView(
     onStartBehavior: (Long) -> Unit,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val activeCell = remember(cells) {
@@ -86,13 +84,6 @@ fun MomentView(
             start = 16.dp, end = 16.dp, top = 16.dp, bottom = 80.dp
         ),
     ) {
-        item {
-            LayoutMenuHeader(
-                title = "当前时刻",
-                onLayoutChange = onLayoutChange,
-            )
-        }
-
         item {
             MomentFocusCard(
                 activeCell = activeCell,
