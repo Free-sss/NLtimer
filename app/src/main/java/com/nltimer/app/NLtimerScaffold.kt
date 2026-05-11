@@ -19,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +39,8 @@ import com.nltimer.app.component.AppDrawer
 import com.nltimer.app.component.AppCenterFabBottomBar
 import com.nltimer.app.component.AppFloatingBottomBar
 import com.nltimer.app.component.AppTopAppBar
+import com.nltimer.app.component.MomentFilterOption
+import com.nltimer.app.component.MomentSortOption
 import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
 import com.nltimer.app.navigation.NLtimerRoutes
@@ -46,6 +49,8 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
+import com.nltimer.feature.home.ui.components.LocalMomentFilterState
+import com.nltimer.feature.home.ui.components.MomentFilterState
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
@@ -68,8 +73,25 @@ fun NLtimerScaffold(
     }
     val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
     var showSettingsPopup by remember { mutableStateOf(false) }
+    var momentFilterKey by remember { mutableStateOf("ALL") }
+    var momentSortKey by remember { mutableStateOf("TIME_DESC") }
+    val momentFilterOptions = listOf(
+        MomentFilterOption("乃大", "ALL"),
+        MomentFilterOption("曾经", "COMPLETED"),
+        MomentFilterOption("此后", "PENDING"),
+    )
+    val momentSortOptions = listOf(
+        MomentSortOption("时间反", "TIME_DESC"),
+        MomentSortOption("时间正", "TIME_ASC"),
+        MomentSortOption("用时", "DURATION"),
+    )
     val theme = LocalTheme.current
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
+    val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
+        val filterLabel = momentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
+        val sortLabel = momentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
+        "$filterLabel · $sortLabel"
+    } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
     val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
@@ -78,7 +100,17 @@ fun NLtimerScaffold(
         null
     }
 
-    ModalNavigationDrawer(
+    val momentFilterState = remember(momentFilterKey, momentSortKey) {
+        MomentFilterState(
+            filterKey = momentFilterKey,
+            sortKey = momentSortKey,
+            onFilterChange = { momentFilterKey = it },
+            onSortChange = { momentSortKey = it },
+        )
+    }
+
+    CompositionLocalProvider(LocalMomentFilterState provides momentFilterState) {
+        ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             AppDrawer(
@@ -121,12 +153,26 @@ fun NLtimerScaffold(
                                 scrollBehavior = topBarScrollBehavior,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
+                                momentFilterLabel = momentFilterLabel,
+                                momentFilterOptions = momentFilterOptions,
+                                momentFilterKey = momentFilterKey,
+                                onMomentFilterChange = { momentFilterKey = it },
+                                momentSortOptions = momentSortOptions,
+                                momentSortKey = momentSortKey,
+                                onMomentSortChange = { momentSortKey = it },
                             )
                         } else {
                             AppTopAppBar(
                                 title = topBarTitle,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
+                                momentFilterLabel = momentFilterLabel,
+                                momentFilterOptions = momentFilterOptions,
+                                momentFilterKey = momentFilterKey,
+                                onMomentFilterChange = { momentFilterKey = it },
+                                momentSortOptions = momentSortOptions,
+                                momentSortKey = momentSortKey,
+                                onMomentSortChange = { momentSortKey = it },
                             )
                         }
                     }
@@ -195,9 +241,10 @@ fun NLtimerScaffold(
                     onDismiss = { showSettingsPopup = false },
                     onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) },
                     onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) },
-                    popupOffsetY = if (isAnyFloating) -160 else -100,
+                    popupOffsetY = if (isAnyFloating) -300 else -260,
                 )
             }
         }
+    }
     }
 }

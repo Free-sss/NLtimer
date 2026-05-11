@@ -40,6 +40,22 @@ fun MomentView(
     onCellLongClick: (GridCellUiState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val momentFilterState = LocalMomentFilterState.current
+    val filterTab = remember(momentFilterState.filterKey) {
+        when (momentFilterState.filterKey) {
+            "COMPLETED" -> MomentFilterTab.COMPLETED
+            "PENDING" -> MomentFilterTab.PENDING
+            else -> MomentFilterTab.ALL
+        }
+    }
+    val sortMode = remember(momentFilterState.sortKey) {
+        when (momentFilterState.sortKey) {
+            "TIME_ASC" -> MomentSortMode.TIME_ASC
+            "DURATION" -> MomentSortMode.DURATION
+            else -> MomentSortMode.TIME_DESC
+        }
+    }
+
     val activeCell = remember(cells) {
         cells.firstOrNull {
             it.isCurrent && it.behaviorId != null && it.status == BehaviorNature.ACTIVE
@@ -49,9 +65,6 @@ fun MomentView(
         cells.firstOrNull { it.behaviorId != null && it.status == BehaviorNature.PENDING }
     }
 
-    var filterTab by remember { mutableStateOf(MomentFilterTab.ALL) }
-    var menuExpanded by remember { mutableStateOf(false) }
-    var sortMode by remember { mutableStateOf(MomentSortMode.TIME_DESC) }
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val behaviors = remember(cells, filterTab, sortMode) {
@@ -92,17 +105,6 @@ fun MomentView(
                 onStartNextPending = onStartNextPending,
                 onStartBehavior = onStartBehavior,
                 onEmptyCellClick = { onEmptyCellClick(null, null) },
-            )
-        }
-
-        item {
-            MomentFilterSortBar(
-                filterTab = filterTab,
-                onFilterChange = { filterTab = it },
-                menuExpanded = menuExpanded,
-                onMenuExpandedChange = { menuExpanded = it },
-                sortMode = sortMode,
-                onSortChange = { sortMode = it },
             )
         }
 

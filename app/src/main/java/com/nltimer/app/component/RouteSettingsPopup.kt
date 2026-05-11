@@ -78,8 +78,8 @@ fun RouteSettingsPopup(
     var showLayoutOptions by remember { mutableStateOf(false) }
 
     Popup(
-        alignment = Alignment.BottomEnd,
-        offset = IntOffset(x = 0, y = popupOffsetY),
+        alignment = Alignment.BottomStart,
+        offset = IntOffset(x = 16, y = popupOffsetY),
         onDismissRequest = onDismiss,
         properties = PopupProperties(focusable = true),
     ) {
