@@ -85,6 +85,7 @@ internal fun AddBehaviorSheetContent(
     onDismiss: () -> Unit,
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
 
@@ -118,6 +119,7 @@ internal fun AddBehaviorSheetContent(
                         emphasisColor = emphasisColor,
                         onConfirm = onConfirm,
                         onDismiss = onDismiss,
+                        onMatchNote = onMatchNote,
                     )
                 }
             }
@@ -175,6 +177,7 @@ private fun SheetMainContent(
     emphasisColor: Color,
     onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
+    onMatchNote: (String) -> NoteScanResult,
 ) {
     val context = LocalContext.current
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
