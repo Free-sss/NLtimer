@@ -15,6 +15,7 @@ import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.util.hasTimeConflict
 import com.nltimer.core.designsystem.component.DragMenuState
 import com.nltimer.core.designsystem.theme.PathDrawMode
+import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -137,4 +138,46 @@ internal class AddBehaviorState(
             startTime.withSecond(sourceSeconds).withNano(0)
         }
     }
+
+    /**
+     * 把备注扫描结果合并到当前选中状态（不破坏用户已手动选中的项）。
+     *
+     * 合并规则：
+     * - 活动（单选）：仅当 [selectedActivityId] 为 null 且扫描结果有命中时写入；已选活动**不被覆盖**
+     * - 标签（多选）：把命中标签 ID 并入现有集合，已有选中保留
+     *
+     * @return 实际产生的变更摘要，调用方可据此显示反馈（例如 Toast）
+     */
+    fun applyNoteScan(result: NoteScanResult): NoteScanApplyOutcome {
+        val activityAdded = if (selectedActivityId == null && result.activityId != null) {
+            selectedActivityId = result.activityId
+            true
+        } else false
+
+        val newTagIds = result.tagIds - selectedTagIds
+        if (newTagIds.isNotEmpty()) {
+            selectedTagIds = selectedTagIds + newTagIds
+        }
+
+        return NoteScanApplyOutcome(
+            activityAdded = activityAdded,
+            activityHeld = !activityAdded && result.activityId != null && selectedActivityId != result.activityId,
+            tagsAdded = newTagIds.size,
+        )
+    }
+}
+
+/**
+ * `applyNoteScan` 的副作用摘要，用于上层反馈。
+ *
+ * @property activityAdded 本次扫描结果是否实际写入了 [AddBehaviorState.selectedActivityId]
+ * @property activityHeld 扫描命中活动但因用户已选而保持原状（用于"已保留你的活动选择"提示）
+ * @property tagsAdded 本次新增到 [AddBehaviorState.selectedTagIds] 的标签数量（去重后）
+ */
+internal data class NoteScanApplyOutcome(
+    val activityAdded: Boolean,
+    val activityHeld: Boolean,
+    val tagsAdded: Int,
+) {
+    val hasAnyChange: Boolean get() = activityAdded || tagsAdded > 0
 }

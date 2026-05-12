@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -111,8 +112,8 @@ fun NoteInputComponent(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 ActionIconButton(
-                    icon = Icons.Default.Description,
-                    label = "高级设置",
+                    icon = Icons.Default.AutoFixHigh,
+                    label = "智能识别",
                     onClick = onTopButton,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                     containerColor = MaterialTheme.colorScheme.secondaryContainer

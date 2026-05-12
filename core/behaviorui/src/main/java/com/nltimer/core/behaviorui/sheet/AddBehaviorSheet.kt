@@ -19,6 +19,7 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.tools.match.NoteScanResult
 import java.time.LocalTime
 
 private const val ScrimAlpha = 0.32f
@@ -42,6 +43,7 @@ fun AddBehaviorSheet(
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -61,6 +63,7 @@ fun AddBehaviorSheet(
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onMatchNote = onMatchNote,
     )
 }
 
@@ -82,6 +85,7 @@ fun AddCurrentBehaviorSheet(
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -100,6 +104,7 @@ fun AddCurrentBehaviorSheet(
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onMatchNote = onMatchNote,
     )
 }
 
@@ -120,6 +125,7 @@ fun AddTargetBehaviorSheet(
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
         modifier = modifier,
@@ -137,6 +143,7 @@ fun AddTargetBehaviorSheet(
         onConfirm = onConfirm,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onMatchNote = onMatchNote,
     )
 }
 
@@ -160,6 +167,7 @@ private fun BehaviorSheetWrapper(
     onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: AddActivityCallback,
     onAddTag: AddTagCallback,
+    onMatchNote: (String) -> NoteScanResult,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -192,6 +200,7 @@ private fun BehaviorSheetWrapper(
             onDismiss = onDismiss,
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
+            onMatchNote = onMatchNote,
         )
     }
 }

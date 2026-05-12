@@ -20,6 +20,8 @@ import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.tools.match.NoteMatcher
+import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
@@ -54,6 +56,7 @@ class HomeViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val settingsPrefs: SettingsPrefs,
     private val matchStrategy: MatchStrategy,
+    private val noteMatcher: NoteMatcher,
     private val addBehaviorUseCase: AddBehaviorUseCase,
     private val addTagUseCase: AddTagUseCase,
     private val addActivityUseCase: AddActivityUseCase,
@@ -247,6 +250,13 @@ class HomeViewModel @Inject constructor(
             behaviorRepository.completeCurrentAndStartNext(behaviorId, isIdle)
         }
     }
+
+    /**
+     * 在内存中扫描当前已加载的活动 / 标签列表，返回备注命中结果。
+     * 纯内存 contains 计算，2000 条规模下 ~1-3ms，主线程直接调用即可。
+     */
+    fun matchNoteFromText(note: String): NoteScanResult =
+        noteMatcher.scan(note, _activities.value, _allTags.value)
 
     fun toggleIdleMode() {
         _uiState.update { it.copy(isIdleMode = !it.isIdleMode) }

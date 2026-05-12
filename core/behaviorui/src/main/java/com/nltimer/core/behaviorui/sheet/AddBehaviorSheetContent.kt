@@ -55,6 +55,7 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.DragMenuOptions
 import com.nltimer.core.designsystem.component.DragMenuOptionsPlacement
 import com.nltimer.core.designsystem.component.DraggableMenuAnchor
+import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
