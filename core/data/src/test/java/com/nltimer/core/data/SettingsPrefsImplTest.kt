@@ -31,6 +31,7 @@ class SettingsPrefsImplTest {
         assertTrue(config.tagUseColorForText)
         assertTrue(config.showBehaviorNature)
         assertEquals(PathDrawMode.StartToEnd, config.pathDrawMode)
+        assertEquals(false, config.autoMatchNote)
     }
 
     @Test
@@ -77,6 +78,7 @@ class SettingsPrefsImplTest {
             tagUseColorForText = false,
             showBehaviorNature = false,
             pathDrawMode = PathDrawMode.BothSidesToMiddle,
+            autoMatchNote = true,
         )
         assertEquals(ChipDisplayMode.Underline, config.activityDisplayMode)
         assertEquals(GridLayoutMode.Vertical, config.activityLayoutMode)
@@ -85,6 +87,7 @@ class SettingsPrefsImplTest {
         assertEquals(false, config.activityUseColorForText)
         assertEquals(PathDrawMode.BothSidesToMiddle, config.pathDrawMode)
         assertEquals(false, config.showBehaviorNature)
+        assertEquals(true, config.autoMatchNote)
     }
 
     @Test

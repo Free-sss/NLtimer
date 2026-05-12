@@ -163,6 +163,13 @@ fun DialogConfigScreen(
                     display = { it.displayName() },
                     onSelect = { onUpdateConfig(config.copy(secondsStrategy = it)) },
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                InlineToggleRow(
+                    label = "智能识别",
+                    options = listOf("关闭" to false, "自动" to true),
+                    selected = config.autoMatchNote,
+                    onSelect = { onUpdateConfig(config.copy(autoMatchNote = it)) },
+                )
             }
         }
     }
