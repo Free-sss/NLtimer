@@ -36,13 +36,12 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.util.formatDurationMinutes
+import com.nltimer.core.data.util.formatTimestamp
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.debugui.FieldDetailDialog
 import com.nltimer.core.debugui.toFieldInfoList
 import com.nltimer.core.debugui.toJsonString
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,7 +136,7 @@ fun ActivityDetailSheet(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     StatRow("累计总时长", formatDurationMinutes(stats.totalDurationMinutes))
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    StatRow("最近一次使用", formatTimestamp(stats.lastUsedTimestamp))
+                    StatRow("最近一次使用", if (stats.lastUsedTimestamp == null || stats.lastUsedTimestamp == 0L) "从未使用" else formatTimestamp(stats.lastUsedTimestamp))
                 }
             }
 
@@ -170,8 +169,3 @@ private fun StatRow(label: String, value: String) {
     }
 }
 
-private fun formatTimestamp(timestamp: Long?): String {
-    if (timestamp == null || timestamp == 0L) return "从未使用"
-    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestamp))
-}

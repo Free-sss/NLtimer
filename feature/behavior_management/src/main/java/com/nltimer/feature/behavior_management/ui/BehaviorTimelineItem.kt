@@ -18,11 +18,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.util.epochToLocalTime
+import com.nltimer.core.data.util.formatDurationCompact
+import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.component.toComposeColor
 import com.nltimer.core.designsystem.theme.styledAlpha
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -39,28 +39,13 @@ fun BehaviorTimelineItem(
     val tags = bwd.tags
 
     val lineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f))
-    val dotColor = activity.color?.let { c ->
-        android.graphics.Color.valueOf(c).let { cc ->
-            Color(cc.red(), cc.green(), cc.blue(), cc.alpha())
-        }
-    } ?: MaterialTheme.colorScheme.primary
+    val dotColor = activity.color.toComposeColor()
 
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val startTime = Instant.ofEpochMilli(behavior.startTime)
-        .atZone(ZoneId.systemDefault()).toLocalTime().format(timeFormatter)
-    val endTime = behavior.endTime?.let {
-        Instant.ofEpochMilli(it)
-            .atZone(ZoneId.systemDefault()).toLocalTime().format(timeFormatter)
-    }
+    val startTime = behavior.startTime.epochToLocalTime().format(hhmmFormatter)
+    val endTime = behavior.endTime?.let { it.epochToLocalTime().format(hhmmFormatter) }
 
     val durationText = behavior.endTime?.let { end ->
-        val minutes = Duration.between(
-            Instant.ofEpochMilli(behavior.startTime),
-            Instant.ofEpochMilli(end),
-        ).toMinutes()
-        val h = minutes / 60
-        val m = minutes % 60
-        if (h > 0) "${h}.${m}h" else "${m}m"
+        formatDurationCompact(end - behavior.startTime)
     }
 
     Row(
@@ -156,11 +141,7 @@ fun BehaviorTimelineItem(
                             modifier = Modifier.weight(1f, fill = false),
                         )
                     }
-                    val statusText = when (behavior.status) {
-                        BehaviorNature.COMPLETED -> "✓"
-                        BehaviorNature.ACTIVE -> "▶"
-                        BehaviorNature.PENDING -> "○"
-                    }
+                    val statusText = behavior.status.displaySymbol
                     Text(
                         text = statusText,
                         style = MaterialTheme.typography.labelSmall,
