@@ -174,7 +174,7 @@ private fun DotLabel(
 
 private fun formatTime(time: LocalTime, format: TimeLabelFormat): String {
     val formatter = when (format) {
-        TimeLabelFormat.HH_MM -> DateTimeFormatter.ofPattern("HH:mm")
+        TimeLabelFormat.HH_MM -> hhmmFormatter
         TimeLabelFormat.H_MM -> DateTimeFormatter.ofPattern("H:mm")
         TimeLabelFormat.H_MM_A -> DateTimeFormatter.ofPattern("h:mm a")
     }

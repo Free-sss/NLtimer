@@ -27,14 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.util.formatEpochTimeRange
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.ImportNewItem
 import com.nltimer.feature.behavior_management.model.ImportPreview
 import com.nltimer.feature.behavior_management.model.ImportPreviewItem
 import com.nltimer.feature.behavior_management.model.NewItemType
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

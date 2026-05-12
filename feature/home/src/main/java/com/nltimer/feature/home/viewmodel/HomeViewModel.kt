@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import javax.inject.Inject
 
 /**
@@ -126,8 +125,8 @@ class HomeViewModel @Inject constructor(
 
     private fun loadHomeBehaviors() {
         viewModelScope.launch {
-            val dayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val dayEnd = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val dayStart = today.startOfDayMillis()
+            val dayEnd = today.endOfDayMillis()
 
             behaviorRepository.getHomeBehaviors(dayStart, dayEnd)
                 .collect { behaviors ->

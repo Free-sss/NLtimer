@@ -32,12 +32,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.util.epochToLocalTime
+import com.nltimer.core.data.util.formatDurationCompactHm
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.ViewMode
 import com.nltimer.feature.behavior_management.viewmodel.BehaviorManagementViewModel
-import java.time.Instant
 import java.time.LocalTime
-import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -209,11 +209,8 @@ fun BehaviorManagementScreen(
     }
 
     editBehavior?.let { bwd ->
-        val initialStartTime = Instant.ofEpochMilli(bwd.behavior.startTime)
-            .atZone(ZoneId.systemDefault()).toLocalTime()
-        val initialEndTime = bwd.behavior.endTime?.let {
-            Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime()
-        }
+        val initialStartTime = bwd.behavior.startTime.epochToLocalTime()
+        val initialEndTime = bwd.behavior.endTime?.epochToLocalTime()
 
         AddBehaviorSheet(
             activities = activities,
@@ -262,9 +259,7 @@ private fun SummaryBar(
         .sumOf { bwd ->
             (bwd.behavior.endTime!! - bwd.behavior.startTime) / 60_000
         }
-    val hours = totalDurationMinutes / 60
-    val minutes = totalDurationMinutes % 60
-    val durationText = if (hours > 0) "${hours}h${minutes}m" else "${minutes}m"
+    val durationText = formatDurationCompactHm(totalDurationMinutes * 60_000)
 
     Row(
         modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp),

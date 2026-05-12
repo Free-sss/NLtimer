@@ -34,9 +34,9 @@ fun BehaviorDetailDialog(
 
     fun epochToMsString(epochMs: Long?): String {
         if (epochMs == null) return "(空)"
-        val instant = java.time.Instant.ofEpochMilli(epochMs)
-            .atZone(java.time.ZoneId.systemDefault())
-        return instant.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
+        return Instant.ofEpochMilli(epochMs)
+            .atZone(ZoneId.systemDefault())
+            .format(yyyyMMddHHmmFormatter)
     }
 
     fun buildExportText(): String {
@@ -50,9 +50,9 @@ fun BehaviorDetailDialog(
         stringBuilder.appendLine("wasPlanned: ${cell.wasPlanned}")
         stringBuilder.appendLine("isAddPlaceholder: ${cell.isAddPlaceholder}")
         stringBuilder.appendLine("tags: ${cell.tags.joinToString("、") { "id=${it.id}, name=${it.name}, color=${it.color}, isActive=${it.isActive}" }.ifEmpty { "(空)" }}")
-        stringBuilder.appendLine("startTime: ${cell.startTime?.format(DateTimeFormatter.ofPattern("HH:mm:ss")) ?: "(空)"}")
+        stringBuilder.appendLine("startTime: ${cell.startTime?.format(hhmmssFormatter) ?: "(空)"}")
         stringBuilder.appendLine("startEpochMs: ${epochToMsString(cell.startEpochMs)}")
-        stringBuilder.appendLine("endTime: ${cell.endTime?.format(DateTimeFormatter.ofPattern("HH:mm:ss")) ?: "(空)"}")
+        stringBuilder.appendLine("endTime: ${cell.endTime?.format(hhmmssFormatter) ?: "(空)"}")
         stringBuilder.appendLine("endEpochMs: ${epochToMsString(cell.endEpochMs)}")
         stringBuilder.appendLine("estimatedDuration: ${cell.estimatedDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
         stringBuilder.appendLine("actualDuration: ${cell.actualDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
@@ -86,9 +86,9 @@ fun BehaviorDetailDialog(
                 DetailRow("tags", cell.tags.joinToString("、") {
                     "id=${it.id}, name=${it.name}, color=${it.color}, isActive=${it.isActive}"
                 }.ifEmpty { "(空)" })
-                DetailRow("startTime", cell.startTime?.format(DateTimeFormatter.ofPattern("HH:mm:ss")) ?: "(空)")
+                DetailRow("startTime", cell.startTime?.format(hhmmssFormatter) ?: "(空)")
                 DetailRow("startEpochMs", epochToMsString(cell.startEpochMs))
-                DetailRow("endTime", cell.endTime?.format(DateTimeFormatter.ofPattern("HH:mm:ss")) ?: "(空)")
+                DetailRow("endTime", cell.endTime?.format(hhmmssFormatter) ?: "(空)")
                 DetailRow("endEpochMs", epochToMsString(cell.endEpochMs))
                 DetailRow("estimatedDuration", cell.estimatedDuration?.let {
                     "${formatDuration(it)} (${it}ms)"
