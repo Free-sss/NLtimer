@@ -226,6 +226,9 @@ class BehaviorRepositoryImpl @Inject constructor(
         return assembleBehaviorWithDetailsList(entities)
     }
 
+    override fun getTotalDurationAllBehaviors(): Flow<Long> =
+        behaviorDao.getTotalDurationAllBehaviors()
+
     private suspend fun assembleBehaviorWithDetailsList(entities: List<BehaviorEntity>): List<BehaviorWithDetails> {
         if (entities.isEmpty()) return emptyList()
         val behaviorIds = entities.map { it.id }

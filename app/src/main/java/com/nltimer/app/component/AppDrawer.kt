@@ -1,7 +1,9 @@
 package com.nltimer.app.component
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -27,12 +29,17 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.navigation.NLtimerRoutes
@@ -73,6 +80,7 @@ private val drawerManagementItems = listOf(
  *
  * @param navController 导航控制器
  * @param onClose 关闭抽屉的回调
+ * @param totalDurationMs 总记录时长（毫秒）
  * @param modifier Modifier 修饰符
  */
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -81,6 +89,7 @@ private val drawerManagementItems = listOf(
 fun AppDrawer(
     navController: NavHostController,
     onClose: () -> Unit,
+    totalDurationMs: Long = 0L,
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
@@ -115,7 +124,10 @@ fun AppDrawer(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
         )
 
-        
+        // 总记录时长圆角色块
+        TotalDurationCircle(totalDurationMs = totalDurationMs)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // 2. 管理分组小标题
         Text(
@@ -172,6 +184,65 @@ fun AppDrawer(
                     modifier = Modifier.padding(horizontal = 12.dp),
                 )
             }
+    }
+}
+
+@Composable
+private fun TotalDurationCircle(totalDurationMs: Long) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val complementaryColor = remember(primaryColor) {
+        Color(1f - primaryColor.red, 1f - primaryColor.green, 1f - primaryColor.blue)
+    }
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+
+    val durationText = remember(totalDurationMs) {
+        val totalSeconds = totalDurationMs / 1000
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        when {
+            hours > 0 -> "${hours}h ${minutes}m"
+            minutes > 0 -> "${minutes}m"
+            else -> "0m"
+        }
+    }
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Canvas(modifier = Modifier.size(120.dp)) {
+            val radius = size.minDimension / 2
+            val center = Offset(size.width / 2, size.height / 2)
+            drawCircle(
+                color = complementaryColor,
+                radius = radius,
+                center = center,
+            )
+            drawCircle(
+                color = complementaryColor.copy(alpha = 0.3f),
+                radius = radius + 4.dp.toPx(),
+                center = center,
+                style = Stroke(width = 2.dp.toPx()),
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = durationText,
+                color = onPrimaryColor,
+                fontSize = 20.sp,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Text(
+                text = "总时长",
+                color = onPrimaryColor.copy(alpha = 0.8f),
+                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
     }
 }
 

@@ -273,4 +273,8 @@ interface BehaviorDao {
         """
     )
     suspend fun getByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorEntity>
+
+    /** 计算所有已完成行为的总耗时（毫秒） */
+    @Query("SELECT COALESCE(SUM(COALESCE(actualDuration, (endTime - startTime))), 0) FROM behaviors WHERE status = 'completed'")
+    fun getTotalDurationAllBehaviors(): Flow<Long>
 }

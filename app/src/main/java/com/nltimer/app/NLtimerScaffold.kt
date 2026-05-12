@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.component.AppBottomNavigation
@@ -44,6 +45,7 @@ import com.nltimer.app.component.MomentSortOption
 import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
 import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.app.viewmodel.DrawerViewModel
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
@@ -87,6 +89,8 @@ fun NLtimerScaffold(
     )
     val theme = LocalTheme.current
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
+    val drawerViewModel: DrawerViewModel = hiltViewModel()
+    val totalDurationMs by drawerViewModel.totalDurationMs.collectAsStateWithLifecycle()
     val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
         val filterLabel = momentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
         val sortLabel = momentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
@@ -116,6 +120,7 @@ fun NLtimerScaffold(
             AppDrawer(
                 navController = navController,
                 onClose = { scope.launch { drawerState.close() } },
+                totalDurationMs = totalDurationMs,
             )
         },
     ) {
