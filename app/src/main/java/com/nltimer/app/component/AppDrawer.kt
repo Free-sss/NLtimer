@@ -1,20 +1,24 @@
 package com.nltimer.app.component
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material.icons.automirrored.filled.EventNote
 import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.automirrored.filled.List
@@ -25,21 +29,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.R as DR
+import com.nltimer.core.designsystem.component.cardColorForStrategy
+import com.nltimer.core.designsystem.theme.LocalTheme
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledCorner
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.navigation.NLtimerRoutes
@@ -170,8 +179,6 @@ fun AppDrawer(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
         // 4. 其余常规条目（设置 + debug 动态追加项），保持可扩展顺序
         drawerMenuItems
             .filter { it.route != NLtimerRoutes.THEME_SETTINGS }
@@ -187,13 +194,23 @@ fun AppDrawer(
     }
 }
 
+@OptIn(ExperimentalTextApi::class)
 @Composable
 private fun TotalDurationCircle(totalDurationMs: Long) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val complementaryColor = remember(primaryColor) {
-        Color(1f - primaryColor.red, 1f - primaryColor.green, 1f - primaryColor.blue)
+    val strategy = LocalTheme.current.style.cardColorStrategy
+    val containerColor = cardColorForStrategy(strategy)
+    val cornerRadius = styledCorner(ShapeTokens.CORNER_FULL)
+    val flexRounded = remember {
+        FontFamily(
+            Font(
+                resId = DR.font.google_sans_flex,
+                variationSettings = FontVariation.Settings(
+                    FontVariation.weight(800),
+                    FontVariation.Setting("ROND", 100f),
+                ),
+            )
+        )
     }
-    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
     val durationText = remember(totalDurationMs) {
         val totalSeconds = totalDurationMs / 1000
@@ -206,42 +223,33 @@ private fun TotalDurationCircle(totalDurationMs: Long) {
         }
     }
 
-    Box(
-        contentAlignment = Alignment.Center,
+    ElevatedCard(
+        shape = RoundedCornerShape(cornerRadius),
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 4.dp),
     ) {
-        Canvas(modifier = Modifier.size(120.dp)) {
-            val radius = size.minDimension / 2
-            val center = Offset(size.width / 2, size.height / 2)
-            drawCircle(
-                color = complementaryColor,
-                radius = radius,
-                center = center,
-            )
-            drawCircle(
-                color = complementaryColor.copy(alpha = 0.3f),
-                radius = radius + 4.dp.toPx(),
-                center = center,
-                style = Stroke(width = 2.dp.toPx()),
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
         ) {
             Text(
                 text = durationText,
-                color = onPrimaryColor,
-                fontSize = 20.sp,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = flexRounded,
+                ),
             )
-            Text(
-                text = "总时长",
-                color = onPrimaryColor.copy(alpha = 0.8f),
-                fontSize = 12.sp,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            // Spacer(modifier = Modifier.width(8.dp))
+            // Text(
+            //     text = "总时长",
+            //     style = MaterialTheme.typography.bodySmall.copy(
+            //         fontFamily = flexRounded,
+            //     ),
+            // )
         }
     }
 }

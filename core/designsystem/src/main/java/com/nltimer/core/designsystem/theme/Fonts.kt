@@ -9,4 +9,5 @@ enum class Fonts {
     FIGTREE,
     SYSTEM_DEFAULT,
     DM_SERIF_TEXT,
+    GOOGLE_SANS_FLEX,
 }
