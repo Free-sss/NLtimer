@@ -136,7 +136,7 @@ fun ActivityDetailSheet(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     StatRow("累计总时长", formatDurationMinutes(stats.totalDurationMinutes))
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                    StatRow("最近一次使用", if (stats.lastUsedTimestamp == null || stats.lastUsedTimestamp == 0L) "从未使用" else formatTimestamp(stats.lastUsedTimestamp))
+                    StatRow("最近一次使用", stats.lastUsedTimestamp?.let { if (it == 0L) "从未使用" else formatTimestamp(it) } ?: "从未使用")
                 }
             }
 
