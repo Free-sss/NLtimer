@@ -247,18 +247,7 @@ fun ExportConfirmDialog(
 }
 
 private fun formatDuplicateItem(item: ImportPreviewItem): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    val startTime = Instant.ofEpochMilli(item.startTime)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(formatter)
-    val endTime = item.endTime?.let {
-        Instant.ofEpochMilli(it)
-            .atZone(ZoneId.systemDefault())
-            .toLocalTime()
-            .format(formatter)
-    }
-    val timeRange = if (endTime != null) "$startTime-$endTime" else startTime
+    val timeRange = formatEpochTimeRange(item.startTime, item.endTime).replace(" - ", "-")
     return "${item.activityName} $timeRange"
 }
 
