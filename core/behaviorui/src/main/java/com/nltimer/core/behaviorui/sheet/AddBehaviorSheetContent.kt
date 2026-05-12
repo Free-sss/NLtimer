@@ -29,10 +29,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +62,7 @@ import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.tools.match.NoteScanResult
+import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -284,6 +287,13 @@ private fun SheetMainContent(
                 functionChipOnLongClick = { state.showAddTagDialog = true },
             )
             Spacer(modifier = Modifier.height(10.dp))
+
+            NoteAutoMatchEffect(
+                enabled = dialogConfig.autoMatchNote,
+                note = state.note,
+                onMatchNote = onMatchNote,
+                onApplyScan = { state.applyNoteScan(it) },
+            )
 
             NoteInputComponent(
                 note = state.note,
@@ -559,3 +569,31 @@ private fun DragOptionCell(
         }
     }
 }
+
+/**
+ * 自动智能识别副作用：开启时监听备注文本，经 [NOTE_AUTO_MATCH_DEBOUNCE_MS] 防抖后
+ * 调用 [onMatchNote] 并把结果合并到状态。
+ *
+ * 静默模式（无 Toast）—— 与手动按钮触发的反馈路径区分：自动触发会随用户敲字高频发生，
+ * 弹 Toast 会打扰；手动按钮仍保留原 Toast 反馈作为强制重扫入口。
+ *
+ * 防抖实现：[LaunchedEffect] 以 `enabled` 与 `note` 为 key，每次 note 变化都会取消旧协程
+ * 重启新协程，旧的 [delay] 被取消即等于"输入仍在进行"，达到时间窗口才执行匹配。
+ */
+@Composable
+private fun NoteAutoMatchEffect(
+    enabled: Boolean,
+    note: String,
+    onMatchNote: (String) -> NoteScanResult,
+    onApplyScan: (NoteScanResult) -> Unit,
+) {
+    val currentOnMatch by rememberUpdatedState(onMatchNote)
+    val currentOnApply by rememberUpdatedState(onApplyScan)
+    LaunchedEffect(enabled, note) {
+        if (!enabled || note.isBlank()) return@LaunchedEffect
+        delay(NOTE_AUTO_MATCH_DEBOUNCE_MS)
+        currentOnApply(currentOnMatch(note))
+    }
+}
+
+private const val NOTE_AUTO_MATCH_DEBOUNCE_MS = 300L

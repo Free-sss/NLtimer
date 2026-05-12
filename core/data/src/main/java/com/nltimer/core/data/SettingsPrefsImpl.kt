@@ -132,6 +132,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showBehaviorNature = prefs[showNatureKey] ?: true,
             pathDrawMode = try { PathDrawMode.valueOf(prefs[pathDrawModeKey] ?: PathDrawMode.StartToEnd.name) } catch (_: IllegalArgumentException) { PathDrawMode.StartToEnd },
             secondsStrategy = try { SecondsStrategy.valueOf(prefs[secondsStrategyKey] ?: SecondsStrategy.OPEN_TIME.name) } catch (_: IllegalArgumentException) { SecondsStrategy.OPEN_TIME },
+            autoMatchNote = prefs[autoMatchNoteKey] ?: false,
 
         )
     }
@@ -151,6 +152,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[showNatureKey] = config.showBehaviorNature
             prefs[pathDrawModeKey] = config.pathDrawMode.name
             prefs[secondsStrategyKey] = config.secondsStrategy.name
+            prefs[autoMatchNoteKey] = config.autoMatchNote
 
         }
     }
@@ -220,6 +222,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val showNatureKey = booleanPreferencesKey("show_nature_selector")
         private val pathDrawModeKey = stringPreferencesKey("path_draw_mode")
         private val secondsStrategyKey = stringPreferencesKey("seconds_strategy")
+        private val autoMatchNoteKey = booleanPreferencesKey("auto_match_note")
         private val timeLabelConfigKey = stringPreferencesKey("time_label_config")
 
         private val cornerPresetKey = stringPreferencesKey("corner_preset")
