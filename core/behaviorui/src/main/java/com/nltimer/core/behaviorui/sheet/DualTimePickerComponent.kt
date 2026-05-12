@@ -28,11 +28,11 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.data.util.mmddFormatter
 import com.nltimer.core.designsystem.theme.styledAlpha
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 private val ColonTextColor = Color(0xFF0A1034)
 
@@ -58,7 +58,7 @@ fun DualTimePicker(
 
     val today = LocalDate.now()
     val threeDaysAgo = today.minusDays(3)
-    val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+    val dateFormatter = mmddFormatter
 
     val sharedDates = remember(today) {
         (0..6).map { offset ->
@@ -222,7 +222,7 @@ fun SingleTimePicker(
 
     val today = LocalDate.now()
     val threeDaysAgo = today.minusDays(3)
-    val dateFormatter = DateTimeFormatter.ofPattern("MM/dd")
+    val dateFormatter = mmddFormatter
 
     val sharedDates = remember(today) {
         (0..6).map { offset ->
