@@ -21,6 +21,7 @@ import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
+import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.styledCorner
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

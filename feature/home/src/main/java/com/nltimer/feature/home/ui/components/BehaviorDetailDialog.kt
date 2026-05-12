@@ -18,8 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.util.formatDuration
+import com.nltimer.core.data.util.hhmmssFormatter
+import com.nltimer.core.data.util.yyyyMMddHHmmFormatter
 import com.nltimer.feature.home.model.GridCellUiState
-import java.time.format.DateTimeFormatter
+import java.time.Instant
+import java.time.ZoneId
 
 @Composable
 fun BehaviorDetailDialog(

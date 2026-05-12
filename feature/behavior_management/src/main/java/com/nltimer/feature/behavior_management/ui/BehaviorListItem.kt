@@ -128,7 +128,7 @@ fun BehaviorListItem(
             }
         }
 
-        val timeText = formatTimeRange(behavior.startTime, behavior.endTime)
+        val timeText = formatEpochTimeRange(behavior.startTime, behavior.endTime)
         Text(
             text = timeText,
             style = MaterialTheme.typography.labelMedium.copy(
@@ -138,17 +138,3 @@ fun BehaviorListItem(
     }
 }
 
-private fun formatTimeRange(start: Long, end: Long?): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    val startTime = Instant.ofEpochMilli(start)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(formatter)
-    val endTime = end?.let {
-        Instant.ofEpochMilli(it)
-            .atZone(ZoneId.systemDefault())
-            .toLocalTime()
-            .format(formatter)
-    }
-    return if (endTime != null) "$startTime - $endTime" else startTime
-}
