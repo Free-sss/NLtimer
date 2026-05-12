@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,38 +35,51 @@ private val OptionTonalElevation = 4.dp
 private val OptionShadowElevation = 4.dp
 private const val MaxOptionsPerRow = 3
 
+enum class DragMenuOptionsPlacement {
+    AboveAnchorTop,
+    AboveAnchorBottom,
+}
+
 @Composable
-fun FabDragOptions(
-    state: DragFabState,
+fun DragMenuOptions(
+    state: DragMenuState,
     options: List<String>,
     modifier: Modifier = Modifier,
+    placement: DragMenuOptionsPlacement = DragMenuOptionsPlacement.AboveAnchorBottom,
+    gapFromAnchor: Dp = OptionsGapFromFab,
+    horizontalPadding: Dp = OptionsRowPaddingHorizontal,
+    rowGap: Dp = OptionsGap,
+    maxOptionsPerRow: Int = MaxOptionsPerRow,
 ) {
     if (!state.isDragging) return
 
     val density = LocalDensity.current
-    val gapPx = with(density) { OptionsGapFromFab.toPx() }
-    val fabBottomPx = state.fabLayoutPosition.y + state.fabSize.height
-    val optionsY = fabBottomPx - state.optionsRowHeight - gapPx - state.boxPositionInWindow.y
+    val gapPx = with(density) { gapFromAnchor.toPx() }
+    val anchorY = when (placement) {
+        DragMenuOptionsPlacement.AboveAnchorTop -> state.anchorLayoutPosition.y
+        DragMenuOptionsPlacement.AboveAnchorBottom -> state.anchorLayoutPosition.y + state.anchorSize.height
+    }
+    val optionsY = anchorY - state.optionsRowHeight - gapPx - state.containerPositionInWindow.y
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = OptionsRowPaddingHorizontal)
+            .padding(horizontal = horizontalPadding)
             .offset { IntOffset(0, optionsY.roundToInt()) }
             .onGloballyPositioned { coords ->
                 state.optionsRowHeight = coords.size.height.toFloat()
             },
-        verticalArrangement = Arrangement.spacedBy(OptionsGap)
+        verticalArrangement = Arrangement.spacedBy(rowGap)
     ) {
-        options.chunked(MaxOptionsPerRow).reversed().forEach { rowOptions ->
+        options.chunked(maxOptionsPerRow).reversed().forEach { rowOptions ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(OptionsGap)
+                horizontalArrangement = Arrangement.spacedBy(rowGap)
             ) {
                 rowOptions.forEach { option ->
                     OptionCell(state, option, Modifier.weight(1f))
                 }
-                repeat(MaxOptionsPerRow - rowOptions.size) {
+                repeat(maxOptionsPerRow - rowOptions.size) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
@@ -74,8 +88,24 @@ fun FabDragOptions(
 }
 
 @Composable
-private fun OptionCell(
+fun FabDragOptions(
     state: DragFabState,
+    options: List<String>,
+    modifier: Modifier = Modifier,
+) {
+    DragMenuOptions(
+        state = state,
+        options = options,
+        modifier = modifier,
+        placement = DragMenuOptionsPlacement.AboveAnchorBottom,
+        gapFromAnchor = OptionsGapFromFab,
+        horizontalPadding = OptionsRowPaddingHorizontal,
+    )
+}
+
+@Composable
+private fun OptionCell(
+    state: DragMenuState,
     option: String,
     modifier: Modifier = Modifier,
 ) {

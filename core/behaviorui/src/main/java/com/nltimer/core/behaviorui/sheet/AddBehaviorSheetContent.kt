@@ -4,15 +4,14 @@ import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -31,14 +30,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -47,9 +42,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nltimer.core.data.model.Activity
@@ -59,10 +52,12 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.designsystem.component.DragMenuOptions
+import com.nltimer.core.designsystem.component.DragMenuOptionsPlacement
+import com.nltimer.core.designsystem.component.DraggableMenuAnchor
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
-import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.minutes
 
 @Suppress("LongParameterList", "LongMethod")
@@ -93,7 +88,11 @@ internal fun AddBehaviorSheetContent(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .onGloballyPositioned { state.boxPositionInWindow = it.positionInWindow() }
+            .onGloballyPositioned {
+                val position = it.positionInWindow()
+                state.boxPositionInWindow = position
+                state.dragMenuState.containerPositionInWindow = position
+            }
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             BehaviorSheetBackground(
@@ -132,7 +131,7 @@ internal fun AddBehaviorSheetContent(
             )
         }
 
-        if (state.isDragging) {
+        if (state.dragMenuState.isDragging) {
             DragOptionsOverlay(state = state)
         }
     }
@@ -373,58 +372,26 @@ private fun ConfirmButtonRow(
     val context = LocalContext.current
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { state.buttonRowPositionInWindow = it.positionInWindow() },
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        var buttonPositionInWindow by remember { mutableStateOf(Offset.Zero) }
-        TextButton(
-            onClick = onDismiss,
+        DraggableMenuAnchor(
+            state = state.dragMenuState,
             modifier = Modifier
                 .weight(2f)
-                .height(40.dp)
-                .onGloballyPositioned { layoutCoordinates ->
-                    buttonPositionInWindow = layoutCoordinates.positionInWindow()
-                }
-                .offset {
-                    IntOffset(
-                        state.dragOffset.x.roundToInt(),
-                        state.dragOffset.y.roundToInt()
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDragStart = { state.isDragging = true },
-                        onDragEnd = {
-                            if (state.hoveredOption != null) {
-                                Toast.makeText(context, "触发功能: ${state.hoveredOption}", Toast.LENGTH_SHORT).show()
-                            }
-                            state.isDragging = false
-                            state.dragOffset = Offset.Zero
-                            state.hoveredOption = null
-                        },
-                        onDragCancel = {
-                            state.isDragging = false
-                            state.dragOffset = Offset.Zero
-                            state.hoveredOption = null
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            state.dragOffset += dragAmount
-                            val currentPointerPosition = buttonPositionInWindow + state.dragOffset + change.position
-                            val hit = state.optionsLayoutBounds.entries.find { entry ->
-                                entry.value.contains(currentPointerPosition)
-                            }?.key
-                            if (hit != state.hoveredOption) {
-                                state.hoveredOption = hit
-                            }
-                        }
-                    )
-                },
+                .height(40.dp),
+            constrainToScreen = false,
+            onOptionSelected = { option ->
+                Toast.makeText(context, "触发功能: $option", Toast.LENGTH_SHORT).show()
+            },
         ) {
-            Text("Gesture", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                Text("Gesture", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+            }
         }
         Button(
             onClick = {
@@ -462,80 +429,11 @@ private fun ConfirmButtonRow(
 
 @Composable
 private fun DragOptionsOverlay(state: AddBehaviorState) {
-    val density = LocalDensity.current
-    val gapPx = with(density) { 8.dp.toPx() }
-    val optionsY = state.buttonRowPositionInWindow.y - state.boxPositionInWindow.y - state.optionsRowHeight - gapPx
-
-    val options = listOf("测试1", "测试2", "测试3", "添加自定义功能")
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 8.dp, end = 8.dp)
-            .offset { IntOffset(0, optionsY.roundToInt()) }
-            .onGloballyPositioned { coords ->
-                state.optionsRowHeight = coords.size.height.toFloat()
-            },
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        options.chunked(3).reversed().forEach { rowOptions ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                rowOptions.forEach { option ->
-                    DragOptionCell(state, option, Modifier.weight(1f))
-                }
-                repeat(3 - rowOptions.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DragOptionCell(
-    state: AddBehaviorState,
-    option: String,
-    modifier: Modifier = Modifier,
-) {
-    Surface(
-        modifier = modifier
-            .onGloballyPositioned { layoutCoordinates ->
-                val position = layoutCoordinates.positionInWindow()
-                val size = layoutCoordinates.size
-                state.optionsLayoutBounds[option] = Rect(
-                    position.x,
-                    position.y,
-                    position.x + size.width,
-                    position.y + size.height
-                )
-            },
-        shape = RoundedCornerShape(8.dp),
-        color = if (state.hoveredOption == option)
-            MaterialTheme.colorScheme.primary
-        else
-            MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 4.dp,
-        shadowElevation = 4.dp
-    ) {
-        Box(
-            modifier = Modifier.padding(vertical = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = option,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                ),
-                color = if (state.hoveredOption == option)
-                    MaterialTheme.colorScheme.onPrimary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
-            )
-        }
-    }
+    DragMenuOptions(
+        state = state.dragMenuState,
+        options = listOf("测试1", "测试2", "测试3", "添加自定义功能"),
+        placement = DragMenuOptionsPlacement.AboveAnchorTop,
+        gapFromAnchor = 8.dp,
+        horizontalPadding = 8.dp,
+    )
 }

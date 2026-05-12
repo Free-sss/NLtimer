@@ -4,18 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.data.util.hasTimeConflict
+import com.nltimer.core.designsystem.component.DragMenuState
 import com.nltimer.core.designsystem.theme.PathDrawMode
 import java.time.Duration
 import java.time.LocalDateTime
@@ -114,6 +112,7 @@ internal class AddBehaviorState(
     var showActivityPicker by mutableStateOf(false)
     var showTagPicker by mutableStateOf(false)
     var showTimeAdjustments by mutableStateOf(false)
+    val dragMenuState = DragMenuState()
 
     val effectiveMode: PathDrawMode = if (dialogConfig.pathDrawMode == PathDrawMode.Random) {
         val candidates = PathDrawMode.entries.filter {
@@ -124,14 +123,8 @@ internal class AddBehaviorState(
         dialogConfig.pathDrawMode
     }
 
-    var isDragging by mutableStateOf(false)
-    var dragOffset by mutableStateOf(Offset.Zero)
-    var hoveredOption by mutableStateOf<String?>(null)
-    val optionsLayoutBounds = mutableStateMapOf<String, Rect>()
     var boxPositionInWindow by mutableStateOf(Offset.Zero)
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
-    var buttonRowPositionInWindow by mutableStateOf(Offset.Zero)
-    var optionsRowHeight by mutableFloatStateOf(0f)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
         return if (userAdjustedTime) {
