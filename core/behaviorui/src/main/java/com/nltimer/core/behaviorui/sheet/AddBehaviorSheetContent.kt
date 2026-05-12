@@ -432,8 +432,6 @@ private fun DragOptionsOverlay(state: AddBehaviorState) {
     DragMenuOptions(
         state = state.dragMenuState,
         options = listOf("测试1", "测试2", "测试3", "添加自定义功能"),
-        placement = DragMenuOptionsPlacement.AboveAnchorTop,
-        gapFromAnchor = 8.dp,
-        horizontalPadding = 8.dp,
+        placement = DragMenuOptionsPlacement.AboveAnchorBottom,
     )
 }
