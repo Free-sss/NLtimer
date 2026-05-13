@@ -4,9 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -41,9 +40,9 @@ fun BehaviorLogView(
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
         ) {
             if (behaviors.isEmpty()) {
                 item {
@@ -71,10 +70,6 @@ fun BehaviorLogView(
                     )
                 }
             }
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
-            }
         }
     }
 
@@ -84,4 +79,4 @@ fun BehaviorLogView(
             onDismiss = { detailCell = null },
         )
     }
-}
+}

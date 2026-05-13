@@ -1,6 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -52,6 +53,7 @@ fun TimeAxisGrid(
         state = listState,
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
+        contentPadding = PaddingValues(bottom = 80.dp),
     ) {
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(

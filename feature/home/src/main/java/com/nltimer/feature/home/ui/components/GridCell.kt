@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -35,6 +39,9 @@ private const val PLATINUM_RED_BASE = 0.78f
 private const val PLATINUM_GREEN_BASE = 0.69f
 private const val PLATINUM_RED_STRENGTH = 0.22f
 private const val PLATINUM_GREEN_STRENGTH = 0.31f
+private const val BACKGROUND_ICON_ALPHA = 0.15f
+private const val BACKGROUND_ICON_SIZE_RATIO = 0.4f
+private const val BACKGROUND_EMOJI_WIDTH_RATIO = 1.35f
 
 @Composable
 fun GridCell(
@@ -53,7 +60,7 @@ fun GridCell(
 
     Box(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .heightIn(max = gridStyle.maxCellHeight.dp)
             .clipToBounds()
             .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
@@ -80,22 +87,37 @@ fun GridCell(
             .padding(gridStyle.cellPadding.dp),
     ) {
         cell.activityIconKey?.let { iconKey ->
+            val backgroundIconSize = (gridStyle.maxCellHeight * BACKGROUND_ICON_SIZE_RATIO).dp
+            val backgroundIconAlpha = styledAlpha(BACKGROUND_ICON_ALPHA)
             Box(
                 modifier = Modifier.matchParentSize(),
                 contentAlignment = Alignment.BottomStart,
             ) {
-                IconRenderer(
-                    iconKey = iconKey,
-                    defaultEmoji = "❓",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
-                    iconSize = (gridStyle.maxCellHeight * 0.2f).dp,
-                    modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
-                )
+                Box(
+                    modifier = Modifier
+                        .padding(start = 2.dp, bottom = 2.dp)
+                        .requiredWidth(backgroundIconSize * BACKGROUND_EMOJI_WIDTH_RATIO)
+                        .requiredHeight(backgroundIconSize)
+                        .graphicsLayer {
+                            alpha = backgroundIconAlpha
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    IconRenderer(
+                        iconKey = iconKey,
+                        defaultEmoji = "❓",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        iconSize = backgroundIconSize,
+                        modifier = Modifier
+                            .requiredWidth(backgroundIconSize * BACKGROUND_EMOJI_WIDTH_RATIO)
+                            .requiredHeight(backgroundIconSize),
+                    )
+                }
             }
         }
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
         ) {
