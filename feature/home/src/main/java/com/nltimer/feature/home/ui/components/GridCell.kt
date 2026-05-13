@@ -2,11 +2,10 @@ package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -16,9 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -37,31 +39,22 @@ private const val PLATINUM_GREEN_BASE = 0.69f
 private const val PLATINUM_RED_STRENGTH = 0.22f
 private const val PLATINUM_GREEN_STRENGTH = 0.31f
 
-/**
- * 网格视图中的行为单元格 Composable。
- * 根据行为状态渲染不同的背景色、边框色和白金成就效果。
- *
- * @param cell 单元格 UI 状态数据
- * @param modifier 修饰符
- */
 @Composable
 fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
-    // 判断是否为已完成且达到白金成就等级的行为
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
     val platinumStrength = cell.achievementLevel?.let { it / 100f } ?: 0f
 
-    // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
         cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(gridStyle.activeBgAlpha))
         isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .heightIn(max = gridStyle.maxCellHeight.dp)
@@ -87,22 +80,33 @@ fun GridCell(
                 },
                 shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
             )
-            .padding(gridStyle.cellPadding.dp)
-            ,
-            
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top,
+            .padding(gridStyle.cellPadding.dp),
     ) {
-        Row(){
-            cell.activityIconKey?.let { iconKey ->
+        cell.activityIconKey?.let { iconKey ->
+            val density = LocalDensity.current
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onSizeChanged { },
+                contentAlignment = Alignment.BottomStart,
+            ) {
                 IconRenderer(
                     iconKey = iconKey,
                     defaultEmoji = "❓",
-                    iconSize = gridStyle.iconSize.dp,
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.15f)),
+                    iconSize = (gridStyle.maxCellHeight * 0.4f).dp,
+                    modifier = Modifier
+                        .alpha(styledAlpha(0.35f))
+                        .padding(start = 2.dp, bottom = 2.dp),
                 )
             }
+        }
 
-            // 显示活动名称（单行省略）
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
             cell.activityName?.let { name ->
                 Text(
                     text = name,
@@ -112,24 +116,24 @@ fun GridCell(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-        }
-        // 渲染标签列表为 FlowRow 标签条（整体缩小 10%）
-        if (cell.tags.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier.scale(gridStyle.tagScale),
-                horizontalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
-                verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
-                maxLines = 2,
-            ) {
-                cell.tags.forEach { tag -> TagChip(tag = tag) }
+
+            if (cell.tags.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.scale(gridStyle.tagScale),
+                    horizontalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
+                    verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
+                    maxLines = 2,
+                ) {
+                    cell.tags.forEach { tag -> TagChip(tag = tag) }
+                }
             }
-        }
-        cell.note?.let { note ->
-            Text(
-                text = note,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
-            )
+            cell.note?.let { note ->
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
+                )
+            }
         }
     }
 }
