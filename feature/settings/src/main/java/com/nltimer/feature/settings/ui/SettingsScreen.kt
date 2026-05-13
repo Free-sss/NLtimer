@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
@@ -20,12 +21,14 @@ fun SettingsRoute(
     onNavigateToDialogConfig: () -> Unit = {},
     onNavigateToDataManagement: () -> Unit = {},
     onNavigateToHomeLayoutConfig: () -> Unit = {},
+    onNavigateToColorPalette: () -> Unit = {},
 ) {
     SettingsScreen(
         onNavigateToThemeSettings = onNavigateToThemeSettings,
         onNavigateToDialogConfig = onNavigateToDialogConfig,
         onNavigateToDataManagement = onNavigateToDataManagement,
         onNavigateToHomeLayoutConfig = onNavigateToHomeLayoutConfig,
+        onNavigateToColorPalette = onNavigateToColorPalette,
     )
 }
 
@@ -36,6 +39,7 @@ fun SettingsScreen(
     onNavigateToDialogConfig: () -> Unit = {},
     onNavigateToDataManagement: () -> Unit = {},
     onNavigateToHomeLayoutConfig: () -> Unit = {},
+    onNavigateToColorPalette: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -48,6 +52,15 @@ fun SettingsScreen(
                 title = "主题配置",
                 subtitle = "自定义应用主题、颜色与字体",
                 onClick = onNavigateToThemeSettings,
+            )
+        }
+
+        item {
+            SettingsEntryCard(
+                icon = Icons.Default.ColorLens,
+                title = "色板",
+                subtitle = "预览 MD3 配色 token 的亮/暗效果（开发者）",
+                onClick = onNavigateToColorPalette,
             )
         }
 

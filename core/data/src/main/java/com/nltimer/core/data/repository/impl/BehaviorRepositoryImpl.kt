@@ -16,6 +16,7 @@ import com.nltimer.core.data.util.BehaviorCalculator
 import com.nltimer.core.data.util.ClockService
 import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import javax.inject.Inject
@@ -219,7 +220,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
         behaviorDao.getByTimeRange(startTime, endTime).map { entities ->
             assembleBehaviorWithDetailsList(entities)
-        }
+        }.catch { emit(emptyList()) }
 
     override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> {
         val entities = behaviorDao.getByTimeRangeSync(startTime, endTime)

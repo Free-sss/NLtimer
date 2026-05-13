@@ -602,6 +602,7 @@ class BehaviorRepositoryImplTest {
             behaviors.filter { it.startTime in startTime until endTime }
         override suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow> = emptyList()
         override fun getActivityStatsSync(activityId: Long): Flow<ActivityStatsRow> = flowOf(ActivityStatsRow())
+        override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
     }
 
     private class FakeActivityDao : ActivityDao {

@@ -2,14 +2,17 @@ package com.nltimer.feature.home.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -19,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -36,34 +41,29 @@ private const val PLATINUM_RED_BASE = 0.78f
 private const val PLATINUM_GREEN_BASE = 0.69f
 private const val PLATINUM_RED_STRENGTH = 0.22f
 private const val PLATINUM_GREEN_STRENGTH = 0.31f
+private const val BACKGROUND_ICON_ALPHA = 0.15f
+private const val BACKGROUND_ICON_SIZE_RATIO = 0.25f
+private const val BACKGROUND_ICON_WIDTH_RATIO = 1.6f
+private const val BACKGROUND_ICON_HEIGHT_RATIO = 1.45f
 
-/**
- * 网格视图中的行为单元格 Composable。
- * 根据行为状态渲染不同的背景色、边框色和白金成就效果。
- *
- * @param cell 单元格 UI 状态数据
- * @param modifier 修饰符
- */
 @Composable
 fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
-    // 判断是否为已完成且达到白金成就等级的行为
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
     val platinumStrength = cell.achievementLevel?.let { it / 100f } ?: 0f
 
-    // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
         cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(gridStyle.activeBgAlpha))
         isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
 
-    Column(
+    Box(
         modifier = modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .heightIn(max = gridStyle.maxCellHeight.dp)
             .clipToBounds()
             .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
@@ -87,49 +87,129 @@ fun GridCell(
                 },
                 shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
             )
-            .padding(gridStyle.cellPadding.dp)
-            ,
-            
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top,
+            .padding(gridStyle.cellPadding.dp),
     ) {
-        Row(){
-            cell.activityIconKey?.let { iconKey ->
-                IconRenderer(
-                    iconKey = iconKey,
-                    defaultEmoji = "❓",
-                    iconSize = gridStyle.iconSize.dp,
-                )
+        cell.activityIconKey?.let { iconKey ->
+            val backgroundIconSize = (gridStyle.maxCellHeight * BACKGROUND_ICON_SIZE_RATIO).dp
+            val backgroundIconWidth = backgroundIconSize * BACKGROUND_ICON_WIDTH_RATIO
+            val backgroundIconHeight = backgroundIconSize * BACKGROUND_ICON_HEIGHT_RATIO
+            val backgroundIconAlpha = styledAlpha(BACKGROUND_ICON_ALPHA)
+            Box(
+                modifier = Modifier.matchParentSize(),
+                contentAlignment = Alignment.BottomStart,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(start = 2.dp, bottom = 2.dp)
+                        .requiredWidth(backgroundIconWidth)
+                        .requiredHeight(backgroundIconHeight)
+                        .graphicsLayer {
+                            alpha = backgroundIconAlpha
+                        },
+                    contentAlignment = Alignment.BottomStart,
+                ) {
+                    IconRenderer(
+                        iconKey = iconKey,
+                        defaultEmoji = "❓",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        iconSize = backgroundIconSize,
+                        modifier = Modifier
+                            .requiredWidth(backgroundIconWidth)
+                            .requiredHeight(backgroundIconHeight),
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Top,
+        ) {
+            if (cell.activityName != null || cell.durationText().isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    cell.activityName?.let { name ->
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    } ?: Spacer(modifier = Modifier.weight(1f))
+
+                    val durationText = if (cell.isCurrent && cell.startEpochMs != null) {
+                        formatGridDurationHours(
+                            ms = LiveElapsedDuration(
+                                startEpochMs = cell.startEpochMs,
+                                isCurrent = true,
+                                fallbackDurationMs = cell.durationMs ?: (cell.actualDuration ?: 0L),
+                            ),
+                        )
+                    } else {
+                        cell.durationText()
+                    }
+                    if (durationText.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+                                )
+                                .padding(horizontal = 3.dp, vertical = 0.5.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = durationText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
             }
 
-            // 显示活动名称（单行省略）
-            cell.activityName?.let { name ->
+            if (cell.tags.isNotEmpty()) {
+                FlowRow(
+                    modifier = Modifier.scale(gridStyle.tagScale),
+                    horizontalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
+                    verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
+                    maxLines = 2,
+                ) {
+                    cell.tags.forEach { tag -> TagChip(tag = tag) }
+                }
+            }
+            cell.note?.let { note ->
                 Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    text = note,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
                 )
             }
         }
-        // 渲染标签列表为 FlowRow 标签条（整体缩小 10%）
-        if (cell.tags.isNotEmpty()) {
-            FlowRow(
-                modifier = Modifier.scale(gridStyle.tagScale),
-                horizontalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
-                verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
-                maxLines = 2,
-            ) {
-                cell.tags.forEach { tag -> TagChip(tag = tag) }
-            }
-        }
-        cell.note?.let { note ->
-            Text(
-                text = note,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.6f))
-            )
-        }
+    }
+}
+
+private fun GridCellUiState.durationText(): String {
+    val duration = durationMs ?: actualDuration ?: 0L
+    return formatGridDurationHours(duration)
+}
+
+private fun formatGridDurationHours(ms: Long): String {
+    if (ms <= 0L) return ""
+    val tenths = ((ms * 10) / 3_600_000).coerceAtLeast(1)
+    val hours = tenths / 10
+    val fraction = tenths % 10
+    return if (fraction == 0L) {
+        "${hours}h"
+    } else {
+        "${hours}.${fraction}h"
     }
 }

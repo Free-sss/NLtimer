@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -106,9 +107,9 @@ fun TimelineReverseView(
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
             items(items = timelineItems, key = { item ->
                 when (item) {
@@ -134,10 +135,6 @@ fun TimelineReverseView(
                         )
                     }
                 }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
