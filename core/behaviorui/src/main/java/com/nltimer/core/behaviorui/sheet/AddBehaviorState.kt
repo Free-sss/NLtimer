@@ -70,12 +70,30 @@ internal class AddBehaviorState(
     val sheetOpenTime: LocalDateTime = LocalDateTime.now()
     private val now = sheetOpenTime
     var userAdjustedTime by mutableStateOf(false)
+        private set
     var startTime by mutableStateOf(
         initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
     )
     var endTime by mutableStateOf(
         initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
     )
+
+    /**
+     * endTime 是否随系统时钟自动推进。
+     *
+     * 启用条件：当前为完成（COMPLETED）弹窗、调用方未指定结束时间、也不在编辑既有行为
+     * —— 这种"现在刚做完"的新建场景下，"用时"应像秒表一样实时增长。
+     * 一旦用户手动调整时间，立即关闭以保留用户选择。
+     */
+    var endTimeAutoTracking by mutableStateOf(
+        mode == BehaviorNature.COMPLETED && initialEndTime == null && editBehaviorId == null
+    )
+        private set
+
+    fun markUserAdjustedTime() {
+        userAdjustedTime = true
+        endTimeAutoTracking = false
+    }
 
     val duration: Duration by derivedStateOf {
         val d = Duration.between(startTime, endTime)

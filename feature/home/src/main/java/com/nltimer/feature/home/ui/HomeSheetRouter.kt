@@ -73,7 +73,7 @@ internal fun HomeSheetRouter(
             allTags = allTags,
             dialogConfig = dialogConfig,
             initialStartTime = uiState.idleStartTime ?: uiState.lastBehaviorEndTime,
-            initialEndTime = uiState.idleEndTime ?: LocalTime.now(),
+            initialEndTime = uiState.idleEndTime,
             initialActivityId = uiState.editInitialActivityId,
             initialTagIds = uiState.editInitialTagIds,
             initialNote = uiState.editInitialNote,
