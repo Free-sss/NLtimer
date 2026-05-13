@@ -21,6 +21,7 @@ import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
+import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
 import kotlinx.coroutines.Dispatchers
@@ -78,6 +79,7 @@ class HomeViewModelTest {
             tagRepository,
             settingsPrefs,
             KeywordMatchStrategy(),
+            NoteMatcher(),
             addBehaviorUseCase,
             addTagUseCase,
             addActivityUseCase,
@@ -518,6 +520,7 @@ class HomeViewModelTest {
         override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
         override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? = null
+        override fun getTotalDurationAllBehaviors(): kotlinx.coroutines.flow.Flow<Long> = kotlinx.coroutines.flow.flowOf(0L)
     }
 
     private class FakeActivityRepository : ActivityRepository {
@@ -579,6 +582,8 @@ class HomeViewModelTest {
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {
             updateTimeLabelConfigCalled = true
         }
+        override fun getHomeLayoutConfigFlow(): Flow<com.nltimer.core.data.model.HomeLayoutConfig> = flowOf(com.nltimer.core.data.model.HomeLayoutConfig())
+        override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
     }

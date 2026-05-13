@@ -158,6 +158,7 @@ class HomeViewModel @Inject constructor(
             tagsByBehaviorId = tagsByBehaviorId,
             now = now,
             currentTimeMs = clockService.currentTimeMillis(),
+            today = today,
             gridColumns = homeLayoutConfig.value.grid.columns,
         )
     }

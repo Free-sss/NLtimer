@@ -1,110 +1,187 @@
-# nltimer
+# NLtimer
 
-![Build](https://github.com/Free-sss/NLtimer/workflows/Pre%20Merge%20Checks/badge.svg)
+![Build](https://github.com/Free-sss/NLtimer/actions/workflows/publish-release.yaml/badge.svg)
 
-This is your new Kotlin Android Project! Happy hacking!
+NLtimer 是一款 Android 行为记录与时间管理应用，用于快速记录当前行为、补记已完成行为、管理活动与标签，并通过多种主页视图复盘时间使用情况。
 
-## Template ToDo list 👣
+## 特性
 
-- [x] Create a new template project.
-- [ ] Choose a [LICENSE](https://github.com/Free-sss/NLtimer/community/license/new?branch=main).
-- [ ] Set your `ORG_GRADLE_PROJECT_NEXUS_USERNAME`, `ORG_GRADLE_PROJECT_NEXUS_PASSWORD`, `ORG_GRADLE_PROJECT_SIGNING_KEY` and `ORG_GRADLE_PROJECT_SIGNING_PWD` secrets in [Settings](https://github.com/Free-sss/NLtimer/settings/secrets/actions).
-- [ ] Code some cool apps and libraries 🚀.
+- **行为计时：** 支持开始当前行为、完成行为、补记已完成行为和记录目标行为。
+- **时间视图：** 首页支持网格、时间轴、反向时间线和 Moment 等展示方式。
+- **活动管理：** 支持活动分组、活动归档、颜色、图标、关键词和使用次数等信息。
+- **标签管理：** 支持标签创建、筛选、移动与管理，用于细化行为记录。
+- **备注匹配：** 可从备注中匹配活动与标签，降低手动选择成本。
+- **统计与复盘：** 提供统计页面，用于查看行为记录与时间分布。
+- **个性化配置：** 支持主题、色板、弹窗网格、首页布局和时间标签配置。
+- **数据管理：** 支持应用数据导入、导出与迁移。
+- **Debug 工具：** Debug 构建可注入调试页面，Release 构建不包含调试入口。
 
-## Features 🎨
+## 技术栈
 
-- **100% Kotlin-only template**.
-- 4 Sample modules (Android app, Android library, Kotlin library, Jetpack Compose Activity).
-- Jetpack Compose setup ready to use. 
-- Sample Espresso, Instrumentation & JUnit tests.
-- 100% Gradle Kotlin DSL setup.
-- CI Setup with GitHub Actions.
-- Publish to **Maven Central** with Github Actions.
-- Dependency versions managed via `buildSrc`.
-- Kotlin Static Analysis via `detekt` and `ktlint`.
-- Issues Template (bug report + feature request).
-- Pull Request Template.
+- Kotlin 2.3.21
+- Android Gradle Plugin 9.2.0
+- Jetpack Compose + Material 3
+- Navigation Compose
+- Hilt + KSP
+- Room
+- DataStore Preferences
+- Kotlinx Serialization
+- JUnit、MockK、Turbine、Compose UI Test
+- Detekt
 
-## Troubleshooting
+## 环境要求
 
-For help with issues which you might encounter when using this template, please refer to [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- Android Studio：建议使用支持 AGP 9.x 的版本。
+- JDK：17。
+- Android SDK：compileSdk 36，targetSdk 36，minSdk 31。
+- Gradle：使用仓库内置 Gradle Wrapper。
 
-## Gradle Setup 🐘
+## 快速开始
 
-This template is using [**Gradle Kotlin DSL**](https://docs.gradle.org/current/userguide/kotlin_dsl.html) as well as the [Plugin DSL](https://docs.gradle.org/current/userguide/plugins.html#sec:plugins_block) to setup the build.
+### 克隆项目
 
-Dependencies are centralized inside the Gradle Version Catalog in the [libs.versions.toml](gradle/libs.versions.toml) file in the `gradle` folder.
-
-## Static Analysis 🔍
-
-This template is using [**detekt**](https://github.com/detekt/detekt) to analyze the source code, with the configuration that is stored in the [detekt.yml](config/detekt/detekt.yml) file (the file has been generated with the `detektGenerateConfig` task). It also uses the **detekt-formatting** plugin which includes the ktlint rules (see https://detekt.dev/docs/rules/formatting/).
-
-## CI ⚙️
-
-This template is using [**GitHub Actions**](https://github.com/cortinico/kotlin-android-template/actions) as CI. You don't need to setup any external service and you should have a running CI once you start using this template, just make sure that you turn on the "Read and Write permissions" on the Action Settings of your repository.
-
-There are currently the following workflows available:
-- [Validate Gradle Wrapper](.github/workflows/gradle-wrapper-validation.yml) - Will check that the gradle wrapper has a valid checksum
-- [Pre Merge Checks](.github/workflows/pre-merge.yaml) - Will run the `build`, `check` and `publishToMavenLocal` tasks.
-- [Publish Snapshot](.github/workflows/publish-snapshot.yaml) - Will publish a `-SNAPSHOT` of the libraries to Sonatype.
-- [Publish Release](.github/workflows/publish-release.yaml) - Will publish a new release version of the libraries to Maven Central on tag pushes.
-
-## Publishing 🚀
-
-The template is setup to be **ready to publish** a library/artifact on a Maven Repository.
-
-For every module you want to publish you simply have to add the `publish` plugin:
-
-```
-plugins {
-    publish
-}
+```bash
+git clone https://github.com/Free-sss/NLtimer.git
+cd NLtimer
 ```
 
-### To Maven Central
+### 构建 Debug APK
 
-In order to use this template to publish on Maven Central, you need to configure some secrets on your repository:
+Windows：
 
-| Secret name | Value |
-| --- | --- | 
-| `ORG_GRADLE_PROJECT_NEXUS_USERNAME` | The username you use to access Sonatype's services (such as [Nexus](https://oss.sonatype.org/) and [Jira](https://issues.sonatype.org/)) |
-| `ORG_GRADLE_PROJECT_NEXUS_PASSWORD` | The password you use to access Sonatype's services (such as [Nexus](https://oss.sonatype.org/) and [Jira](https://issues.sonatype.org/)) |
-| `ORG_GRADLE_PROJECT_SIGNING_KEY` | The GPG Private key to sign your artifacts. You can obtain it with `gpg --armor --export-secret-keys <your@email.here>` or you can create one key online on [pgpkeygen.com](https://pgpkeygen.com). The key starts with a `-----BEGIN PGP PRIVATE KEY BLOCK-----`. |
-| `ORG_GRADLE_PROJECT_SIGNING_PWD` | The passphrase to unlock your private key (you picked it when creating the key). |
+```powershell
+.\gradlew.bat assembleDebug
+```
 
-The template already attaches `-sources.jar` to your publications via the new AGP publishing DSL.
+macOS / Linux：
 
-Once set up, the following workflows will take care of publishing:
+```bash
+./gradlew assembleDebug
+```
 
-- [Publish Snapshot](.github/workflows/publish-snapshot.yaml) - To publish `-SNAPSHOT` versions to Sonatype. The workflow is setup to run either manually (with `workflow_dispatch`) or on every merge.
-- [Publish Release](.github/workflows/publish-release.yaml) - Will publish a new release version of the libraries to Maven Central on tag pushes. You can trigger the workflow also manually if needed.
+构建产物位于：
 
-### To Jitpack
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
 
-If you're using [JitPack](https://jitpack.io/), you don't need any further configuration and you can just configure the repo on JitPack.
+### 安装到设备
 
-You probably want to disable the [Publish Snapshot] and [Publish Release](.github/workflows/publish-release.yaml) workflows (delete the files), as Jitpack will take care of that for you.
+Windows：
 
-## Project Structure
+```powershell
+.\gradlew.bat installDebug
+```
 
-The project includes three sub-projects, each in their own subdirectories:
+macOS / Linux：
 
-- **`app`:** The source for the final Android application.
-- **`library-android`:** The source for an Android library including UI.
-- **`library-kotlin`:** The source for a UI-less Kotlin library.
-- **`library-compose`:** The source for a UI library with Jetpack Compose library.
+```bash
+./gradlew installDebug
+```
 
-The following additional top-level directories configure & support building the app & projects:
+## 常用命令
 
-- **`buildSrc`:** Contains shared Gradle logic as [precompiled script plugins](https://docs.gradle.org/current/userguide/custom_plugins.html#sec:precompiled_plugins)
-- **`config`:** Contains the [Detekt configuration file](https://detekt.dev/docs/introduction/configurations/).
-- **`gradle`:** Contains Gradle Configuration files such as the Gradle Version Catalog and the [Gradle Wrapper](https://docs.gradle.org/current/userguide/gradle_wrapper.html).
+```bash
+# 运行单元测试
+./gradlew test
 
-Finally, the following hidden top-level directories provide functionality for specific development systems:
+# 运行 app 模块 Debug 单元测试
+./gradlew :app:testDebugUnitTest
 
-- **`.github`:** Defines the [Github Actions](https://github.com/features/actions) CI tasks and templates for new pull requests, issues, etc.
-- **`.idea`:** Sets common initial project settings when the project is opened in [Android Studio](https://developer.android.com/studio) or [IntelliJ IDEA](https://www.jetbrains.com/idea/).
+# 运行连接设备上的 Android 测试
+./gradlew connectedDebugAndroidTest
 
-## Contributing 🤝
+# 运行 Detekt 静态检查
+./gradlew detekt
 
-Feel free to open a issue or submit a pull request for any bugs/improvements.
+# 构建 Release APK
+./gradlew assembleRelease
+```
+
+Windows 环境请将 `./gradlew` 替换为 `.\gradlew.bat`。
+
+## 项目结构
+
+```text
+NLtimer/
+├── app/                         # Android 应用入口、全局 Scaffold 与导航
+├── core/
+│   ├── data/                    # 数据库、Repository、UseCase、领域模型与数据导入导出
+│   ├── designsystem/            # 主题、颜色、组件与设计系统
+│   ├── behaviorui/              # 行为添加弹窗、活动/标签选择等复用 UI
+│   ├── debugui/                 # Debug 字段检查与调试 UI
+│   └── tools/                   # 行为计时、匹配、工具注册等能力
+├── feature/
+│   ├── home/                    # 首页时间记录与多布局展示
+│   ├── stats/                   # 统计页面
+│   ├── settings/                # 设置、主题、数据管理与布局配置
+│   ├── categories/              # 分类页面
+│   ├── management_activities/   # 活动管理
+│   ├── tag_management/          # 标签管理
+│   ├── behavior_management/     # 行为记录管理
+│   └── debug/                   # Debug 专用功能模块
+├── buildSrc/                    # 共享 Gradle 插件与 SDK 版本配置
+├── gradle/                      # Version Catalog 与 Gradle Wrapper 配置
+└── docs/                        # 项目文档与参考资料
+```
+
+## 主要模块说明
+
+| 模块 | 说明 |
+| --- | --- |
+| `app` | 应用入口，负责 `MainActivity`、Hilt 初始化、全局导航和顶层 UI 容器。 |
+| `core:data` | 提供活动、标签、分类、行为记录、设置和数据导入导出等数据能力。 |
+| `core:designsystem` | 提供 NLtimer 主题、设计 token、通用组件和 Material 3 封装。 |
+| `core:behaviorui` | 提供新增行为、活动选择、标签选择、时间选择等跨页面复用组件。 |
+| `core:tools` | 提供行为计时工具、活动/标签匹配工具和工具注册表。 |
+| `feature:home` | 首页行为记录主流程，包括当前行为、补记、目标、空闲时间和多种布局展示。 |
+| `feature:settings` | 设置入口，包含主题配置、弹窗配置、首页布局配置、色板和数据管理。 |
+
+## 配置说明
+
+应用版本与包名配置在 `gradle.properties`：
+
+```properties
+APP_VERSION_NAME=0.1.5
+APP_VERSION_CODE=105
+APP_ID=com.nltimer.app
+```
+
+Release 构建会优先读取 `local.properties` 或环境变量中的签名配置：
+
+```properties
+keystore.path=your-release-key.jks
+keystore.password=your-store-password
+key.alias=your-key-alias
+key.password=your-key-password
+```
+
+如果没有提供签名配置，Release 构建会回退到 Debug 签名，便于本地验证构建流程。
+
+## CI 与发布
+
+项目使用 GitHub Actions：
+
+- `publish-release.yaml`：在 `main`、`feature/*` 和 Pull Request 上构建 Debug APK；推送 `v*.*.*` 标签时创建 Release。
+- `opencode.yml`：在 Issue 或 Pull Request 评论中通过 `/oc` 或 `/opencode` 触发 OpenCode。
+
+发布标签格式：
+
+```bash
+git tag v0.1.5
+git push origin v0.1.5
+```
+
+CI 会从标签中提取版本号，并更新构建时的 `APP_VERSION_NAME` 与 `APP_VERSION_CODE`。
+
+## 开发约定
+
+- 优先使用 Kotlin、Compose 和 Material 3 实现界面。
+- 依赖版本统一维护在 `gradle/libs.versions.toml`。
+- 共享 Gradle 逻辑放在 `buildSrc` 的预编译脚本插件中。
+- 功能按 `feature:*` 模块拆分，通用能力放入 `core:*` 模块。
+- Debug 专用能力放入 `feature:debug` 或 `core:debugui`，避免进入 Release 主流程。
+
+## 许可证
+
+当前仓库未声明许可证。如需开源分发，请先补充 `LICENSE` 文件。
