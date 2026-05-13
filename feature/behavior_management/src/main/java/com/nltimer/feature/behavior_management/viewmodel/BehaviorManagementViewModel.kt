@@ -22,6 +22,7 @@ import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.TimeRangePreset
 import com.nltimer.feature.behavior_management.model.ViewMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -82,6 +84,9 @@ class BehaviorManagementViewModel @Inject constructor(
                 }
                 .combine(_uiState) { (behaviors, groups), state ->
                     applyFilters(behaviors, state, groups)
+                }
+                .catch {
+                    _uiState.update { s -> s.copy(behaviors = persistentListOf()) }
                 }
                 .collect { filtered ->
                     _uiState.update { it.copy(behaviors = filtered.toImmutableList()) }

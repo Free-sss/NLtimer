@@ -425,6 +425,7 @@ class ActivityManagementRepositoryImplTest {
                 lastUsedTimestamp = lastUsedTimestamp,
             )
         )
+        override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
     }
 
 }
