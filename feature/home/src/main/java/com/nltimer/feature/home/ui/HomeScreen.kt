@@ -82,6 +82,7 @@ fun HomeScreen(
     onAddActivity: AddActivityCallback,
     onAddTag: AddTagCallback,
     onHourClick: (Int) -> Unit,
+    onLoadMore: () -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
@@ -138,6 +139,7 @@ fun HomeScreen(
                         onCompleteBehavior = onCompleteBehavior,
                         onStartNextPending = onStartNextPending,
                         onStartBehavior = onStartBehavior,
+                        onLoadMore = onLoadMore,
                         timeLabelConfig = timeLabelConfig,
                         onTimeLabelSettingsClick = { showTimeLabelSettings = true },
                         homeLayoutConfig = homeLayoutConfig,
@@ -210,6 +212,7 @@ private fun HomeLayoutContent(
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
+    onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
@@ -221,6 +224,7 @@ private fun HomeLayoutContent(
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
             onHourClick = onHourClick,
+            onLoadMore = onLoadMore,
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             gridStyle = homeLayoutConfig.grid,
@@ -230,11 +234,13 @@ private fun HomeLayoutContent(
             uiState = uiState,
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
+            onLoadMore = onLoadMore,
             modifier = modifier,
         )
         HomeLayout.LOG -> LogContent(
             uiState = uiState,
             onCellLongClick = onCellLongClick,
+            onLoadMore = onLoadMore,
             logStyle = homeLayoutConfig.log,
             modifier = modifier,
         )
@@ -257,6 +263,7 @@ private fun GridContent(
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
+    onLoadMore: () -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
@@ -265,9 +272,12 @@ private fun GridContent(
     val showSideBar = LocalTheme.current.showTimeSideBar
     Row(modifier = modifier) {
         TimeAxisGrid(
-            rows = uiState.rows,
+            sections = uiState.gridSections,
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
+            onLoadMore = onLoadMore,
+            isLoadingMore = uiState.isLoadingMore,
+            hasReachedEarliest = uiState.hasReachedEarliest,
             currentHour = uiState.selectedTimeHour,
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
@@ -278,7 +288,7 @@ private fun GridContent(
         if (showSideBar) {
             val activeHours by remember {
                 derivedStateOf {
-                    uiState.rows
+                    uiState.gridSections.lastOrNull()?.rows.orEmpty()
                         .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
                         .map { it.startTime.hour }
                         .toSet()
@@ -298,14 +308,17 @@ private fun TimelineReverseContent(
     uiState: HomeUiState,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
+    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
     TimelineReverseView(
-        cells = allCells,
+        items = uiState.items,
         onAddClick = onEmptyCellClick,
         onCellLongClick = onCellLongClick,
-        modifier = modifier
+        onLoadMore = onLoadMore,
+        isLoadingMore = uiState.isLoadingMore,
+        hasReachedEarliest = uiState.hasReachedEarliest,
+        modifier = modifier,
     )
 }
 
@@ -313,15 +326,18 @@ private fun TimelineReverseContent(
 private fun LogContent(
     uiState: HomeUiState,
     onCellLongClick: (GridCellUiState) -> Unit,
+    onLoadMore: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
-    val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
     BehaviorLogView(
-        cells = allCells,
+        items = uiState.items,
         onCellLongClick = onCellLongClick,
+        onLoadMore = onLoadMore,
+        isLoadingMore = uiState.isLoadingMore,
+        hasReachedEarliest = uiState.hasReachedEarliest,
         logStyle = logStyle,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -336,9 +352,8 @@ private fun MomentContent(
     onStartBehavior: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
     MomentView(
-        cells = allCells,
+        cells = uiState.momentCells,
         hasActiveBehavior = uiState.hasActiveBehavior,
         activeBehaviorId = activeBehaviorId,
         onCompleteBehavior = onCompleteBehavior,
