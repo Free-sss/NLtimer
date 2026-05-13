@@ -2,7 +2,6 @@ package com.nltimer.feature.management_activities.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +29,8 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.designsystem.component.BottomBarDragFab
+import com.nltimer.core.designsystem.component.EmptyStateView
+import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import com.nltimer.feature.management_activities.ui.components.ActivityChip
@@ -57,26 +57,15 @@ fun ActivityManagementScreen(
                     .padding(padding),
             ) {
                 if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
+                    LoadingScreen()
                 } else if (
                     uiState.uncategorizedActivities.isEmpty() &&
                     uiState.groups.isEmpty()
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.align(Alignment.Center),
-                    ) {
-                        Text("暂无活动", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "点击右下角按钮添加活动",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    EmptyStateView(
+                        message = "暂无活动",
+                        subtitle = "点击右下角按钮添加活动",
+                    )
                 } else {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),

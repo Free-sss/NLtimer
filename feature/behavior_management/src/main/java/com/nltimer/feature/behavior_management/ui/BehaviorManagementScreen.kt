@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
+import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
@@ -142,19 +143,12 @@ fun BehaviorManagementScreen(
             )
 
             if (uiState.behaviors.isEmpty()) {
-                Box(
+                EmptyStateView(
+                    message = "暂无行为记录",
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "暂无行为记录",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        ),
-                    )
-                }
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier.weight(1f),
