@@ -25,6 +25,7 @@ import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.toComposeColor
 import com.nltimer.core.designsystem.theme.styledCorner
 import java.time.Instant
 import java.time.ZoneId
@@ -70,11 +71,7 @@ fun BehaviorListItem(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val dotColor = activity.color?.let { c ->
-            android.graphics.Color.valueOf(c).let { cc ->
-                androidx.compose.ui.graphics.Color(cc.red(), cc.green(), cc.blue(), cc.alpha())
-            }
-        } ?: MaterialTheme.colorScheme.primary
+        val dotColor = activity.color.toComposeColor { MaterialTheme.colorScheme.primary }
 
         Box(
             modifier = Modifier

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.toComposeColor
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -39,11 +40,7 @@ fun BehaviorTimelineItem(
     val tags = bwd.tags
 
     val lineColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f))
-    val dotColor = activity.color?.let { c ->
-        android.graphics.Color.valueOf(c).let { cc ->
-            Color(cc.red(), cc.green(), cc.blue(), cc.alpha())
-        }
-    } ?: MaterialTheme.colorScheme.primary
+    val dotColor = activity.color.toComposeColor { MaterialTheme.colorScheme.primary }
 
     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     val startTime = Instant.ofEpochMilli(behavior.startTime)
