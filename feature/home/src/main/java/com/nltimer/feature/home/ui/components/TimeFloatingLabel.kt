@@ -21,6 +21,7 @@ import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
+import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.theme.styledCorner
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -173,7 +174,7 @@ private fun DotLabel(
 
 private fun formatTime(time: LocalTime, format: TimeLabelFormat): String {
     val formatter = when (format) {
-        TimeLabelFormat.HH_MM -> DateTimeFormatter.ofPattern("HH:mm")
+        TimeLabelFormat.HH_MM -> hhmmFormatter
         TimeLabelFormat.H_MM -> DateTimeFormatter.ofPattern("H:mm")
         TimeLabelFormat.H_MM_A -> DateTimeFormatter.ofPattern("h:mm a")
     }

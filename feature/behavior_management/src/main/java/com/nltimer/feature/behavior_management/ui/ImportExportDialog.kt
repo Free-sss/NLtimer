@@ -27,14 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.util.formatEpochTimeRange
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.ImportNewItem
 import com.nltimer.feature.behavior_management.model.ImportPreview
 import com.nltimer.feature.behavior_management.model.ImportPreviewItem
 import com.nltimer.feature.behavior_management.model.NewItemType
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -249,18 +247,7 @@ fun ExportConfirmDialog(
 }
 
 private fun formatDuplicateItem(item: ImportPreviewItem): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    val startTime = Instant.ofEpochMilli(item.startTime)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(formatter)
-    val endTime = item.endTime?.let {
-        Instant.ofEpochMilli(it)
-            .atZone(ZoneId.systemDefault())
-            .toLocalTime()
-            .format(formatter)
-    }
-    val timeRange = if (endTime != null) "$startTime-$endTime" else startTime
+    val timeRange = formatEpochTimeRange(item.startTime, item.endTime).replace(" - ", "-")
     return "${item.activityName} $timeRange"
 }
 

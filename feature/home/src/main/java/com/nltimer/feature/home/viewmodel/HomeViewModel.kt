@@ -15,6 +15,8 @@ import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.util.ClockService
+import com.nltimer.core.data.util.startOfDayMillis
+import com.nltimer.core.data.util.endOfDayMillis
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
@@ -41,7 +43,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import javax.inject.Inject
 
 /**
@@ -124,8 +125,8 @@ class HomeViewModel @Inject constructor(
 
     private fun loadHomeBehaviors() {
         viewModelScope.launch {
-            val dayStart = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val dayEnd = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val dayStart = today.startOfDayMillis()
+            val dayEnd = today.endOfDayMillis()
 
             behaviorRepository.getHomeBehaviors(dayStart, dayEnd)
                 .collect { behaviors ->

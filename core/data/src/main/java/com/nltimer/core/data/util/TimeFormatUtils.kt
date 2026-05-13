@@ -1,5 +1,10 @@
 package com.nltimer.core.data.util
 
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 /** HH:mm 格式的时间格式化器，供各视图共享使用。 */
@@ -31,3 +36,55 @@ fun formatDurationMinutes(minutes: Long): String {
         if (mins > 0 || hours == 0L) append("${mins} 分钟")
     }.trim()
 }
+
+val hhmmssFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+val mmddFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd")
+val yyyyMMddHHmmFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+val exportTimestampFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")
+
+fun Long.epochToLocalTime(): LocalTime =
+    Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalTime()
+
+fun Long.epochToLocalDateTime(): LocalDateTime =
+    Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDateTime()
+
+fun Long.epochToLocalDate(): LocalDate =
+    Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault()).toLocalDate()
+
+fun LocalTime.toEpochMillisToday(): Long =
+    LocalDate.now().atTime(this).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+fun LocalDate.startOfDayMillis(): Long =
+    atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+fun LocalDate.endOfDayMillis(): Long =
+    plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+fun LocalDate.atTimeToEpochMillis(time: LocalTime): Long =
+    atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+fun formatDurationCompact(ms: Long): String {
+    val totalMinutes = ms / 60000
+    val h = totalMinutes / 60
+    val m = totalMinutes % 60
+    return if (h > 0) "${h}.${m}h" else "${m}m"
+}
+
+fun formatDurationCompactHm(ms: Long): String {
+    val totalMinutes = ms / 60000
+    val h = totalMinutes / 60
+    val m = totalMinutes % 60
+    return if (h > 0) "${h}h${m}m" else "${m}m"
+}
+
+fun formatEpochTimeRange(startMs: Long, endMs: Long?): String {
+    val start = startMs.epochToLocalTime().format(hhmmFormatter)
+    val end = endMs?.let { it.epochToLocalTime().format(hhmmFormatter) }
+    return if (end != null) "$start - $end" else start
+}
+
+fun formatTimestamp(timestamp: Long): String =
+    yyyyMMddHHmmFormatter.format(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime())
+
+fun formatExportTimestamp(): String =
+    exportTimestampFormatter.format(LocalDateTime.now())

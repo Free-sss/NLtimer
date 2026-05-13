@@ -21,6 +21,7 @@ import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
+import com.nltimer.core.designsystem.component.tagCountLabel
 import com.nltimer.core.designsystem.form.parseColorHex
 
 @Composable
@@ -37,7 +38,7 @@ fun AddActivityFormSheet(
     var showTagPicker by remember { mutableStateOf(false) }
 
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
-    val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
+    val tagCountText = tagCountLabel(selectedTagIds.size)
 
     // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.createActivity.copy(
@@ -112,7 +113,7 @@ fun EditActivityFormSheet(
     var showTagPicker by remember { mutableStateOf(false) }
 
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
-    val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
+    val tagCountText = tagCountLabel(selectedTagIds.size)
 
     // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化
     val specWithCategory = ActivityFormSpecs.editActivity().copy(
