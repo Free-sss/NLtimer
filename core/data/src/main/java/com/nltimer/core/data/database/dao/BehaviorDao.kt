@@ -277,4 +277,8 @@ interface BehaviorDao {
     /** 计算所有已完成行为的总耗时（毫秒） */
     @Query("SELECT COALESCE(SUM(COALESCE(actualDuration, (endTime - startTime))), 0) FROM behaviors WHERE status = 'completed'")
     fun getTotalDurationAllBehaviors(): Flow<Long>
+
+    /** 查询数据库中最早一条 behavior 的 startTime（毫秒），无数据返回 null */
+    @Query("SELECT MIN(startTime) FROM behaviors WHERE startTime > 0")
+    suspend fun getEarliestStartTime(): Long?
 }

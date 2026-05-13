@@ -98,6 +98,7 @@ fun HomeRoute(
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
         onHourClick = onHourClick,
+        onLoadMore = viewModel::loadMore,
         timeLabelConfig = timeLabelConfig,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
         onHomeLayoutConfigChange = onHomeLayoutConfigChange,
