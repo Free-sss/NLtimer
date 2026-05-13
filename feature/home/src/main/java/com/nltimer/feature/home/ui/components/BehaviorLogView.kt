@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.feature.home.model.GridCellUiState
 @Composable
@@ -26,6 +27,7 @@ fun BehaviorLogView(
     cells: List<GridCellUiState>,
     onCellLongClick: (GridCellUiState) -> Unit = {},
     modifier: Modifier = Modifier,
+    logStyle: LogLayoutStyle = LogLayoutStyle(),
 ) {
     val timeFormatter = hhmmFormatter
 
@@ -65,6 +67,7 @@ fun BehaviorLogView(
                         timeFormatter = timeFormatter,
                         onClick = { detailCell = behavior },
                         onLongClick = { onCellLongClick(behavior) },
+                        logStyle = logStyle,
                     )
                 }
             }

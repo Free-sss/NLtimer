@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
@@ -35,6 +36,7 @@ fun TimeAxisGrid(
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
+    gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     val listState = rememberLazyListState()
 
@@ -57,6 +59,7 @@ fun TimeAxisGrid(
                 onEmptyCellClick = onEmptyCellClick,
                 onCellLongClick = onCellLongClick,
                 timeLabelConfig = timeLabelConfig,
+                gridStyle = gridStyle,
             )
         }
     }

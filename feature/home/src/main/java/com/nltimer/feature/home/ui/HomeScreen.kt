@@ -33,6 +33,9 @@ import com.nltimer.core.data.model.AddActivityCallback
 import com.nltimer.core.data.model.AddTagCallback
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.HomeLayoutConfig
+import com.nltimer.core.data.model.GridLayoutStyle
+import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.LoadingScreen
@@ -66,6 +69,7 @@ fun HomeScreen(
     activityGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig = DialogGridConfig(),
+    homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onShowAddSheet: (AddSheetMode) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
@@ -80,6 +84,7 @@ fun HomeScreen(
     onHourClick: (Int) -> Unit,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
+    onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     modifier: Modifier = Modifier,
 ) {
@@ -135,6 +140,7 @@ fun HomeScreen(
                         onStartBehavior = onStartBehavior,
                         timeLabelConfig = timeLabelConfig,
                         onTimeLabelSettingsClick = { showTimeLabelSettings = true },
+                        homeLayoutConfig = homeLayoutConfig,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -206,6 +212,7 @@ private fun HomeLayoutContent(
     onStartBehavior: (Long) -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
+    homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
     modifier: Modifier = Modifier,
 ) {
     when (layout) {
@@ -216,6 +223,7 @@ private fun HomeLayoutContent(
             onHourClick = onHourClick,
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
+            gridStyle = homeLayoutConfig.grid,
             modifier = modifier,
         )
         HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
@@ -227,6 +235,7 @@ private fun HomeLayoutContent(
         HomeLayout.LOG -> LogContent(
             uiState = uiState,
             onCellLongClick = onCellLongClick,
+            logStyle = homeLayoutConfig.log,
             modifier = modifier,
         )
         HomeLayout.MOMENT -> MomentContent(
@@ -250,6 +259,7 @@ private fun GridContent(
     onHourClick: (Int) -> Unit,
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
+    gridStyle: GridLayoutStyle = GridLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val showSideBar = LocalTheme.current.showTimeSideBar
@@ -262,6 +272,7 @@ private fun GridContent(
             showTimeSideBar = showSideBar,
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
+            gridStyle = gridStyle,
             modifier = Modifier.weight(1f),
         )
         if (showSideBar) {
@@ -302,12 +313,14 @@ private fun TimelineReverseContent(
 private fun LogContent(
     uiState: HomeUiState,
     onCellLongClick: (GridCellUiState) -> Unit,
+    logStyle: LogLayoutStyle = LogLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val allCells = remember(uiState.rows) { uiState.rows.flatMap { it.cells } }
     BehaviorLogView(
         cells = allCells,
         onCellLongClick = onCellLongClick,
+        logStyle = logStyle,
         modifier = modifier
     )
 }

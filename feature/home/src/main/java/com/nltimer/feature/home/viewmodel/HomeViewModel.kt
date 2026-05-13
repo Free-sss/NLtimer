@@ -8,6 +8,7 @@ import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
@@ -92,6 +93,9 @@ class HomeViewModel @Inject constructor(
 
     val timeLabelConfig: StateFlow<TimeLabelConfig> = settingsPrefs.getTimeLabelConfigFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), TimeLabelConfig())
+
+    val homeLayoutConfig: StateFlow<HomeLayoutConfig> = settingsPrefs.getHomeLayoutConfigFlow()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), HomeLayoutConfig())
 
     private val today = LocalDate.now()
 
@@ -305,6 +309,12 @@ class HomeViewModel @Inject constructor(
     fun onTimeLabelConfigChange(config: TimeLabelConfig) {
         viewModelScope.launch {
             settingsPrefs.updateTimeLabelConfig(config)
+        }
+    }
+
+    fun onHomeLayoutConfigChange(config: HomeLayoutConfig) {
+        viewModelScope.launch {
+            settingsPrefs.updateHomeLayoutConfig(config)
         }
     }
 }

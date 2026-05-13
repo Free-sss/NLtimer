@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.ShapeTokens
@@ -38,6 +39,7 @@ internal fun BehaviorLogCard(
     timeFormatter: DateTimeFormatter,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    logStyle: LogLayoutStyle = LogLayoutStyle(),
 ) {
     val cardBackground = if (behavior.isCurrent) {
         MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.15f))
@@ -49,7 +51,7 @@ internal fun BehaviorLogCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .behaviorCardStyle(cardBackground, borderColor)
+            .behaviorCardStyle(cardBackground, borderColor, logStyle)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
@@ -61,13 +63,13 @@ internal fun BehaviorLogCard(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(logStyle.iconSpacing.dp),
                 modifier = Modifier.weight(1f),
             ) {
                 IconRenderer(
                     iconKey = behavior.activityIconKey,
                     defaultEmoji = "❓",
-                    iconSize = 18.dp,
+                    iconSize = logStyle.iconSize.dp,
                 )
                 Text(
                     text = behavior.activityName ?: "未知",
@@ -89,7 +91,7 @@ internal fun BehaviorLogCard(
                     modifier = Modifier
                         .clip(RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)))
                         .background(bgColor)
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                        .padding(horizontal = logStyle.statusBadgePaddingH.dp, vertical = logStyle.statusBadgePaddingV.dp)
                 ) {
                     Text(
                         text = status.name,
@@ -135,7 +137,7 @@ internal fun BehaviorLogCard(
             }
         }
 
-        BehaviorTagRow(behavior.tags)
+        BehaviorTagRow(behavior.tags, logStyle = logStyle)
 
         behavior.note?.let { note ->
             if (note.isNotBlank()) {

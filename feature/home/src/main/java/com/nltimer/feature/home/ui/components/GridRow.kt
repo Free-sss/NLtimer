@@ -17,12 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
-
-private val GRID_MIN_HEIGHT = 100.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -32,10 +31,11 @@ fun GridRow(
     onCellLongClick: (GridCellUiState) -> Unit = {},
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     modifier: Modifier = Modifier,
+    gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val gridMinHeight = GRID_MIN_HEIGHT
+    val gridMinHeight = gridStyle.minRowHeight.dp
     Box(modifier = modifier.fillMaxWidth()) {
         Column {
             if (row.cells.isNotEmpty() && timeLabelConfig.visible) {
@@ -49,13 +49,13 @@ fun GridRow(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalArrangement = Arrangement.spacedBy(gridStyle.columnSpacing.dp),
             ) {
                 val addPlaceholderIndex = row.cells.indexOfFirst { it.isAddPlaceholder }
                 val firstEmptyIndex = row.cells.indexOfFirst { it.behaviorId == null }
                 val targetEmptyIndex = if (addPlaceholderIndex != -1) addPlaceholderIndex else firstEmptyIndex
 
-                repeat(4) { index ->
+                repeat(gridStyle.columns) { index ->
                     Box(
                         modifier = Modifier
                             .weight(1f),
@@ -73,6 +73,7 @@ fun GridRow(
                                             onClick = { detailCell = cell },
                                             onLongClick = { onCellLongClick(cell) },
                                         ),
+                                    gridStyle = gridStyle,
                                 )
                                 index == targetEmptyIndex -> GridCellEmpty(
                                     onClick = { onEmptyCellClick(cell.startTime, cell.endTime) },

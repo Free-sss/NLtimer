@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.ShapeTokens
@@ -47,6 +48,7 @@ private const val PLATINUM_GREEN_STRENGTH = 0.31f
 fun GridCell(
     cell: GridCellUiState,
     modifier: Modifier = Modifier,
+    gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     // 判断是否为已完成且达到白金成就等级的行为
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
@@ -54,7 +56,7 @@ fun GridCell(
 
     // 根据活跃/白金/普通状态选择背景色
     val backgroundColor = when {
-        cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.3f))
+        cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(gridStyle.activeBgAlpha))
         isPlatinum -> MaterialTheme.colorScheme.surfaceContainerLow
         else -> MaterialTheme.colorScheme.surfaceContainerLow
     }
@@ -62,7 +64,7 @@ fun GridCell(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .heightIn(max = 140.dp)
+            .heightIn(max = gridStyle.maxCellHeight.dp)
             .clipToBounds()
             .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
             .appBorder(
@@ -85,7 +87,7 @@ fun GridCell(
                 },
                 shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
             )
-            .padding(4.dp)
+            .padding(gridStyle.cellPadding.dp)
             ,
             
         horizontalAlignment = Alignment.Start,
@@ -96,7 +98,7 @@ fun GridCell(
                 IconRenderer(
                     iconKey = iconKey,
                     defaultEmoji = "❓",
-                    iconSize = 14.dp,
+                    iconSize = gridStyle.iconSize.dp,
                 )
             }
 
@@ -114,9 +116,9 @@ fun GridCell(
         // 渲染标签列表为 FlowRow 标签条（整体缩小 10%）
         if (cell.tags.isNotEmpty()) {
             FlowRow(
-                modifier = Modifier.scale(0.8f),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier.scale(gridStyle.tagScale),
+                horizontalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
+                verticalArrangement = Arrangement.spacedBy(gridStyle.tagSpacing.dp),
                 maxLines = 2,
             ) {
                 cell.tags.forEach { tag -> TagChip(tag = tag) }

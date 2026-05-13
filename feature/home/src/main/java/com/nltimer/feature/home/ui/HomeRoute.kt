@@ -21,6 +21,7 @@ fun HomeRoute(
     val allTags by viewModel.allTags.collectAsStateWithLifecycle()
     val dialogConfig by viewModel.dialogConfig.collectAsStateWithLifecycle()
     val timeLabelConfig by viewModel.timeLabelConfig.collectAsStateWithLifecycle()
+    val homeLayoutConfig by viewModel.homeLayoutConfig.collectAsStateWithLifecycle()
 
     val onEmptyCellClick = remember(viewModel) {
         { idleStart: LocalTime?, idleEnd: LocalTime? ->
@@ -71,6 +72,9 @@ fun HomeRoute(
     val onTimeLabelConfigChange = remember(viewModel) {
         { config: com.nltimer.core.designsystem.theme.TimeLabelConfig -> viewModel.onTimeLabelConfigChange(config) }
     }
+    val onHomeLayoutConfigChange = remember(viewModel) {
+        { config: com.nltimer.core.data.model.HomeLayoutConfig -> viewModel.onHomeLayoutConfigChange(config) }
+    }
     val onMatchNote = remember(viewModel) {
         { note: String -> viewModel.matchNoteFromText(note) }
     }
@@ -81,6 +85,7 @@ fun HomeRoute(
         activityGroups = activityGroups,
         allTags = allTags,
         dialogConfig = dialogConfig,
+        homeLayoutConfig = homeLayoutConfig,
         onEmptyCellClick = onEmptyCellClick,
         onShowAddSheet = onShowAddSheet,
         onCellLongClick = onCellLongClick,
@@ -95,6 +100,7 @@ fun HomeRoute(
         onHourClick = onHourClick,
         timeLabelConfig = timeLabelConfig,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
+        onHomeLayoutConfigChange = onHomeLayoutConfigChange,
         onMatchNote = onMatchNote,
     )
 }
