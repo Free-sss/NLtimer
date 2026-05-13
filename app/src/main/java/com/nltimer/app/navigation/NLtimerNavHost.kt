@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
+import com.nltimer.feature.settings.ui.ColorPaletteRoute
 import com.nltimer.feature.settings.ui.DialogConfigRoute
 import com.nltimer.feature.settings.ui.HomeLayoutConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
@@ -63,6 +64,7 @@ fun NLtimerNavHost(
                 onNavigateToDialogConfig = { navController.navigate(NLtimerRoutes.DIALOG_CONFIG) },
                 onNavigateToDataManagement = { navController.navigate(NLtimerRoutes.DATA_MANAGEMENT) },
                 onNavigateToHomeLayoutConfig = { navController.navigate(NLtimerRoutes.HOME_LAYOUT_CONFIG) },
+                onNavigateToColorPalette = { navController.navigate(NLtimerRoutes.COLOR_PALETTE) },
             )
         }
         composable(
@@ -103,6 +105,15 @@ fun NLtimerNavHost(
             popExitTransition = { slideOutHorizontally { it } },
         ) {
             HomeLayoutConfigRoute()
+        }
+        composable(
+            NLtimerRoutes.COLOR_PALETTE,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            ColorPaletteRoute()
         }
         debugRoutes?.invoke(this)
     }
