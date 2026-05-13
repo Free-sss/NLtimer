@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -18,11 +19,13 @@ fun SettingsRoute(
     onNavigateToThemeSettings: () -> Unit = {},
     onNavigateToDialogConfig: () -> Unit = {},
     onNavigateToDataManagement: () -> Unit = {},
+    onNavigateToHomeLayoutConfig: () -> Unit = {},
 ) {
     SettingsScreen(
         onNavigateToThemeSettings = onNavigateToThemeSettings,
         onNavigateToDialogConfig = onNavigateToDialogConfig,
         onNavigateToDataManagement = onNavigateToDataManagement,
+        onNavigateToHomeLayoutConfig = onNavigateToHomeLayoutConfig,
     )
 }
 
@@ -32,6 +35,7 @@ fun SettingsScreen(
     onNavigateToThemeSettings: () -> Unit = {},
     onNavigateToDialogConfig: () -> Unit = {},
     onNavigateToDataManagement: () -> Unit = {},
+    onNavigateToHomeLayoutConfig: () -> Unit = {},
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
@@ -53,6 +57,15 @@ fun SettingsScreen(
                 title = "弹窗配置",
                 subtitle = "调整弹窗网格布局与显示方式",
                 onClick = onNavigateToDialogConfig,
+            )
+        }
+
+        item {
+            SettingsEntryCard(
+                icon = Icons.Default.ViewCarousel,
+                title = "主页布局配置",
+                subtitle = "自定义网格列数、行高、间距等布局参数",
+                onClick = onNavigateToHomeLayoutConfig,
             )
         }
 

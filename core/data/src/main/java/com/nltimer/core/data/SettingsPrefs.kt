@@ -1,6 +1,7 @@
 package com.nltimer.core.data
 
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import kotlinx.coroutines.flow.Flow
@@ -29,6 +30,11 @@ interface SettingsPrefs {
     fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig>
     /** 更新时间标签配置并持久化 */
     suspend fun updateTimeLabelConfig(config: TimeLabelConfig)
+
+    /** 以 Flow 形式监听主页布局样式配置 */
+    fun getHomeLayoutConfigFlow(): Flow<HomeLayoutConfig>
+    /** 更新主页布局样式配置并持久化 */
+    suspend fun updateHomeLayoutConfig(config: HomeLayoutConfig)
 
     /** 以 Flow 形式监听是否已看过引导页 */
     fun getHasSeenIntroFlow(): Flow<Boolean>

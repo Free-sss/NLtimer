@@ -12,6 +12,7 @@ import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
 import com.nltimer.feature.settings.ui.DialogConfigRoute
+import com.nltimer.feature.settings.ui.HomeLayoutConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
@@ -61,6 +62,7 @@ fun NLtimerNavHost(
                 onNavigateToThemeSettings = { navController.navigate(NLtimerRoutes.THEME_SETTINGS) },
                 onNavigateToDialogConfig = { navController.navigate(NLtimerRoutes.DIALOG_CONFIG) },
                 onNavigateToDataManagement = { navController.navigate(NLtimerRoutes.DATA_MANAGEMENT) },
+                onNavigateToHomeLayoutConfig = { navController.navigate(NLtimerRoutes.HOME_LAYOUT_CONFIG) },
             )
         }
         composable(
@@ -92,6 +94,15 @@ fun NLtimerNavHost(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToBehaviorManagement = { navController.navigate(NLtimerRoutes.BEHAVIOR_MANAGEMENT) },
             )
+        }
+        composable(
+            NLtimerRoutes.HOME_LAYOUT_CONFIG,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            HomeLayoutConfigRoute()
         }
         debugRoutes?.invoke(this)
     }

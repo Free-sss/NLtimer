@@ -10,6 +10,11 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.nltimer.core.data.model.DialogGridConfig
+import com.nltimer.core.data.model.HomeLayoutConfig
+import com.nltimer.core.data.model.GridLayoutStyle
+import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.data.model.TimelineLayoutStyle
+import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.data.model.SecondsStrategy
 import com.nltimer.core.designsystem.theme.AppTheme
 import com.nltimer.core.designsystem.theme.AlphaPreset
@@ -182,6 +187,58 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         }
     }
 
+    override fun getHomeLayoutConfigFlow(): Flow<HomeLayoutConfig> = dataStore.data.map { prefs ->
+        HomeLayoutConfig(
+            grid = GridLayoutStyle(
+                columns = prefs[gridColumnsKey] ?: 4,
+                minRowHeight = prefs[gridMinRowHeightKey] ?: 100,
+                maxCellHeight = prefs[gridMaxCellHeightKey] ?: 140,
+                columnSpacing = prefs[gridColumnSpacingKey] ?: 5,
+                cellPadding = prefs[gridCellPaddingKey] ?: 4,
+                iconSize = prefs[gridIconSizeKey] ?: 14,
+                tagScale = prefs[gridTagScaleKey] ?: 0.8f,
+                tagSpacing = prefs[gridTagSpacingKey] ?: 2,
+                activeBgAlpha = prefs[gridActiveBgAlphaKey] ?: 0.3f,
+            ),
+            log = LogLayoutStyle(
+                cardPadding = prefs[logCardPaddingKey] ?: 12,
+                iconSize = prefs[logIconSizeKey] ?: 18,
+                iconSpacing = prefs[logIconSpacingKey] ?: 6,
+                tagRowSpacing = prefs[logTagRowSpacingKey] ?: 6,
+                statusBadgePaddingH = prefs[logBadgePaddingHKey] ?: 8,
+                statusBadgePaddingV = prefs[logBadgePaddingVKey] ?: 2,
+            ),
+            timeline = TimelineLayoutStyle(
+                itemSpacing = prefs[timelineItemSpacingKey] ?: 8,
+            ),
+            moment = MomentLayoutStyle(
+                cardPadding = prefs[momentCardPaddingKey] ?: 16,
+            ),
+        )
+    }
+
+    override suspend fun updateHomeLayoutConfig(config: HomeLayoutConfig) {
+        dataStore.edit { prefs ->
+            prefs[gridColumnsKey] = config.grid.columns
+            prefs[gridMinRowHeightKey] = config.grid.minRowHeight
+            prefs[gridMaxCellHeightKey] = config.grid.maxCellHeight
+            prefs[gridColumnSpacingKey] = config.grid.columnSpacing
+            prefs[gridCellPaddingKey] = config.grid.cellPadding
+            prefs[gridIconSizeKey] = config.grid.iconSize
+            prefs[gridTagScaleKey] = config.grid.tagScale
+            prefs[gridTagSpacingKey] = config.grid.tagSpacing
+            prefs[gridActiveBgAlphaKey] = config.grid.activeBgAlpha
+            prefs[logCardPaddingKey] = config.log.cardPadding
+            prefs[logIconSizeKey] = config.log.iconSize
+            prefs[logIconSpacingKey] = config.log.iconSpacing
+            prefs[logTagRowSpacingKey] = config.log.tagRowSpacing
+            prefs[logBadgePaddingHKey] = config.log.statusBadgePaddingH
+            prefs[logBadgePaddingVKey] = config.log.statusBadgePaddingV
+            prefs[timelineItemSpacingKey] = config.timeline.itemSpacing
+            prefs[momentCardPaddingKey] = config.moment.cardPadding
+        }
+    }
+
     private fun serializeTimeLabelConfig(config: TimeLabelConfig): String {
         return "${config.visible}|${config.style.name}|${config.format.name}"
     }
@@ -239,5 +296,23 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
         private val topBarModeKey = stringPreferencesKey("top_bar_mode")
         private val bottomBarModeKey = stringPreferencesKey("bottom_bar_mode")
+
+        private val gridColumnsKey = intPreferencesKey("home_grid_columns")
+        private val gridMinRowHeightKey = intPreferencesKey("home_grid_min_row_height")
+        private val gridMaxCellHeightKey = intPreferencesKey("home_grid_max_cell_height")
+        private val gridColumnSpacingKey = intPreferencesKey("home_grid_column_spacing")
+        private val gridCellPaddingKey = intPreferencesKey("home_grid_cell_padding")
+        private val gridIconSizeKey = intPreferencesKey("home_grid_icon_size")
+        private val gridTagScaleKey = floatPreferencesKey("home_grid_tag_scale")
+        private val gridTagSpacingKey = intPreferencesKey("home_grid_tag_spacing")
+        private val gridActiveBgAlphaKey = floatPreferencesKey("home_grid_active_bg_alpha")
+        private val logCardPaddingKey = intPreferencesKey("home_log_card_padding")
+        private val logIconSizeKey = intPreferencesKey("home_log_icon_size")
+        private val logIconSpacingKey = intPreferencesKey("home_log_icon_spacing")
+        private val logTagRowSpacingKey = intPreferencesKey("home_log_tag_row_spacing")
+        private val logBadgePaddingHKey = intPreferencesKey("home_log_badge_padding_h")
+        private val logBadgePaddingVKey = intPreferencesKey("home_log_badge_padding_v")
+        private val timelineItemSpacingKey = intPreferencesKey("home_timeline_item_spacing")
+        private val momentCardPaddingKey = intPreferencesKey("home_moment_card_padding")
     }
 }
