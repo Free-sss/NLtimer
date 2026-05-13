@@ -206,6 +206,10 @@ private fun <T> ChipFlowSelector(
                 selected = option == selected,
                 onSelect = { onSelect(option) },
                 shape = RoundedCornerShape(8.dp),
+                showCheckIcon = false,
+                showBorder = false,
+                textStyle = MaterialTheme.typography.labelMedium,
+                contentPaddingVertical = 5.dp,
             )
         }
     }
@@ -246,6 +250,10 @@ private fun <T> LayoutWithStepperRow(
                     selected = option == selectedLayout,
                     onSelect = { onSelectLayout(option) },
                     shape = RoundedCornerShape(8.dp),
+                    showCheckIcon = false,
+                    showBorder = false,
+                    textStyle = MaterialTheme.typography.labelMedium,
+                    contentPaddingVertical = 5.dp,
                 )
             }
         }
@@ -313,6 +321,10 @@ private fun InlineToggleRow(
                 selected = selected == value,
                 onSelect = { onSelect(value) },
                 shape = RoundedCornerShape(8.dp),
+                showCheckIcon = false,
+                showBorder = false,
+                textStyle = MaterialTheme.typography.labelMedium,
+                contentPaddingVertical = 5.dp,
             )
         }
     }
