@@ -99,6 +99,10 @@ class HomeViewModel @Inject constructor(
 
     private val today = LocalDate.now()
 
+    private val _loadedEarliest = MutableStateFlow(today)
+    private val _earliestRecord = MutableStateFlow<LocalDate?>(null)
+    private val _isLoadingMore = MutableStateFlow(false)
+
     init {
         loadHomeBehaviors()
         loadActivitiesAndGroups()
@@ -127,21 +131,49 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun loadHomeBehaviors() {
         viewModelScope.launch {
-            val dayStart = today.startOfDayMillis()
-            val dayEnd = today.endOfDayMillis()
-
+            _earliestRecord.value = try {
+                behaviorRepository.getEarliestBehaviorDate()
+            } catch (_: Exception) {
+                null
+            }
+        }
+        viewModelScope.launch {
             combine(
-                behaviorRepository.getHomeBehaviors(dayStart, dayEnd),
-                homeLayoutConfig
-            ) { behaviors, _ -> behaviors }
-                .collect { behaviors ->
-                    val state = buildUiState(behaviors)
-                    _uiState.update { state }
+                _loadedEarliest.flatMapLatest { earliest ->
+                    behaviorRepository.getHomeBehaviors(
+                        earliest.startOfDayMillis(),
+                        today.endOfDayMillis()
+                    )
+                },
+                homeLayoutConfig,
+                _isLoadingMore,
+                _loadedEarliest,
+                _earliestRecord,
+            ) { behaviors, _, loadingMore, loadedEarliest, earliestRecord ->
+                BehaviorsSnapshot(behaviors, loadingMore, loadedEarliest, earliestRecord)
+            }.collect { snapshot ->
+                val state = buildUiState(snapshot.behaviors)
+                val reached = snapshot.earliestRecord?.let { !snapshot.loadedEarliest.isAfter(it) } ?: false
+                _uiState.update {
+                    state.copy(
+                        isLoadingMore = snapshot.isLoadingMore,
+                        hasReachedEarliest = reached,
+                    )
                 }
+                _isLoadingMore.value = false
+            }
         }
     }
+
+    private data class BehaviorsSnapshot(
+        val behaviors: List<Behavior>,
+        val isLoadingMore: Boolean,
+        val loadedEarliest: LocalDate,
+        val earliestRecord: LocalDate?,
+    )
 
     private suspend fun buildUiState(behaviors: List<Behavior>): HomeUiState {
         val now = LocalTime.now()
@@ -321,5 +353,16 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             settingsPrefs.updateHomeLayoutConfig(config)
         }
+    }
+
+    fun loadMore() {
+        if (_isLoadingMore.value) return
+        val current = _loadedEarliest.value
+        val candidate = current.minusDays(7)
+        val cap = _earliestRecord.value ?: return
+        val target = if (candidate.isBefore(cap)) cap else candidate
+        if (!target.isBefore(current)) return
+        _isLoadingMore.value = true
+        _loadedEarliest.value = target
     }
 }

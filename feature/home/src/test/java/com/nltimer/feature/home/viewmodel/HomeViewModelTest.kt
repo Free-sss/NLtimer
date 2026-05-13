@@ -455,6 +455,57 @@ class HomeViewModelTest {
         assertEquals(emptyList<Long>(), state.editInitialTagIds)
     }
 
+    @Test
+    fun `loadMore is no-op when earliestRecord is null`() = runTest {
+        val vm = HomeViewModel(
+            behaviorRepository,
+            activityRepository,
+            activityManagementRepository,
+            tagRepository,
+            settingsPrefs,
+            KeywordMatchStrategy(),
+            NoteMatcher(),
+            addBehaviorUseCase,
+            addTagUseCase,
+            addActivityUseCase,
+            clockService,
+        )
+        advanceUntilIdle()
+        val before = vm.uiState.value.items.size
+
+        vm.loadMore()
+        advanceUntilIdle()
+
+        assertEquals(before, vm.uiState.value.items.size)
+    }
+
+    @Test
+    fun `loadMore stops at earliestRecord boundary`() = runTest {
+        val earliest = java.time.LocalDate.now().minusDays(3)
+        behaviorRepository.earliestDate = earliest
+        val vm = HomeViewModel(
+            behaviorRepository,
+            activityRepository,
+            activityManagementRepository,
+            tagRepository,
+            settingsPrefs,
+            KeywordMatchStrategy(),
+            NoteMatcher(),
+            addBehaviorUseCase,
+            addTagUseCase,
+            addActivityUseCase,
+            clockService,
+        )
+        advanceUntilIdle()
+
+        repeat(5) {
+            vm.loadMore()
+            advanceUntilIdle()
+        }
+
+        assertTrue(vm.uiState.value.hasReachedEarliest)
+    }
+
     private class FakeBehaviorRepository : BehaviorRepository {
         val insertedBehaviors = mutableListOf<Behavior>()
         val dayRangeBehaviors = mutableListOf<Behavior>()
@@ -468,6 +519,7 @@ class HomeViewModelTest {
         var setStartTimeCalled = false
         var updateBehaviorCalled = false
         var reorderedIds: List<Long>? = null
+        var earliestDate: java.time.LocalDate? = null
 
         override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> = flowOf(
             dayRangeBehaviors.filter { it.startTime in dayStart until dayEnd }
@@ -519,7 +571,7 @@ class HomeViewModelTest {
         override fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> = flowOf(emptyList())
         override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
-        override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? = null
+        override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? = earliestDate
         override fun getTotalDurationAllBehaviors(): kotlinx.coroutines.flow.Flow<Long> = kotlinx.coroutines.flow.flowOf(0L)
     }
 
