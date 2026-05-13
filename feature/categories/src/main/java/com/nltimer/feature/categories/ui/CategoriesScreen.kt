@@ -27,7 +27,6 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appInputChipBorder
 import com.nltimer.core.designsystem.theme.appAssistChipBorder
 import com.nltimer.core.designsystem.component.ConfirmDialog
+import com.nltimer.core.designsystem.component.TextInputDialog
 import com.nltimer.core.designsystem.theme.appOutlinedTextFieldColors
 import com.nltimer.feature.categories.model.CategoriesUiState
 import com.nltimer.feature.categories.model.DialogState
@@ -262,39 +262,16 @@ private fun CategoryDialog(
         // 新增分类对话框（活动 / 标签共用 UI）
         is DialogState.AddActivityCategory,
         is DialogState.AddTagCategory -> {
-            var name by remember { mutableStateOf("") }
-            // 根据密封类型推断 sectionType
             val sectionType = when (dialogState) {
                 is DialogState.AddActivityCategory -> SectionType.ACTIVITY
                 is DialogState.AddTagCategory -> SectionType.TAG
             }
 
-            AlertDialog(
-                onDismissRequest = onDismiss,
-                title = { Text("新建分类") },
-                text = {
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text("分类名称") },
-                        singleLine = true,
-                        colors = appOutlinedTextFieldColors(),
-                    )
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = { onConfirmAdd(sectionType, name.trim()) },
-                        // 名称为空时禁用确定按钮
-                        enabled = name.isNotBlank(),
-                    ) {
-                        Text("确定")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = onDismiss) {
-                        Text("取消")
-                    }
-                },
+            TextInputDialog(
+                title = "新建分类",
+                label = "分类名称",
+                onConfirm = { name -> onConfirmAdd(sectionType, name) },
+                onDismiss = onDismiss,
             )
         }
 
