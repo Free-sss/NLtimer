@@ -320,3 +320,6 @@ docs/Android-SimpleTimeTracker/
 .zed/settings.json
 .kilo/kilo.jsonc
 .kilo/plans/
+
+docs/reference/Tomato/
+wsl

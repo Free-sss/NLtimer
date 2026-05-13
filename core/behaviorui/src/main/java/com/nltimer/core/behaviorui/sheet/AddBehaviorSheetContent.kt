@@ -89,6 +89,8 @@ internal fun AddBehaviorSheetContent(
 ) {
     val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
 
+    EndTimeAutoTickEffect(state)
+
     val emphasisColor = MaterialTheme.colorScheme.secondary
 
     Box(
@@ -134,7 +136,7 @@ internal fun AddBehaviorSheetContent(
                 boxPositionInWindow = state.boxPositionInWindow,
                 onStartTimeChanged = { state.startTime = it },
                 onEndTimeChanged = { state.endTime = it },
-                onUserAdjusted = { state.userAdjustedTime = true },
+                onUserAdjusted = { state.markUserAdjustedTime() },
             )
         }
 
@@ -356,8 +358,8 @@ private fun TimePickerSection(
                 endTime = state.endTime,
                 animate = !state.showTimeAdjustments,
                 onTimesChanged = { start, end ->
-                    if (state.startTime != start) { state.startTime = start; state.userAdjustedTime = true }
-                    if (state.endTime != end) { state.endTime = end; state.userAdjustedTime = true }
+                    if (state.startTime != start) { state.startTime = start; state.markUserAdjustedTime() }
+                    if (state.endTime != end) { state.endTime = end; state.markUserAdjustedTime() }
                 },
                 onLeftCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
                 onRightCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
@@ -367,7 +369,7 @@ private fun TimePickerSection(
             SingleTimePicker(
                 startTime = state.startTime,
                 animate = !state.showTimeAdjustments,
-                onTimeChanged = { state.startTime = it; state.userAdjustedTime = true },
+                onTimeChanged = { state.startTime = it; state.markUserAdjustedTime() },
                 onCenterClick = { state.showTimeAdjustments = !state.showTimeAdjustments },
             )
         }
@@ -478,3 +480,23 @@ private fun NoteAutoMatchEffect(
 }
 
 private const val NOTE_AUTO_MATCH_DEBOUNCE_MS = 300L
+
+/**
+ * 当 [AddBehaviorState.endTimeAutoTracking] 为 true 时，每秒把 endTime 推进到当前系统时间，
+ * 使"用时"读数像秒表一样实时增长。
+ *
+ * tick 间隔 1 秒：分钟跨越时能及时刷新分钟级展示；秒级变化时由于 Compose
+ * `mutableStateOf` 结构等值短路，分/时显示字符串不变即不会触发选择器滚动。
+ */
+@Composable
+private fun EndTimeAutoTickEffect(state: AddBehaviorState) {
+    LaunchedEffect(state.endTimeAutoTracking) {
+        if (!state.endTimeAutoTracking) return@LaunchedEffect
+        while (true) {
+            state.endTime = LocalDateTime.now()
+            delay(END_TIME_TICK_INTERVAL_MS)
+        }
+    }
+}
+
+private const val END_TIME_TICK_INTERVAL_MS = 1000L
