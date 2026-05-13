@@ -132,7 +132,10 @@ class HomeViewModel @Inject constructor(
             val dayStart = today.startOfDayMillis()
             val dayEnd = today.endOfDayMillis()
 
-            behaviorRepository.getHomeBehaviors(dayStart, dayEnd)
+            combine(
+                behaviorRepository.getHomeBehaviors(dayStart, dayEnd),
+                homeLayoutConfig
+            ) { behaviors, _ -> behaviors }
                 .collect { behaviors ->
                     val state = buildUiState(behaviors)
                     _uiState.update { state }
@@ -155,6 +158,7 @@ class HomeViewModel @Inject constructor(
             tagsByBehaviorId = tagsByBehaviorId,
             now = now,
             currentTimeMs = clockService.currentTimeMillis(),
+            gridColumns = homeLayoutConfig.value.grid.columns,
         )
     }
 

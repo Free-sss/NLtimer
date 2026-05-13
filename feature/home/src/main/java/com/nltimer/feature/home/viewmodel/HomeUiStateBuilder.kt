@@ -15,9 +15,9 @@ import java.time.ZoneId
 class HomeUiStateBuilder {
 
     companion object {
-        const val GRID_COLUMNS = 4
         const val STATE_TIMEOUT_MS = 5_000L
         private const val ROW_ID_FORMAT = "row-%d-%s"
+        const val DEFAULT_GRID_COLUMNS = 4
     }
 
     fun buildUiState(
@@ -26,6 +26,7 @@ class HomeUiStateBuilder {
         tagsByBehaviorId: Map<Long, List<Tag>>,
         now: LocalTime,
         currentTimeMs: Long,
+        gridColumns: Int = DEFAULT_GRID_COLUMNS,
     ): HomeUiState {
         if (behaviors.isEmpty()) {
             return buildEmptyState(now)
@@ -37,7 +38,7 @@ class HomeUiStateBuilder {
         val cells = buildMomentBehaviors(sortedBehaviors, activityMap, tagsByBehaviorId, currentTimeMs)
         val addCell = buildAddCell(cells, now)
         val allCells = cells + addCell
-        val (rows, currentRowId) = buildGridRows(allCells, sortedBehaviors, now)
+        val (rows, currentRowId) = buildGridRows(allCells, sortedBehaviors, now, gridColumns)
         val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors)
 
         return HomeUiState(
@@ -159,17 +160,18 @@ class HomeUiStateBuilder {
         allCells: List<GridCellUiState>,
         sortedBehaviors: List<Behavior>,
         now: LocalTime,
+        gridColumns: Int = DEFAULT_GRID_COLUMNS,
     ): Pair<List<GridRowUiState>, String?> {
         val rows = mutableListOf<GridRowUiState>()
         var currentRowId: String? = null
 
-        allCells.chunked(GRID_COLUMNS).forEachIndexed { rowIndex, rowCells ->
+        allCells.chunked(gridColumns).forEachIndexed { rowIndex, rowCells ->
             val rowId = ROW_ID_FORMAT.format(rowIndex, rowCells.firstOrNull()?.behaviorId ?: "add")
             val hasCurrentInRow = rowCells.any { it.isCurrent }
             if (hasCurrentInRow) currentRowId = rowId
 
-            val timeForRow = if (rowIndex < allCells.size / GRID_COLUMNS) {
-                val behavior = sortedBehaviors.getOrNull(rowIndex * GRID_COLUMNS)
+            val timeForRow = if (rowIndex < allCells.size / gridColumns) {
+                val behavior = sortedBehaviors.getOrNull(rowIndex * gridColumns)
                 if (behavior != null
                     && behavior.status != BehaviorNature.PENDING
                     && behavior.startTime > 0L
@@ -185,7 +187,7 @@ class HomeUiStateBuilder {
             }
 
             val paddedCells = rowCells.toMutableList()
-            while (paddedCells.size < GRID_COLUMNS) {
+            while (paddedCells.size < gridColumns) {
                 paddedCells.add(
                     GridCellUiState(
                         behaviorId = null,
