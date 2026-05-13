@@ -12,6 +12,8 @@ import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
+import com.nltimer.core.data.util.atTimeToEpochMillis
+import com.nltimer.core.data.util.startOfDayMillis
 import com.nltimer.feature.behavior_management.export.BehaviorExportData
 import com.nltimer.feature.behavior_management.export.JsonExporter
 import com.nltimer.feature.behavior_management.export.JsonImporter
@@ -35,7 +37,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -72,10 +73,7 @@ class BehaviorManagementViewModel @Inject constructor(
                 .map { Pair(it.rangeStartDate, it.timeRange) }
                 .distinctUntilChanged()
                 .flatMapLatest { (date, preset) ->
-                    val startEpoch = date
-                        .atStartOfDay(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
+                    val startEpoch = date.startOfDayMillis()
                     val endEpoch = startEpoch + preset.hours * 3600_000L
                     behaviorRepository.getBehaviorsWithDetailsByTimeRange(startEpoch, endEpoch)
                         .combine(activityGroups) { behaviors, groups ->
@@ -245,10 +243,8 @@ class BehaviorManagementViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val today = LocalDate.now()
-            val startEpoch = today.atTime(startTime).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val endEpoch = endTime?.let {
-                today.atTime(it).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            }
+            val startEpoch = today.atTimeToEpochMillis(startTime)
+            val endEpoch = endTime?.let { today.atTimeToEpochMillis(it) }
             behaviorRepository.updateBehavior(id, activityId, startEpoch, endEpoch, nature.key, note)
             behaviorRepository.updateTagsForBehavior(id, tagIds)
             finishEditBehavior()

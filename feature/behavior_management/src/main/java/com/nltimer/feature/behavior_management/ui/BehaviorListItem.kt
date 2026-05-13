@@ -18,18 +18,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.util.formatEpochTimeRange
 import com.nltimer.core.designsystem.component.cardColorForStrategy
+import com.nltimer.core.designsystem.component.toComposeColor
 import com.nltimer.core.designsystem.theme.BorderTokens
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
-import com.nltimer.core.designsystem.theme.toComposeColor
 import com.nltimer.core.designsystem.theme.styledCorner
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -71,7 +69,7 @@ fun BehaviorListItem(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val dotColor = activity.color.toComposeColor { MaterialTheme.colorScheme.primary }
+        val dotColor = activity.color.toComposeColor()
 
         Box(
             modifier = Modifier
@@ -107,11 +105,7 @@ fun BehaviorListItem(
                         modifier = Modifier.weight(1f, fill = false),
                     )
                 }
-                val statusText = when (behavior.status) {
-                    BehaviorNature.COMPLETED -> "✓"
-                    BehaviorNature.ACTIVE -> "▶"
-                    BehaviorNature.PENDING -> "○"
-                }
+                val statusText = behavior.status.displaySymbol
                 Text(
                     text = statusText,
                     style = MaterialTheme.typography.labelSmall.copy(
@@ -134,7 +128,7 @@ fun BehaviorListItem(
             }
         }
 
-        val timeText = formatTimeRange(behavior.startTime, behavior.endTime)
+        val timeText = formatEpochTimeRange(behavior.startTime, behavior.endTime)
         Text(
             text = timeText,
             style = MaterialTheme.typography.labelMedium.copy(
@@ -144,17 +138,3 @@ fun BehaviorListItem(
     }
 }
 
-private fun formatTimeRange(start: Long, end: Long?): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    val startTime = Instant.ofEpochMilli(start)
-        .atZone(ZoneId.systemDefault())
-        .toLocalTime()
-        .format(formatter)
-    val endTime = end?.let {
-        Instant.ofEpochMilli(it)
-            .atZone(ZoneId.systemDefault())
-            .toLocalTime()
-            .format(formatter)
-    }
-    return if (endTime != null) "$startTime - $endTime" else startTime
-}

@@ -10,6 +10,7 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.MultiSelectPickerPopup
 import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
+import com.nltimer.core.designsystem.component.tagCountLabel
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
@@ -29,7 +30,7 @@ fun AddActivityDialog(
     var showTagPicker by remember { mutableStateOf(false) }
 
     val groupName = allGroups.find { it.id == selectedGroupId }?.name ?: "未分类"
-    val tagCountText = if (selectedTagIds.isEmpty()) "+ 增加" else "${selectedTagIds.size} 个标签"
+    val tagCountText = tagCountLabel(selectedTagIds.size)
     val groupItems = listOf(null to "未分类") + allGroups.map { it.id to it.name }
 
     // DIFF: 复杂多字段变更，无法用 withUpdatedLabelAction 简化

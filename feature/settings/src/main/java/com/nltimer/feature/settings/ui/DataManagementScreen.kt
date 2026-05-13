@@ -69,8 +69,7 @@ fun DataManagementRoute(
                 ExportScope.TAGS -> "tags"
                 ExportScope.CATEGORIES -> "categories"
             }
-            val timestamp = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
-                .format(java.util.Date())
+            val timestamp = com.nltimer.core.data.util.formatExportTimestamp()
             exportLauncher.launch("nltimer_${scopeName}_$timestamp.json")
         }
     }
