@@ -53,7 +53,7 @@ fun TimeAxisGrid(
         state = listState,
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
-        contentPadding = PaddingValues(bottom = 80.dp),
+        contentPadding = PaddingValues(bottom = 180.dp),
     ) {
         items(items = rows, key = { it.rowId }) { row ->
             GridRow(

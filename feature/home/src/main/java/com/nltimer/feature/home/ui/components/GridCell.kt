@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -40,8 +39,9 @@ private const val PLATINUM_GREEN_BASE = 0.69f
 private const val PLATINUM_RED_STRENGTH = 0.22f
 private const val PLATINUM_GREEN_STRENGTH = 0.31f
 private const val BACKGROUND_ICON_ALPHA = 0.15f
-private const val BACKGROUND_ICON_SIZE_RATIO = 0.4f
-private const val BACKGROUND_EMOJI_WIDTH_RATIO = 1.35f
+private const val BACKGROUND_ICON_SIZE_RATIO = 0.25f
+private const val BACKGROUND_ICON_WIDTH_RATIO = 1.6f
+private const val BACKGROUND_ICON_HEIGHT_RATIO = 1.45f
 
 @Composable
 fun GridCell(
@@ -88,6 +88,8 @@ fun GridCell(
     ) {
         cell.activityIconKey?.let { iconKey ->
             val backgroundIconSize = (gridStyle.maxCellHeight * BACKGROUND_ICON_SIZE_RATIO).dp
+            val backgroundIconWidth = backgroundIconSize * BACKGROUND_ICON_WIDTH_RATIO
+            val backgroundIconHeight = backgroundIconSize * BACKGROUND_ICON_HEIGHT_RATIO
             val backgroundIconAlpha = styledAlpha(BACKGROUND_ICON_ALPHA)
             Box(
                 modifier = Modifier.matchParentSize(),
@@ -96,12 +98,12 @@ fun GridCell(
                 Box(
                     modifier = Modifier
                         .padding(start = 2.dp, bottom = 2.dp)
-                        .requiredWidth(backgroundIconSize * BACKGROUND_EMOJI_WIDTH_RATIO)
-                        .requiredHeight(backgroundIconSize)
+                        .requiredWidth(backgroundIconWidth)
+                        .requiredHeight(backgroundIconHeight)
                         .graphicsLayer {
                             alpha = backgroundIconAlpha
                         },
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.BottomStart,
                 ) {
                     IconRenderer(
                         iconKey = iconKey,
@@ -109,8 +111,8 @@ fun GridCell(
                         tint = MaterialTheme.colorScheme.onSurface,
                         iconSize = backgroundIconSize,
                         modifier = Modifier
-                            .requiredWidth(backgroundIconSize * BACKGROUND_EMOJI_WIDTH_RATIO)
-                            .requiredHeight(backgroundIconSize),
+                            .requiredWidth(backgroundIconWidth)
+                            .requiredHeight(backgroundIconHeight),
                     )
                 }
             }

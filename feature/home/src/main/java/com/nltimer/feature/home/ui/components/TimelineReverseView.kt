@@ -109,7 +109,7 @@ fun TimelineReverseView(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
             items(items = timelineItems, key = { item ->
                 when (item) {

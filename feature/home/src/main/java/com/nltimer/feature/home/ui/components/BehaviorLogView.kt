@@ -42,7 +42,7 @@ fun BehaviorLogView(
             modifier = Modifier
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
             if (behaviors.isEmpty()) {
                 item {
