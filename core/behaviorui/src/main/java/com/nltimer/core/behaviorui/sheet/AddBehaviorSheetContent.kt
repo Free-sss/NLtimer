@@ -29,11 +29,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -328,14 +326,10 @@ private fun DurationDisplayRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val durationText: String by remember {
-            derivedStateOf {
-                val totalMinutes = duration.toMinutes()
-                val hours = totalMinutes / 60
-                val minutes = totalMinutes % 60
-                "${hours}时${minutes}分"
-            }
-        }
+        val totalMinutes = duration.toMinutes()
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        val durationText = "${hours}时${minutes}分"
         Text(
             text = "用时：$durationText",
             style = MaterialTheme.typography.labelLarge.copy(
