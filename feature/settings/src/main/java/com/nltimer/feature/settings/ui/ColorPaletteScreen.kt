@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -114,12 +115,26 @@ private fun LazyListScope.paletteContent(
 ) {
     PALETTE_GROUPS.forEach { group ->
         item(key = "section-${group.title}") {
-            Text(
-                text = group.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = 12.dp, bottom = 6.dp),
-            )
+            val titleStyle = MaterialTheme.typography.titleMedium
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, bottom = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    text = group.title,
+                    style = titleStyle,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = group.description,
+                    style = titleStyle.copy(fontSize = titleStyle.fontSize * 0.8f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
         items(group.tokens, key = { "token-${it.name}" }) { token ->
             TokenCard(
@@ -225,12 +240,14 @@ private data class PaletteToken(
 
 private data class PaletteGroup(
     val title: String,
+    val description: String,
     val tokens: List<PaletteToken>,
 )
 
 private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     PaletteGroup(
         title = "Primary",
+        description = "主品牌色 · 主要按钮、选中状态、强调元素",
         tokens = listOf(
             PaletteToken("primary", { it.primary }, { it.onPrimary }),
             PaletteToken("primaryContainer", { it.primaryContainer }, { it.onPrimaryContainer }),
@@ -239,6 +256,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Secondary",
+        description = "次要品牌色 · 浮动按钮、辅助强调",
         tokens = listOf(
             PaletteToken("secondary", { it.secondary }, { it.onSecondary }),
             PaletteToken("secondaryContainer", { it.secondaryContainer }, { it.onSecondaryContainer }),
@@ -246,6 +264,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Tertiary",
+        description = "三级品牌色 · 平衡色彩、装饰性强调",
         tokens = listOf(
             PaletteToken("tertiary", { it.tertiary }, { it.onTertiary }),
             PaletteToken("tertiaryContainer", { it.tertiaryContainer }, { it.onTertiaryContainer }),
@@ -253,6 +272,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Fixed Colors",
+        description = "亮/暗模式下保持一致 · 地图、徽章等不随主题切换的场景",
         tokens = listOf(
             PaletteToken("primaryFixed", { it.primaryFixed }, { it.onPrimaryFixed }),
             PaletteToken("primaryFixedDim", { it.primaryFixedDim }, { it.onPrimaryFixedVariant }),
@@ -264,6 +284,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Background & Surface",
+        description = "页面与表面背景 · 卡片、面板、列表底色",
         tokens = listOf(
             PaletteToken("background", { it.background }, { it.onBackground }),
             PaletteToken("surface", { it.surface }, { it.onSurface }),
@@ -281,6 +302,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Error",
+        description = "错误与警示状态 · 错误提示、危险操作",
         tokens = listOf(
             PaletteToken("error", { it.error }, { it.onError }),
             PaletteToken("errorContainer", { it.errorContainer }, { it.onErrorContainer }),
@@ -288,6 +310,7 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
     ),
     PaletteGroup(
         title = "Other",
+        description = "装饰与辅助 · 边框、分隔线、遮罩层",
         tokens = listOf(
             PaletteToken("outline", { it.outline }),
             PaletteToken("outlineVariant", { it.outlineVariant }),
