@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -21,6 +22,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -123,14 +125,54 @@ fun GridCell(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
         ) {
-            cell.activityName?.let { name ->
-                Text(
-                    text = name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            if (cell.activityName != null || cell.durationText().isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    cell.activityName?.let { name ->
+                        Text(
+                            text = name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+
+                    val durationText = if (cell.isCurrent && cell.startEpochMs != null) {
+                        formatGridDurationHours(
+                            ms = LiveElapsedDuration(
+                                startEpochMs = cell.startEpochMs,
+                                isCurrent = true,
+                                fallbackDurationMs = cell.durationMs ?: (cell.actualDuration ?: 0L),
+                            ),
+                        )
+                    } else {
+                        cell.durationText()
+                    }
+                    if (durationText.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.secondaryContainer,
+                                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+                                )
+                                .padding(horizontal = 3.dp, vertical = 0.5.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = durationText,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Medium,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
             }
 
             if (cell.tags.isNotEmpty()) {
@@ -151,5 +193,22 @@ fun GridCell(
                 )
             }
         }
+    }
+}
+
+private fun GridCellUiState.durationText(): String {
+    val duration = durationMs ?: actualDuration ?: 0L
+    return formatGridDurationHours(duration)
+}
+
+private fun formatGridDurationHours(ms: Long): String {
+    if (ms <= 0L) return ""
+    val tenths = ((ms * 10) / 3_600_000).coerceAtLeast(1)
+    val hours = tenths / 10
+    val fraction = tenths % 10
+    return if (fraction == 0L) {
+        "${hours}h"
+    } else {
+        "${hours}.${fraction}h"
     }
 }
