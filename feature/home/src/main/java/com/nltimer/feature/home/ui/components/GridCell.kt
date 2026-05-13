@@ -15,12 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -83,21 +80,16 @@ fun GridCell(
             .padding(gridStyle.cellPadding.dp),
     ) {
         cell.activityIconKey?.let { iconKey ->
-            val density = LocalDensity.current
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .onSizeChanged { },
+                modifier = Modifier.matchParentSize(),
                 contentAlignment = Alignment.BottomStart,
             ) {
                 IconRenderer(
                     iconKey = iconKey,
                     defaultEmoji = "❓",
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = styledAlpha(0.15f)),
-                    iconSize = (gridStyle.maxCellHeight * 0.4f).dp,
-                    modifier = Modifier
-                        .alpha(styledAlpha(0.35f))
-                        .padding(start = 2.dp, bottom = 2.dp),
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
+                    iconSize = (gridStyle.maxCellHeight * 0.2f).dp,
+                    modifier = Modifier.padding(start = 2.dp, bottom = 2.dp),
                 )
             }
         }
