@@ -19,21 +19,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,106 +54,150 @@ import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
 import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.HomeListItem
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
 @Composable
 fun TimelineReverseView(
-    cells: List<GridCellUiState>,
+    items: List<HomeListItem>,
     onAddClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
+    onLoadMore: () -> Unit = {},
+    isLoadingMore: Boolean = false,
+    hasReachedEarliest: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val timeFormatter = hhmmFormatter
-
-    val behaviors = remember(cells) {
-        cells.filter { it.behaviorId != null }
-            .sortedBy { it.startTime }
-    }
-
-    val timelineItems = remember(behaviors) {
-        val items = mutableListOf<TimelineItemData>()
-
-        if (behaviors.isNotEmpty()) {
-            val latest = behaviors.last()
-            if (latest.status != BehaviorNature.ACTIVE && latest.endTime != null) {
-                val now = LocalTime.now()
-                if (now.isAfter(latest.endTime)) {
-                    val gap = Duration.between(latest.endTime, now)
-                    if (gap.toMinutes() >= 1) {
-                        items.add(TimelineItemData.Idle(latest.endTime, now))
-                    }
-                }
-            }
-
-            for (i in behaviors.indices.reversed()) {
-                val behavior = behaviors[i]
-                items.add(TimelineItemData.Behavior(behavior))
-
-                if (i > 0) {
-                    val prevEnd = behaviors[i - 1].endTime
-                    val currentStart = behavior.startTime
-                    if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
-                        val gap = Duration.between(prevEnd, currentStart)
-                        if (gap.toMinutes() >= 1) {
-                            items.add(TimelineItemData.Idle(prevEnd, currentStart))
-                        }
-                    }
-                }
-            }
-        }
-        items
-    }
-
+    val listState = rememberLazyListState()
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
+
+    val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
+
+    LaunchedEffect(timelineItems, hasReachedEarliest) {
+        if (hasReachedEarliest) return@LaunchedEffect
+        snapshotFlow {
+            val total = listState.layoutInfo.totalItemsCount
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            total to lastVisible
+        }.distinctUntilChanged()
+            .filter { (total, last) -> total > 0 && last >= total - 5 }
+            .collect { onLoadMore() }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize(),
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
-            items(items = timelineItems, key = { item ->
+            items(items = timelineItems, key = { it.key }) { item ->
                 when (item) {
-                    is TimelineItemData.Behavior -> "b_${item.behavior.behaviorId}"
-                    is TimelineItemData.Idle -> "i_${item.start}_${item.end}"
-                }
-            }) { item ->
-                when (item) {
-                    is TimelineItemData.Behavior -> {
-                        TimelineBehaviorItem(
-                            behavior = item.behavior,
-                            timeFormatter = timeFormatter,
-                            onClick = { detailCell = item.behavior },
-                            onLongClick = { onCellLongClick(item.behavior) },
-                        )
-                    }
-                    is TimelineItemData.Idle -> {
-                        TimelineIdleItem(
-                            start = item.start,
-                            end = item.end,
-                            timeFormatter = timeFormatter,
-                            onAddClick = { onAddClick(item.start, item.end) }
-                        )
-                    }
+                    is TimelineDisplayItem.Divider -> DayDividerRow(label = item.label)
+                    is TimelineDisplayItem.BehaviorRow -> TimelineBehaviorItem(
+                        behavior = item.cell,
+                        timeFormatter = timeFormatter,
+                        onClick = { detailCell = item.cell },
+                        onLongClick = { onCellLongClick(item.cell) },
+                    )
+                    is TimelineDisplayItem.Idle -> TimelineIdleItem(
+                        start = item.start,
+                        end = item.end,
+                        timeFormatter = timeFormatter,
+                        onAddClick = { onAddClick(item.start, item.end) },
+                    )
                 }
             }
+            if (isLoadingMore) item { LoadingMoreIndicator() }
+            if (hasReachedEarliest) item { ReachedEarliestIndicator() }
         }
     }
 
     detailCell?.let { cell ->
-        BehaviorDetailDialog(
-            cell = cell,
-            onDismiss = { detailCell = null },
+        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
+    }
+}
+
+private sealed class TimelineDisplayItem(val key: String) {
+    class Divider(val date: LocalDate, val label: String) : TimelineDisplayItem("divider-$date")
+    class BehaviorRow(val cell: GridCellUiState) : TimelineDisplayItem("behavior-${cell.behaviorId}")
+    class Idle(val start: LocalTime, val end: LocalTime) : TimelineDisplayItem("idle-$start-$end")
+}
+
+private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<TimelineDisplayItem> {
+    data class DayBucket(val divider: HomeListItem.DayDivider, val cells: MutableList<GridCellUiState>)
+    val buckets = mutableListOf<DayBucket>()
+    items.forEach { item ->
+        when (item) {
+            is HomeListItem.DayDivider -> buckets.add(DayBucket(item, mutableListOf()))
+            is HomeListItem.CellItem -> buckets.lastOrNull()?.cells?.add(item.cell)
+        }
+    }
+
+    val result = mutableListOf<TimelineDisplayItem>()
+    buckets.asReversed().forEach { bucket ->
+        val sortedAsc = bucket.cells.sortedBy { it.startTime?.toSecondOfDay() ?: 0 }
+        if (sortedAsc.isEmpty()) return@forEach
+        result.add(TimelineDisplayItem.Divider(bucket.divider.date, bucket.divider.label))
+        for (i in sortedAsc.indices.reversed()) {
+            val cell = sortedAsc[i]
+            result.add(TimelineDisplayItem.BehaviorRow(cell))
+            if (i > 0) {
+                val prevEnd = sortedAsc[i - 1].endTime
+                val currentStart = cell.startTime
+                if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
+                    val gap = Duration.between(prevEnd, currentStart)
+                    if (gap.toMinutes() >= 1) {
+                        result.add(TimelineDisplayItem.Idle(prevEnd, currentStart))
+                    }
+                }
+            }
+        }
+    }
+    return result
+}
+
+@Composable
+private fun DayDividerRow(label: String) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
-sealed class TimelineItemData {
-    data class Behavior(val behavior: GridCellUiState) : TimelineItemData()
-    data class Idle(val start: LocalTime, val end: LocalTime) : TimelineItemData()
+@Composable
+private fun LoadingMoreIndicator() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+    }
+}
+
+@Composable
+private fun ReachedEarliestIndicator() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "已到最早一条记录",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable
