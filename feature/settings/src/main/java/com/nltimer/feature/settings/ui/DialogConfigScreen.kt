@@ -1,7 +1,5 @@
 package com.nltimer.feature.settings.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -13,13 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +27,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.SecondsStrategy
+import com.nltimer.core.designsystem.component.ExpandableCard
+import com.nltimer.core.designsystem.component.atom.SelectableOptionChip
 import com.nltimer.core.designsystem.theme.ChipDisplayMode
 import com.nltimer.core.designsystem.theme.GridLayoutMode
 import com.nltimer.core.designsystem.theme.PathDrawMode
@@ -58,13 +51,21 @@ fun DialogConfigScreen(
     onUpdateConfig: (DialogGridConfig) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var expandedActivity by remember { mutableStateOf(false) }
+    var expandedTag by remember { mutableStateOf(false) }
+    var expandedOther by remember { mutableStateOf(false) }
+
     LazyColumn(
         modifier = modifier.fillMaxWidth(),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            ConfigExpandableSection(title = "活动配置") {
+            ExpandableCard(
+                title = "活动配置",
+                expanded = expandedActivity,
+                onToggle = { expandedActivity = !expandedActivity },
+            ) {
                 ChipFlowSelector(
                     label = "样式",
                     options = ChipDisplayMode.entries,
@@ -102,7 +103,11 @@ fun DialogConfigScreen(
         }
 
         item {
-            ConfigExpandableSection(title = "标签配置") {
+            ExpandableCard(
+                title = "标签配置",
+                expanded = expandedTag,
+                onToggle = { expandedTag = !expandedTag },
+            ) {
                 ChipFlowSelector(
                     label = "样式",
                     options = ChipDisplayMode.entries,
@@ -140,7 +145,11 @@ fun DialogConfigScreen(
         }
 
         item {
-            ConfigExpandableSection(title = "其他") {
+            ExpandableCard(
+                title = "其他",
+                expanded = expandedOther,
+                onToggle = { expandedOther = !expandedOther },
+            ) {
                 InlineToggleRow(
                     label = "行为选择器",
                     options = listOf("隐藏" to false, "显示" to true),
@@ -175,50 +184,6 @@ fun DialogConfigScreen(
     }
 }
 
-@Composable
-private fun ConfigExpandableSection(
-    title: String,
-    content: @Composable () -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-        ),
-    ) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = { expanded = !expanded }) {
-                    Icon(
-                        imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = null,
-                    )
-                }
-            }
-            AnimatedVisibility(visible = expanded) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                    content()
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun <T> ChipFlowSelector(
@@ -236,22 +201,12 @@ private fun <T> ChipFlowSelector(
     Spacer(modifier = Modifier.height(4.dp))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         options.forEach { option ->
-            Surface(
-                onClick = { onSelect(option) },
+            SelectableOptionChip(
+                text = display(option),
+                selected = option == selected,
+                onSelect = { onSelect(option) },
                 shape = RoundedCornerShape(8.dp),
-                color = if (option == selected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceContainerLow,
-            ) {
-                Text(
-                    text = display(option),
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = if (option == selected) FontWeight.Bold else FontWeight.Normal,
-                    ),
-                    color = if (option == selected) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                )
-            }
+            )
         }
     }
 }
@@ -286,22 +241,12 @@ private fun <T> LayoutWithStepperRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             layoutOptions.forEach { option ->
-                Surface(
-                    onClick = { onSelectLayout(option) },
+                SelectableOptionChip(
+                    text = displayLayout(option),
+                    selected = option == selectedLayout,
+                    onSelect = { onSelectLayout(option) },
                     shape = RoundedCornerShape(8.dp),
-                    color = if (option == selectedLayout) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.surfaceContainerLow,
-                ) {
-                    Text(
-                        text = displayLayout(option),
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = if (option == selectedLayout) FontWeight.Bold else FontWeight.Normal,
-                        ),
-                        color = if (option == selectedLayout) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                    )
-                }
+                )
             }
         }
         Row(
@@ -363,22 +308,12 @@ private fun InlineToggleRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         options.forEach { (text, value) ->
-            Surface(
-                onClick = { onSelect(value) },
+            SelectableOptionChip(
+                text = text,
+                selected = selected == value,
+                onSelect = { onSelect(value) },
                 shape = RoundedCornerShape(8.dp),
-                color = if (selected == value) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surfaceContainerLow,
-            ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = if (selected == value) FontWeight.Bold else FontWeight.Normal,
-                    ),
-                    color = if (selected == value) MaterialTheme.colorScheme.onPrimaryContainer
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                )
-            }
+            )
         }
     }
 }
