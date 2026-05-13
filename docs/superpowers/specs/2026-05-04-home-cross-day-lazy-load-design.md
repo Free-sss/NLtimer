@@ -1,5 +1,7 @@
 # 主页跨天懒加载设计
 
+> **[SUPERSEDED]** 本文档已被 [2026-05-13-home-past-data-loading-design.md](2026-05-13-home-past-data-loading-design.md) 取代。新设计调整了：加载粒度（1 → 7 天 / 次）、空白日跳过、最远边界、MOMENT 隔离、FAB 拖拽语义约束。本文档保留作为推理过程的历史参考。
+
 ## 背景
 
 当前主页只显示今天的行为数据，`HomeViewModel.loadHomeBehaviors()` 查询 `today → tomorrow` 一天范围。用户希望向上滚动时能懒加载历史数据（昨天、前天…），实现跨天浏览。
