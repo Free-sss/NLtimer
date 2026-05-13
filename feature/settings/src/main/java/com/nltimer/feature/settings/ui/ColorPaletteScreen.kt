@@ -252,6 +252,17 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
         ),
     ),
     PaletteGroup(
+        title = "Fixed Colors",
+        tokens = listOf(
+            PaletteToken("primaryFixed", { it.primaryFixed }, { it.onPrimaryFixed }),
+            PaletteToken("primaryFixedDim", { it.primaryFixedDim }, { it.onPrimaryFixedVariant }),
+            PaletteToken("secondaryFixed", { it.secondaryFixed }, { it.onSecondaryFixed }),
+            PaletteToken("secondaryFixedDim", { it.secondaryFixedDim }, { it.onSecondaryFixedVariant }),
+            PaletteToken("tertiaryFixed", { it.tertiaryFixed }, { it.onTertiaryFixed }),
+            PaletteToken("tertiaryFixedDim", { it.tertiaryFixedDim }, { it.onTertiaryFixedVariant }),
+        ),
+    ),
+    PaletteGroup(
         title = "Background & Surface",
         tokens = listOf(
             PaletteToken("background", { it.background }, { it.onBackground }),
@@ -287,5 +298,9 @@ private val PALETTE_GROUPS: List<PaletteGroup> = listOf(
 
 private fun Color.toHex(): String {
     val argb = this.toArgb()
-    return "#%06X".format(argb and 0xFFFFFF)
+    return if (this.alpha < 1f) {
+        "#%08X".format(argb)
+    } else {
+        "#%06X".format(argb and 0xFFFFFF)
+    }
 }
