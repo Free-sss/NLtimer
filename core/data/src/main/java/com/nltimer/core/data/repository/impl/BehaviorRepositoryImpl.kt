@@ -75,6 +75,13 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun getMaxSequence(): Int =
         behaviorDao.getMaxSequence()
 
+    override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? {
+        val earliestMs = behaviorDao.getEarliestStartTime() ?: return null
+        return java.time.Instant.ofEpochMilli(earliestMs)
+            .atZone(java.time.ZoneId.systemDefault())
+            .toLocalDate()
+    }
+
     override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
         return database.withTransaction {
             val id = behaviorDao.insert(behavior.toEntity())

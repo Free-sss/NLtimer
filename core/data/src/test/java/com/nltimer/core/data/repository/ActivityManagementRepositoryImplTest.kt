@@ -426,6 +426,7 @@ class ActivityManagementRepositoryImplTest {
             )
         )
         override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
+        override suspend fun getEarliestStartTime(): Long? = null
     }
 
 }

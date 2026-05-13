@@ -443,6 +443,27 @@ class BehaviorRepositoryImplTest {
         assertEquals(BehaviorNature.PENDING, result.status)
     }
 
+    // --- getEarliestBehaviorDate ---
+
+    @Test
+    fun `getEarliestBehaviorDate returns earliest date among valid behaviors`() = runTest {
+        val zone = java.time.ZoneId.systemDefault()
+        val day1 = java.time.LocalDate.of(2026, 5, 10).atStartOfDay(zone).toInstant().toEpochMilli()
+        val day2 = java.time.LocalDate.of(2026, 5, 12).atStartOfDay(zone).toInstant().toEpochMilli()
+        fakeBehaviorDao.behaviors.add(BehaviorEntity(id = 1L, activityId = 1L, startTime = day2))
+        fakeBehaviorDao.behaviors.add(BehaviorEntity(id = 2L, activityId = 1L, startTime = day1))
+
+        val result = repository.getEarliestBehaviorDate()
+
+        assertEquals(java.time.LocalDate.of(2026, 5, 10), result)
+    }
+
+    @Test
+    fun `getEarliestBehaviorDate returns null when no valid behavior exists`() = runTest {
+        val result = repository.getEarliestBehaviorDate()
+        assertNull(result)
+    }
+
     // --- Helper ---
 
     private fun createBehavior(
@@ -603,6 +624,8 @@ class BehaviorRepositoryImplTest {
         override suspend fun getTagsForBehaviorsSync(behaviorIds: List<Long>): List<BehaviorTagRow> = emptyList()
         override fun getActivityStatsSync(activityId: Long): Flow<ActivityStatsRow> = flowOf(ActivityStatsRow())
         override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
+        override suspend fun getEarliestStartTime(): Long? =
+            behaviors.filter { it.startTime > 0 }.minOfOrNull { it.startTime }
     }
 
     private class FakeActivityDao : ActivityDao {

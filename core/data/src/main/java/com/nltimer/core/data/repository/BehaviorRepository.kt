@@ -18,6 +18,7 @@ interface BehaviorRepository {
     suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails?
     suspend fun getNextPending(): Behavior?
     suspend fun getMaxSequence(): Int
+    suspend fun getEarliestBehaviorDate(): java.time.LocalDate?
     suspend fun insert(behavior: Behavior, tagIds: List<Long> = emptyList()): Long
     suspend fun setEndTime(id: Long, endTime: Long)
     suspend fun setStatus(id: Long, status: String)
