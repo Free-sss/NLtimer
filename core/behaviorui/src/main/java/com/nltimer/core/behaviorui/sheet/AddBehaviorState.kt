@@ -183,6 +183,25 @@ internal class AddBehaviorState(
             tagsAdded = newTagIds.size,
         )
     }
+
+    /**
+     * 把 @/# directive 结果合并到选中状态。与 [applyNoteScan] 的差异：
+     * 这里 activity 会**覆盖**已选项（@ 表达用户明确意图）；tags 仍 union。
+     */
+    fun applyDirectiveOutcome(
+        outcome: com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase.Outcome,
+    ): NoteDirectiveApplyOutcome {
+        val activityOverridden = if (outcome.lastActivityId != null) {
+            selectedActivityId = outcome.lastActivityId
+            true
+        } else false
+        val before = selectedTagIds.size
+        selectedTagIds = selectedTagIds + outcome.addedTagIds
+        return NoteDirectiveApplyOutcome(
+            activityOverridden = activityOverridden,
+            tagsAdded = selectedTagIds.size - before,
+        )
+    }
 }
 
 /**
@@ -199,3 +218,14 @@ internal data class NoteScanApplyOutcome(
 ) {
     val hasAnyChange: Boolean get() = activityAdded || tagsAdded > 0
 }
+
+/**
+ * `applyDirectiveOutcome` 的副作用摘要，用于上层 Toast 反馈。
+ *
+ * @property activityOverridden directive 是否覆盖了 selectedActivityId
+ * @property tagsAdded 本次新增到选中集合的标签数（去重后）
+ */
+internal data class NoteDirectiveApplyOutcome(
+    val activityOverridden: Boolean,
+    val tagsAdded: Int,
+)
