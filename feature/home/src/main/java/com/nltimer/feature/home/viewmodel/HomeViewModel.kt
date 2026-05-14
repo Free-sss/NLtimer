@@ -26,6 +26,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteDirectiveParser
 import com.nltimer.core.tools.match.NoteMatcher
+import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.match.MatchStrategy
 import com.nltimer.feature.home.model.AddSheetMode
@@ -325,23 +326,6 @@ class HomeViewModel @Inject constructor(
      */
     fun matchNoteFromText(note: String): NoteScanResult =
         noteMatcher.scan(note, _activities.value, _allTags.value)
-
-    /**
-     * `processNote` 输出包：cleanedNote + directive 处理结果 + 反向扫描结果。
-     */
-    data class NoteProcessOutcome(
-        val cleanedNote: String,
-        val directiveOutcome: ApplyNoteDirectivesUseCase.Outcome,
-        val scanResult: NoteScanResult,
-    ) {
-        companion object {
-            val Empty = NoteProcessOutcome(
-                cleanedNote = "",
-                directiveOutcome = ApplyNoteDirectivesUseCase.Outcome.Empty,
-                scanResult = NoteScanResult(null, emptySet()),
-            )
-        }
-    }
 
     /**
      * 智能识别按钮的入口：解析 @/# directive → 创建/复用 → 反向扫描备注，
