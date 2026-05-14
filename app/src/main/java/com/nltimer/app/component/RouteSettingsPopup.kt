@@ -47,17 +47,17 @@ import com.nltimer.core.designsystem.theme.styledCorner
 
 private const val POPUP_WIDTH_RATIO = 0.45f
 
-private data class NavPopupItem(
+internal data class RouteSettingsNavItem(
     val route: String,
     val label: String,
     val icon: ImageVector,
 )
 
-private val navPopupItems = listOf(
-    NavPopupItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
-    NavPopupItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.AutoMirrored.Filled.List),
-    NavPopupItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.AutoMirrored.Filled.Label),
-    NavPopupItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
+internal val routeSettingsNavItems = listOf(
+    RouteSettingsNavItem(NLtimerRoutes.CATEGORIES, "分类管理", Icons.Default.Category),
+    RouteSettingsNavItem(NLtimerRoutes.MANAGEMENT_ACTIVITIES, "活动管理", Icons.AutoMirrored.Filled.List),
+    RouteSettingsNavItem(NLtimerRoutes.TAG_MANAGEMENT, "标签管理", Icons.AutoMirrored.Filled.Label),
+    RouteSettingsNavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -140,7 +140,7 @@ fun RouteSettingsPopup(
                 }
 
                 if (!showLayoutOptions) {
-                    navPopupItems.forEach { item ->
+                    routeSettingsNavItems.forEach { item ->
                         PopupItem(
                             icon = item.icon,
                             label = item.label,

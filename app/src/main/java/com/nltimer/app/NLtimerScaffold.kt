@@ -115,6 +115,30 @@ fun NLtimerScaffold(
             onSortChange = { momentSortKey = it },
         )
     }
+    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar) {
+        buildList {
+            if (currentRoute == NLtimerRoutes.HOME) {
+                add("更改布局")
+                if (theme.homeLayout == HomeLayout.GRID) {
+                    add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
+                }
+            }
+        }
+    }
+    fun navigateToRoute(route: String) {
+        navController.navigate(route) {
+            popUpTo(navController.graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+    fun handleSettingsDragOption(option: String) {
+        when (option) {
+            "更改布局" -> showSettingsPopup = true
+            "开启侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(true)
+            "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
+        }
+    }
 
     CompositionLocalProvider(
         LocalMomentFilterState provides momentFilterState,
@@ -206,13 +230,7 @@ fun NLtimerScaffold(
                 AppBottomNavigation(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = {
-                        navController.navigate(NLtimerRoutes.SETTINGS) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
@@ -221,13 +239,7 @@ fun NLtimerScaffold(
                 AppFloatingBottomBar(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = {
-                        navController.navigate(NLtimerRoutes.SETTINGS) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
@@ -236,13 +248,9 @@ fun NLtimerScaffold(
                 AppCenterFabBottomBar(
                     navController = navController,
                     onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = {
-                        navController.navigate(NLtimerRoutes.SETTINGS) {
-                            popUpTo(navController.graph.startDestinationId) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    settingsDragOptions = settingsDragOptions,
+                    onSettingsDragOptionSelected = { handleSettingsDragOption(it) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }

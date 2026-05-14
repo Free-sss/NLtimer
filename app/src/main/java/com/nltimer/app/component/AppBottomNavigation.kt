@@ -1,19 +1,27 @@
 package com.nltimer.app.component
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -30,17 +38,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.core.designsystem.component.DragMenuState
+import com.nltimer.core.designsystem.component.DraggableMenuAnchor
 import com.nltimer.core.designsystem.component.LocalNavBarWidth
+import com.nltimer.core.designsystem.component.rememberDragMenuState
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
+import kotlin.math.roundToInt
 
 internal data class NavItem(
     val route: String,
@@ -53,6 +71,9 @@ internal val navItems = listOf(
     NavItem(NLtimerRoutes.STATS, "统计", Icons.Default.BarChart),
     NavItem(NLtimerRoutes.SETTINGS, "设置", Icons.Default.Settings),
 )
+
+private val SettingsDragMenuWidth = 180.dp
+private val SettingsDragMenuGap = 12.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -224,6 +245,8 @@ fun AppCenterFabBottomBar(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
     onSettingsLongClick: () -> Unit,
+    settingsDragOptions: List<String> = emptyList(),
+    onSettingsDragOptionSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsStateWithLifecycle(
@@ -232,12 +255,14 @@ fun AppCenterFabBottomBar(
     val currentDestination = currentBackStackEntry?.destination
     val navBarWidthState = LocalNavBarWidth.current
     val density = LocalDensity.current
+    val settingsDragState = rememberDragMenuState()
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .onGloballyPositioned { settingsDragState.containerPositionInWindow = it.positionInWindow() },
         contentAlignment = Alignment.BottomCenter,
     ) {
         Row(
@@ -249,27 +274,33 @@ fun AppCenterFabBottomBar(
                 },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Surface(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .combinedClickable(
-                        onLongClick = onSettingsClick,
-                        onClick = onSettingsLongClick,
-                    ),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                shape = CircleShape,
+            DraggableMenuAnchor(
+                state = settingsDragState,
+                modifier = Modifier.size(48.dp),
+                onOptionSelected = onSettingsDragOptionSelected,
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize(),
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .combinedClickable(
+                            onLongClick = onSettingsClick,
+                            onClick = onSettingsLongClick,
+                        ),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    shape = CircleShape,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "菜单",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp),
-                    )
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "菜单",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
                 }
             }
 
@@ -296,5 +327,106 @@ fun AppCenterFabBottomBar(
                 }
             }
         }
+
+        CompactSettingsDragMenu(
+            state = settingsDragState,
+            options = settingsDragOptions,
+            modifier = Modifier.align(Alignment.TopStart),
+        )
     }
 }
+
+@Composable
+private fun CompactSettingsDragMenu(
+    state: DragMenuState,
+    options: List<String>,
+    modifier: Modifier = Modifier,
+) {
+    if (!state.isDragging || options.isEmpty()) return
+
+    val density = LocalDensity.current
+    val menuGapPx = with(density) { SettingsDragMenuGap.toPx() }
+    val optionsX = state.anchorLayoutPosition.x - state.containerPositionInWindow.x
+    val optionsY = state.anchorLayoutPosition.y - state.optionsRowHeight - menuGapPx - state.containerPositionInWindow.y
+
+    Surface(
+        modifier = modifier
+            .width(SettingsDragMenuWidth)
+            .wrapContentHeight()
+            .offset {
+                IntOffset(
+                    x = optionsX.coerceAtLeast(0f).roundToInt(),
+                    y = optionsY.roundToInt(),
+                )
+            }
+            .onGloballyPositioned { coords ->
+                state.optionsRowHeight = coords.size.height.toFloat()
+            },
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
+        tonalElevation = 8.dp,
+        shadowElevation = 8.dp,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+        ) {
+            options.forEach { option ->
+                CompactSettingsDragMenuItem(
+                    state = state,
+                    option = option,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactSettingsDragMenuItem(
+    state: DragMenuState,
+    option: String,
+    modifier: Modifier = Modifier,
+) {
+    val isHovered = state.hoveredOption == option
+    val tint = if (isHovered) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 2.dp)
+            .background(
+                color = if (isHovered) MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(0.55f)) else Color.Transparent,
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+            )
+            .onGloballyPositioned { coords ->
+                val position = coords.positionInWindow()
+                val size = coords.size
+                state.optionsLayoutBounds[option] = Rect(
+                    left = position.x,
+                    top = position.y,
+                    right = position.x + size.width,
+                    bottom = position.y + size.height,
+                )
+            }
+            .padding(horizontal = 6.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = settingsDragOptionIcon(option),
+            contentDescription = option,
+            tint = tint,
+            modifier = Modifier.padding(end = 10.dp),
+        )
+        Text(
+            text = option,
+            style = MaterialTheme.typography.bodyMedium,
+            color = tint,
+        )
+    }
+}
+
+private fun settingsDragOptionIcon(option: String): ImageVector =
+    when (option) {
+        "更改布局" -> Icons.Default.Dashboard
+        "开启侧边时间轴", "关闭侧边时间轴" -> Icons.Default.Timelapse
+        else -> Icons.Default.Settings
+    }
