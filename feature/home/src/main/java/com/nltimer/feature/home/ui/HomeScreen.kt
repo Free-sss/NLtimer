@@ -252,6 +252,9 @@ private fun HomeLayoutContent(
             onCompleteBehavior = onCompleteBehavior,
             onStartNextPending = onStartNextPending,
             onStartBehavior = onStartBehavior,
+            onLoadMore = onLoadMore,
+            isLoadingMore = uiState.isLoadingMore,
+            hasReachedEarliest = uiState.hasReachedEarliest,
             modifier = modifier,
         )
     }
@@ -350,6 +353,9 @@ private fun MomentContent(
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,
     onStartBehavior: (Long) -> Unit,
+    onLoadMore: () -> Unit,
+    isLoadingMore: Boolean = false,
+    hasReachedEarliest: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     MomentView(
@@ -361,6 +367,9 @@ private fun MomentContent(
         onStartBehavior = onStartBehavior,
         onEmptyCellClick = onEmptyCellClick,
         onCellLongClick = onCellLongClick,
+        onLoadMore = onLoadMore,
+        isLoadingMore = isLoadingMore,
+        hasReachedEarliest = hasReachedEarliest,
         modifier = modifier,
     )
 }

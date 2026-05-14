@@ -94,7 +94,7 @@ fun TimeAxisGrid(
         state = listState,
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
-        contentPadding = PaddingValues(bottom = 600.dp),
+        contentPadding = PaddingValues(bottom = 630.dp),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         if (hasReachedEarliest) item("reached-earliest") { ReachedEarliestIndicator() }

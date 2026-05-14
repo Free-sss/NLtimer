@@ -45,7 +45,8 @@ class HomeUiStateBuilder {
         val todayBehaviorIds = sortedBehaviors.filter { isToday(it, today) }.map { it.id }.toSet()
         val todayCells = allCellsRaw.filter { it.behaviorId != null && it.behaviorId in todayBehaviorIds }
         val pendingCells = allCellsRaw.filter { it.status == BehaviorNature.PENDING }
-        val momentCells = todayCells + pendingCells
+        val nonTodayCells = allCellsRaw.filter { it.behaviorId != null && it.behaviorId !in todayBehaviorIds && it.status != BehaviorNature.PENDING }
+        val momentCells = todayCells + pendingCells + nonTodayCells
 
         val addCell = buildAddCell(todayCells, now)
         val gridSections = buildGridSections(allCellsRaw, sortedBehaviors, today, addCell, now, gridColumns)
