@@ -212,7 +212,7 @@ private fun BehaviorSheetWrapper(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback,
     onAddTag: AddTagCallback,
-    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
+    onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
