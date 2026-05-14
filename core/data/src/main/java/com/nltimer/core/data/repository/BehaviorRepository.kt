@@ -51,4 +51,8 @@ interface BehaviorRepository {
     fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>>
     suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails>
     fun getTotalDurationAllBehaviors(): Flow<Long>
+
+    fun getAllActivityLastUsed(): Flow<Map<Long, Long?>>
+
+    fun getAllTagLastUsed(): Flow<Map<Long, Long?>>
 }

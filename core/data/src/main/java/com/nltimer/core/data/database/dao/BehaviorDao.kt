@@ -31,6 +31,11 @@ data class ActivityStatsRow(
     val lastUsedTimestamp: Long? = null,
 )
 
+data class LastUsedRow(
+    val id: Long,
+    val lastUsedTimestamp: Long?,
+)
+
 /**
  * BehaviorDao 行为记录数据访问对象
  * 提供 behaviors 表的基础 CRUD、计时字段更新、状态变更、统计查询及标签关联管理
@@ -281,4 +286,25 @@ interface BehaviorDao {
     /** 查询数据库中最早一条 behavior 的 startTime（毫秒），无数据返回 null */
     @Query("SELECT MIN(startTime) FROM behaviors WHERE startTime > 0")
     suspend fun getEarliestStartTime(): Long?
+
+    @Query(
+        """
+        SELECT a.id, MAX(b.startTime) as lastUsedTimestamp
+        FROM activities a
+        LEFT JOIN behaviors b ON a.id = b.activityId AND b.status = 'completed'
+        GROUP BY a.id
+        """
+    )
+    fun getAllActivityLastUsed(): Flow<List<LastUsedRow>>
+
+    @Query(
+        """
+        SELECT t.id, MAX(b.startTime) as lastUsedTimestamp
+        FROM tags t
+        LEFT JOIN behavior_tag_cross_ref btc ON t.id = btc.tagId
+        LEFT JOIN behaviors b ON btc.behaviorId = b.id AND b.status = 'completed'
+        GROUP BY t.id
+        """
+    )
+    fun getAllTagLastUsed(): Flow<List<LastUsedRow>>
 }

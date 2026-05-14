@@ -237,6 +237,16 @@ class BehaviorRepositoryImpl @Inject constructor(
     override fun getTotalDurationAllBehaviors(): Flow<Long> =
         behaviorDao.getTotalDurationAllBehaviors()
 
+    override fun getAllActivityLastUsed(): Flow<Map<Long, Long?>> =
+        behaviorDao.getAllActivityLastUsed().map { rows ->
+            rows.associate { it.id to it.lastUsedTimestamp }
+        }
+
+    override fun getAllTagLastUsed(): Flow<Map<Long, Long?>> =
+        behaviorDao.getAllTagLastUsed().map { rows ->
+            rows.associate { it.id to it.lastUsedTimestamp }
+        }
+
     private suspend fun assembleBehaviorWithDetailsList(entities: List<BehaviorEntity>): List<BehaviorWithDetails> {
         if (entities.isEmpty()) return emptyList()
         val behaviorIds = entities.map { it.id }

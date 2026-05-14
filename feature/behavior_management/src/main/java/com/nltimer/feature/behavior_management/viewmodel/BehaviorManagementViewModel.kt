@@ -65,6 +65,12 @@ class BehaviorManagementViewModel @Inject constructor(
     val allTags = tagRepository.getAllActive()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    val activityLastUsedMap = behaviorRepository.getAllActivityLastUsed()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
+    val tagLastUsedMap = behaviorRepository.getAllTagLastUsed()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
     init {
         observeBehaviors()
     }

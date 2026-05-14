@@ -8,23 +8,23 @@ import com.nltimer.core.data.model.Tag
 
 private data class ActivityCategorizable(
     val activity: Activity,
+    override val lastUsedTimestamp: Long? = null,
 ) : CategorizableItem {
     override val itemId: Long = activity.id
     override val itemName: String = activity.name
     override val category: String? = null
-    override val usageCount: Int = 0
-    override val lastUsedTimestamp: Long? = null
+    override val usageCount: Int = activity.usageCount
     override val iconKey: String? = activity.iconKey
 }
 
 private data class TagCategorizable(
     val tag: Tag,
+    override val lastUsedTimestamp: Long? = null,
 ) : CategorizableItem {
     override val itemId: Long = tag.id
     override val itemName: String = tag.name
     override val category: String? = tag.category
     override val usageCount: Int = tag.usageCount
-    override val lastUsedTimestamp: Long? = null
     override val iconKey: String? = null
 }
 
@@ -40,6 +40,8 @@ internal fun SheetPickerDialogs(
     allTags: List<Tag>,
     selectedActivityId: Long?,
     selectedTagIds: Set<Long>,
+    activityLastUsedMap: Map<Long, Long?> = emptyMap(),
+    tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     onAddActivityDialogDismiss: () -> Unit,
     onAddTagDialogDismiss: () -> Unit,
     onActivityPickerDismiss: () -> Unit,
@@ -91,7 +93,7 @@ internal fun SheetPickerDialogs(
                     CategoryGroup(
                         id = groupId ?: -1L,
                         name = group?.name ?: "未分类",
-                        items = items.map { ActivityCategorizable(it) },
+                        items = items.map { ActivityCategorizable(it, activityLastUsedMap[it.id]) },
                     )
                 }
                 .sortedBy { if (it.id == -1L) Int.MAX_VALUE.toLong() else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
@@ -122,7 +124,7 @@ internal fun SheetPickerDialogs(
                     CategoryGroup(
                         id = category.hashCode().toLong(),
                         name = category,
-                        items = items.map { TagCategorizable(it) },
+                        items = items.map { TagCategorizable(it, tagLastUsedMap[it.id]) },
                     )
                 }
                 .sortedBy { it.name }

@@ -79,6 +79,12 @@ class HomeViewModel @Inject constructor(
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
+    private val _activityLastUsedMap = MutableStateFlow<Map<Long, Long?>>(emptyMap())
+    val activityLastUsedMap: StateFlow<Map<Long, Long?>> = _activityLastUsedMap.asStateFlow()
+
+    private val _tagLastUsedMap = MutableStateFlow<Map<Long, Long?>>(emptyMap())
+    val tagLastUsedMap: StateFlow<Map<Long, Long?>> = _tagLastUsedMap.asStateFlow()
+
     private val _selectedActivityId = MutableStateFlow<Long?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -107,6 +113,7 @@ class HomeViewModel @Inject constructor(
         loadHomeBehaviors()
         loadActivitiesAndGroups()
         loadAllTags()
+        loadLastUsedMaps()
     }
 
     private fun loadActivitiesAndGroups() {
@@ -127,6 +134,19 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             tagRepository.getAllActive().collect { list ->
                 _allTags.update { list }
+            }
+        }
+    }
+
+    private fun loadLastUsedMaps() {
+        viewModelScope.launch {
+            behaviorRepository.getAllActivityLastUsed().collect { map ->
+                _activityLastUsedMap.update { map }
+            }
+        }
+        viewModelScope.launch {
+            behaviorRepository.getAllTagLastUsed().collect { map ->
+                _tagLastUsedMap.update { map }
             }
         }
     }
