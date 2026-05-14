@@ -5,8 +5,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -252,24 +252,17 @@ private fun <T : CategorizableItem> ItemChip(
         shape = RoundedCornerShape(6.dp),
         color = containerColor,
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconRenderer(
-                iconKey = item.iconKey,
-                defaultEmoji = "❓",
-                iconSize = 20.dp,
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-                text = item.itemName,
-                fontSize = 12.sp,
-                color = contentColor,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        ChipContent(
+            text = item.itemName,
+            textColor = contentColor,
+            iconSlot = {
+                IconRenderer(
+                    iconKey = item.iconKey,
+                    defaultEmoji = "❓",
+                    iconSize = 20.dp,
+                )
+            },
+        )
     }
 }
 
@@ -278,28 +271,48 @@ private fun AddItemChip(
     onClick: () -> Unit,
 ) {
     Surface(
-        onClick = onClick,
+        modifier = Modifier.clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
     ) {
-        Row(
-            modifier = Modifier
-                .height(32.dp)
-                .padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        ChipContent(
+            text = "添加",
+            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            iconSlot = {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "添加",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            },
+        )
+    }
+}
+
+@Composable
+private fun ChipContent(
+    text: String,
+    textColor: androidx.compose.ui.graphics.Color,
+    iconSlot: @Composable () -> Unit,
+) {
+    Row(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier.size(20.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "添加",
-                modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-                text = "添加",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            iconSlot()
         }
+        Spacer(modifier = Modifier.width(2.dp))
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            color = textColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
