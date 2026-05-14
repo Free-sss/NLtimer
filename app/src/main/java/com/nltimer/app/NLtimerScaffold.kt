@@ -75,6 +75,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.THEME_SETTINGS -> "主题配置"
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
+        NLtimerRoutes.CATEGORIES -> "分类管理"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
     var showLayoutPopup by remember { mutableStateOf(false) }

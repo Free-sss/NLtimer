@@ -70,6 +70,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
     onToggleCollapsed: (() -> Unit)? = null,
     showDragHandle: Boolean = true,
     emptyText: String = "暂无项目",
+    showItemIcon: Boolean = true,
     headerActions: @Composable (() -> Unit)? = null,
     onAddItem: (() -> Unit)? = null,
     onDragStart: () -> Unit = {},
@@ -204,6 +205,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
                                 ItemChip(
                                     item = item,
                                     isSelected = isSelected,
+                                    showIcon = showItemIcon,
                                     onClick = {
                                         if (multiSelect) {
                                             val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
@@ -230,6 +232,7 @@ fun <T : CategorizableItem> CategoryGroupCard(
 private fun <T : CategorizableItem> ItemChip(
     item: T,
     isSelected: Boolean,
+    showIcon: Boolean = true,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
@@ -252,17 +255,25 @@ private fun <T : CategorizableItem> ItemChip(
         shape = RoundedCornerShape(6.dp),
         color = containerColor,
     ) {
-        ChipContent(
-            text = item.itemName,
-            textColor = contentColor,
-            iconSlot = {
-                IconRenderer(
-                    iconKey = item.iconKey,
-                    defaultEmoji = "❓",
-                    iconSize = 20.dp,
-                )
-            },
-        )
+        if (showIcon) {
+            ChipContent(
+                text = item.itemName,
+                textColor = contentColor,
+                iconSlot = {
+                    IconRenderer(
+                        iconKey = item.iconKey,
+                        defaultEmoji = "❓",
+                        iconSize = 20.dp,
+                    )
+                },
+            )
+        } else {
+            ChipContent(
+                text = item.itemName,
+                textColor = contentColor,
+                iconSlot = null,
+            )
+        }
     }
 }
 
@@ -294,19 +305,21 @@ private fun AddItemChip(
 private fun ChipContent(
     text: String,
     textColor: androidx.compose.ui.graphics.Color,
-    iconSlot: @Composable () -> Unit,
+    iconSlot: (@Composable () -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier.size(20.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            iconSlot()
+        if (iconSlot != null) {
+            Box(
+                modifier = Modifier.size(20.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                iconSlot()
+            }
+            Spacer(modifier = Modifier.width(2.dp))
         }
-        Spacer(modifier = Modifier.width(2.dp))
         Text(
             text = text,
             fontSize = 12.sp,

@@ -20,5 +20,6 @@ data class Theme(
     val showTimeSideBar: Boolean = true,
     val topBarMode: TopBarMode = TopBarMode.PINNED,
     val bottomBarMode: BottomBarMode = BottomBarMode.STANDARD,
+    val isImmersive: Boolean = false,
     val style: StyleConfig = StyleConfig(),
 )
