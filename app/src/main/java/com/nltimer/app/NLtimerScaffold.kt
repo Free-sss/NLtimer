@@ -77,7 +77,7 @@ fun NLtimerScaffold(
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
         else -> visibleDateLabelState.value ?: "NLtimer"
     }
-    var showSettingsPopup by remember { mutableStateOf(false) }
+    var showLayoutPopup by remember { mutableStateOf(false) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
     val momentFilterOptions = listOf(
@@ -134,7 +134,7 @@ fun NLtimerScaffold(
     }
     fun handleSettingsDragOption(option: String) {
         when (option) {
-            "更改布局" -> showSettingsPopup = true
+            "更改布局" -> showLayoutPopup = true
             "开启侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(true)
             "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
         }
@@ -229,8 +229,7 @@ fun NLtimerScaffold(
             if (!isAnyFloating && !isSecondaryPage) {
                 AppBottomNavigation(
                     navController = navController,
-                    onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
@@ -238,8 +237,7 @@ fun NLtimerScaffold(
             if (isFloating) {
                 AppFloatingBottomBar(
                     navController = navController,
-                    onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
@@ -247,22 +245,24 @@ fun NLtimerScaffold(
             if (isCenterFab) {
                 AppCenterFabBottomBar(
                     navController = navController,
-                    onSettingsClick = { showSettingsPopup = true },
-                    onSettingsLongClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
                     settingsDragOptions = settingsDragOptions,
                     onSettingsDragOptionSelected = { handleSettingsDragOption(it) },
                     modifier = Modifier.align(Alignment.BottomCenter),
                 )
             }
 
-            if (showSettingsPopup) {
+            if (showLayoutPopup) {
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
                     navController = navController,
-                    onDismiss = { showSettingsPopup = false },
+                    onDismiss = {
+                        showLayoutPopup = false
+                    },
                     onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) },
                     onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) },
                     popupOffsetY = if (isAnyFloating) -300 else -260,
+                    initialShowLayoutOptions = showLayoutPopup,
                 )
             }
         }

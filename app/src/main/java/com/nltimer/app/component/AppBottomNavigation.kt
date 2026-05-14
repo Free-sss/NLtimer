@@ -1,8 +1,7 @@
 package com.nltimer.app.component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -75,12 +74,10 @@ internal val navItems = listOf(
 private val SettingsDragMenuWidth = 180.dp
 private val SettingsDragMenuGap = 12.dp
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppBottomNavigation(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
-    onSettingsLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsStateWithLifecycle(
@@ -95,10 +92,7 @@ fun AppBottomNavigation(
                 NavigationBarItem(
                     icon = {
                         Box(
-                            modifier = Modifier.combinedClickable(
-                                onLongClick = onSettingsClick,
-                                onClick = onSettingsLongClick,
-                            ),
+                            modifier = Modifier.clickable(onClick = onSettingsClick),
                         ) {
                             Icon(
                                 imageVector = item.icon,
@@ -135,12 +129,11 @@ fun AppBottomNavigation(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppFloatingBottomBar(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
-    onSettingsLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsStateWithLifecycle(
@@ -184,10 +177,7 @@ fun AppFloatingBottomBar(
                 .padding(bottom = 4.dp)
                 .size(48.dp)
                 .clip(CircleShape)
-                .combinedClickable(
-                    onLongClick = onSettingsClick,
-                    onClick = onSettingsLongClick,
-                ),
+                .clickable(onClick = onSettingsClick),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = CircleShape,
         ) {
@@ -239,12 +229,11 @@ private fun FloatingToolbarTab(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppCenterFabBottomBar(
     navController: NavHostController,
     onSettingsClick: () -> Unit,
-    onSettingsLongClick: () -> Unit,
     settingsDragOptions: List<String> = emptyList(),
     onSettingsDragOptionSelected: (String) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -283,10 +272,7 @@ fun AppCenterFabBottomBar(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .combinedClickable(
-                            onLongClick = onSettingsClick,
-                            onClick = onSettingsLongClick,
-                        ),
+                        .clickable(onClick = onSettingsClick),
                     color = MaterialTheme.colorScheme.surfaceContainerHigh,
                     shape = CircleShape,
                 ) {

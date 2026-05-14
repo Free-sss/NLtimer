@@ -69,13 +69,14 @@ fun RouteSettingsPopup(
     onShowTimeSideBarChange: (Boolean) -> Unit,
     navController: NavHostController,
     popupOffsetY: Int = -100,
+    initialShowLayoutOptions: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp.dp
     val popupWidth = screenWidth * POPUP_WIDTH_RATIO
     val currentLayout = LocalTheme.current.homeLayout
-    var showLayoutOptions by remember { mutableStateOf(false) }
+    var showLayoutOptions by remember(initialShowLayoutOptions) { mutableStateOf(initialShowLayoutOptions) }
 
     Popup(
         alignment = Alignment.BottomStart,
