@@ -56,6 +56,7 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.DragMenuOptions
 import com.nltimer.core.designsystem.component.DragMenuOptionsPlacement
 import com.nltimer.core.designsystem.component.DraggableMenuAnchor
+import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import kotlinx.coroutines.delay
 import java.time.Duration
@@ -88,6 +89,7 @@ internal fun AddBehaviorSheetContent(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit = { _, _, _, _, _, _ -> },
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit = { _, _, _, _, _, _, _ -> },
+    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     val state = rememberAddBehaviorState(mode, initialStartTime, initialEndTime, initialActivityId, initialTagIds, initialNote, editBehaviorId, existingBehaviors, dialogConfig)
@@ -124,6 +126,7 @@ internal fun AddBehaviorSheetContent(
                         emphasisColor = emphasisColor,
                         onConfirm = onConfirm,
                         onDismiss = onDismiss,
+                        onProcessNote = onProcessNote,
                         onMatchNote = onMatchNote,
                     )
                 }
@@ -187,6 +190,7 @@ private fun SheetMainContent(
     emphasisColor: Color,
     onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
+    onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
 ) {
     val context = LocalContext.current

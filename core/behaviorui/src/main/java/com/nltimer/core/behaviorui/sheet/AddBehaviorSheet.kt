@@ -19,8 +19,12 @@ import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.theme.NLtimerTheme
+import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import java.time.LocalTime
+
+/** Sheet 透传给 ViewModel 的"智能识别"统一回调；默认 no-op 兜底无 directive 流的页面。 */
+typealias OnProcessNote = suspend (note: String) -> NoteProcessOutcome
 
 private const val ScrimAlpha = 0.32f
 
@@ -48,6 +52,7 @@ fun AddBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
@@ -73,6 +78,7 @@ fun AddBehaviorSheet(
         onTagCategoriesReordered = onTagCategoriesReordered,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
     )
 }
@@ -100,6 +106,7 @@ fun AddCurrentBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
@@ -124,6 +131,7 @@ fun AddCurrentBehaviorSheet(
         onTagCategoriesReordered = onTagCategoriesReordered,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
     )
 }
@@ -150,6 +158,7 @@ fun AddTargetBehaviorSheet(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback = { _, _, _, _, _, _ -> },
     onAddTag: AddTagCallback = { _, _, _, _, _, _, _ -> },
+    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
 ) {
     BehaviorSheetWrapper(
@@ -173,6 +182,7 @@ fun AddTargetBehaviorSheet(
         onTagCategoriesReordered = onTagCategoriesReordered,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onProcessNote = onProcessNote,
         onMatchNote = onMatchNote,
     )
 }
@@ -202,6 +212,7 @@ private fun BehaviorSheetWrapper(
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: AddActivityCallback,
     onAddTag: AddTagCallback,
+    onProcessNote: OnProcessNote = { NoteProcessOutcome.Empty },
     onMatchNote: (String) -> NoteScanResult,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -240,6 +251,7 @@ private fun BehaviorSheetWrapper(
             onTagCategoriesReordered = onTagCategoriesReordered,
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
+            onProcessNote = onProcessNote,
             onMatchNote = onMatchNote,
         )
     }
