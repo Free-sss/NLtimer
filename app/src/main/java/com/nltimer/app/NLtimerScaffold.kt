@@ -52,6 +52,7 @@ import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
 import com.nltimer.feature.home.ui.components.LocalMomentFilterState
+import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
 import com.nltimer.feature.home.ui.components.MomentFilterState
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
@@ -66,14 +67,16 @@ fun NLtimerScaffold(
     val currentRoute = navBackStackEntry?.destination?.route
     val scope = rememberCoroutineScope()
     val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
+    val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
+    val isDateTitle = isHomePage && visibleDateLabelState.value != null
     val topBarTitle = when (currentRoute) {
         NLtimerRoutes.SETTINGS -> "设置"
         NLtimerRoutes.THEME_SETTINGS -> "主题配置"
         NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
         NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
-        else -> "NLtimer"
+        else -> visibleDateLabelState.value ?: "NLtimer"
     }
-    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
     var showSettingsPopup by remember { mutableStateOf(false) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
@@ -113,7 +116,10 @@ fun NLtimerScaffold(
         )
     }
 
-    CompositionLocalProvider(LocalMomentFilterState provides momentFilterState) {
+    CompositionLocalProvider(
+        LocalMomentFilterState provides momentFilterState,
+        LocalVisibleDateLabel provides visibleDateLabelState,
+    ) {
         ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -155,6 +161,7 @@ fun NLtimerScaffold(
                         if (topBarScrollBehavior != null) {
                             AppCollapsedTopAppBar(
                                 title = topBarTitle,
+                                isDateTitle = isDateTitle,
                                 scrollBehavior = topBarScrollBehavior,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
@@ -169,6 +176,7 @@ fun NLtimerScaffold(
                         } else {
                             AppTopAppBar(
                                 title = topBarTitle,
+                                isDateTitle = isDateTitle,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                                 momentFilterLabel = momentFilterLabel,

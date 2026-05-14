@@ -1,6 +1,8 @@
 package com.nltimer.feature.home.ui.components
 
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.staticCompositionLocalOf
 
 data class MomentFilterState(
     val filterKey: String = "ALL",
@@ -10,3 +12,5 @@ data class MomentFilterState(
 )
 
 val LocalMomentFilterState = compositionLocalOf { MomentFilterState() }
+
+val LocalVisibleDateLabel = staticCompositionLocalOf { mutableStateOf<String?>(null) }

@@ -21,9 +21,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nltimer.core.designsystem.R as DR
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
 
@@ -37,11 +43,12 @@ data class MomentSortOption(
     val key: String,
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
 @Composable
 fun AppTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
+    isDateTitle: Boolean = false,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -56,10 +63,32 @@ fun AppTopAppBar(
     var layoutMenuExpanded by remember { mutableStateOf(false) }
     var momentMenuExpanded by remember { mutableStateOf(false) }
 
+    val dateTitleFont = remember {
+        FontFamily(
+            Font(
+                resId = DR.font.google_sans_flex,
+                variationSettings = FontVariation.Settings(
+                    FontVariation.weight(800),
+                ),
+            ),
+        )
+    }
+
     CenterAlignedTopAppBar(
         title = {
             Row(verticalAlignment = Alignment.Bottom) {
-                Text(title)
+                Text(
+                    title,
+                    style = if (isDateTitle) {
+                        MaterialTheme.typography.titleLarge.copy(
+                            fontFamily = dateTitleFont,
+                            fontWeight = FontWeight.W800,
+                            fontSize = 14.sp,
+                        )
+                    } else {
+                        MaterialTheme.typography.titleLarge
+                    },
+                )
                 if (layoutLabel != null) {
                     val subtitleFontSize = 10.sp
                     Box {
@@ -151,12 +180,13 @@ fun AppTopAppBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTextApi::class)
 @Composable
 fun AppCollapsedTopAppBar(
     title: String,
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
+    isDateTitle: Boolean = false,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -171,15 +201,35 @@ fun AppCollapsedTopAppBar(
     var layoutMenuExpanded by remember { mutableStateOf(false) }
     var momentMenuExpanded by remember { mutableStateOf(false) }
 
+    val dateTitleFont = remember {
+        FontFamily(
+            Font(
+                resId = DR.font.google_sans_flex,
+                variationSettings = FontVariation.Settings(
+                    FontVariation.weight(800),
+                ),
+            ),
+        )
+    }
+
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.Bottom,modifier=Modifier.padding(bottom = 5.dp)) {
                 Text(
                     title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontSize = 32.sp,
-                        lineHeight = 32.sp,
-                    ),
+                    style = if (isDateTitle) {
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontFamily = dateTitleFont,
+                            fontWeight = FontWeight.W800,
+                            fontSize = 21.sp,
+                            lineHeight = 21.sp,
+                        )
+                    } else {
+                        MaterialTheme.typography.headlineMedium.copy(
+                            fontSize = 32.sp,
+                            lineHeight = 32.sp,
+                        )
+                    },
                 )
                 if (layoutLabel != null) {
                     val subtitleFontSize = 10.sp

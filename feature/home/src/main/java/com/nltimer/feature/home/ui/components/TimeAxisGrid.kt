@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +25,7 @@ import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
+import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -45,6 +47,7 @@ fun TimeAxisGrid(
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     val listState = rememberLazyListState()
+    val visibleDateLabelState = LocalVisibleDateLabel.current
 
     LaunchedEffect(currentHour, sections) {
         val todaySection = sections.lastOrNull() ?: return@LaunchedEffect
@@ -62,6 +65,31 @@ fun TimeAxisGrid(
             .distinctUntilChanged()
             .filter { it <= 5 }
             .collect { onLoadMore() }
+    }
+
+    val dateIndexMap = remember(sections) {
+        val map = mutableMapOf<Int, String>()
+        var index = 0
+        if (isLoadingMore) index++
+        if (hasReachedEarliest) index++
+        sections.forEach { section ->
+            map[index] = section.label
+            index++
+            index += section.rows.size
+        }
+        map
+    }
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
     }
 
     LazyColumn(
