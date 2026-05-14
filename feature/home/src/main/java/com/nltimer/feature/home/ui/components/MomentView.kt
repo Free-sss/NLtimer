@@ -73,7 +73,7 @@ private fun buildMomentDisplayItems(
     }
 
     byDate.entries.reversed().forEach { (date, cells) ->
-        if (date != null) {
+        if (date != null && date != today) {
             result.add(MomentDisplayItem.Divider(momentDayLabel(date, today)))
         }
         cells.forEach { result.add(MomentDisplayItem.Behavior(it)) }
