@@ -99,7 +99,7 @@ fun NLtimerScaffold(
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
     val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+        TopAppBarDefaults.enterAlwaysScrollBehavior()
     } else {
         null
     }
