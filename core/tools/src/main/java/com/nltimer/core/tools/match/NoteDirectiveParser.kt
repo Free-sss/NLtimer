@@ -32,8 +32,15 @@ object NoteDirectiveParser {
         while (i < note.length) {
             val ch = note[i]
             if (ch == '@' || ch == '#') {
+                val escaped = i > 0 && (note[i - 1] == '!' || note[i - 1] == '！')
                 val nameEnd = scanNameEnd(note, i + 1)
                 val rawName = note.substring(i + 1, nameEnd)
+                if (escaped) {
+                    cleaned.append(ch)
+                    cleaned.append(rawName)
+                    i = nameEnd
+                    continue
+                }
                 if (rawName.isEmpty()) {
                     cleaned.append(ch)
                     i++
