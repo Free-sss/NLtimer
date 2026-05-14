@@ -56,6 +56,7 @@ fun BehaviorManagementScreen(
     val allTags by viewModel.allTags.collectAsStateWithLifecycle()
     val activityLastUsedMap by viewModel.activityLastUsedMap.collectAsStateWithLifecycle()
     val tagLastUsedMap by viewModel.tagLastUsedMap.collectAsStateWithLifecycle()
+    val tagCategoryOrder by viewModel.tagCategoryOrder.collectAsStateWithLifecycle()
 
     var selectedHandling by remember { mutableStateOf(DuplicateHandling.SKIP) }
 
@@ -221,12 +222,15 @@ fun BehaviorManagementScreen(
             existingBehaviors = uiState.behaviors.map { it.behavior },
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
+            tagCategoryOrder = tagCategoryOrder,
             onDismiss = viewModel::finishEditBehavior,
             onConfirm = { activityId, tagIds, startTime, endTime, nature, note ->
                 viewModel.updateBehavior(
                     bwd.behavior.id, activityId, tagIds, startTime, endTime, nature, note,
                 )
             },
+            onActivityGroupsReordered = viewModel::reorderActivityGroups,
+            onTagCategoriesReordered = viewModel::reorderTagCategories,
         )
     }
 

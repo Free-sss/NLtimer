@@ -12,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -417,6 +418,8 @@ class TagManagementViewModelTest {
         override suspend fun updateDialogConfig(config: com.nltimer.core.data.model.DialogGridConfig) {}
         override fun getTimeLabelConfigFlow(): Flow<com.nltimer.core.designsystem.theme.TimeLabelConfig> = flowOf(com.nltimer.core.designsystem.theme.TimeLabelConfig())
         override suspend fun updateTimeLabelConfig(config: com.nltimer.core.designsystem.theme.TimeLabelConfig) {}
+        override fun getHomeLayoutConfigFlow(): Flow<com.nltimer.core.data.model.HomeLayoutConfig> = flowOf(com.nltimer.core.data.model.HomeLayoutConfig())
+        override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
     }

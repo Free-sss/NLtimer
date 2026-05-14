@@ -572,6 +572,8 @@ class HomeViewModelTest {
         override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> = emptyList()
         override suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>> = emptyMap()
         override suspend fun getEarliestBehaviorDate(): java.time.LocalDate? = earliestDate
+        override fun getAllActivityLastUsed(): Flow<Map<Long, Long?>> = flowOf(emptyMap())
+        override fun getAllTagLastUsed(): Flow<Map<Long, Long?>> = flowOf(emptyMap())
         override fun getTotalDurationAllBehaviors(): kotlinx.coroutines.flow.Flow<Long> = kotlinx.coroutines.flow.flowOf(0L)
     }
 

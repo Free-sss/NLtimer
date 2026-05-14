@@ -3,9 +3,7 @@ package com.nltimer.feature.management_activities.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,7 +20,6 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -46,8 +43,11 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
+import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
+import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.management_activities.model.GroupWithActivities
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
 import kotlin.math.abs
@@ -67,6 +67,13 @@ fun ActivityManagementScreen(
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
     val allExpanded = uiState.groups.isNotEmpty() &&
         uiState.groups.all { it.group.id in uiState.expandedGroupIds }
+    val isCenterFab = LocalTheme.current.bottomBarMode == BottomBarMode.CENTER_FAB
+    val navBarWidth = LocalNavBarWidth.current.value
+    val expandFabStartPadding = if (isCenterFab && navBarWidth > 0.dp) {
+        navBarWidth + 92.dp
+    } else {
+        80.dp
+    }
 
     LaunchedEffect(uiState.groups) {
         if (draggedIndex == -1 && reorderedGroups.toList() != uiState.groups) {
@@ -247,7 +254,7 @@ fun ActivityManagementScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
-                .padding(start = 92.dp, bottom = 8.dp)
+                .padding(start = expandFabStartPadding, bottom = 8.dp)
                 .size(56.dp),
         ) {
             Icon(

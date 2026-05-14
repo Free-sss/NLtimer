@@ -29,10 +29,13 @@ internal fun HomeSheetRouter(
     dialogConfig: DialogGridConfig,
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
+    tagCategoryOrder: List<String> = emptyList(),
     onDismissSheet: () -> Unit,
     onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
+    onActivityGroupsReordered: (List<Long>) -> Unit = {},
+    onTagCategoriesReordered: (List<String>) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult,
 ) {
     if (uiState.addSheetMode == null) return
@@ -83,8 +86,11 @@ internal fun HomeSheetRouter(
             existingBehaviors = existingBehaviors,
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
+            tagCategoryOrder = tagCategoryOrder,
             onDismiss = onDismissSheet,
             onConfirm = onAddBehavior,
+            onActivityGroupsReordered = onActivityGroupsReordered,
+            onTagCategoriesReordered = onTagCategoriesReordered,
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
@@ -103,8 +109,11 @@ internal fun HomeSheetRouter(
             existingBehaviors = existingBehaviors.filter { it.status != BehaviorNature.ACTIVE },
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
+            tagCategoryOrder = tagCategoryOrder,
             onDismiss = onDismissSheet,
             onConfirm = onAddBehavior,
+            onActivityGroupsReordered = onActivityGroupsReordered,
+            onTagCategoriesReordered = onTagCategoriesReordered,
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
@@ -122,13 +131,14 @@ internal fun HomeSheetRouter(
             existingBehaviors = existingBehaviors,
             activityLastUsedMap = activityLastUsedMap,
             tagLastUsedMap = tagLastUsedMap,
+            tagCategoryOrder = tagCategoryOrder,
             onDismiss = onDismissSheet,
             onConfirm = onAddBehavior,
+            onActivityGroupsReordered = onActivityGroupsReordered,
+            onTagCategoriesReordered = onTagCategoriesReordered,
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
         )
-
-        null -> {}
     }
 }

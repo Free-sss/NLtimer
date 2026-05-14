@@ -42,12 +42,15 @@ internal fun SheetPickerDialogs(
     selectedTagIds: Set<Long>,
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
+    tagCategoryOrder: List<String> = emptyList(),
     onAddActivityDialogDismiss: () -> Unit,
     onAddTagDialogDismiss: () -> Unit,
     onActivityPickerDismiss: () -> Unit,
     onTagPickerDismiss: () -> Unit,
     onActivitySelected: (Long) -> Unit,
     onTagsSelected: (Set<Long>) -> Unit,
+    onActivityGroupsReordered: (List<Long>) -> Unit = {},
+    onTagCategoriesReordered: (List<String>) -> Unit = {},
     onAddActivity: (name: String, iconKey: String?, color: Long?, groupId: Long?, keywords: String?, tagIds: List<Long>) -> Unit,
     onAddTag: (name: String, color: Long?, icon: String?, priority: Int, category: String?, keywords: String?, activityId: Long?) -> Unit,
     onShowAddActivityDialog: () -> Unit,
@@ -100,7 +103,7 @@ internal fun SheetPickerDialogs(
                         items = items.map { ActivityCategorizable(it, activityLastUsedMap[it.id]) },
                     )
                 }
-                .sortedBy { if (it.id == -1L) Int.MAX_VALUE.toLong() else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
+                .sortedBy { if (it.id == -1L) Long.MIN_VALUE else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
             groups
         }
 
@@ -114,6 +117,9 @@ internal fun SheetPickerDialogs(
                 onActivityPickerDismiss()
             },
             onDismiss = onActivityPickerDismiss,
+            onCategoryReordered = { orderedIds ->
+                onActivityGroupsReordered(orderedIds.filter { it != -1L })
+            },
             onAddNew = {
                 onActivityPickerDismiss()
                 onShowAddActivityDialog()
@@ -122,7 +128,8 @@ internal fun SheetPickerDialogs(
     }
 
     if (showTagPicker) {
-        val groupedTags = remember(allTags, tagLastUsedMap) {
+        val groupedTags = remember(allTags, tagLastUsedMap, tagCategoryOrder) {
+            val order = tagCategoryOrder.withIndex().associate { it.value to it.index }
             val groups = allTags.groupBy { it.category ?: "未分类" }
                 .map { (category, items) ->
                     CategoryGroup(
@@ -131,7 +138,10 @@ internal fun SheetPickerDialogs(
                         items = items.map { TagCategorizable(it, tagLastUsedMap[it.id]) },
                     )
                 }
-                .sortedBy { it.name }
+                .sortedWith(
+                    compareBy<CategoryGroup<TagCategorizable>> { if (it.name == "未分类") Int.MIN_VALUE else order[it.name] ?: Int.MAX_VALUE }
+                        .thenBy { it.name }
+                )
             groups
         }
 
@@ -143,6 +153,10 @@ internal fun SheetPickerDialogs(
             multiSelect = true,
             onItemsSelected = onTagsSelected,
             onDismiss = onTagPickerDismiss,
+            onCategoryReordered = { orderedIds ->
+                val idToName = groupedTags.associate { it.id to it.name }
+                onTagCategoriesReordered(orderedIds.mapNotNull { idToName[it] })
+            },
             onAddNew = {
                 onTagPickerDismiss()
                 onShowAddTagDialog()

@@ -139,6 +139,8 @@ class DialogConfigViewModelTest {
         }
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
+        override fun getHomeLayoutConfigFlow(): Flow<com.nltimer.core.data.model.HomeLayoutConfig> = flowOf(com.nltimer.core.data.model.HomeLayoutConfig())
+        override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
     }

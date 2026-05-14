@@ -9,6 +9,8 @@ import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Behavior
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
+import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
@@ -47,7 +49,9 @@ class BehaviorManagementViewModel @Inject constructor(
     application: Application,
     private val behaviorRepository: BehaviorRepository,
     private val activityRepository: ActivityRepository,
+    private val activityManagementRepository: ActivityManagementRepository,
     private val tagRepository: TagRepository,
+    private val settingsPrefs: SettingsPrefs,
 ) : AndroidViewModel(application) {
 
     private val _uiState = MutableStateFlow(BehaviorManagementUiState())
@@ -70,6 +74,9 @@ class BehaviorManagementViewModel @Inject constructor(
 
     val tagLastUsedMap = behaviorRepository.getAllTagLastUsed()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyMap())
+
+    val tagCategoryOrder = settingsPrefs.getSavedTagCategoriesOrder()
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
         observeBehaviors()
@@ -259,6 +266,18 @@ class BehaviorManagementViewModel @Inject constructor(
             behaviorRepository.updateBehavior(id, activityId, startEpoch, endEpoch, nature.key, note)
             behaviorRepository.updateTagsForBehavior(id, tagIds)
             finishEditBehavior()
+        }
+    }
+
+    fun reorderActivityGroups(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            activityManagementRepository.reorderGroups(orderedIds)
+        }
+    }
+
+    fun reorderTagCategories(orderedNames: List<String>) {
+        viewModelScope.launch {
+            settingsPrefs.saveTagCategoriesOrder(orderedNames)
         }
     }
 

@@ -21,6 +21,7 @@ fun HomeRoute(
     val allTags by viewModel.allTags.collectAsStateWithLifecycle()
     val activityLastUsedMap by viewModel.activityLastUsedMap.collectAsStateWithLifecycle()
     val tagLastUsedMap by viewModel.tagLastUsedMap.collectAsStateWithLifecycle()
+    val tagCategoryOrder by viewModel.tagCategoryOrder.collectAsStateWithLifecycle()
     val dialogConfig by viewModel.dialogConfig.collectAsStateWithLifecycle()
     val timeLabelConfig by viewModel.timeLabelConfig.collectAsStateWithLifecycle()
     val homeLayoutConfig by viewModel.homeLayoutConfig.collectAsStateWithLifecycle()
@@ -90,6 +91,7 @@ fun HomeRoute(
         homeLayoutConfig = homeLayoutConfig,
         activityLastUsedMap = activityLastUsedMap,
         tagLastUsedMap = tagLastUsedMap,
+        tagCategoryOrder = tagCategoryOrder,
         onEmptyCellClick = onEmptyCellClick,
         onShowAddSheet = onShowAddSheet,
         onCellLongClick = onCellLongClick,
@@ -101,6 +103,8 @@ fun HomeRoute(
         onStartBehavior = onStartBehavior,
         onAddActivity = onAddActivity,
         onAddTag = onAddTag,
+        onActivityGroupsReordered = viewModel::reorderActivityGroups,
+        onTagCategoriesReordered = viewModel::reorderTagCategories,
         onHourClick = onHourClick,
         onLoadMore = viewModel::loadMore,
         timeLabelConfig = timeLabelConfig,

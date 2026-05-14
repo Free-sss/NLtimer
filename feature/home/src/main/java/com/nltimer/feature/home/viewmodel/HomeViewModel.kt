@@ -85,6 +85,9 @@ class HomeViewModel @Inject constructor(
     private val _tagLastUsedMap = MutableStateFlow<Map<Long, Long?>>(emptyMap())
     val tagLastUsedMap: StateFlow<Map<Long, Long?>> = _tagLastUsedMap.asStateFlow()
 
+    val tagCategoryOrder: StateFlow<List<String>> = settingsPrefs.getSavedTagCategoriesOrder()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(HomeUiStateBuilder.STATE_TIMEOUT_MS), emptyList())
+
     private val _selectedActivityId = MutableStateFlow<Long?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -342,6 +345,18 @@ class HomeViewModel @Inject constructor(
     fun reorderGoals(orderedIds: List<Long>) {
         viewModelScope.launch {
             behaviorRepository.reorderGoals(orderedIds)
+        }
+    }
+
+    fun reorderActivityGroups(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            activityManagementRepository.reorderGroups(orderedIds)
+        }
+    }
+
+    fun reorderTagCategories(orderedNames: List<String>) {
+        viewModelScope.launch {
+            settingsPrefs.saveTagCategoriesOrder(orderedNames)
         }
     }
 
