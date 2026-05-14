@@ -21,6 +21,7 @@ import com.nltimer.core.data.util.TimeSnapService
 import com.nltimer.core.data.usecase.AddActivityUseCase
 import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
+import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
@@ -57,6 +58,7 @@ class HomeViewModelTest {
     private lateinit var addBehaviorUseCase: AddBehaviorUseCase
     private lateinit var addTagUseCase: AddTagUseCase
     private lateinit var addActivityUseCase: AddActivityUseCase
+    private lateinit var applyNoteDirectivesUseCase: ApplyNoteDirectivesUseCase
     private lateinit var activityManagementRepository: FakeActivityManagementRepository
     private lateinit var viewModel: HomeViewModel
 
@@ -72,6 +74,7 @@ class HomeViewModelTest {
         addBehaviorUseCase = AddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         addTagUseCase = AddTagUseCase(tagRepository)
         addActivityUseCase = AddActivityUseCase(activityManagementRepository)
+        applyNoteDirectivesUseCase = ApplyNoteDirectivesUseCase(addActivityUseCase, addTagUseCase)
         viewModel = HomeViewModel(
             behaviorRepository,
             activityRepository,
@@ -83,6 +86,7 @@ class HomeViewModelTest {
             addBehaviorUseCase,
             addTagUseCase,
             addActivityUseCase,
+            applyNoteDirectivesUseCase,
             clockService
         )
     }
@@ -468,6 +472,7 @@ class HomeViewModelTest {
             addBehaviorUseCase,
             addTagUseCase,
             addActivityUseCase,
+            applyNoteDirectivesUseCase,
             clockService,
         )
         advanceUntilIdle()
@@ -494,6 +499,7 @@ class HomeViewModelTest {
             addBehaviorUseCase,
             addTagUseCase,
             addActivityUseCase,
+            applyNoteDirectivesUseCase,
             clockService,
         )
         advanceUntilIdle()
