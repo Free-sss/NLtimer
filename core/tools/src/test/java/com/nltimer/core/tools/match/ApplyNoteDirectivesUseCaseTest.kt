@@ -55,6 +55,7 @@ class ApplyNoteDirectivesUseCaseTest {
         val out = useCase(listOf(atDir("跑步")), activities, emptyList())
         assertEquals(7L, out.lastActivityId)
         assertTrue(out.createdActivityNames.isEmpty())
+        assertEquals(listOf("跑步"), out.matchedActivityNames)
         coVerify(exactly = 0) { addActivityUseCase(any(), any(), any(), any(), any(), any()) }
     }
 
@@ -121,6 +122,7 @@ class ApplyNoteDirectivesUseCaseTest {
         val tags = listOf(tag(5L, "重要"))
         val out = useCase(listOf(hashDir("重要")), emptyList(), tags)
         assertEquals(setOf(5L), out.addedTagIds)
+        assertEquals(listOf("重要"), out.matchedTagNames)
         coVerify(exactly = 0) { addTagUseCase(any(), any(), any(), any(), any(), any(), any()) }
     }
 
@@ -131,5 +133,13 @@ class ApplyNoteDirectivesUseCaseTest {
         val out = useCase(listOf(atDir("跑"), hashDir("健康")), emptyList(), emptyList())
         assertEquals(7L, out.lastActivityId)
         assertEquals(setOf(8L), out.addedTagIds)
+    }
+
+    @Test
+    fun `tag creation failure does not block subsequent tags`() = runTest {
+        coEvery { addTagUseCase("t1", null, null, 0, null, null, null) } throws RuntimeException("DB error")
+        coEvery { addTagUseCase("t2", null, null, 0, null, null, null) } returns 22L
+        val out = useCase(listOf(hashDir("t1"), hashDir("t2")), emptyList(), emptyList())
+        assertEquals(setOf(22L), out.addedTagIds)
     }
 }

@@ -65,9 +65,9 @@ class ApplyNoteDirectivesUseCase @Inject constructor(
                         matchedActivityNames += existing.name
                         existing.id
                     } else {
-                        val newId = runCatching {
+                        val newId = safeCall {
                             addActivityUseCase(d.name, null, null, null, null, emptyList())
-                        }.getOrNull() ?: continue
+                        } ?: continue
                         createdActivityNames += d.name
                         newId
                     }
@@ -87,9 +87,9 @@ class ApplyNoteDirectivesUseCase @Inject constructor(
                         matchedTagNames += existing.name
                         existing.id
                     } else {
-                        val newId = runCatching {
+                        val newId = safeCall {
                             addTagUseCase(d.name, null, null, 0, null, null, null)
-                        }.getOrNull() ?: continue
+                        } ?: continue
                         createdTagNames += d.name
                         newId
                     }
@@ -108,4 +108,13 @@ class ApplyNoteDirectivesUseCase @Inject constructor(
             matchedTagNames = matchedTagNames,
         )
     }
+}
+
+/**
+ * 协程安全的 try-call：捕获普通异常并返回 null，但保留 [kotlinx.coroutines.CancellationException]
+ * 让协程能正确响应取消。把 `runCatching` 在协程中的反模式封装在一处。
+ */
+private inline fun <T> safeCall(block: () -> T): T? = runCatching(block).getOrElse { e ->
+    if (e is kotlinx.coroutines.CancellationException) throw e
+    null
 }
