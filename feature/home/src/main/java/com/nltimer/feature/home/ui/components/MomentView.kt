@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.LocalDate
@@ -203,7 +204,7 @@ fun MomentView(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp, top = 16.dp, bottom = 180.dp
+            start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp
         ),
     ) {
         if (isLoadingMore) item("loading-top") {

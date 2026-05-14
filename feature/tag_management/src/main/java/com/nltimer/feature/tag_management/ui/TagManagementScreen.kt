@@ -45,6 +45,7 @@ import com.nltimer.core.designsystem.component.LocalNavBarWidth
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.feature.tag_management.model.CategoryWithTags
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
@@ -116,7 +117,7 @@ fun TagManagementScreen(
                 LoadingScreen()
             } else {
                 LazyColumn(
-                    contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 112.dp),
+                    contentPadding = PaddingValues(start = 16.dp, top = 4.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 112.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     item {

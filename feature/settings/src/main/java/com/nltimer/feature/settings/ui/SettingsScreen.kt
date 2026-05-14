@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.component.SettingsEntryCard
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 
 @Composable
 fun SettingsRoute(
@@ -43,7 +44,7 @@ fun SettingsScreen(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        contentPadding = PaddingValues(start = 16.dp, top = 12.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {

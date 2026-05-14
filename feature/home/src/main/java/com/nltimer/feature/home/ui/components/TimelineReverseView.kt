@@ -49,6 +49,7 @@ import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.styledAlpha
@@ -118,7 +119,7 @@ fun TimelineReverseView(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
-            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
             items(items = timelineItems, key = { it.key }) { item ->
                 when (item) {

@@ -48,6 +48,7 @@ import com.nltimer.app.navigation.NLtimerRoutes
 import com.nltimer.app.viewmodel.DrawerViewModel
 import com.nltimer.core.designsystem.theme.BottomBarMode
 import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.TopBarMode
 import com.nltimer.core.designsystem.theme.toDisplayString
@@ -219,15 +220,18 @@ fun NLtimerScaffold(
                     }
                 },
             ) { padding ->
-                NLtimerNavHost(
-                    navController = navController,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(
-                            top = if (isImmersive) 0.dp else padding.calculateTopPadding(),
-                            bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
-                        ),
-                )
+                val immersiveTopPadding = if (isImmersive) padding.calculateTopPadding() else 0.dp
+                CompositionLocalProvider(LocalImmersiveTopPadding provides immersiveTopPadding) {
+                    NLtimerNavHost(
+                        navController = navController,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                top = if (isImmersive) 0.dp else padding.calculateTopPadding(),
+                                bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
+                            ),
+                    )
+                }
             }
 
             if (!isAnyFloating && !isSecondaryPage) {

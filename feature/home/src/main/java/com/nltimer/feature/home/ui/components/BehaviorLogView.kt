@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeListItem
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -84,7 +85,7 @@ fun BehaviorLogView(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
             if (displayItems.isEmpty()) {
                 item {

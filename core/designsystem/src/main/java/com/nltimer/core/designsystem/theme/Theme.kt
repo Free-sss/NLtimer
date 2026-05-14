@@ -5,6 +5,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.materialkolor.DynamicMaterialTheme
 
 /**
@@ -12,6 +14,8 @@ import com.materialkolor.DynamicMaterialTheme
  * 子组件可通过 [LocalTheme.current] 读取当前生效的 [Theme] 配置
  */
 val LocalTheme = staticCompositionLocalOf { Theme() }
+
+val LocalImmersiveTopPadding = staticCompositionLocalOf { 0.dp }
 
 /**
  * NLtimer 全局主题入口

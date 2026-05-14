@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.GridLayoutStyle
+import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
@@ -93,7 +94,7 @@ fun TimeAxisGrid(
         state = listState,
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
-        contentPadding = PaddingValues(bottom = 630.dp),
+        contentPadding = PaddingValues(bottom = 630.dp, top = LocalImmersiveTopPadding.current),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         sections.forEach { section ->
