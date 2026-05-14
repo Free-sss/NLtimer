@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,9 +57,11 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.DragMenuOptions
 import com.nltimer.core.designsystem.component.DragMenuOptionsPlacement
 import com.nltimer.core.designsystem.component.DraggableMenuAnchor
+import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -194,6 +197,7 @@ private fun SheetMainContent(
     onMatchNote: (String) -> NoteScanResult,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val activityChips = remember(activities) { activities.map { ChipItem(it) } }
     val tagChips = remember(allTags) { allTags.map { ChipItem(it) } }
     val horizontalLinesForActivities = remember(dialogConfig.activityHorizontalLines) {
@@ -312,27 +316,23 @@ private fun SheetMainContent(
             NoteInputComponent(
                 note = state.note,
                 onNoteChange = { state.note = it },
-                 onTopButton = {
-                    val note = state.note
-                    if (note.isBlank()) {
+                onTopButton = {
+                    val raw = state.note
+                    if (raw.isBlank()) {
                         Toast.makeText(context, "请输入备注后再识别", Toast.LENGTH_SHORT).show()
-                        return@NoteInputComponent
-                    }
-
-                    val result = onMatchNote(note)
-                    val outcome = state.applyNoteScan(result)
-                    val message = when {
-                        outcome.hasAnyChange -> buildString {
-                            append("已识别")
-                            if (outcome.activityAdded) append("活动")
-                            if (outcome.activityAdded && outcome.tagsAdded > 0) append("和")
-                            if (outcome.tagsAdded > 0) append("${outcome.tagsAdded}个标签")
+                    } else {
+                        scope.launch {
+                            val processed = onProcessNote(raw)
+                            state.note = processed.cleanedNote
+                            val directiveApply = state.applyDirectiveOutcome(processed.directiveOutcome)
+                            val scanApply = state.applyNoteScan(processed.scanResult)
+                            Toast.makeText(
+                                context,
+                                buildFeedbackMessage(processed.directiveOutcome, directiveApply, scanApply),
+                                Toast.LENGTH_SHORT,
+                            ).show()
                         }
-                        outcome.activityHeld -> "已识别活动，保留当前选择"
-                        result.activityId != null || result.tagIds.isNotEmpty() -> "已识别，当前选择无需更新"
-                        else -> "未识别到活动或标签"
                     }
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 },
                 onBottomButton = { },
             )
@@ -529,3 +529,57 @@ private fun EndTimeAutoTickEffect(state: AddBehaviorState) {
 }
 
 private const val END_TIME_TICK_INTERVAL_MS = 1000L
+
+/**
+ * 智能识别按钮按下后的 Toast 文案生成。
+ *
+ * 优先级：新增 > 命中现有 > 反向扫描有变化 > 完全无识别。
+ * 单项时附名字，多项时只报数量。
+ */
+private fun buildFeedbackMessage(
+    directiveOutcome: ApplyNoteDirectivesUseCase.Outcome,
+    directiveApply: NoteDirectiveApplyOutcome,
+    scanApply: NoteScanApplyOutcome,
+): String {
+    val createdActivities = directiveOutcome.createdActivityNames
+    val createdTags = directiveOutcome.createdTagNames
+    if (createdActivities.isNotEmpty() || createdTags.isNotEmpty()) {
+        return buildString {
+            append("已新增")
+            if (createdActivities.isNotEmpty()) {
+                if (createdActivities.size == 1) append("活动『${createdActivities.first()}』")
+                else append("${createdActivities.size}个活动")
+            }
+            if (createdActivities.isNotEmpty() && createdTags.isNotEmpty()) append("和")
+            if (createdTags.isNotEmpty()) {
+                if (createdTags.size == 1) append("标签『${createdTags.first()}』")
+                else append("${createdTags.size}个标签")
+            }
+        }
+    }
+    val matchedActivities = directiveOutcome.matchedActivityNames
+    val matchedTags = directiveOutcome.matchedTagNames
+    if (matchedActivities.isNotEmpty() || matchedTags.isNotEmpty()) {
+        return buildString {
+            append("已识别")
+            if (matchedActivities.isNotEmpty()) {
+                if (matchedActivities.size == 1) append("活动『${matchedActivities.first()}』")
+                else append("${matchedActivities.size}个活动")
+            }
+            if (matchedActivities.isNotEmpty() && matchedTags.isNotEmpty()) append("和")
+            if (matchedTags.isNotEmpty()) {
+                if (matchedTags.size == 1) append("标签『${matchedTags.first()}』")
+                else append("${matchedTags.size}个标签")
+            }
+        }
+    }
+    return when {
+        scanApply.hasAnyChange -> buildString {
+            append("已识别")
+            if (scanApply.activityAdded) append("活动")
+            if (scanApply.activityAdded && scanApply.tagsAdded > 0) append("和")
+            if (scanApply.tagsAdded > 0) append("${scanApply.tagsAdded}个标签")
+        }
+        else -> "未识别到活动或标签"
+    }
+}
