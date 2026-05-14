@@ -70,7 +70,6 @@ private fun buildMomentDisplayItems(
     result.add(MomentDisplayItem.FocusCard())
 
     if (pending.isNotEmpty()) {
-        result.add(MomentDisplayItem.Divider("待办"))
         pending.forEach { result.add(MomentDisplayItem.Behavior(it)) }
     }
 
