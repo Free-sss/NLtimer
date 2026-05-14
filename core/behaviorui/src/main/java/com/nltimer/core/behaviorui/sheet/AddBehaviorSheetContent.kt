@@ -298,7 +298,28 @@ private fun SheetMainContent(
             NoteInputComponent(
                 note = state.note,
                 onNoteChange = { state.note = it },
-                onTopButton = { },
+                 onTopButton = {
+                    val note = state.note
+                    if (note.isBlank()) {
+                        Toast.makeText(context, "请输入备注后再识别", Toast.LENGTH_SHORT).show()
+                        return@NoteInputComponent
+                    }
+
+                    val result = onMatchNote(note)
+                    val outcome = state.applyNoteScan(result)
+                    val message = when {
+                        outcome.hasAnyChange -> buildString {
+                            append("已识别")
+                            if (outcome.activityAdded) append("活动")
+                            if (outcome.activityAdded && outcome.tagsAdded > 0) append("和")
+                            if (outcome.tagsAdded > 0) append("${outcome.tagsAdded}个标签")
+                        }
+                        outcome.activityHeld -> "已识别活动，保留当前选择"
+                        result.activityId != null || result.tagIds.isNotEmpty() -> "已识别，当前选择无需更新"
+                        else -> "未识别到活动或标签"
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                },
                 onBottomButton = { },
             )
 
