@@ -11,7 +11,7 @@ import java.time.LocalTime
 @Immutable
 data class GridCellUiState(
     val behaviorId: Long?, // null 表示空白/占位单元格
-    val activityEmoji: String?,
+    val activityIconKey: String?,
     val activityName: String?,
     val tags: List<TagUiState>,
     val status: BehaviorNature?,
@@ -23,6 +23,8 @@ data class GridCellUiState(
     val durationMs: Long? = null,
     val startTime: LocalTime? = null,
     val endTime: LocalTime? = null,
+    val startEpochMs: Long? = null,
+    val endEpochMs: Long? = null,
     val isAddPlaceholder: Boolean = false,
     val note: String? = null,
     val pomodoroCount: Int = 0,

@@ -1,5 +1,7 @@
 package com.nltimer.app.navigation
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
@@ -9,11 +11,14 @@ import androidx.navigation.compose.composable
 import com.nltimer.feature.categories.ui.CategoriesRoute
 import com.nltimer.feature.home.ui.HomeRoute
 import com.nltimer.feature.management_activities.ui.ActivityManagementRoute
+import com.nltimer.feature.settings.ui.ColorPaletteRoute
 import com.nltimer.feature.settings.ui.DialogConfigRoute
+import com.nltimer.feature.settings.ui.HomeLayoutConfigRoute
 import com.nltimer.feature.settings.ui.SettingsRoute
 import com.nltimer.feature.settings.ui.ThemeSettingsRoute
 import com.nltimer.feature.stats.ui.StatsRoute
-import com.nltimer.feature.sub.ui.SubRoute
+import com.nltimer.feature.behavior_management.ui.BehaviorManagementRoute
+import com.nltimer.feature.settings.ui.DataManagementRoute
 import com.nltimer.feature.tag_management.ui.TagManagementRoute
 
 /**
@@ -30,39 +35,86 @@ fun NLtimerNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home",
+        startDestination = NLtimerRoutes.HOME,
         modifier = modifier,
     ) {
-        // 注册主页、副页、统计页等常规模块路由
-        composable("home") { HomeRoute() }
-        composable("sub") { SubRoute() }
-        composable("stats") { StatsRoute() }
-        // 注册分类管理、活动管理、标签管理等后台管理路由
-        composable("categories") { CategoriesRoute() }
-        composable("management_activities") { ActivityManagementRoute() }
-        composable("tag_management") {
+        composable(NLtimerRoutes.HOME) { HomeRoute() }
+        composable(NLtimerRoutes.STATS) { StatsRoute() }
+        composable(NLtimerRoutes.CATEGORIES) { CategoriesRoute() }
+        composable(NLtimerRoutes.MANAGEMENT_ACTIVITIES) { ActivityManagementRoute() }
+        composable(NLtimerRoutes.TAG_MANAGEMENT) {
             TagManagementRoute(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        // 注册设置页与主题设置页路由，支持返回导航
-        composable("settings") {
+        composable(
+            NLtimerRoutes.BEHAVIOR_MANAGEMENT,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            BehaviorManagementRoute(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+        composable(NLtimerRoutes.SETTINGS) {
             SettingsRoute(
-                onNavigateToThemeSettings = { navController.navigate("theme_settings") },
-                onNavigateToDialogConfig = { navController.navigate("dialog_config") },
+                onNavigateToThemeSettings = { navController.navigate(NLtimerRoutes.THEME_SETTINGS) },
+                onNavigateToDialogConfig = { navController.navigate(NLtimerRoutes.DIALOG_CONFIG) },
+                onNavigateToDataManagement = { navController.navigate(NLtimerRoutes.DATA_MANAGEMENT) },
+                onNavigateToHomeLayoutConfig = { navController.navigate(NLtimerRoutes.HOME_LAYOUT_CONFIG) },
+                onNavigateToColorPalette = { navController.navigate(NLtimerRoutes.COLOR_PALETTE) },
             )
         }
-        composable("theme_settings") {
-            ThemeSettingsRoute(
+        composable(
+            NLtimerRoutes.THEME_SETTINGS,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            ThemeSettingsRoute()
+        }
+        composable(
+            NLtimerRoutes.DIALOG_CONFIG,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            DialogConfigRoute()
+        }
+        composable(
+            NLtimerRoutes.DATA_MANAGEMENT,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            DataManagementRoute(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToBehaviorManagement = { navController.navigate(NLtimerRoutes.BEHAVIOR_MANAGEMENT) },
             )
         }
-        composable("dialog_config") {
-            DialogConfigRoute(
-                onNavigateBack = { navController.popBackStack() },
-            )
+        composable(
+            NLtimerRoutes.HOME_LAYOUT_CONFIG,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            HomeLayoutConfigRoute()
         }
-        // 注入 debug 模块的动态路由（release 构建中为 null，不执行）
+        composable(
+            NLtimerRoutes.COLOR_PALETTE,
+            enterTransition = { slideInHorizontally { it } },
+            exitTransition = { slideOutHorizontally { -it } },
+            popEnterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { it } },
+        ) {
+            ColorPaletteRoute()
+        }
         debugRoutes?.invoke(this)
     }
 }

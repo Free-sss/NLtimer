@@ -111,7 +111,8 @@ replay_pid*
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon?
+!icon/
 
 
 # Thumbnails
@@ -313,34 +314,12 @@ docs/Android-SimpleTimeTracker/
 # Claude Code local user settings — never commit
 .claude/settings.local.json
 .claude/settings.local.json
-.vscode/tasks.json
-.omc/.project-memory.json.tmp.00f35a57-131e-4334-84c3-c0a0dd195b12
-.omc/project-memory.json
-.omc/sessions/1e010d7d-eaba-43b2-b5d4-93c321170a9f.json
-.omc/sessions/6aca4057-898d-445c-abb6-8be0abb10a5a.json
-.omc/sessions/10cf33d4-6be8-40e1-911c-8b317e094449.json
-.omc/sessions/59d87522-5d76-4d93-8704-c9abfb197831.json
-.omc/sessions/70ce999b-4400-49ed-9a40-67e9ea47cdf4.json
-.omc/sessions/221a2a1a-153a-4334-b50b-b6b31162d1d8.json
-.omc/sessions/919c3d0f-f89b-4921-94ba-1cdbcf327582.json
-.omc/sessions/989ca70b-6a1d-47df-807b-fb0471e72740.json
-.omc/sessions/571065dd-8fe1-44f7-830c-0a486028fd74.json
-.omc/sessions/a13c3b4b-e348-46f3-95de-4acc4e97310b.json
-.omc/sessions/a522f8bf-1319-4b70-8ca9-cdf5967f792f.json
-.omc/sessions/a478903f-5951-4dd5-afab-537f0fe99bba.json
-.omc/sessions/b029c48c-0a48-43cd-9cc2-c6cdf68705ba.json
-.omc/sessions/bbe9b4ce-1d6b-43b6-94f7-b8c1ccaca52c.json
-.omc/sessions/c8c961e6-4fac-4ae1-8b54-f9f89068b9f1.json
-.omc/sessions/c9914604-1caf-4e8c-871a-7a67c4e82209.json
-.omc/sessions/da0563f9-b527-4bc6-be3d-12bc4538b0f0.json
-.omc/sessions/e1f1119b-486a-4021-acf2-b51cf628338c.json
-.omc/sessions/e8f47476-c810-4a0e-a68d-fcb75cc63c0d.json
-.omc/sessions/ed8849dc-1e25-4448-9d30-2127b1e95626.json
-.omc/state/sessions/3968cedc-9805-42e0-ba4d-41eaa012aba4/session-started.json
-.omc/state/sessions/6e0fb325-c6fe-452a-8b0d-e032e0dc3002/session-started.json
-.omc/state/sessions/777b4318-a247-4e24-a190-5006b42e925c/session-started.json
-.omc/state/sessions/80b5732e-ec51-46a5-a56a-645a3f651fe0/session-started.json
-.omc/state/sessions/9dd0b569-cb77-4142-b18d-00923b7142a8/session-started.json
-.omc/state/sessions/b41cb4e4-ff72-4cb0-9cd6-25cdfb3850ba/session-started.json
-.omc/state/sessions/c39a7440-f14d-4e15-9edd-490c461d412c/session-started.json
-.omc/state/sessions/ce59bf2b-950b-4fdc-bef1-e953011820c1/session-started.json
+.claude/worktrees/
+.gradle-home/
+.mindfs/
+.zed/settings.json
+.kilo/kilo.jsonc
+.kilo/plans/
+
+docs/reference/Tomato/
+wsl

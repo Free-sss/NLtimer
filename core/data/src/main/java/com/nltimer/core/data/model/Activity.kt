@@ -11,34 +11,40 @@ import com.nltimer.core.data.database.entity.ActivityEntity
 data class Activity(
     val id: Long = 0,
     val name: String,
-    val emoji: String? = null,
     val iconKey: String? = null,
+    val keywords: String? = null,
     val groupId: Long? = null,
     val isPreset: Boolean = false,
     val isArchived: Boolean = false,
+    val archivedAt: Long? = null,
     val color: Long? = null,
+    val usageCount: Int = 0,
 ) {
     fun toEntity() = ActivityEntity(
         id = id,
         name = name,
-        emoji = emoji,
         iconKey = iconKey,
+        keywords = keywords,
         groupId = groupId,
         isPreset = isPreset,
         isArchived = isArchived,
+        archivedAt = archivedAt,
         color = color,
+        usageCount = usageCount,
     )
 
     companion object {
         fun fromEntity(entity: ActivityEntity) = Activity(
             id = entity.id,
             name = entity.name,
-            emoji = entity.emoji,
             iconKey = entity.iconKey,
+            keywords = entity.keywords,
             groupId = entity.groupId,
             isPreset = entity.isPreset,
             isArchived = entity.isArchived,
+            archivedAt = entity.archivedAt,
             color = entity.color,
+            usageCount = entity.usageCount,
         )
     }
 }

@@ -1,84 +1,141 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
 import java.time.LocalTime
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
-/**
- * 网格时间轴 Composable — 纵向滚动的网格布局。
- * 支持布局切换菜单，并根据当前小时自动滚动到对应位置。
- *
- * @param modifier 修饰符
- * @param rows 所有网格行数据
- * @param onEmptyCellClick 点击空单元格回调
- * @param onCellLongClick 长按单元格回调
- * @param onLayoutChange 切换布局模式回调
- * @param currentHour 当前选中的小时
- */
 @Composable
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
-    rows: List<GridRowUiState>,
+    sections: List<GridDaySection>,
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
-    onLayoutChange: (HomeLayout) -> Unit,
+    onLoadMore: () -> Unit = {},
+    isLoadingMore: Boolean = false,
+    hasReachedEarliest: Boolean = false,
     currentHour: Int = 0,
     showTimeSideBar: Boolean = false,
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
+    gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     val listState = rememberLazyListState()
+    val visibleDateLabelState = LocalVisibleDateLabel.current
 
-    // 当 currentHour 变化时，自动滚动到对应时间行
-    LaunchedEffect(currentHour) {
-        val targetIndex = rows.indexOfFirst { it.startTime.hour >= currentHour }
+    LaunchedEffect(currentHour, sections) {
+        val todaySection = sections.lastOrNull() ?: return@LaunchedEffect
+        val targetIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
         if (targetIndex >= 0) {
-            listState.animateScrollToItem(targetIndex)
+            val precedingItems = sections.dropLast(1).sumOf { 1 + it.rows.size }
+            val absoluteIndex = precedingItems + 1 + targetIndex
+            listState.animateScrollToItem(absoluteIndex)
         }
+    }
+
+    LaunchedEffect(sections, hasReachedEarliest) {
+        if (hasReachedEarliest) return@LaunchedEffect
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .filter { it <= 5 }
+            .collect { onLoadMore() }
+    }
+
+    val dateIndexMap = remember(sections) {
+        val map = mutableMapOf<Int, String>()
+        var index = 0
+        if (isLoadingMore) index++
+        sections.forEach { section ->
+            map[index] = section.label
+            index++
+            index += section.rows.size
+        }
+        map
+    }
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
     }
 
     LazyColumn(
         state = listState,
         modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
+        contentPadding = PaddingValues(bottom = 630.dp),
     ) {
-        item {
-            LayoutMenuHeader(
-                title = "网格时间",
-                onLayoutChange = onLayoutChange,
-                extraMenuItems = {
-                    HorizontalDivider()
-                    DropdownMenuItem(
-                        text = { Text("时间标题外观") },
-                        onClick = {
-                            onTimeLabelSettingsClick()
-                        }
-                    )
-                },
-            )
+        if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
+        sections.forEach { section ->
+            item(key = "header-${section.date}") {
+                DayDividerRow(label = section.label)
+            }
+            items(items = section.rows, key = { it.rowId }) { row ->
+                GridRow(
+                    row = row,
+                    onEmptyCellClick = onEmptyCellClick,
+                    onCellLongClick = onCellLongClick,
+                    timeLabelConfig = timeLabelConfig,
+                    gridStyle = gridStyle,
+                )
+            }
         }
+    }
+}
 
-        items(items = rows, key = { it.rowId }) { row ->
-            GridRow(
-                row = row,
-                onEmptyCellClick = { idleStart, idleEnd -> onEmptyCellClick(idleStart, idleEnd) },
-                onCellLongClick = onCellLongClick,
-                timeLabelConfig = timeLabelConfig,
-            )
-        }
+@Composable
+private fun DayDividerRow(label: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(vertical = 6.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun LoadingMoreIndicator() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
     }
 }

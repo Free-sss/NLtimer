@@ -17,9 +17,12 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.designsystem.theme.TimeLabelFormat
 import com.nltimer.core.designsystem.theme.TimeLabelStyle
+import com.nltimer.core.data.util.hhmmFormatter
+import com.nltimer.core.designsystem.theme.styledCorner
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
@@ -94,7 +97,7 @@ private fun PillLabel(
         color = contentColor,
         style = MaterialTheme.typography.labelMedium,
         modifier = modifier
-            .background(backgroundColor, RoundedCornerShape(4.dp))
+            .background(backgroundColor, RoundedCornerShape(styledCorner(ShapeTokens.CORNER_EXTRA_SMALL)))
             .padding(horizontal = 10.dp, vertical = 2.dp),
     )
 }
@@ -171,7 +174,7 @@ private fun DotLabel(
 
 private fun formatTime(time: LocalTime, format: TimeLabelFormat): String {
     val formatter = when (format) {
-        TimeLabelFormat.HH_MM -> DateTimeFormatter.ofPattern("HH:mm")
+        TimeLabelFormat.HH_MM -> hhmmFormatter
         TimeLabelFormat.H_MM -> DateTimeFormatter.ofPattern("H:mm")
         TimeLabelFormat.H_MM_A -> DateTimeFormatter.ofPattern("h:mm a")
     }

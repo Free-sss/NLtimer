@@ -1,0 +1,109 @@
+<h2>色彩变化的强度偏好</h2>
+<p class="subtitle">同一个种子色（蓝色 #1565C0）下，三种不同强度展示 primary / secondary / tertiary 如何分配给主页各区域</p>
+
+<div class="split">
+  <!-- 方案 A -->
+  <div class="mockup">
+    <div class="mockup-header">A — 含蓄分层</div>
+    <div class="mockup-body" style="background:#F5F3FF;padding:12px;">
+      <div style="display:flex;gap:8px;">
+        <div style="width:40px;background:#E8DEF8;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#49454F;">侧<br>边<br>栏</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+          <div style="background:#EADDFF;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #D0BCFF;">
+            <span style="font-size:14px;">😊</span>
+            <div>
+              <div style="font-size:11px;color:#21005D;font-weight:600;">工作</div>
+              <div style="font-size:9px;color:#6750A4;">进行中 · 45min</div>
+            </div>
+          </div>
+          <div style="background:#FFD8E4;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #EFB8C8;">
+            <span style="font-size:14px;">📚</span>
+            <div>
+              <div style="font-size:11px;color:#31111D;font-weight:600;">阅读</div>
+              <div style="font-size:9px;color:#7D5260;">已完成</div>
+            </div>
+          </div>
+          <div style="background:#E7E0EC;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #CAC4D0;">
+            <span style="font-size:14px;color:#79747E;">+</span>
+            <div style="font-size:10px;color:#79747E;">添加行为</div>
+          </div>
+          <div style="background:#F4EFF4;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #CAC4D0;opacity:0.5;">
+            <span style="font-size:12px;color:#938F99;">+</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:9px;color:#79747E;line-height:1.5;">
+        <b>活跃</b>=primary container · <b>已完成</b>=tertiary container · <b>空</b>=surface variant · <b>锁定</b>=surface dim<br>
+        变化微妙，整体统一
+      </div>
+    </div>
+  </div>
+
+  <!-- 方案 B -->
+  <div class="mockup">
+    <div class="mockup-header">B — 鲜明对比</div>
+    <div class="mockup-body" style="background:#F5F3FF;padding:12px;">
+      <div style="display:flex;gap:8px;">
+        <div style="width:40px;background:#D0BCFF;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#381E72;font-weight:600;">侧<br>边<br>栏</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+          <div style="background:#EADDFF;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:2px solid #6750A4;box-shadow:0 0 0 1px #6750A433;">
+            <div style="width:24px;height:24px;background:#6750A4;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:12px;">😊</span>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#21005D;font-weight:700;">工作</div>
+              <div style="font-size:9px;color:#6750A4;font-weight:500;">进行中 · 45min</div>
+            </div>
+          </div>
+          <div style="background:#FFD8E4;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #EFB8C8;">
+            <div style="width:24px;height:24px;background:#7D5260;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:12px;">📚</span>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#31111D;font-weight:600;">阅读</div>
+              <div style="font-size:9px;color:#7D5260;">已完成</div>
+            </div>
+          </div>
+          <div style="background:#E8DEF8;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px dashed #625B71;">
+            <span style="font-size:14px;color:#625B71;font-weight:700;">+</span>
+            <div style="font-size:10px;color:#625B71;">添加行为</div>
+          </div>
+          <div style="background:#E7E0EC;border-radius:6px;padding:6px 8px;display:flex;align-items:center;gap:6px;border:1px solid #CAC4D0;opacity:0.4;">
+            <span style="font-size:12px;color:#938F99;">+</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:9px;color:#79747E;line-height:1.5;">
+        <b>活跃</b>=primary + 加重边框 + 图标圆底 · <b>已完成</b>=tertiary · <b>空</b>=secondary container · <b>侧边栏</b>=primary 加深<br>
+        色彩对比强，区域一目了然
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:20px;">
+  <h3>你觉得哪种强度更合适？</h3>
+  <div class="options">
+    <div class="option" data-choice="a" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>含蓄分层</h3>
+        <p>用 container 级色调（浅底色），保持统一感，适合专注型工具</p>
+      </div>
+    </div>
+    <div class="option" data-choice="b" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>鲜明对比</h3>
+        <p>大胆使用 primary/tertiary 的完整色调范围，视觉层次清晰有力</p>
+      </div>
+    </div>
+    <div class="option" data-choice="c" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>介于两者之间</h3>
+        <p>比 A 多一点色彩，但不像 B 那么强烈</p>
+      </div>
+    </div>
+  </div>
+</div>

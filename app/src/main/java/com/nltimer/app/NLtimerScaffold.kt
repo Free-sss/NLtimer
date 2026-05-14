@@ -1,94 +1,275 @@
 package com.nltimer.app
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.nltimer.app.component.AppBottomNavigation
+import com.nltimer.app.component.AppCollapsedTopAppBar
 import com.nltimer.app.component.AppDrawer
+import com.nltimer.app.component.AppCenterFabBottomBar
+import com.nltimer.app.component.AppFloatingBottomBar
 import com.nltimer.app.component.AppTopAppBar
+import com.nltimer.app.component.MomentFilterOption
+import com.nltimer.app.component.MomentSortOption
 import com.nltimer.app.component.RouteSettingsPopup
 import com.nltimer.app.navigation.NLtimerNavHost
+import com.nltimer.app.navigation.NLtimerRoutes
+import com.nltimer.app.viewmodel.DrawerViewModel
+import com.nltimer.core.designsystem.theme.BottomBarMode
+import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.theme.LocalTheme
+import com.nltimer.core.designsystem.theme.TopBarMode
+import com.nltimer.core.designsystem.theme.toDisplayString
+import com.nltimer.feature.home.ui.components.LocalMomentFilterState
+import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
+import com.nltimer.feature.home.ui.components.MomentFilterState
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
-/**
- * 应用主框架 Composable
- * 使用 ModalNavigationDrawer 包裹 Scaffold，整合顶栏、底栏、抽屉和路由导航
- *
- * @param navController 导航控制器，用于管理页面跳转
- * @param drawerState 抽屉状态，控制侧边栏的打开与关闭
- * @param themeViewModel 主题设置 ViewModel，用于响应主页布局变更
- */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NLtimerScaffold(
     navController: NavHostController,
     drawerState: DrawerState = rememberDrawerState(initialValue = DrawerValue.Closed),
-    themeViewModel: ThemeSettingsViewModel = hiltViewModel(),
 ) {
-    // 获取协程作用域，用于在回调中启动协程操作抽屉
-    val coroutineScope = rememberCoroutineScope()
-    // 监听当前导航回退栈，获取当前路由名
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    // 控制路由设置弹窗的显示状态
-    var showSettingsPopup by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val isSecondaryPage = currentRoute in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES
+    val visibleDateLabelState = remember { mutableStateOf<String?>(null) }
+    val isHomePage = currentRoute !in NLtimerRoutes.SETTINGS_FULLSCREEN_ROUTES && currentRoute != NLtimerRoutes.SETTINGS
+    val isDateTitle = isHomePage && visibleDateLabelState.value != null
+    val topBarTitle = when (currentRoute) {
+        NLtimerRoutes.SETTINGS -> "设置"
+        NLtimerRoutes.THEME_SETTINGS -> "主题配置"
+        NLtimerRoutes.DIALOG_CONFIG -> "弹窗配置"
+        NLtimerRoutes.BEHAVIOR_MANAGEMENT -> "行为管理"
+        NLtimerRoutes.CATEGORIES -> "分类管理"
+        else -> visibleDateLabelState.value ?: "NLtimer"
+    }
+    var showLayoutPopup by remember { mutableStateOf(false) }
+    var momentFilterKey by remember { mutableStateOf("ALL") }
+    var momentSortKey by remember { mutableStateOf("TIME_DESC") }
+    val momentFilterOptions = listOf(
+        MomentFilterOption("乃大", "ALL"),
+        MomentFilterOption("曾经", "COMPLETED"),
+        MomentFilterOption("此后", "PENDING"),
+    )
+    val momentSortOptions = listOf(
+        MomentSortOption("时间反", "TIME_DESC"),
+        MomentSortOption("时间正", "TIME_ASC"),
+        MomentSortOption("用时", "DURATION"),
+    )
+    val theme = LocalTheme.current
+    val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
+    val drawerViewModel: DrawerViewModel = hiltViewModel()
+    val totalDurationMs by drawerViewModel.totalDurationMs.collectAsStateWithLifecycle()
+    val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
+        val filterLabel = momentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
+        val sortLabel = momentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
+        "$filterLabel · $sortLabel"
+    } else null
+    val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
+    val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
+    val isImmersive = theme.isImmersive && !isSecondaryPage
+    val topBarScrollBehavior = if (useCollapsed) {
+        TopAppBarDefaults.enterAlwaysScrollBehavior()
+    } else {
+        null
+    }
 
-    // 模态抽屉布局，包裹整个 Scaffold 内容
-    ModalNavigationDrawer(
+    val momentFilterState = remember(momentFilterKey, momentSortKey) {
+        MomentFilterState(
+            filterKey = momentFilterKey,
+            sortKey = momentSortKey,
+            onFilterChange = { momentFilterKey = it },
+            onSortChange = { momentSortKey = it },
+        )
+    }
+    val settingsDragOptions = remember(currentRoute, theme.homeLayout, theme.showTimeSideBar) {
+        buildList {
+            if (currentRoute == NLtimerRoutes.HOME) {
+                add("更改布局")
+                if (theme.homeLayout == HomeLayout.GRID) {
+                    add(if (theme.showTimeSideBar) "关闭侧边时间轴" else "开启侧边时间轴")
+                }
+            }
+        }
+    }
+    fun navigateToRoute(route: String) {
+        navController.navigate(route) {
+            popUpTo(navController.graph.startDestinationId) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+    fun handleSettingsDragOption(option: String) {
+        when (option) {
+            "更改布局" -> showLayoutPopup = true
+            "开启侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(true)
+            "关闭侧边时间轴" -> themeViewModel.onShowTimeSideBarToggle(false)
+        }
+    }
+
+    CompositionLocalProvider(
+        LocalMomentFilterState provides momentFilterState,
+        LocalVisibleDateLabel provides visibleDateLabelState,
+    ) {
+        ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             AppDrawer(
                 navController = navController,
-                onClose = {
-                    coroutineScope.launch { drawerState.close() }
-                },
+                onClose = { scope.launch { drawerState.close() } },
+                totalDurationMs = totalDurationMs,
             )
         },
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            val isFloating = theme.bottomBarMode == BottomBarMode.FLOATING && !isSecondaryPage
+            val isCenterFab = theme.bottomBarMode == BottomBarMode.CENTER_FAB && !isSecondaryPage
+            val isAnyFloating = isFloating || isCenterFab
+
             Scaffold(
+                modifier = Modifier.then(
+                    if (!isSecondaryPage && !isAnyFloating) Modifier.padding(bottom = 80.dp) else Modifier
+                ).then(
+                    if (topBarScrollBehavior != null)
+                        Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection)
+                    else Modifier
+                ),
+                containerColor = Color.Transparent,
                 topBar = {
-                    AppTopAppBar(
-                        onMenuClick = {
-                            coroutineScope.launch { drawerState.open() }
-                        },
-                        onSettingClick = {
-                            showSettingsPopup = true
-                        },
-                    )
+                    if (isSecondaryPage) {
+                        TopAppBar(
+                            title = { Text(topBarTitle) },
+                            navigationIcon = {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "返回",
+                                    )
+                                }
+                            },
+                        )
+                    } else {
+                        if (topBarScrollBehavior != null) {
+                            AppCollapsedTopAppBar(
+                                title = topBarTitle,
+                                isDateTitle = isDateTitle,
+                                isImmersive = isImmersive,
+                                scrollBehavior = topBarScrollBehavior,
+                                layoutLabel = layoutLabel,
+                                onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
+                                momentFilterLabel = momentFilterLabel,
+                                momentFilterOptions = momentFilterOptions,
+                                momentFilterKey = momentFilterKey,
+                                onMomentFilterChange = { momentFilterKey = it },
+                                momentSortOptions = momentSortOptions,
+                                momentSortKey = momentSortKey,
+                                onMomentSortChange = { momentSortKey = it },
+                            )
+                        } else {
+                            AppTopAppBar(
+                                title = topBarTitle,
+                                isDateTitle = isDateTitle,
+                                isImmersive = isImmersive,
+                                layoutLabel = layoutLabel,
+                                onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
+                                momentFilterLabel = momentFilterLabel,
+                                momentFilterOptions = momentFilterOptions,
+                                momentFilterKey = momentFilterKey,
+                                onMomentFilterChange = { momentFilterKey = it },
+                                momentSortOptions = momentSortOptions,
+                                momentSortKey = momentSortKey,
+                                onMomentSortChange = { momentSortKey = it },
+                            )
+                        }
+                    }
                 },
-                bottomBar = { AppBottomNavigation(navController) },
             ) { padding ->
-                // 导航宿主容器，传入 Scaffold 的 padding 避免被顶栏底栏遮挡
                 NLtimerNavHost(
                     navController = navController,
-                    modifier = Modifier.padding(padding),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            top = if (isImmersive) 0.dp else padding.calculateTopPadding(),
+                            bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
+                        ),
                 )
             }
 
-            // 设置弹窗以覆盖层形式展示在当前页面之上
-            if (showSettingsPopup) {
+            if (!isAnyFloating && !isSecondaryPage) {
+                AppBottomNavigation(
+                    navController = navController,
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+
+            if (isFloating) {
+                AppFloatingBottomBar(
+                    navController = navController,
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+
+            if (isCenterFab) {
+                AppCenterFabBottomBar(
+                    navController = navController,
+                    onSettingsClick = { navigateToRoute(NLtimerRoutes.SETTINGS) },
+                    settingsDragOptions = settingsDragOptions,
+                    onSettingsDragOptionSelected = { handleSettingsDragOption(it) },
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+
+            if (showLayoutPopup) {
                 RouteSettingsPopup(
                     currentRoute = currentRoute,
-                    onDismiss = { showSettingsPopup = false },
+                    navController = navController,
+                    onDismiss = {
+                        showLayoutPopup = false
+                    },
                     onHomeLayoutChange = { themeViewModel.onHomeLayoutChange(it) },
-                    onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) }
+                    onShowTimeSideBarChange = { themeViewModel.onShowTimeSideBarToggle(it) },
+                    popupOffsetY = if (isAnyFloating) -300 else -260,
+                    initialShowLayoutOptions = showLayoutPopup,
                 )
             }
         }
+    }
     }
 }

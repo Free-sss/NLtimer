@@ -1,4 +1,36 @@
 <resources>
     <string name="done">完成</string>
     <string name="cancel">取消</string>
+
+    <string name="icon_picker_title">编辑图标</string>
+    <string name="icon_picker_tab_emoji">Emoji</string>
+    <string name="icon_picker_tab_icons">图标库</string>
+    <string name="icon_picker_search">搜索…</string>
+    <string name="icon_picker_manual_input">手动输入</string>
+    <string name="icon_picker_reset">无图标</string>
+    <string name="icon_picker_confirm">确定</string>
+
+    <string name="icon_category_action">操作</string>
+    <string name="icon_category_communication">沟通</string>
+    <string name="icon_category_content">内容</string>
+    <string name="icon_category_device">设备</string>
+    <string name="icon_category_image">图像</string>
+    <string name="icon_category_maps">地图</string>
+    <string name="icon_category_navigation">导航</string>
+    <string name="icon_category_social">社交</string>
+    <string name="icon_category_editor">编辑</string>
+    <string name="icon_category_av">影音</string>
+    <string name="icon_category_places">地点</string>
+    <string name="icon_category_hardware">硬件</string>
+
+    <string name="emoji_category_frequent">常用</string>
+    <string name="emoji_category_expressions">表情</string>
+    <string name="emoji_category_gestures">手势</string>
+    <string name="emoji_category_animals">动物</string>
+    <string name="emoji_category_food">食物</string>
+    <string name="emoji_category_travel">交通</string>
+    <string name="emoji_category_activities">活动</string>
+    <string name="emoji_category_objects">物品</string>
+    <string name="emoji_category_nature">自然</string>
+    <string name="emoji_category_symbols">符号</string>
 </resources>

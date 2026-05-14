@@ -14,6 +14,7 @@ android {
         applicationId = APP_ID
         versionCode = APP_VERSION_CODE.toInt()
         versionName = APP_VERSION_NAME
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters += listOf("arm64-v8a")
         }
@@ -55,12 +56,12 @@ dependencies {
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
     implementation(projects.feature.home)
-    implementation(projects.feature.sub)
     implementation(projects.feature.stats)
     implementation(projects.feature.settings)
     implementation(projects.feature.categories)
     implementation(projects.feature.managementActivities)
     implementation(projects.feature.tagManagement)
+    implementation(projects.feature.behaviorManagement)
     debugImplementation(projects.feature.debug)
 
     implementation(libs.androidx.core.ktx)
@@ -79,6 +80,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
     implementation(libs.profileinstaller)
+    implementation(libs.splashscreen)
 
     implementation(libs.navigation.compose)
     implementation(libs.hilt.navigation.compose)
@@ -88,7 +90,7 @@ dependencies {
     testImplementation(libs.junit)
 
     debugImplementation(libs.compose.ui.test.manifest)
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.androidx.test.ext.junit)
 }

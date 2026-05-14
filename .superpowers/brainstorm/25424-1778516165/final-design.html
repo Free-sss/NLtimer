@@ -1,0 +1,133 @@
+<h2>最终设计 — 色调映射总览</h2>
+<p class="subtitle">方案 A 状态-区域对齐 · 含蓄分层 · 区域驱动</p>
+
+<div class="mockup">
+  <div class="mockup-header">主网格布局完整预览（亮色模式）</div>
+  <div class="mockup-body" style="background:#FFFBFE;padding:12px;">
+    <div style="display:flex;gap:8px;">
+      <!-- 侧边栏 -->
+      <div style="width:40px;display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:10px;color:#79747E;text-align:center;padding:4px 0;">08</div>
+        <div style="font-size:10px;color:#1D192B;text-align:center;font-weight:600;background:#E8DEF8;border-radius:4px;padding:4px 0;">09</div>
+        <div style="font-size:10px;color:#21005D;text-align:center;font-weight:700;background:#D0BCFF;border-radius:4px;padding:4px 0;box-shadow:inset 0 -2px 0 #6750A4;">10</div>
+        <div style="font-size:10px;color:#1D192B;text-align:center;font-weight:600;background:#E8DEF8;border-radius:4px;padding:4px 0;">11</div>
+        <div style="font-size:10px;color:#49454F;text-align:center;padding:4px 0;">12</div>
+        <div style="font-size:10px;color:#49454F;text-align:center;padding:4px 0;">13</div>
+        <div style="font-size:10px;color:#CAC4D0;text-align:center;padding:4px 0;">14</div>
+      </div>
+      <!-- 主网格 -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+        <!-- 锁定行 -->
+        <div style="background:#E7E0EC;border-radius:6px;padding:6px 8px;border:1px solid #CAC4D0;opacity:0.4;display:flex;align-items:center;justify-content:center;min-height:30px;">
+          <span style="font-size:14px;color:#938F99;">+</span>
+        </div>
+        <!-- 已完成行 -->
+        <div style="background:#E8DEF8;border-radius:6px;padding:6px 8px;border:1px solid #CAC4D0;display:flex;align-items:center;gap:6px;min-height:40px;">
+          <span style="font-size:14px;">📚</span>
+          <div>
+            <div style="font-size:11px;color:#1D192B;font-weight:500;">阅读</div>
+            <div style="font-size:9px;color:#625B71;">9:00 – 10:30 · 已完成</div>
+          </div>
+        </div>
+        <!-- 活跃行 -->
+        <div style="background:#EADDFF;border-radius:6px;padding:6px 8px;border:1.5px solid #6750A4;display:flex;align-items:center;gap:6px;min-height:40px;box-shadow:0 1px 3px rgba(103,80,164,0.15);">
+          <span style="font-size:14px;">😊</span>
+          <div>
+            <div style="font-size:11px;color:#21005D;font-weight:600;">工作</div>
+            <div style="font-size:9px;color:#6750A4;font-weight:500;">10:00 · 进行中</div>
+          </div>
+        </div>
+        <!-- 已完成行 -->
+        <div style="background:#E8DEF8;border-radius:6px;padding:6px 8px;border:1px solid #CAC4D0;display:flex;align-items:center;gap:6px;min-height:40px;">
+          <span style="font-size:14px;">🚀</span>
+          <div>
+            <div style="font-size:11px;color:#1D192B;font-weight:500;">运动</div>
+            <div style="font-size:9px;color:#625B71;">11:00 – 12:00 · 已完成</div>
+          </div>
+        </div>
+        <!-- 空白 -->
+        <div style="background:#FFD8E4;border-radius:6px;padding:6px 8px;border:1px dashed #EFB8C8;display:flex;align-items:center;gap:6px;min-height:36px;">
+          <span style="font-size:12px;color:#7D5260;">+</span>
+          <span style="font-size:10px;color:#7D5260;">添加行为</span>
+        </div>
+        <!-- 锁定 -->
+        <div style="background:#E7E0EC;border-radius:6px;padding:6px 8px;border:1px solid #CAC4D0;opacity:0.4;display:flex;align-items:center;justify-content:center;min-height:30px;">
+          <span style="font-size:14px;color:#938F99;">+</span>
+        </div>
+        <!-- 锁定未来 -->
+        <div style="background:#E7E0EC;border-radius:6px;padding:6px 8px;border:1px solid #CAC4D0;opacity:0.35;display:flex;align-items:center;justify-content:center;min-height:30px;">
+          <span style="font-size:12px;color:#938F99;">+</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;">
+  <h3>色彩映射规则</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead>
+      <tr style="border-bottom:2px solid #E7E0EC;text-align:left;">
+        <th style="padding:6px 8px;">区域/状态</th>
+        <th style="padding:6px 8px;">背景色</th>
+        <th style="padding:6px 8px;">边框色</th>
+        <th style="padding:6px 8px;">文字色</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #E7E0EC;background:#F4EFF4;">
+        <td style="padding:6px 8px;font-weight:600;">活跃行为</td>
+        <td style="padding:6px 8px;">primaryContainer</td>
+        <td style="padding:6px 8px;">primary</td>
+        <td style="padding:6px 8px;">onPrimaryContainer</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;">
+        <td style="padding:6px 8px;font-weight:600;">已完成行为</td>
+        <td style="padding:6px 8px;">secondaryContainer</td>
+        <td style="padding:6px 8px;">outlineVariant</td>
+        <td style="padding:6px 8px;">onSecondaryContainer</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;background:#FFF8F9;">
+        <td style="padding:6px 8px;font-weight:600;">空白待填</td>
+        <td style="padding:6px 8px;">tertiaryContainer</td>
+        <td style="padding:6px 8px;">tertiary (dashed)</td>
+        <td style="padding:6px 8px;">onTertiaryContainer</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;">
+        <td style="padding:6px 8px;font-weight:600;">锁定/未来</td>
+        <td style="padding:6px 8px;">surfaceDim</td>
+        <td style="padding:6px 8px;">outlineVariant</td>
+        <td style="padding:6px 8px;">outlineVariant</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;background:#FFF0F4;">
+        <td style="padding:6px 8px;font-weight:600;">白金成就</td>
+        <td style="padding:6px 8px;">surfaceContainerLow</td>
+        <td style="padding:6px 8px;">tertiary（渐变）</td>
+        <td style="padding:6px 8px;">onSurface</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;">
+        <td style="padding:6px 8px;font-weight:600;">侧边栏-当前时</td>
+        <td style="padding:6px 8px;">primary</td>
+        <td style="padding:6px 8px;">—</td>
+        <td style="padding:6px 8px;">onPrimary</td>
+      </tr>
+      <tr style="border-bottom:1px solid #E7E0EC;">
+        <td style="padding:6px 8px;font-weight:600;">侧边栏-活跃时</td>
+        <td style="padding:6px 8px;">secondaryContainer</td>
+        <td style="padding:6px 8px;">—</td>
+        <td style="padding:6px 8px;">onSecondaryContainer</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top:16px;">
+  <h3>变更文件清单</h3>
+  <div style="font-size:11px;color:#49454F;line-height:1.8;">
+    <div><b>GridCell.kt</b> — 已完成行为改用 secondaryContainer 背景 + onSecondaryContainer 文字</div>
+    <div><b>GridCellEmpty.kt</b> — 背景改用 tertiaryContainer，边框改用 tertiary dashed，文字改用 onTertiaryContainer</div>
+    <div><b>GridCellLocked.kt</b> — 不变（已使用 surfaceDim）</div>
+    <div><b>TimeSideBar.kt</b> — 活跃小时改用 secondaryContainer 背景 + onSecondaryContainer 文字；当前小时改用 primary 背景 + onPrimary 文字</div>
+    <div><b>GridCell.kt 白金成就</b> — 边框从硬编码蓝色改为 tertiary 渐变</div>
+  </div>
+</div>

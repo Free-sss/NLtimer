@@ -1,6 +1,7 @@
 plugins {
     id("nltimer.android.library")
     id("nltimer.android.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -19,6 +20,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.okio)
+    implementation(libs.kotlinx.serialization.json)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
 

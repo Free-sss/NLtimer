@@ -17,13 +17,14 @@ import androidx.room.Index
             entity = ActivityEntity::class,
             parentColumns = ["id"],
             childColumns = ["activityId"],
-            onDelete = ForeignKey.RESTRICT,
+            onDelete = ForeignKey.CASCADE,
         ),
     ],
     indices = [
         Index("activityId"),
         Index(value = ["startTime", "sequence"]),
         Index("status"),
+        Index(value = ["startTime", "status"]),
     ],
 )
 data class BehaviorEntity(

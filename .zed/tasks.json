@@ -1,0 +1,40 @@
+[
+  {
+    "label": "Android 编译安装启动",
+    "command": "powershell.exe",
+    "args": [
+      "-Command",
+      "cd 'D:\\2026Code\\Group_android\\NLtimer'; .\\gradlew.bat :app:assembleDebug; if ($LASTEXITCODE -eq 0) { adb -s ebc3de22 install -r 'D:\\2026Code\\Group_android\\NLtimer\\app\\build\\outputs\\apk\\debug\\app-debug.apk'; adb -s ebc3de22 shell am start -n 'com.nltimer.app/com.nltimer.app.MainActivity' }"
+    ],
+    "env": {},
+    "cwd": "D:\\2026Code\\Group_android\\NLtimer",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "never",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+    "save": "none"
+  },
+  {
+    "label": "Android 编译安装 (installDebug)",
+    "command": "powershell.exe",
+    "args": [
+      "-Command",
+      "cd 'D:\\2026Code\\Group_android\\NLtimer'; .\\gradlew.bat :app:installDebug"
+    ],
+    "env": {},
+    "cwd": "D:\\2026Code\\Group_android\\NLtimer",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "reveal_target": "dock",
+    "hide": "never",
+    "shell": "system",
+    "show_summary": true,
+    "show_command": true,
+    "save": "none"
+  }
+]

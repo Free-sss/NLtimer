@@ -1,0 +1,133 @@
+<h2>设计 §2：组件级设计（12个借鉴点）</h2>
+<p class="subtitle">每个借鉴点如何在 NLtimer 现有架构中落地</p>
+
+<div class="section">
+<h3>① 大圆角 24~36dp</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">现状：16dp 主流</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:120px">
+  <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:16px;margin-bottom:8px;font-size:12px;color:#aaa">CORNER_LARGE = 16dp</div>
+  <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:28px;font-size:12px;color:#aaa">CORNER_EXTRA_LARGE = 28dp（极少用）</div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">融入后：StyleConfig 驱动</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;min-height:120px">
+  <div style="font-size:11px;opacity:0.5;margin-bottom:8px">styledCorner() 已存在，只需调 preset</div>
+  <div style="display:flex;gap:8px">
+    <div style="background:rgba(144,202,249,0.15);padding:8px;border-radius:6px;font-size:11px;color:#90CAF9;flex:1;text-align:center">克制<br>4dp</div>
+    <div style="background:rgba(255,224,130,0.15);padding:8px;border-radius:12px;font-size:11px;color:#FFE082;flex:1;text-align:center">标准<br>16dp</div>
+    <div style="background:rgba(239,154,154,0.15);padding:8px;border-radius:28px;font-size:11px;color:#EF9A9A;flex:1;text-align:center">表达<br>36dp</div>
+  </div>
+  <div style="font-size:11px;opacity:0.5;margin-top:8px">新增 ShapeTokens: CORNER_SUPER_LARGE=36dp</div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  ✅ <b>零改动路径</b>：现有 styledCorner() + cornerPreset 已完全支持。EXPRESSIVE 档用 SOFT(3x) → 16dp×3=48dp 需 clamp 36dp
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>② 多色容器卡片 cardColorStrategy</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">SURFACE（克制档）</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:12px;min-height:140px">
+  <div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">🎯 当前行为</span>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">📊 今日统计</span>
+  </div>
+  <div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:12px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">⏱ 计时器</span>
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">TINTED_PRIMARY（标准档）</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:12px;min-height:140px">
+  <div style="background:rgba(187,134,252,0.1);padding:10px;border-radius:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">🎯 当前行为</span>
+  </div>
+  <div style="background:rgba(187,134,252,0.1);padding:10px;border-radius:16px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">📊 今日统计</span>
+  </div>
+  <div style="background:rgba(187,134,252,0.1);padding:10px;border-radius:16px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">⏱ 计时器</span>
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">MULTI_CONTAINER（表达档）</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:12px;min-height:140px">
+  <div style="background:rgba(187,134,252,0.2);padding:10px;border-radius:28px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">🎯 当前行为</span>
+    <span style="font-size:10px;opacity:0.5">primaryContainer</span>
+  </div>
+  <div style="background:rgba(3,218,198,0.2);padding:10px;border-radius:28px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">📊 今日统计</span>
+    <span style="font-size:10px;opacity:0.5">secondaryContainer</span>
+  </div>
+  <div style="background:rgba(255,128,171,0.2);padding:10px;border-radius:28px;display:flex;align-items:center;gap:8px">
+    <span style="font-size:13px">⏱ 计时器</span>
+    <span style="font-size:10px;opacity:0.5">tertiaryContainer</span>
+  </div>
+</div>
+</div>
+</div>
+<div style="background:rgba(255,152,0,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#FFE082">
+  ⚠️ <b>MULTI_CONTAINER 需注意</b>：行为卡片已有自身 activityColor，需避免冲突。建议：首页功能磁贴用多色，行为卡片保留 activityColor 作为容器底色
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>③ 圆形图标容器 iconContainerSize</h3>
+<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+  <div style="text-align:center">
+    <div style="width:36px;height:36px;background:rgba(187,134,252,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:16px">🎯</div>
+    <div style="font-size:11px;opacity:0.5">circleSmall 36dp</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:44px;height:44px;background:rgba(187,134,252,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:18px">🎯</div>
+    <div style="font-size:11px;opacity:0.5">circleLarge 44dp</div>
+  </div>
+  <div style="font-size:12px;opacity:0.6;max-width:400px">
+    用途：卡片左上角、设置项 leadingIcon、底部Nav图标背景<br>
+    颜色：primaryContainer/活动色.alpha(styledAlpha)<br>
+    新增 <code>Modifier.iconContainer(size, color)</code> 扩展
+  </div>
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>④ 计时大字号 + 衬线 timerTypography</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">HEADLINE（克制）</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:20px;text-align:center;min-height:100px">
+  <div style="font-size:32px;font-weight:600;color:#e0e0e0">23:45</div>
+  <div style="font-size:11px;opacity:0.4;margin-top:4px">headlineLarge · 32sp · sans</div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">DISPLAY_S（标准）</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:20px;text-align:center;min-height:100px">
+  <div style="font-size:36px;font-weight:700;color:#e0e0e0">23:45</div>
+  <div style="font-size:11px;opacity:0.4;margin-top:4px">displaySmall · 36sp · sans</div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">DISPLAY_L_SERIF（表达）</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:20px;text-align:center;min-height:100px">
+  <div style="font-family:'DM Serif Text',Georgia,serif;font-size:57px;font-weight:700;color:#BB86FC">23:45</div>
+  <div style="font-size:11px;opacity:0.4;margin-top:4px">displayLarge · 57sp · serif</div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  ✅ <b>衬线字体策略</b>：沿用 Momentum 思路——本地打包 DM Serif Text .ttf（~30KB），不依赖 Google Fonts Provider
+</div>
+</div>

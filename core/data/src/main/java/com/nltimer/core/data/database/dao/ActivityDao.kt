@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.nltimer.core.data.database.entity.ActivityEntity
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -17,6 +18,9 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(activity: ActivityEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertAll(activities: List<ActivityEntity>)
 
     @Update
     suspend fun update(activity: ActivityEntity)
@@ -54,6 +58,9 @@ interface ActivityDao {
     @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
     fun getAllPresets(): Flow<List<ActivityEntity>>
 
+    @Query("SELECT * FROM activities WHERE isPreset = 1 AND isArchived = 0 ORDER BY name")
+    suspend fun getAllPresetsSync(): List<ActivityEntity>
+
     /** 移动活动到指定分组（groupId 为 null 则取消分组） */
     @Query("UPDATE activities SET groupId = :groupId WHERE id = :activityId")
     suspend fun moveToGroup(activityId: Long, groupId: Long?)
@@ -63,4 +70,19 @@ interface ActivityDao {
 
     @Query("DELETE FROM activities")
     suspend fun deleteAll()
+
+    @Query("SELECT tagId FROM activity_tag_binding WHERE activityId = :activityId")
+    suspend fun getTagIdsForActivitySync(activityId: Long): List<Long>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>)
+
+    @Query("DELETE FROM activity_tag_binding WHERE activityId = :activityId")
+    suspend fun deleteActivityTagBindingsForActivity(activityId: Long)
+
+    @Query("SELECT * FROM activities WHERE isArchived = 0 ORDER BY name")
+    suspend fun getAllActiveSync(): List<ActivityEntity>
 }

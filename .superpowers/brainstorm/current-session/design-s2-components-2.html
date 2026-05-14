@@ -1,0 +1,123 @@
+<h2>设计 §2 续：交互体验类（⑤⑥⑦⑧）</h2>
+<p class="subtitle">滑动胶囊 · 按下变形 · 快捷Chip · 波浪进度</p>
+
+<div class="section">
+<h3>⑤ 滑动解锁胶囊 FocusTogglePill</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">现状：SlideActionPill</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:100px;display:flex;align-items:center;justify-content:center">
+  <div style="background:rgba(255,255,255,0.08);padding:8px 16px;border-radius:20px;display:flex;align-items:center;gap:8px;width:80%">
+    <div style="width:36px;height:36px;background:rgba(187,134,252,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px">&#9654;</div>
+    <div style="flex:1;font-size:12px;color:#888">滑动开始</div>
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">增强：弹簧+进度+图标切换</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+  <div style="background:rgba(187,134,252,0.15);padding:8px 20px;border-radius:36px;display:flex;align-items:center;gap:8px;width:85%;position:relative;overflow:hidden">
+    <div style="position:absolute;left:0;top:0;bottom:0;width:40%;background:rgba(187,134,252,0.2);border-radius:36px"></div>
+    <div style="width:48px;height:48px;background:#BB86FC;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(187,134,252,0.4);position:relative;z-index:1">&#9654;</div>
+    <div style="flex:1;font-size:13px;position:relative;z-index:1;color:rgba(255,255,255,0.7)">滑动开始 &#8594;</div>
+  </div>
+  <div style="font-size:10px;opacity:0.4">弹簧动画 · 阈值70% · 进度色渐变 · thumb图标切换</div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  &#10003; <b>增强现有 SlideActionPill</b>，不新建组件。三档：SUBDUED=直接触发 / STANDARD=线性拖动 / EXPRESSIVE=弹簧+进度+图标切换
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑥ 按下变形 pressedShape</h3>
+<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+  <div style="text-align:center">
+    <div style="width:64px;height:64px;background:#BB86FC;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:22px">&#9201;</div>
+    <div style="font-size:11px;opacity:0.5">OFF：无变形</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:60px;height:60px;background:#BB86FC;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:20px;transform:scale(0.95)">&#9201;</div>
+    <div style="font-size:11px;opacity:0.5">MILD：微缩放 0.95x</div>
+  </div>
+  <div style="text-align:center">
+    <div style="width:56px;height:56px;background:#BB86FC;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:18px">&#9201;</div>
+    <div style="font-size:11px;opacity:0.5">FULL：圆&#8594;方 morph</div>
+  </div>
+</div>
+<div style="background:rgba(255,152,0,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:12px;color:#FFE082">
+  依赖 M3 Expressive API：ButtonDefaults.shapes(pressedShape)、IconButtonDefaults.extraLargeSquareShape<br>
+  封装为 <code>Modifier.pressedShapeMorph(level)</code> 扩展
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑦ 快捷时长 AssistChip</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">计时配置场景</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:130px">
+  <div style="font-size:12px;opacity:0.5;margin-bottom:10px">选择时长：</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    <span style="background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;font-size:12px">5分</span>
+    <span style="background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;font-size:12px">15分</span>
+    <span style="background:rgba(187,134,252,0.2);padding:6px 14px;border-radius:20px;font-size:12px;border:1px solid rgba(187,134,252,0.4)">25分 &#10003;</span>
+    <span style="background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;font-size:12px">45分</span>
+    <span style="background:rgba(255,255,255,0.08);padding:6px 14px;border-radius:20px;font-size:12px">60分</span>
+  </div>
+  <div style="font-size:11px;opacity:0.4">或自定义：[____] 分钟</div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">行为记录场景</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;min-height:130px">
+  <div style="font-size:12px;opacity:0.5;margin-bottom:10px">快速设置持续时长：</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    <span style="background:rgba(3,218,198,0.15);padding:6px 14px;border-radius:16px;font-size:12px">30秒</span>
+    <span style="background:rgba(3,218,198,0.15);padding:6px 14px;border-radius:16px;font-size:12px">1分</span>
+    <span style="background:rgba(187,134,252,0.25);padding:6px 14px;border-radius:16px;font-size:12px;border:1px solid rgba(187,134,252,0.5)">5分 &#10003;</span>
+    <span style="background:rgba(3,218,198,0.15);padding:6px 14px;border-radius:16px;font-size:12px">15分</span>
+    <span style="background:rgba(3,218,198,0.15);padding:6px 14px;border-radius:16px;font-size:12px">30分</span>
+  </div>
+  <div style="font-size:11px;opacity:0.4">时长可配置，存在 DialogGridConfig</div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  &#10003; <b>新组件 DurationAssistChipRow</b>：可配置时长列表+选中态。时长列表存入 DialogGridConfig
+</div>
+</div>
+
+<div class="section" style="margin-top:24px">
+<h3>⑧ 波浪进度条</h3>
+<div class="split">
+<div class="mockup">
+<div class="mockup-header">OFF 线性</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:60px;display:flex;align-items:center">
+  <div style="width:100%;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+    <div style="width:60%;height:100%;background:#BB86FC;border-radius:2px"></div>
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">ON 小波</div>
+<div class="mockup-body" style="background:#1c1c1e;padding:16px;min-height:60px;display:flex;align-items:center">
+  <div style="width:100%;height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,0.06)">
+    <div style="width:60%;height:100%;background:#BB86FC;border-radius:4px"></div>
+  </div>
+</div>
+</div>
+<div class="mockup">
+<div class="mockup-header">PROMINENT 大波</div>
+<div class="mockup-body" style="background:#1a1a2e;padding:16px;min-height:60px;display:flex;align-items:center">
+  <div style="width:100%;height:12px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.06)">
+    <div style="width:60%;height:100%;background:linear-gradient(90deg,#BB86FC,#9C64FF);border-radius:6px"></div>
+  </div>
+</div>
+</div>
+</div>
+<div style="background:rgba(76,175,80,0.1);padding:10px;border-radius:8px;font-size:12px;margin-top:8px;color:#A5D6A7">
+  &#10003; 使用 M3 Expressive 的 <code>LinearWavyProgressIndicator</code>。用途：行为计时进度、番茄循环进度
+</div>
+</div>

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./gradlew installDebug",
+            "timeout": 8000,
+            "statusMessage": "Running gradlew.bat installDebug"
+          }
+        ]
+      }
+    ]
+  }
+}

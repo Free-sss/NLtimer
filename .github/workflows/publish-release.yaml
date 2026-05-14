@@ -35,6 +35,30 @@ jobs:
       - name: Set execution flag for gradlew
         run: chmod +x gradlew
 
+      - name: Extract version from tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION="${TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          echo "Updating APP_VERSION_NAME=$VERSION APP_VERSION_CODE=$VERSION_CODE"
+          sed -i "s/^APP_VERSION_NAME=.*/APP_VERSION_NAME=$VERSION/" gradle.properties
+          sed -i "s/^APP_VERSION_CODE=.*/APP_VERSION_CODE=$VERSION_CODE/" gradle.properties
+          grep -E "APP_VERSION" gradle.properties
+
+      - name: Configure Gradle JVM for CI
+        # 本地 gradle.properties 是为多 worktree 场景做的保守内存（Xmx=1.5G），
+        # 在 CI 单次构建场景下 R8 minify 会 OOM。GitHub runner 内存约 7G，
+        # 此处追加覆盖：properties 后定义生效，仅影响 CI，不污染本地配置。
+        run: |
+          cat >> gradle.properties <<'EOF'
+
+          # === CI Override (GitHub Actions) ===
+          org.gradle.jvmargs=-Xmx5g -Xms1g -XX:MaxMetaspaceSize=1g -XX:+UseParallelGC -Dfile.encoding=UTF-8
+          org.gradle.workers.max=4
+          EOF
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
 

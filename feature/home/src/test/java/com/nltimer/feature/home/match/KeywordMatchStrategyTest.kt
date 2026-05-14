@@ -167,12 +167,12 @@ class KeywordMatchStrategyTest {
             id = 0,
             name = name,
             color = null,
-            textColor = null,
-            icon = null,
+            iconKey = null,
             category = null,
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 }

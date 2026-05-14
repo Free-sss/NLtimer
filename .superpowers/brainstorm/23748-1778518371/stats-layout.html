@@ -1,0 +1,155 @@
+<h2>统计页面布局方案</h2>
+<p class="subtitle">选择你偏好的整体页面结构</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>分段滚动页</h3>
+      <p>单页垂直滚动：今日摘要色块 → 近7天柱状图 → 近30天柱状图 → 活动排行 → 标签分布。类似 Tomato 参考。简洁直接。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Tab 切换页</h3>
+      <p>顶部 Tab 栏（今日 / 本周 / 本月 / 全部），每个 Tab 展示对应时间维度的完整统计面板。信息密度更高，切换有动画。</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>仪表盘卡片网格</h3>
+      <p>2列网格排列多个圆角卡片（总时长、完成次数、番茄钟数、最常活动等），每个卡片带数字动画。底部放图表区。信息密度最高。</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:32px">
+  <h3>方案 A 预览：分段滚动页</h3>
+  <div class="mockup">
+    <div class="mockup-header">分段滚动页 - 竖向滚动</div>
+    <div class="mockup-body" style="padding:16px;max-width:400px;margin:0 auto">
+      <!-- 今日摘要 -->
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1;background:#D0BCFF;border-radius:16px;padding:16px;color:#381E72">
+          <div style="font-size:13px;font-weight:500;opacity:.7">专注时长</div>
+          <div style="font-size:28px;font-weight:700;margin-top:4px">2h 35m</div>
+        </div>
+        <div style="flex:1;background:#FFD8E4;border-radius:16px;padding:16px;color:#633B48">
+          <div style="font-size:13px;font-weight:500;opacity:.7">完成次数</div>
+          <div style="font-size:28px;font-weight:700;margin-top:4px">8</div>
+        </div>
+      </div>
+      <!-- 近7天柱状图 -->
+      <div style="background:#F4EFF4;border-radius:20px;padding:16px;margin-bottom:8px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px;color:#49454F">近 7 天</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:100px;padding:0 4px">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:40px"></div>
+            <span style="font-size:10px;color:#79747E">一</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:65px"></div>
+            <span style="font-size:10px;color:#79747E">二</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:30px"></div>
+            <span style="font-size:10px;color:#79747E">三</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:80px"></div>
+            <span style="font-size:10px;color:#79747E">四</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:55px"></div>
+            <span style="font-size:10px;color:#79747E">五</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#6750A4;border-radius:6px 6px 0 0;height:90px"></div>
+            <span style="font-size:10px;color:#79747E">六</span>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:100%;background:#E8DEF8;border-radius:6px 6px 0 0;height:50px;border:2px dashed #6750A4"></div>
+            <span style="font-size:10px;color:#6750A4;font-weight:600">今</span>
+          </div>
+        </div>
+      </div>
+      <!-- 活动排行 -->
+      <div style="background:#F4EFF4;border-radius:20px;padding:16px;margin-bottom:8px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:12px;color:#49454F">活动排行</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:32px;background:#6750A4;border-radius:4px"></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500">阅读</div>
+              <div style="font-size:11px;color:#79747E">4h 20m · 12次</div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:#6750A4">38%</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:32px;background:#9A82DB;border-radius:4px"></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500">编程</div>
+              <div style="font-size:11px;color:#79747E">3h 10m · 6次</div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:#9A82DB">28%</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:32px;background:#CCC2DC;border-radius:4px"></div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500">运动</div>
+              <div style="font-size:11px;color:#79747E">2h 00m · 3次</div>
+            </div>
+            <div style="font-size:13px;font-weight:600;color:#CCC2DC">17%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>方案 C 预览：仪表盘卡片网格</h3>
+  <div class="mockup">
+    <div class="mockup-header">仪表盘卡片网格</div>
+    <div class="mockup-body" style="padding:16px;max-width:400px;margin:0 auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:#D0BCFF;border-radius:20px;padding:20px;color:#381E72">
+          <div style="font-size:12px;font-weight:500;opacity:.7">今日专注</div>
+          <div style="font-size:26px;font-weight:800;margin-top:6px">2h 35m</div>
+          <div style="font-size:11px;margin-top:4px;opacity:.6">↑ 比昨日 +45min</div>
+        </div>
+        <div style="background:#FFD8E4;border-radius:20px;padding:20px;color:#633B48">
+          <div style="font-size:12px;font-weight:500;opacity:.7">完成次数</div>
+          <div style="font-size:26px;font-weight:800;margin-top:6px">8 次</div>
+          <div style="font-size:11px;margin-top:4px;opacity:.6">番茄钟 12 个</div>
+        </div>
+        <div style="background:#C4EADE;border-radius:20px;padding:20px;color:#1B4332">
+          <div style="font-size:12px;font-weight:500;opacity:.7">本周总计</div>
+          <div style="font-size:26px;font-weight:800;margin-top:6px">14h 20m</div>
+          <div style="font-size:11px;margin-top:4px;opacity:.6">日均 2h 3m</div>
+        </div>
+        <div style="background:#EFCCB0;border-radius:20px;padding:20px;color:#5C3D1F">
+          <div style="font-size:12px;font-weight:500;opacity:.7">连续打卡</div>
+          <div style="font-size:26px;font-weight:800;margin-top:6px">5 天</div>
+          <div style="font-size:11px;margin-top:4px;opacity:.6">最长 12 天</div>
+        </div>
+      </div>
+      <div style="background:#F4EFF4;border-radius:20px;padding:16px">
+        <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:#49454F">近 7 天趋势</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:80px">
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:35px"></div>
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:55px"></div>
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:25px"></div>
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:70px"></div>
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:45px"></div>
+          <div style="flex:1;background:#6750A4;border-radius:4px 4px 0 0;height:65px"></div>
+          <div style="flex:1;background:#E8DEF8;border-radius:4px 4px 0 0;height:40px;border:1px dashed #6750A4"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

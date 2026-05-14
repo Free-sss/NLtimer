@@ -18,6 +18,7 @@ interface BehaviorRepository {
     suspend fun getBehaviorWithDetails(behaviorId: Long): BehaviorWithDetails?
     suspend fun getNextPending(): Behavior?
     suspend fun getMaxSequence(): Int
+    suspend fun getEarliestBehaviorDate(): java.time.LocalDate?
     suspend fun insert(behavior: Behavior, tagIds: List<Long> = emptyList()): Long
     suspend fun setEndTime(id: Long, endTime: Long)
     suspend fun setStatus(id: Long, status: String)
@@ -44,4 +45,14 @@ interface BehaviorRepository {
     suspend fun updateTagsForBehavior(behaviorId: Long, tagIds: List<Long>)
 
     fun getBehaviorsOverlappingRange(rangeStart: Long, rangeEnd: Long): Flow<List<Behavior>>
+
+    suspend fun getTagsForBehaviors(behaviorIds: List<Long>): Map<Long, List<Tag>>
+
+    fun getBehaviorsWithDetailsByTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>>
+    suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails>
+    fun getTotalDurationAllBehaviors(): Flow<Long>
+
+    fun getAllActivityLastUsed(): Flow<Map<Long, Long?>>
+
+    fun getAllTagLastUsed(): Flow<Map<Long, Long?>>
 }

@@ -1,7 +1,14 @@
 package com.nltimer.core.data.repository
 
 import com.nltimer.core.data.database.dao.TagDao
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.database.entity.TagEntity
+import com.nltimer.core.data.database.NLtimerDatabase
+import androidx.room.withTransaction
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.impl.TagRepositoryImpl
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -94,9 +101,21 @@ class TagRepositoryImplTest {
             tagEntities.clear()
             tagFlow.value = emptyList()
         }
+
+        override suspend fun getDistinctCategoriesSync(): List<String> = emptyList()
+        override suspend fun getActivityIdsForTagSync(tagId: Long): List<Long> = emptyList()
+        override suspend fun insertActivityTagBinding(binding: ActivityTagBindingEntity) {}
+        override suspend fun insertActivityTagBindings(bindings: List<ActivityTagBindingEntity>) {}
+        override suspend fun deleteActivityTagBindingsForTag(tagId: Long) {}
+        override suspend fun getAllDistinctSync(): List<TagEntity> = emptyList()
     }
 
-    private val repository = TagRepositoryImpl(fakeTagDao)
+    private val fakeDatabase: NLtimerDatabase = mockk<NLtimerDatabase>(relaxed = true).also {
+        mockkStatic("androidx.room.RoomDatabaseKt")
+        coEvery { it.withTransaction(any<suspend () -> Unit>()) } coAnswers { (args[0] as suspend () -> Unit).invoke() }
+    }
+
+    private val repository = TagRepositoryImpl(fakeTagDao, fakeDatabase)
 
     @Test
     fun `getAllActive returns only non-archived tags`() = runTest {
@@ -178,12 +197,12 @@ class TagRepositoryImplTest {
             id = 0,
             name = "新标签",
             color = null,
-            textColor = null,
-            icon = null,
+            iconKey = null,
             category = null,
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 
@@ -202,12 +221,12 @@ class TagRepositoryImplTest {
             id = 1L,
             name = "新名称",
             color = null,
-            textColor = null,
-            icon = null,
+            iconKey = null,
             category = null,
             priority = 0,
             usageCount = 0,
             sortOrder = 0,
+            keywords = null,
             isArchived = false,
         )
 
@@ -272,8 +291,7 @@ class TagRepositoryImplTest {
             TagEntity(
                 name = "完整标签",
                 color = 0xFF0000FF,
-                textColor = 0xFFFFFFFF,
-                icon = "icon",
+                iconKey = "icon",
                 category = "分类",
                 priority = 5,
                 usageCount = 10,
@@ -287,8 +305,7 @@ class TagRepositoryImplTest {
         assertEquals(1L, result?.id)
         assertEquals("完整标签", result?.name)
         assertEquals(0xFF0000FF, result?.color)
-        assertEquals(0xFFFFFFFF, result?.textColor)
-        assertEquals("icon", result?.icon)
+        assertEquals("icon", result?.iconKey)
         assertEquals("分类", result?.category)
         assertEquals(5, result?.priority)
         assertEquals(10, result?.usageCount)

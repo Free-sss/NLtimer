@@ -1,0 +1,85 @@
+<h2>色调族映射偏好</h2>
+<p class="subtitle">在含蓄分层（container 级）的前提下，primary / secondary / tertiary 如何分配给不同状态</p>
+
+<div class="mockup">
+  <div class="mockup-header">方案 1 — 状态驱动</div>
+  <div class="mockup-body" style="background:#FFFBFE;padding:16px;">
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#EADDFF;border-radius:3px;border:1px solid #D0BCFF;"></div>
+        <span style="font-size:12px;color:#21005D;font-weight:600;">活跃行为</span>
+        <span style="font-size:10px;color:#6750A4;">← primary container（当前种子色）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#E8DEF8;border-radius:3px;border:1px solid #CAC4D0;"></div>
+        <span style="font-size:12px;color:#1D192B;font-weight:600;">已完成</span>
+        <span style="font-size:10px;color:#625B71;">← secondary container（互补色调）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#FFD8E4;border-radius:3px;border:1px solid #EFB8C8;"></div>
+        <span style="font-size:12px;color:#31111D;font-weight:600;">空白待填</span>
+        <span style="font-size:10px;color:#7D5260;">← tertiary container（第三色调）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#E7E0EC;border-radius:3px;border:1px solid #CAC4D0;opacity:0.5;"></div>
+        <span style="font-size:12px;color:#49454F;">锁定/未来</span>
+        <span style="font-size:10px;color:#79747E;">← surface variant（中性）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#D0BCFF;border-radius:3px;"></div>
+        <span style="font-size:12px;color:#381E72;font-weight:600;">侧边栏/当前行指示</span>
+        <span style="font-size:10px;color:#6750A4;">← primary（非 container，稍重）</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:10px;color:#79747E;line-height:1.5;">三种色调全部用于行为状态，侧边栏用 primary 标识导航焦点</p>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top:12px;">
+  <div class="mockup-header">方案 2 — 区域驱动</div>
+  <div class="mockup-body" style="background:#FFFBFE;padding:16px;">
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#EADDFF;border-radius:3px;border:1px solid #D0BCFF;"></div>
+        <span style="font-size:12px;color:#21005D;font-weight:600;">活跃行为 + 侧边栏当前</span>
+        <span style="font-size:10px;color:#6750A4;">← primary container</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#E8DEF8;border-radius:3px;border:1px solid #CAC4D0;"></div>
+        <span style="font-size:12px;color:#1D192B;font-weight:600;">已完成 + 侧边栏活跃</span>
+        <span style="font-size:10px;color:#625B71;">← secondary container</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#E7E0EC;border-radius:3px;border:1px solid #CAC4D0;"></div>
+        <span style="font-size:12px;color:#49454F;">空白 / 锁定</span>
+        <span style="font-size:10px;color:#79747E;">← surface variant（保持中性）</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <div style="width:16px;height:16px;background:#FFD8E4;border-radius:3px;border:1px solid #EFB8C8;"></div>
+        <span style="font-size:12px;color:#31111D;font-weight:600;">白金成就 / 特殊标记</span>
+        <span style="font-size:10px;color:#7D5260;">← tertiary container（保留给亮点）</span>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:10px;color:#79747E;line-height:1.5;">primary/secondary 同时驱动行为状态和对应侧边栏区域，tertiary 保留给高光时刻，空白保持中性</p>
+  </div>
+</div>
+
+<div style="margin-top:20px;">
+  <h3>你倾向哪种映射逻辑？</h3>
+  <div class="options">
+    <div class="option" data-choice="1" onclick="toggleSelect(this)">
+      <div class="letter">1</div>
+      <div class="content">
+        <h3>状态驱动</h3>
+        <p>三种色调全部用于区分行为状态（活跃/完成/空白），侧边栏单独用 primary</p>
+      </div>
+    </div>
+    <div class="option" data-choice="2" onclick="toggleSelect(this)">
+      <div class="letter">2</div>
+      <div class="content">
+        <h3>区域驱动</h3>
+        <p>primary/secondary 同时覆盖行为和侧边栏，tertiary 留给成就/亮点，空白中性</p>
+      </div>
+    </div>
+  </div>
+</div>

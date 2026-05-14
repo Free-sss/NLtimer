@@ -4,36 +4,56 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nltimer.core.data.SettingsPrefs
+import com.nltimer.core.designsystem.component.AppIntroScreen
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.Theme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
-/**
- * 应用主入口 Activity
- * 使用 Hilt 注入主题偏好设置，在 Compose 中读取主题并渲染应用界面
- */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var settingsPrefs: SettingsPrefs
 
+    private val themeReady = AtomicBoolean(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition { !themeReady.get() }
         enableEdgeToEdge()
 
         setContent {
-            // 从 DataStore 中收集主题配置流，获取当前主题状态
             val theme by settingsPrefs.getThemeFlow()
-                .collectAsStateWithLifecycle(initialValue = Theme())
+                .collectAsStateWithLifecycle(initialValue = null)
 
-            // 使用动态主题包裹应用根组件
-            NLtimerTheme(theme = theme) {
-                NLtimerApp()
+            LaunchedEffect(theme) {
+                if (theme != null) themeReady.set(true)
+            }
+
+            if (theme != null) {
+                val hasSeenIntro by settingsPrefs.getHasSeenIntroFlow()
+                    .collectAsStateWithLifecycle(initialValue = true)
+                val scope = rememberCoroutineScope()
+
+                NLtimerTheme(theme = theme!!) {
+                    if (!hasSeenIntro) {
+                        AppIntroScreen(
+                            onFinish = { scope.launch { settingsPrefs.setHasSeenIntro(true) } },
+                        )
+                    } else {
+                        NLtimerApp()
+                    }
+                }
             }
         }
     }

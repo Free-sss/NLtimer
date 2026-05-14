@@ -8,7 +8,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.appAssistChipBorder
 
 /**
@@ -29,17 +35,21 @@ fun ActivityChip(
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // 如果活动没有 emoji，使用默认图钉符号
-    val emoji = activity.emoji?.takeIf { it.isNotBlank() } ?: "📌"
-    val label = "$emoji ${activity.name}"
-
     AssistChip(
         onClick = onClick,
         label = {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconRenderer(
+                    iconKey = activity.iconKey?.takeIf { it.isNotBlank() },
+                    defaultEmoji = "📌",
+                    iconSize = 16.dp,
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = activity.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         },
         border = appAssistChipBorder(),
         // 使用 combinedClickable 同时支持单击和长按

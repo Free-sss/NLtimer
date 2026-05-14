@@ -14,29 +14,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.TagUiState
 
 @Composable
 fun Modifier.behaviorCardStyle(
     cardBackground: Color,
     borderColor: Color,
+    logStyle: LogLayoutStyle = LogLayoutStyle(),
 ): Modifier = this
-    .clip(RoundedCornerShape(16.dp))
+    .clip(RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE)))
     .background(cardBackground)
     .appBorder(
-        borderProducer = { BorderStroke(1.dp, borderColor) },
-        shape = RoundedCornerShape(16.dp)
+        borderProducer = { BorderStroke(styledBorder(BorderTokens.THIN), borderColor) },
+        shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE))
     )
-    .padding(12.dp)
+    .padding(logStyle.cardPadding.dp)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun BehaviorTagRow(tags: List<TagUiState>) {
+fun BehaviorTagRow(tags: List<TagUiState>, logStyle: LogLayoutStyle = LogLayoutStyle()) {
     if (tags.isNotEmpty()) {
         Spacer(modifier = Modifier.height(8.dp))
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(logStyle.tagRowSpacing.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             tags.forEach { tag ->

@@ -19,4 +19,6 @@ data class DialogGridConfig(
     val tagUseColorForText: Boolean = true,
     val showBehaviorNature: Boolean = true,
     val pathDrawMode: PathDrawMode = PathDrawMode.StartToEnd,
+    val secondsStrategy: SecondsStrategy = SecondsStrategy.OPEN_TIME,
+    val autoMatchNote: Boolean = false,
 )

@@ -31,10 +31,9 @@ class CategoryMigrationValidator @Inject constructor(
         if (raw.isBlank()) return
 
         val savedCategories = raw.split(",").toSet()
-        // 获取数据库中已有的分组名称
-        val existingNames = groupDao.getAll().first().map { it.name }.toSet()
-        // 过滤出尚未创建的分组，批量插入（避免 N+1 查询）
-        var maxOrder = groupDao.getAll().first().maxOfOrNull { it.sortOrder } ?: -1
+        val existingGroups = groupDao.getAll().first()
+        val existingNames = existingGroups.map { it.name }.toSet()
+        var maxOrder = existingGroups.maxOfOrNull { it.sortOrder } ?: -1
         savedCategories
             .filter { it !in existingNames }
             .forEach { name ->

@@ -12,12 +12,16 @@ data class ActivityGroup(
     val id: Long = 0,
     val name: String,
     val sortOrder: Int = 0,
+    val isArchived: Boolean = false,
+    val archivedAt: Long? = null,
 ) {
     /** 转换为数据库实体 */
     fun toEntity() = ActivityGroupEntity(
         id = id,
         name = name,
         sortOrder = sortOrder,
+        isArchived = isArchived,
+        archivedAt = archivedAt,
     )
 
     companion object {
@@ -26,6 +30,8 @@ data class ActivityGroup(
             id = entity.id,
             name = entity.name,
             sortOrder = entity.sortOrder,
+            isArchived = entity.isArchived,
+            archivedAt = entity.archivedAt,
         )
     }
 }

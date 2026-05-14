@@ -18,6 +18,9 @@ interface ActivityGroupDao {
     @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
     fun getAll(): Flow<List<ActivityGroupEntity>>
 
+    @Query("SELECT * FROM activity_groups ORDER BY sortOrder ASC, id ASC")
+    suspend fun getAllSync(): List<ActivityGroupEntity>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(group: ActivityGroupEntity): Long
 
@@ -42,4 +45,13 @@ interface ActivityGroupDao {
 
     @Query("DELETE FROM activity_groups")
     suspend fun deleteAll()
+
+    @Query("SELECT MAX(sortOrder) FROM activity_groups")
+    suspend fun getMaxSortOrder(): Int?
+
+    @Query("SELECT * FROM activity_groups WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): ActivityGroupEntity?
+
+    @Query("UPDATE activity_groups SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, sortOrder: Int)
 }

@@ -1,11 +1,6 @@
 package com.nltimer.core.designsystem.theme
 
-import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,7 +21,6 @@ val LocalTheme = staticCompositionLocalOf { Theme() }
  * @param theme 完整的主题配置对象
  * @param content 子组件内容
  */
-@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @Composable
 fun NLtimerTheme(
     theme: Theme = Theme(),
@@ -50,16 +44,12 @@ fun NLtimerTheme(
         typography = typography,
     ) {
         // 将完整主题配置注入 CompostionLocal，供子组件按需读取
-        CompositionLocalProvider(LocalTheme provides theme) {
-            // 主题切换时以淡入淡出动画过渡，避免颜色突变
-            AnimatedContent(
-                targetState = theme.appTheme to theme.isAmoled,
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300)) togetherWith
-                        fadeOut(animationSpec = tween(300))
-                },
-                label = "theme-transition",
-            ) {
+        CompositionLocalProvider(
+            LocalTheme provides theme,
+            LocalTimerTypography provides resolveTimerTextStyle(),
+        ) {
+            @Suppress("UnusedCrossfadeTargetStateParameter")
+            Crossfade(targetState = theme.appTheme to theme.isAmoled, label = "theme") {
                 content()
             }
         }

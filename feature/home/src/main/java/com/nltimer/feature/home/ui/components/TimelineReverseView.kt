@@ -1,10 +1,14 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,133 +19,196 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
-import com.nltimer.core.designsystem.theme.HomeLayout
+import com.nltimer.core.designsystem.icon.IconRenderer
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.ShapeTokens
 import com.nltimer.core.designsystem.theme.appBorder
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.HomeListItem
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 
-/**
- * 时间线倒序视图 Composable。
- * 将行为按时间排序后倒序展示，自动插入空闲时间段，支持布局切换。
- *
- * @param cells 所有单元格数据
- * @param onAddClick 添加行为回调
- * @param onLayoutChange 切换布局模式回调
- * @param modifier 修饰符
- */
 @Composable
 fun TimelineReverseView(
-    cells: List<GridCellUiState>,
+    items: List<HomeListItem>,
     onAddClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
-    onLayoutChange: (HomeLayout) -> Unit,
+    onCellLongClick: (GridCellUiState) -> Unit = {},
+    onLoadMore: () -> Unit = {},
+    isLoadingMore: Boolean = false,
+    hasReachedEarliest: Boolean = false,
+    timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val timeFormatter = hhmmFormatter
+    val listState = rememberLazyListState()
+    var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val behaviors = remember(cells) {
-        cells.filter { it.behaviorId != null }
-            .sortedBy { it.startTime }
-    }
-    
-    val timelineItems = remember(behaviors) {
-        val items = mutableListOf<TimelineItemData>()
-        
-        if (behaviors.isNotEmpty()) {
-            val latest = behaviors.last()
-            if (latest.status != BehaviorNature.ACTIVE && latest.endTime != null) {
-                val now = LocalTime.now()
-                if (now.isAfter(latest.endTime)) {
-                    items.add(TimelineItemData.Idle(latest.endTime, now))
-                }
-            }
-            
-            for (i in behaviors.indices.reversed()) {
-                val behavior = behaviors[i]
-                items.add(TimelineItemData.Behavior(behavior))
-                
-                if (i > 0) {
-                    val prevEnd = behaviors[i-1].endTime
-                    val currentStart = behavior.startTime
-                    if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
-                        items.add(TimelineItemData.Idle(prevEnd, currentStart))
-                    }
-                }
-            }
+    val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
+
+    val dateIndexMap = remember(timelineItems) {
+        val map = mutableMapOf<Int, String>()
+        timelineItems.forEachIndexed { index, item ->
+            if (item is TimelineDisplayItem.Divider) map[index] = item.label
         }
-        items
+        map
+    }
+
+    val visibleDateLabelState = LocalVisibleDateLabel.current
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
+    }
+
+    LaunchedEffect(timelineItems, hasReachedEarliest) {
+        if (hasReachedEarliest) return@LaunchedEffect
+        snapshotFlow {
+            val total = listState.layoutInfo.totalItemsCount
+            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            total to lastVisible
+        }.distinctUntilChanged()
+            .filter { (total, last) -> total > 0 && last >= total - 5 }
+            .collect { onLoadMore() }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
+            contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
-            item {
-                LayoutMenuHeader(
-                    title = "时间轴",
-                    onLayoutChange = onLayoutChange,
-                )
-            }
-
-            items(timelineItems) { item ->
+            items(items = timelineItems, key = { it.key }) { item ->
                 when (item) {
-                    is TimelineItemData.Behavior -> {
-                        TimelineBehaviorItem(
-                            behavior = item.behavior,
-                            timeFormatter = timeFormatter
-                        )
-                    }
-                    is TimelineItemData.Idle -> {
-                        TimelineIdleItem(
-                            start = item.start,
-                            end = item.end,
-                            timeFormatter = timeFormatter,
-                            onAddClick = { onAddClick(item.start, item.end) }
-                        )
-                    }
+                    is TimelineDisplayItem.Divider -> DayDividerRow(label = item.label)
+                    is TimelineDisplayItem.BehaviorRow -> TimelineBehaviorItem(
+                        behavior = item.cell,
+                        timeFormatter = timeFormatter,
+                        onClick = { detailCell = item.cell },
+                        onLongClick = { onCellLongClick(item.cell) },
+                    )
+                    is TimelineDisplayItem.Idle -> TimelineIdleItem(
+                        start = item.start,
+                        end = item.end,
+                        timeFormatter = timeFormatter,
+                        onAddClick = { onAddClick(item.start, item.end) },
+                    )
                 }
             }
-            
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
-            }
+            if (isLoadingMore) item { LoadingMoreIndicator() }
         }
+    }
+
+    detailCell?.let { cell ->
+        BehaviorDetailDialog(cell = cell, onDismiss = { detailCell = null })
     }
 }
 
-/**
- * 时间线列表项数据密封类。
- * 包含行为项和空闲时间段项两种类型。
- */
-sealed class TimelineItemData {
-    data class Behavior(val behavior: GridCellUiState) : TimelineItemData()
-    data class Idle(val start: LocalTime, val end: LocalTime) : TimelineItemData()
+private sealed class TimelineDisplayItem(val key: String) {
+    class Divider(val date: LocalDate, val label: String) : TimelineDisplayItem("divider-$date")
+    class BehaviorRow(val cell: GridCellUiState) : TimelineDisplayItem("behavior-${cell.behaviorId}")
+    class Idle(val start: LocalTime, val end: LocalTime) : TimelineDisplayItem("idle-$start-$end")
 }
 
-/**
- * 空闲时间段条目 Composable，显示起止时间和空闲时长。
- */
+private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<TimelineDisplayItem> {
+    data class DayBucket(val divider: HomeListItem.DayDivider, val cells: MutableList<GridCellUiState>)
+    val buckets = mutableListOf<DayBucket>()
+    items.forEach { item ->
+        when (item) {
+            is HomeListItem.DayDivider -> buckets.add(DayBucket(item, mutableListOf()))
+            is HomeListItem.CellItem -> buckets.lastOrNull()?.cells?.add(item.cell)
+        }
+    }
+
+    val result = mutableListOf<TimelineDisplayItem>()
+    buckets.asReversed().forEach { bucket ->
+        val sortedAsc = bucket.cells.sortedBy { it.startTime?.toSecondOfDay() ?: 0 }
+        if (sortedAsc.isEmpty()) return@forEach
+        result.add(TimelineDisplayItem.Divider(bucket.divider.date, bucket.divider.label))
+        for (i in sortedAsc.indices.reversed()) {
+            val cell = sortedAsc[i]
+            result.add(TimelineDisplayItem.BehaviorRow(cell))
+            if (i > 0) {
+                val prevEnd = sortedAsc[i - 1].endTime
+                val currentStart = cell.startTime
+                if (prevEnd != null && currentStart != null && currentStart.isAfter(prevEnd)) {
+                    val gap = Duration.between(prevEnd, currentStart)
+                    if (gap.toMinutes() >= 1) {
+                        result.add(TimelineDisplayItem.Idle(prevEnd, currentStart))
+                    }
+                }
+            }
+        }
+    }
+    return result
+}
+
+@Composable
+private fun DayDividerRow(label: String) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun LoadingMoreIndicator() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+    }
+}
+
 @Composable
 private fun TimelineIdleItem(
     start: LocalTime,
@@ -169,23 +236,23 @@ private fun TimelineIdleItem(
             Text(
                 text = start.format(timeFormatter),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f))
             )
         }
 
         Row(
             modifier = Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f))
+                .clip(RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.1f)))
                 .appBorder(
                     borderProducer = {
-                        androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                        BorderStroke(
+                            styledBorder(BorderTokens.THIN),
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.3f))
                         )
                     },
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM))
                 )
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -199,9 +266,9 @@ private fun TimelineIdleItem(
             )
             IconButton(onClick = onAddClick, modifier = Modifier.size(24.dp)) {
                 Icon(
-                    Icons.Default.Add, 
-                    contentDescription = null, 
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = styledAlpha(0.5f)),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -209,20 +276,18 @@ private fun TimelineIdleItem(
     }
 }
 
-/**
- * 时间线行为条目 Composable，左侧显示时间，右侧显示行为卡片。
- */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 private fun TimelineBehaviorItem(
     behavior: GridCellUiState,
-    timeFormatter: DateTimeFormatter
+    timeFormatter: DateTimeFormatter,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 左侧：显示开始和结束时间
         Column(
             horizontalAlignment = Alignment.End,
             modifier = Modifier.width(50.dp)
@@ -242,7 +307,6 @@ private fun TimelineBehaviorItem(
             }
         }
 
-        // 右侧：行为卡片，包含名称、时长、标签和备注
         val cardBackground = if (behavior.isCurrent) {
             MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)
         } else {
@@ -254,20 +318,41 @@ private fun TimelineBehaviorItem(
             modifier = Modifier
                 .weight(1f)
                 .behaviorCardStyle(cardBackground, borderColor)
+                .combinedClickable(
+                    onClick = onClick,
+                    onLongClick = onLongClick,
+                )
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "${behavior.activityEmoji ?: "❓"} ${behavior.activityName ?: "未知"}",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.weight(1f)
-                )
-                
-                // 计算并显示时长，优先使用 durationMs
-                val duration = behavior.durationMs ?: ((behavior.actualDuration ?: 0L) * 1000)
+                ) {
+                    IconRenderer(
+                        iconKey = behavior.activityIconKey,
+                        defaultEmoji = "❓",
+                        iconSize = 16.dp,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = behavior.activityName ?: "未知",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                }
+
+                val duration = if (behavior.isCurrent && behavior.startEpochMs != null) {
+                    LiveElapsedDuration(
+                        startEpochMs = behavior.startEpochMs,
+                        isCurrent = true,
+                        fallbackDurationMs = behavior.durationMs ?: (behavior.actualDuration ?: 0L),
+                    )
+                } else {
+                    behavior.durationMs ?: (behavior.actualDuration ?: 0L)
+                }
                 if (duration > 0) {
                     Text(
                         text = "⏱ ${formatDuration(duration)}",
@@ -275,8 +360,6 @@ private fun TimelineBehaviorItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-
             }
 
             BehaviorTagRow(behavior.tags)
@@ -292,5 +375,3 @@ private fun TimelineBehaviorItem(
         }
     }
 }
-
-

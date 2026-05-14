@@ -15,6 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.designsystem.theme.appBorder
+import com.nltimer.core.designsystem.theme.BorderTokens
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledBorder
+import com.nltimer.core.designsystem.theme.styledCorner
 
 @Composable
 fun GridCellEmpty(
@@ -25,14 +30,14 @@ fun GridCellEmpty(
         modifier = modifier
             .fillMaxSize()
             .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                RoundedCornerShape(16.dp),
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.3f)),
+                RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE)),
             )
             .appBorder(
                 borderProducer = {
-                    BorderStroke(2.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    BorderStroke(styledBorder(BorderTokens.STANDARD), MaterialTheme.colorScheme.outlineVariant.copy(alpha = styledAlpha(0.5f)))
                 },
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_LARGE))
             )
             .clickable(onClick = onClick)
             .padding(8.dp),

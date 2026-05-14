@@ -1,5 +1,7 @@
 # 主页跨天懒加载 实现计划
 
+> **[SUPERSEDED]** 本计划已被 [2026-05-13-home-past-data-loading-plan.md](2026-05-13-home-past-data-loading-plan.md) 取代。配套 spec [2026-05-04-home-cross-day-lazy-load-design.md](../specs/2026-05-04-home-cross-day-lazy-load-design.md) 也已 SUPERSEDED。本计划保留作为推理过程的历史参考。
+
 > **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
 
 **目标：** 主页支持向上滚动懒加载历史天数的行为数据，按天分组显示吸顶日期头

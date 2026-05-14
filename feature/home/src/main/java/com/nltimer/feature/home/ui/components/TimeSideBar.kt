@@ -30,6 +30,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import com.nltimer.core.designsystem.theme.ShapeTokens
+import com.nltimer.core.designsystem.theme.styledAlpha
+import com.nltimer.core.designsystem.theme.styledCorner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -75,7 +78,7 @@ fun TimeSideBar(
                     .height(48.dp)
                     .background(
                         MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(12.dp),
+                        RoundedCornerShape(styledCorner(ShapeTokens.CORNER_MEDIUM)),
                     ),
                 contentAlignment = Alignment.Center,
             ) {
@@ -145,7 +148,7 @@ fun TimeSideBar(
                     color = when {
                         isCurrent -> MaterialTheme.colorScheme.tertiary
                         isActive -> MaterialTheme.colorScheme.primary
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f))
                     },
                     fontSize = 11.sp,
                     fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,

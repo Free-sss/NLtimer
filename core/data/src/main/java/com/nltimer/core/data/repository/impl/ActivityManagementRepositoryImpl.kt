@@ -4,14 +4,16 @@ import com.nltimer.core.data.database.dao.ActivityDao
 import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
+import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
+import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.ActivityStats
 import com.nltimer.core.data.repository.ActivityManagementRepository
+import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,46 +30,42 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
     private val groupDao: ActivityGroupDao,
     private val behaviorDao: BehaviorDao,
+    private val database: NLtimerDatabase,
 ) : ActivityManagementRepository {
 
     companion object {
         // 首次使用时创建的预设活动列表
         val PRESET_ACTIVITIES = listOf(
-            Activity(name = "番剧视频", emoji = "📺", isPreset = true),
-            Activity(name = "娱乐视频", emoji = "🎬", isPreset = true),
-            Activity(name = "玩游戏", emoji = "🎮", isPreset = true),
-            Activity(name = "主动学习", emoji = "📖", isPreset = true),
-            Activity(name = "运动健身", emoji = "💪", isPreset = true),
-            Activity(name = "社交聚会", emoji = "👥", isPreset = true),
-            Activity(name = "本职工作", emoji = "💼", isPreset = true),
-            Activity(name = "休息放松", emoji = "😌", isPreset = true),
+            Activity(name = "番剧视频", iconKey = "📺", isPreset = true),
+            Activity(name = "娱乐视频", iconKey = "🎬", isPreset = true),
+            Activity(name = "玩游戏", iconKey = "🎮", isPreset = true),
+            Activity(name = "主动学习", iconKey = "📖", isPreset = true),
+            Activity(name = "运动健身", iconKey = "💪", isPreset = true),
+            Activity(name = "社交聚会", iconKey = "👥", isPreset = true),
+            Activity(name = "本职工作", iconKey = "💼", isPreset = true),
+            Activity(name = "休息放松", iconKey = "😌", isPreset = true),
         )
     }
 
     // 实体转领域模型的基础查询
     override fun getAllActivities(): Flow<List<Activity>> =
-        activityDao.getAllActive().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getAllActive().mapList { Activity.fromEntity(it) }
 
     override fun getUncategorizedActivities(): Flow<List<Activity>> =
-        activityDao.getUncategorized().map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getUncategorized().mapList { Activity.fromEntity(it) }
 
     override fun getActivitiesByGroup(groupId: Long): Flow<List<Activity>> =
-        activityDao.getByGroup(groupId).map { list -> list.map { Activity.fromEntity(it) } }
+        activityDao.getByGroup(groupId).mapList { Activity.fromEntity(it) }
 
     override fun getAllGroups(): Flow<List<ActivityGroup>> =
-        groupDao.getAll().map { list -> list.map { ActivityGroup.fromEntity(it) } }
+        groupDao.getAll().mapList { ActivityGroup.fromEntity(it) }
 
     override fun getActivityStats(activityId: Long): Flow<ActivityStats> =
-        // 合并三个 Flow 拼装统计对象
-        combine(
-            behaviorDao.getUsageCount(activityId),
-            behaviorDao.getTotalDurationMs(activityId),
-            behaviorDao.getLastUsedTimestamp(activityId)
-        ) { count, durationMs, lastUsed ->
+        behaviorDao.getActivityStatsSync(activityId).map { row ->
             ActivityStats(
-                usageCount = count,
-                totalDurationMinutes = (durationMs ?: 0L) / 60000,
-                lastUsedTimestamp = lastUsed
+                usageCount = row.usageCount,
+                totalDurationMinutes = row.totalDurationMinutes,
+                lastUsedTimestamp = row.lastUsedTimestamp,
             )
         }
 
@@ -77,43 +75,69 @@ class ActivityManagementRepositoryImpl @Inject constructor(
     override suspend fun updateActivity(activity: Activity) =
         activityDao.update(activity.toEntity())
 
-    override suspend fun deleteActivity(id: Long) =
-        activityDao.deleteById(id)
+    override suspend fun deleteActivity(id: Long) {
+        database.withTransaction {
+            behaviorDao.deleteTagCrossRefsByActivityId(id)
+            behaviorDao.deleteByActivityId(id)
+            activityDao.deleteActivityTagBindingsForActivity(id)
+            activityDao.deleteById(id)
+        }
+    }
 
     override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) =
         activityDao.moveToGroup(activityId, groupId)
 
     override suspend fun addGroup(name: String): Long {
-        // 计算当前最大排序值，新分组追加到最后
-        val groups = groupDao.getAll().first()
-        val maxOrder = groups.maxOfOrNull { it.sortOrder } ?: -1
+        val maxOrder = groupDao.getMaxSortOrder()
         return groupDao.insert(
-            ActivityGroupEntity(name = name, sortOrder = maxOrder + 1)
+            ActivityGroupEntity(name = name, sortOrder = (maxOrder ?: -1) + 1)
         )
     }
 
     override suspend fun renameGroup(id: Long, newName: String) {
-        // 查找目标分组后更新名称
-        val groups = groupDao.getAll().first()
-        val group = groups.find { it.id == id } ?: return
+        val group = groupDao.getById(id) ?: return
         groupDao.update(group.copy(name = newName))
     }
 
     override suspend fun deleteGroup(id: Long) {
-        // 先解除该分组下所有活动的关联，再删除分组
-        groupDao.ungroupAllActivities(id)
-        val groups = groupDao.getAll().first()
-        val group = groups.find { it.id == id } ?: return
-        groupDao.delete(group)
+        database.withTransaction {
+            groupDao.ungroupAllActivities(id)
+            val group = groupDao.getById(id) ?: return@withTransaction
+            groupDao.delete(group)
+        }
     }
 
-    override suspend fun initializePresets() {
-        // 仅在无预设记录时插入
-        val existingPresets = activityDao.getAllPresets().first()
-        if (existingPresets.isEmpty()) {
-            PRESET_ACTIVITIES.forEach { preset ->
-                activityDao.insert(preset.toEntity())
+    override suspend fun reorderGroups(orderedIds: List<Long>) {
+        database.withTransaction {
+            orderedIds.forEachIndexed { index, id ->
+                groupDao.updateSortOrder(id, index)
             }
         }
     }
+
+    override suspend fun initializePresets() {
+        val existingPresets = activityDao.getAllPresetsSync()
+        if (existingPresets.isEmpty()) {
+            activityDao.insertAll(PRESET_ACTIVITIES.map { it.toEntity() })
+        }
+    }
+
+    override suspend fun getTagIdsForActivity(activityId: Long): List<Long> =
+        activityDao.getTagIdsForActivitySync(activityId)
+
+    override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {
+        database.withTransaction {
+            activityDao.deleteActivityTagBindingsForActivity(activityId)
+            if (tagIds.isNotEmpty()) {
+                activityDao.insertActivityTagBindings(
+                    tagIds.map { tagId ->
+                        ActivityTagBindingEntity(activityId = activityId, tagId = tagId)
+                    }
+                )
+            }
+        }
+    }
+
+    override suspend fun getAllActivitiesSync(): List<Activity> =
+        activityDao.getAllActiveSync().map { Activity.fromEntity(it) }
 }

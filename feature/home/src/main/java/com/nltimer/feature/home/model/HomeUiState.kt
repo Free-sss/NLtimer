@@ -12,8 +12,11 @@ enum class AddSheetMode(val nature: BehaviorNature) {
 
 @Immutable
 data class HomeUiState(
-    val rows: List<GridRowUiState> = emptyList(),
-    val currentRowId: String? = null,
+    val items: List<HomeListItem> = emptyList(),
+    val gridSections: List<GridDaySection> = emptyList(),
+    val momentCells: List<GridCellUiState> = emptyList(),
+    val isLoadingMore: Boolean = false,
+    val hasReachedEarliest: Boolean = false,
     val addSheetMode: AddSheetMode? = null,
     val selectedTimeHour: Int = 0,
     val isLoading: Boolean = true,
