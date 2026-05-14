@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.nltimer.core.designsystem.R as DR
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.toDisplayString
+import androidx.compose.ui.graphics.Color
 
 data class MomentFilterOption(
     val label: String,
@@ -49,6 +50,7 @@ fun AppTopAppBar(
     title: String,
     modifier: Modifier = Modifier,
     isDateTitle: Boolean = false,
+    isImmersive: Boolean = false,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -174,7 +176,8 @@ fun AppTopAppBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
+            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
         ),
         modifier = modifier,
     )
@@ -187,6 +190,7 @@ fun AppCollapsedTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier,
     isDateTitle: Boolean = false,
+    isImmersive: Boolean = false,
     layoutLabel: String? = null,
     onLayoutChange: ((HomeLayout) -> Unit)? = null,
     momentFilterLabel: String? = null,
@@ -317,7 +321,8 @@ fun AppCollapsedTopAppBar(
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.background,
+            scrolledContainerColor = if (isImmersive) Color.Transparent else MaterialTheme.colorScheme.surfaceContainer,
         ),
         modifier = modifier,
     )

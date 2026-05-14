@@ -135,6 +135,7 @@ fun ThemeSettingsRoute(
         onResetStyleConfig = viewModel::onResetStyleConfig,
         onTopBarModeChange = viewModel::onTopBarModeChange,
         onBottomBarModeChange = viewModel::onBottomBarModeChange,
+        onImmersiveToggle = viewModel::onImmersiveToggle,
     )
 }
 
@@ -177,6 +178,7 @@ fun ThemeSettingsScreen(
     onResetStyleConfig: () -> Unit,
     onTopBarModeChange: (TopBarMode) -> Unit,
     onBottomBarModeChange: (BottomBarMode) -> Unit,
+    onImmersiveToggle: (Boolean) -> Unit,
     containerColor: Color = MaterialTheme.colorScheme.background,
     modifier: Modifier = Modifier,
 ) {
@@ -217,6 +219,7 @@ fun ThemeSettingsScreen(
             onResetStyleConfig = onResetStyleConfig,
             onTopBarModeChange = onTopBarModeChange,
             onBottomBarModeChange = onBottomBarModeChange,
+            onImmersiveToggle = onImmersiveToggle,
             showColorPicker = showColorPicker,
             onShowColorPicker = { showColorPicker = it },
         )
@@ -246,6 +249,7 @@ private fun LazyListScope.ThemeSettingsContent(
     onResetStyleConfig: () -> Unit,
     onTopBarModeChange: (TopBarMode) -> Unit,
     onBottomBarModeChange: (BottomBarMode) -> Unit,
+    onImmersiveToggle: (Boolean) -> Unit,
     showColorPicker: Boolean,
     onShowColorPicker: (Boolean) -> Unit,
 ) {
@@ -477,6 +481,19 @@ private fun LazyListScope.ThemeSettingsContent(
                             Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
+
+                    ListItem(
+                        headlineContent = { Text(text = "沉浸式页面") },
+                        supportingContent = { Text(text = "内容延伸到状态栏下方") },
+                        trailingContent = {
+                            Switch(
+                                checked = theme.isImmersive,
+                                onCheckedChange = { onImmersiveToggle(it) },
+                            )
+                        },
+                        colors = listItemColors(),
+                        modifier = Modifier.clip(middleItemShape()),
+                    )
 
                     ExpressivenessSection(
                         styleConfig = theme.style,

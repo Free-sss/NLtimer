@@ -102,6 +102,7 @@ fun NLtimerScaffold(
     } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
     val useCollapsed = theme.topBarMode == TopBarMode.COLLAPSED && !isSecondaryPage
+    val isImmersive = theme.isImmersive && !isSecondaryPage
     val topBarScrollBehavior = if (useCollapsed) {
         TopAppBarDefaults.enterAlwaysScrollBehavior()
     } else {
@@ -187,6 +188,7 @@ fun NLtimerScaffold(
                             AppCollapsedTopAppBar(
                                 title = topBarTitle,
                                 isDateTitle = isDateTitle,
+                                isImmersive = isImmersive,
                                 scrollBehavior = topBarScrollBehavior,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
@@ -202,6 +204,7 @@ fun NLtimerScaffold(
                             AppTopAppBar(
                                 title = topBarTitle,
                                 isDateTitle = isDateTitle,
+                                isImmersive = isImmersive,
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                                 momentFilterLabel = momentFilterLabel,
@@ -221,7 +224,7 @@ fun NLtimerScaffold(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
-                            top = padding.calculateTopPadding(),
+                            top = if (isImmersive) 0.dp else padding.calculateTopPadding(),
                             bottom = if (isAnyFloating) 0.dp else if (!isSecondaryPage) padding.calculateBottomPadding() else 0.dp,
                         ),
                 )

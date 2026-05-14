@@ -68,6 +68,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             showTimeSideBar = prefs[showTimeSideBarKey] != false,
             topBarMode = try { TopBarMode.valueOf(prefs[topBarModeKey] ?: TopBarMode.PINNED.name) } catch (_: IllegalArgumentException) { TopBarMode.PINNED },
             bottomBarMode = try { BottomBarMode.valueOf(prefs[bottomBarModeKey] ?: BottomBarMode.STANDARD.name) } catch (_: IllegalArgumentException) { BottomBarMode.STANDARD },
+            isImmersive = prefs[isImmersiveKey] == true,
             style = StyleConfig(
                 cornerPreset = try { CornerPreset.valueOf(prefs[cornerPresetKey] ?: CornerPreset.STANDARD.name) } catch (_: IllegalArgumentException) { CornerPreset.STANDARD },
                 borderPreset = try { BorderPreset.valueOf(prefs[borderPresetKey] ?: BorderPreset.STANDARD.name) } catch (_: IllegalArgumentException) { BorderPreset.STANDARD },
@@ -108,6 +109,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
             prefs[wavyProgressKey] = theme.style.wavyProgress.name
             prefs[topBarModeKey] = theme.topBarMode.name
             prefs[bottomBarModeKey] = theme.bottomBarMode.name
+            prefs[isImmersiveKey] = theme.isImmersive
         }
     }
 
@@ -307,6 +309,7 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         private val hasSeenIntroKey = booleanPreferencesKey("has_seen_intro")
         private val topBarModeKey = stringPreferencesKey("top_bar_mode")
         private val bottomBarModeKey = stringPreferencesKey("bottom_bar_mode")
+        private val isImmersiveKey = booleanPreferencesKey("is_immersive")
 
         private val gridColumnsKey = intPreferencesKey("home_grid_columns")
         private val gridMinRowHeightKey = intPreferencesKey("home_grid_min_row_height")
