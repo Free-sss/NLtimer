@@ -24,9 +24,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,6 +40,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
+private data class ItemLayoutInfo(
+    val y: Float,
+    val height: Float,
+)
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -54,9 +62,72 @@ fun <T : CategorizableItem> CategoryPickerDialog(
     onAddNew: (() -> Unit)? = null,
 ) {
     var sortMode by remember { mutableStateOf(SortMode.FREQUENCY) }
-    val reorderedGroups = remember { mutableStateListOf<CategoryGroup<T>>().apply { addAll(categoryGroups) } }
+    val reorderedGroups = remember { mutableStateListOf<CategoryGroup<T>>() }
+
+    LaunchedEffect(categoryGroups) {
+        if (reorderedGroups.toList() != categoryGroups) {
+            reorderedGroups.clear()
+            reorderedGroups.addAll(categoryGroups)
+        }
+    }
+
     var draggedIndex by remember { mutableIntStateOf(-1) }
-    var dragOffsetY by remember { mutableStateOf(0f) }
+    var dragOffsetY by remember { mutableFloatStateOf(0f) }
+    var currentTargetIndex by remember { mutableIntStateOf(-1) }
+
+    val itemLayouts = remember { mutableStateMapOf<Int, ItemLayoutInfo>() }
+    val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
+
+    fun computeTargetIndex(draggedIdx: Int, offsetY: Float): Int {
+        val draggedInfo = itemLayouts[draggedIdx] ?: return draggedIdx
+        val draggedCenter = draggedInfo.y + draggedInfo.height / 2f + offsetY
+        val spacing = 8.dp.value
+
+        var bestIndex = draggedIdx
+        var bestDist = Float.MAX_VALUE
+
+        for ((idx, info) in itemLayouts) {
+            if (idx == draggedIdx) continue
+            val itemCenter = info.y + info.height / 2f
+            val dist = kotlin.math.abs(draggedCenter - itemCenter)
+            if (dist < bestDist && dist < info.height / 2f + draggedInfo.height / 2f + spacing) {
+                bestDist = dist
+                bestIndex = idx
+            }
+        }
+
+        if (bestIndex == draggedIdx) return draggedIdx
+
+        val targetInfo = itemLayouts[bestIndex] ?: return draggedIdx
+        val targetCenter = targetInfo.y + targetInfo.height / 2f
+
+        return if (draggedCenter < targetCenter) {
+            if (bestIndex > draggedIdx) bestIndex - 1 else bestIndex
+        } else {
+            if (bestIndex < draggedIdx) bestIndex + 1 else bestIndex
+        }
+    }
+
+    fun computeShiftOffsets(draggedIdx: Int, targetIdx: Int) {
+        shiftOffsets.clear()
+        if (draggedIdx == -1 || targetIdx == -1 || draggedIdx == targetIdx) return
+
+        val draggedInfo = itemLayouts[draggedIdx] ?: return
+        val draggedHeight = draggedInfo.height
+        val spacing = 8.dp.value
+
+        if (targetIdx > draggedIdx) {
+            for (i in (draggedIdx + 1)..targetIdx) {
+                val info = itemLayouts[i] ?: continue
+                shiftOffsets[i] = -(draggedHeight + spacing)
+            }
+        } else {
+            for (i in targetIdx until draggedIdx) {
+                val info = itemLayouts[i] ?: continue
+                shiftOffsets[i] = draggedHeight + spacing
+            }
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -82,6 +153,7 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                     }
 
                     CategoryGroupCard(
+                        index = index,
                         groupName = group.name,
                         items = sortedItems,
                         selectedId = selectedId,
@@ -91,27 +163,40 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                         onItemsSelected = onItemsSelected,
                         isDragging = draggedIndex == index,
                         dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
-                        onDragStart = { draggedIndex = index },
-                        onDrag = { dragOffsetY += it },
+                        shiftOffset = shiftOffsets[index] ?: 0f,
+                        onDragStart = {
+                            draggedIndex = index
+                            currentTargetIndex = index
+                            dragOffsetY = 0f
+                        },
+                        onDrag = { delta ->
+                            dragOffsetY += delta
+                            val target = computeTargetIndex(index, dragOffsetY)
+                            if (target != currentTargetIndex) {
+                                currentTargetIndex = target
+                                computeShiftOffsets(index, target)
+                            }
+                        },
                         onDragEnd = {
-                            if (draggedIndex != -1 && dragOffsetY != 0f) {
-                                val targetIndex = calculateTargetIndex(
-                                    draggedIndex,
-                                    dragOffsetY,
-                                    reorderedGroups.size,
-                                )
-                                if (targetIndex != draggedIndex && targetIndex in reorderedGroups.indices) {
-                                    val item = reorderedGroups.removeAt(draggedIndex)
-                                    reorderedGroups.add(targetIndex, item)
-                                    onCategoryReordered(reorderedGroups.map { it.id })
-                                }
+                            val target = currentTargetIndex
+                            if (draggedIndex != -1 && target != -1 && target != draggedIndex && target in reorderedGroups.indices) {
+                                val item = reorderedGroups.removeAt(draggedIndex)
+                                reorderedGroups.add(target.coerceIn(0, reorderedGroups.size), item)
+                                onCategoryReordered(reorderedGroups.map { it.id })
                             }
                             draggedIndex = -1
                             dragOffsetY = 0f
+                            currentTargetIndex = -1
+                            shiftOffsets.clear()
                         },
                         onDragCancel = {
                             draggedIndex = -1
                             dragOffsetY = 0f
+                            currentTargetIndex = -1
+                            shiftOffsets.clear()
+                        },
+                        onPositioned = { idx, y, height ->
+                            itemLayouts[idx] = ItemLayoutInfo(y, height)
                         },
                     )
                 }
@@ -210,4 +295,3 @@ private fun SortChip(
         ),
     )
 }
-

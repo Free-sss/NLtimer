@@ -1,6 +1,7 @@
 package com.nltimer.core.behaviorui.sheet
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -23,12 +24,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -38,11 +43,10 @@ import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.styledAlpha
 import kotlin.math.roundToInt
 
-private const val APPROX_ITEM_HEIGHT = 80f
-
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 internal fun <T : CategorizableItem> CategoryGroupCard(
+    index: Int,
     groupName: String,
     items: List<T>,
     selectedId: Long?,
@@ -52,20 +56,49 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
     onItemsSelected: (Set<Long>) -> Unit,
     isDragging: Boolean,
     dragOffsetY: Float,
+    shiftOffset: Float,
     onDragStart: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
     onDragCancel: () -> Unit,
+    onPositioned: (index: Int, y: Float, height: Float) -> Unit,
 ) {
+    val shiftAnimatable = remember { Animatable(0f) }
+
+    LaunchedEffect(shiftOffset) {
+        if (!isDragging) {
+            shiftAnimatable.animateTo(
+                shiftOffset,
+                animationSpec = tween(durationMillis = 200),
+            )
+        }
+    }
+
+    LaunchedEffect(isDragging) {
+        if (isDragging) {
+            shiftAnimatable.snapTo(0f)
+        }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .offset { IntOffset(0, if (isDragging) dragOffsetY.roundToInt() else 0) }
+            .onGloballyPositioned { coordinates ->
+                val pos = coordinates.positionInRoot()
+                onPositioned(index, pos.y, coordinates.size.height.toFloat())
+            }
+            .offset {
+                val dy = if (isDragging) {
+                    dragOffsetY.roundToInt()
+                } else {
+                    shiftAnimatable.value.roundToInt()
+                }
+                IntOffset(0, dy)
+            }
             .shadow(
                 elevation = if (isDragging) 8.dp else 0.dp,
                 shape = RoundedCornerShape(8.dp),
-            )
-            .animateContentSize(),
+            ),
         shape = RoundedCornerShape(8.dp),
         color = if (isDragging) {
             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = styledAlpha(0.8f))
@@ -82,9 +115,9 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
                     imageVector = Icons.Default.DragHandle,
                     contentDescription = "拖拽排序",
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(32.dp)
                         .alpha(0.5f)
-                        .pointerInput(Unit) {
+                        .pointerInput(index) {
                             detectDragGesturesAfterLongPress(
                                 onDragStart = { onDragStart() },
                                 onDrag = { change, dragAmount ->
@@ -182,14 +215,4 @@ private fun <T : CategorizableItem> ItemChip(
             )
         }
     }
-}
-
-internal fun calculateTargetIndex(
-    draggedIndex: Int,
-    dragOffsetY: Float,
-    totalItems: Int,
-): Int {
-    val itemHeight = APPROX_ITEM_HEIGHT
-    val offset = (dragOffsetY / itemHeight).roundToInt()
-    return (draggedIndex + offset).coerceIn(0, totalItems - 1)
 }
