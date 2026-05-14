@@ -48,6 +48,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
@@ -94,10 +95,9 @@ fun HomeScreen(
     val isFloatingBottomBar = theme.bottomBarMode == BottomBarMode.FLOATING
     var showTimeLabelSettings by remember { mutableStateOf(false) }
 
-    val activeBehaviorId by remember(uiState.rows) {
+    val activeBehaviorId by remember(uiState.momentCells) {
         derivedStateOf {
-            uiState.rows
-                .flatMap { it.cells }
+            uiState.momentCells
                 .firstOrNull { it.isCurrent && it.behaviorId != null }
                 ?.behaviorId
         }
@@ -376,8 +376,9 @@ private fun HomeScreenPreview() {
         Activity(1, "Activity 1", "😊"),
         Activity(2, "Activity 2", "🚀")
     )
-    val sampleUiState = HomeUiState(
-        isLoading = false,
+    val sampleSection = GridDaySection(
+        date = java.time.LocalDate.of(2026, 5, 13),
+        label = "今天 5/13",
         rows = listOf(
             GridRowUiState(
                 rowId = "1",
@@ -391,12 +392,16 @@ private fun HomeScreenPreview() {
                         activityName = "Activity 1",
                         tags = listOf(TagUiState(1, "Tag 1", null)),
                         status = BehaviorNature.ACTIVE,
-                        isCurrent = true
+                        isCurrent = true,
                     )
                 )
             )
         ),
-        selectedTimeHour = 9
+    )
+    val sampleUiState = HomeUiState(
+        isLoading = false,
+        gridSections = listOf(sampleSection),
+        selectedTimeHour = 9,
     )
 
     NLtimerTheme {

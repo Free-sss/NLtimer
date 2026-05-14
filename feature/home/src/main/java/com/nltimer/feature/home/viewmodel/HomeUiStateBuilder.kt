@@ -50,22 +50,13 @@ class HomeUiStateBuilder {
         val addCell = buildAddCell(todayCells, now)
         val gridSections = buildGridSections(allCellsRaw, sortedBehaviors, today, addCell, now, gridColumns)
         val items = buildListItems(allCellsRaw, today)
-        val (todayRows, currentRowId) = buildGridRows(
-            allCells = todayCells + addCell,
-            sortedBehaviors = sortedBehaviors.filter { isToday(it, today) },
-            now = now,
-            gridColumns = gridColumns,
-            isCurrentDay = true,
-        )
 
         val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors)
 
         return HomeUiState(
-            rows = todayRows,
             items = items,
             gridSections = gridSections,
             momentCells = momentCells,
-            currentRowId = currentRowId,
             isLoading = false,
             selectedTimeHour = now.hour,
             hasActiveBehavior = hasActive,
@@ -167,8 +158,14 @@ class HomeUiStateBuilder {
             cells = listOf(addCell),
         )
         return HomeUiState(
-            rows = listOf(row),
-            currentRowId = row.rowId,
+            gridSections = listOf(
+                GridDaySection(
+                    date = LocalDate.now(),
+                    label = "今天",
+                    rows = listOf(row),
+                )
+            ),
+            momentCells = emptyList(),
             isLoading = false,
             selectedTimeHour = now.hour,
             hasActiveBehavior = false,

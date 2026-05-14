@@ -97,8 +97,8 @@ class HomeViewModelTest {
         advanceUntilIdle()
         val uiState = viewModel.uiState.value
         assertFalse(uiState.isLoading)
-        // By default buildUiState returns one empty placeholder row if no behaviors
-        assertEquals(1, uiState.rows.size)
+        assertEquals(1, uiState.gridSections.size)
+        assertEquals(1, uiState.gridSections.first().rows.size)
     }
 
     @Test

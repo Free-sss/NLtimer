@@ -35,9 +35,9 @@ internal fun HomeSheetRouter(
 ) {
     if (uiState.addSheetMode == null) return
 
-    val existingBehaviors by remember(uiState.rows) {
+    val existingBehaviors by remember(uiState.momentCells) {
         derivedStateOf {
-            uiState.rows.flatMap { it.cells }
+            uiState.momentCells
                 .filter { it.behaviorId != null && it.status != null }
                 .map { cell ->
                     Behavior(
