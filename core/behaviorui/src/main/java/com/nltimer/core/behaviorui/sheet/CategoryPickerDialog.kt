@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -14,9 +15,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SortByAlpha
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -78,6 +82,9 @@ fun <T : CategorizableItem> CategoryPickerDialog(
     val itemLayouts = remember { mutableStateMapOf<Int, ItemLayoutInfo>() }
     val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
 
+    var allCollapsed by remember { mutableStateOf(false) }
+    val collapsedStates = remember { mutableStateMapOf<Int, Boolean>() }
+
     fun computeTargetIndex(draggedIdx: Int, offsetY: Float): Int {
         val draggedInfo = itemLayouts[draggedIdx] ?: return draggedIdx
         val draggedCenter = draggedInfo.y + draggedInfo.height / 2f + offsetY
@@ -134,84 +141,140 @@ fun <T : CategorizableItem> CategoryPickerDialog(
         title = { CategoryPickerTitle(title, sortMode) { sortMode = it } },
         text = {
             val listState = rememberLazyListState()
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(400.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(vertical = 4.dp),
-            ) {
-                itemsIndexed(
-                    items = reorderedGroups,
-                    key = { _, group -> group.id }
-                ) { index, group ->
-                    val sortedItems = when (sortMode) {
-                        SortMode.FREQUENCY -> group.items.sortedByDescending { it.usageCount }
-                        SortMode.ALPHA -> group.items.sortedBy { it.itemName }
-                        SortMode.RECENT -> group.items.sortedByDescending { it.lastUsedTimestamp ?: 0L }
-                    }
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            val scrollZonePx = with(density) { 48.dp.toPx() }
 
-                    CategoryGroupCard(
-                        index = index,
-                        groupName = group.name,
-                        items = sortedItems,
-                        selectedId = selectedId,
-                        selectedIds = selectedIds,
-                        multiSelect = multiSelect,
-                        onItemSelected = onItemSelected,
-                        onItemsSelected = onItemsSelected,
-                        isDragging = draggedIndex == index,
-                        dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
-                        shiftOffset = shiftOffsets[index] ?: 0f,
-                        onDragStart = {
-                            draggedIndex = index
-                            currentTargetIndex = index
-                            dragOffsetY = 0f
-                        },
-                        onDrag = { delta ->
-                            dragOffsetY += delta
-                            val target = computeTargetIndex(index, dragOffsetY)
-                            if (target != currentTargetIndex) {
-                                currentTargetIndex = target
-                                computeShiftOffsets(index, target)
-                            }
-                        },
-                        onDragEnd = {
-                            val target = currentTargetIndex
-                            if (draggedIndex != -1 && target != -1 && target != draggedIndex && target in reorderedGroups.indices) {
-                                val item = reorderedGroups.removeAt(draggedIndex)
-                                reorderedGroups.add(target.coerceIn(0, reorderedGroups.size), item)
-                                onCategoryReordered(reorderedGroups.map { it.id })
-                            }
-                            draggedIndex = -1
-                            dragOffsetY = 0f
-                            currentTargetIndex = -1
-                            shiftOffsets.clear()
-                        },
-                        onDragCancel = {
-                            draggedIndex = -1
-                            dragOffsetY = 0f
-                            currentTargetIndex = -1
-                            shiftOffsets.clear()
-                        },
-                        onPositioned = { idx, y, height ->
-                            itemLayouts[idx] = ItemLayoutInfo(y, height)
-                        },
-                    )
+            LaunchedEffect(draggedIndex, dragOffsetY) {
+                if (draggedIndex == -1) return@LaunchedEffect
+                val draggedInfo = itemLayouts[draggedIndex] ?: return@LaunchedEffect
+                val itemTop = draggedInfo.y + dragOffsetY
+                val itemBottom = itemTop + draggedInfo.height
+                val viewportTop = 0f
+                val viewportSize = listState.layoutInfo.viewportSize.height.toFloat()
+                val viewportBottom = viewportTop + viewportSize
+
+                val scrollAmount = when {
+                    itemTop < viewportTop + scrollZonePx -> {
+                        val penetration = (viewportTop + scrollZonePx - itemTop).coerceAtMost(scrollZonePx)
+                        -penetration / scrollZonePx * 8f
+                    }
+                    itemBottom > viewportBottom - scrollZonePx -> {
+                        val penetration = (itemBottom - (viewportBottom - scrollZonePx)).coerceAtMost(scrollZonePx)
+                        penetration / scrollZonePx * 8f
+                    }
+                    else -> 0f
+                }
+
+                if (scrollAmount != 0f) {
+                    val current = listState.firstVisibleItemIndex
+                    val offset = listState.firstVisibleItemScrollOffset
+                    listState.scrollToItem(current, (offset + scrollAmount).toInt())
                 }
             }
+
+            LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp),
+                ) {
+                    itemsIndexed(
+                        items = reorderedGroups,
+                        key = { _, group -> group.id }
+                    ) { index, group ->
+                        val sortedItems = when (sortMode) {
+                            SortMode.FREQUENCY -> group.items.sortedByDescending { it.usageCount }
+                            SortMode.ALPHA -> group.items.sortedBy { it.itemName }
+                            SortMode.RECENT -> group.items.sortedByDescending { it.lastUsedTimestamp ?: 0L }
+                        }
+
+                        val collapsed = allCollapsed || (collapsedStates[index] == true)
+
+                        CategoryGroupCard(
+                            index = index,
+                            groupName = group.name,
+                            items = sortedItems,
+                            selectedId = selectedId,
+                            selectedIds = selectedIds,
+                            multiSelect = multiSelect,
+                            onItemSelected = onItemSelected,
+                            onItemsSelected = onItemsSelected,
+                            isDragging = draggedIndex == index,
+                            dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
+                            shiftOffset = shiftOffsets[index] ?: 0f,
+                            collapsed = collapsed,
+                            onDragStart = {
+                                draggedIndex = index
+                                currentTargetIndex = index
+                                dragOffsetY = 0f
+                            },
+                            onDrag = { delta ->
+                                dragOffsetY += delta
+                                val target = computeTargetIndex(index, dragOffsetY)
+                                if (target != currentTargetIndex) {
+                                    currentTargetIndex = target
+                                    computeShiftOffsets(index, target)
+                                }
+                            },
+                            onDragEnd = {
+                                val target = currentTargetIndex
+                                if (draggedIndex != -1 && target != -1 && target != draggedIndex && target in reorderedGroups.indices) {
+                                    val item = reorderedGroups.removeAt(draggedIndex)
+                                    reorderedGroups.add(target.coerceIn(0, reorderedGroups.size), item)
+                                    onCategoryReordered(reorderedGroups.map { it.id })
+                                }
+                                draggedIndex = -1
+                                dragOffsetY = 0f
+                                currentTargetIndex = -1
+                                shiftOffsets.clear()
+                            },
+                            onDragCancel = {
+                                draggedIndex = -1
+                                dragOffsetY = 0f
+                                currentTargetIndex = -1
+                                shiftOffsets.clear()
+                            },
+                            onPositioned = { idx, y, height ->
+                                itemLayouts[idx] = ItemLayoutInfo(y, height)
+                            },
+                        )
+                    }
+                }
         },
         confirmButton = {
-            if (onAddNew != null) {
-                TextButton(onClick = onAddNew) {
-                    Text("添加")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FilledTonalIconButton(
+                    onClick = {
+                        allCollapsed = !allCollapsed
+                        if (allCollapsed) {
+                            reorderedGroups.indices.forEach { collapsedStates[it] = true }
+                        } else {
+                            collapsedStates.clear()
+                        }
+                    },
+                    modifier = Modifier.size(32.dp),
+                    shape = RoundedCornerShape(8.dp),
+                ) {
+                    Icon(
+                        imageVector = if (allCollapsed) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                        contentDescription = if (allCollapsed) "展开全部" else "收纳全部",
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("关闭")
+                Spacer(modifier = Modifier.weight(1f))
+                if (onAddNew != null) {
+                    TextButton(onClick = onAddNew) {
+                        Text("添加")
+                    }
+                }
+                TextButton(onClick = onDismiss) {
+                    Text("关闭")
+                }
             }
         },
     )

@@ -1,7 +1,10 @@
 package com.nltimer.core.behaviorui.sheet
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -30,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -57,6 +59,7 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
     isDragging: Boolean,
     dragOffsetY: Float,
     shiftOffset: Float,
+    collapsed: Boolean,
     onDragStart: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -144,30 +147,38 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
                 )
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+            AnimatedVisibility(
+                visible = !collapsed,
+                enter = expandVertically(animationSpec = tween(200)),
+                exit = shrinkVertically(animationSpec = tween(200)),
             ) {
-                items.forEach { item ->
-                    val isSelected = if (multiSelect) {
-                        item.itemId in selectedIds
-                    } else {
-                        item.itemId == selectedId
-                    }
-                    ItemChip(
-                        item = item,
-                        isSelected = isSelected,
-                        onClick = {
-                            if (multiSelect) {
-                                val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
-                                onItemsSelected(newIds)
+                Column {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        items.forEach { item ->
+                            val isSelected = if (multiSelect) {
+                                item.itemId in selectedIds
                             } else {
-                                onItemSelected(item.itemId)
+                                item.itemId == selectedId
                             }
-                        },
-                    )
+                            ItemChip(
+                                item = item,
+                                isSelected = isSelected,
+                                onClick = {
+                                    if (multiSelect) {
+                                        val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
+                                        onItemsSelected(newIds)
+                                    } else {
+                                        onItemSelected(item.itemId)
+                                    }
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
