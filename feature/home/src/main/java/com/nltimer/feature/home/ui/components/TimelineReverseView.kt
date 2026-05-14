@@ -78,6 +78,28 @@ fun TimelineReverseView(
 
     val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
 
+    val dateIndexMap = remember(timelineItems) {
+        val map = mutableMapOf<Int, String>()
+        timelineItems.forEachIndexed { index, item ->
+            if (item is TimelineDisplayItem.Divider) map[index] = item.label
+        }
+        map
+    }
+
+    val visibleDateLabelState = LocalVisibleDateLabel.current
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
+    }
+
     LaunchedEffect(timelineItems, hasReachedEarliest) {
         if (hasReachedEarliest) return@LaunchedEffect
         snapshotFlow {

@@ -46,6 +46,28 @@ fun BehaviorLogView(
 
     val displayItems = remember(items) { reverseGroupedItems(items) }
 
+    val dateIndexMap = remember(displayItems) {
+        val map = mutableMapOf<Int, String>()
+        displayItems.forEachIndexed { index, item ->
+            if (item is HomeListItem.DayDivider) map[index] = item.label
+        }
+        map
+    }
+
+    val visibleDateLabelState = LocalVisibleDateLabel.current
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
+    }
+
     LaunchedEffect(displayItems, hasReachedEarliest) {
         if (hasReachedEarliest) return@LaunchedEffect
         snapshotFlow {

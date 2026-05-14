@@ -1,6 +1,5 @@
 package com.nltimer.feature.home.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,7 +29,6 @@ import java.time.LocalTime
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
@@ -101,7 +99,7 @@ fun TimeAxisGrid(
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         if (hasReachedEarliest) item("reached-earliest") { ReachedEarliestIndicator() }
         sections.forEach { section ->
-            stickyHeader(key = "header-${section.date}") {
+            item(key = "header-${section.date}") {
                 DayDividerRow(label = section.label)
             }
             items(items = section.rows, key = { it.rowId }) { row ->

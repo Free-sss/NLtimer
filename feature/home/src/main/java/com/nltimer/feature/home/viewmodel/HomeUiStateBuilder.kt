@@ -14,12 +14,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 class HomeUiStateBuilder {
-
-    private val dayOfWeekFormatter = DateTimeFormatter.ofPattern("E")
 
     companion object {
         const val STATE_TIMEOUT_MS = 5_000L
@@ -80,12 +77,11 @@ class HomeUiStateBuilder {
 
     private fun dayLabel(date: LocalDate, today: LocalDate): String {
         val datePart = "${date.monthValue}月${date.dayOfMonth}日"
-        val dayOfWeek = date.format(dayOfWeekFormatter)
         val days = ChronoUnit.DAYS.between(date, today)
         return when (days) {
-            0L -> "今天 $datePart $dayOfWeek"
-            1L -> "昨天 $datePart $dayOfWeek"
-            else -> "$datePart $dayOfWeek"
+            0L -> "今天 $datePart"
+            1L -> "昨天 $datePart"
+            else -> datePart
         }
     }
 
