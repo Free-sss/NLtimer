@@ -107,6 +107,14 @@ class ActivityManagementRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun reorderGroups(orderedIds: List<Long>) {
+        database.withTransaction {
+            orderedIds.forEachIndexed { index, id ->
+                groupDao.updateSortOrder(id, index)
+            }
+        }
+    }
+
     override suspend fun initializePresets() {
         val existingPresets = activityDao.getAllPresetsSync()
         if (existingPresets.isEmpty()) {

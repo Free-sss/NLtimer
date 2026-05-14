@@ -128,7 +128,9 @@ class DialogConfigViewModelTest {
         override fun getThemeFlow(): Flow<Theme> = _theme
         override suspend fun updateTheme(theme: Theme) { _theme.value = theme }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = flowOf(emptyList())
         override suspend fun saveTagCategories(categories: Set<String>) {}
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {}
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = dialogConfigFlow
         override suspend fun updateDialogConfig(config: DialogGridConfig) {
             updateDialogConfigCalled = true

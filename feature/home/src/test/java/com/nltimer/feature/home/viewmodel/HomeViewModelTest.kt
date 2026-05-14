@@ -627,7 +627,9 @@ class HomeViewModelTest {
             _theme.value = theme
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = flowOf(emptyList())
         override suspend fun saveTagCategories(categories: Set<String>) {}
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {}
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
         override suspend fun updateDialogConfig(config: DialogGridConfig) {}
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
@@ -657,6 +659,7 @@ class HomeViewModelTest {
         override suspend fun addGroup(name: String): Long = 1L
         override suspend fun renameGroup(id: Long, newName: String) {}
         override suspend fun deleteGroup(id: Long) {}
+        override suspend fun reorderGroups(orderedIds: List<Long>) {}
         override suspend fun initializePresets() {}
         override suspend fun getTagIdsForActivity(activityId: Long): List<Long> = emptyList()
         override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {}

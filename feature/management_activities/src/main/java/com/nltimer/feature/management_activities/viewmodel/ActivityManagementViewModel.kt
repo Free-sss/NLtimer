@@ -66,11 +66,17 @@ class ActivityManagementViewModel @Inject constructor(
                 GroupWithActivities(group, emptyList())
             }
             _uiState.update {
+                val groupIds = groups.map { group -> group.id }.toSet()
                 it.copy(
                     isLoading = false,
                     uncategorizedActivities = uncategorized,
                     groups = groupsWithActivities,
                     allGroups = groups,
+                    expandedGroupIds = if (it.groups.isEmpty() && it.expandedGroupIds.isEmpty()) {
+                        groupIds
+                    } else {
+                        it.expandedGroupIds + (groupIds - it.expandedGroupIds)
+                    },
                 )
             }
         }
@@ -118,6 +124,24 @@ class ActivityManagementViewModel @Inject constructor(
         val current = _uiState.value.expandedGroupIds
         val newSet = if (current.contains(groupId)) current - groupId else current + groupId
         _uiState.update { it.copy(expandedGroupIds = newSet) }
+    }
+
+    fun setAllGroupsExpanded(expanded: Boolean) {
+        _uiState.update { state ->
+            state.copy(
+                expandedGroupIds = if (expanded) {
+                    state.groups.map { it.group.id }.toSet()
+                } else {
+                    emptySet()
+                },
+            )
+        }
+    }
+
+    fun reorderGroups(orderedIds: List<Long>) {
+        viewModelScope.launch {
+            repository.reorderGroups(orderedIds)
+        }
     }
 
     fun showAddActivityDialog() {

@@ -51,4 +51,7 @@ interface ActivityGroupDao {
 
     @Query("SELECT * FROM activity_groups WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): ActivityGroupEntity?
+
+    @Query("UPDATE activity_groups SET sortOrder = :sortOrder WHERE id = :id")
+    suspend fun updateSortOrder(id: Long, sortOrder: Int)
 }

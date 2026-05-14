@@ -382,6 +382,7 @@ class TagManagementViewModelTest {
         override suspend fun addGroup(name: String): Long = 1L
         override suspend fun renameGroup(id: Long, newName: String) {}
         override suspend fun deleteGroup(id: Long) {}
+        override suspend fun reorderGroups(orderedIds: List<Long>) {}
         override suspend fun initializePresets() {}
         override suspend fun getTagIdsForActivity(activityId: Long): List<Long> = emptyList()
         override suspend fun setActivityTagBindings(activityId: Long, tagIds: List<Long>) {}
@@ -401,10 +402,16 @@ class TagManagementViewModelTest {
         override fun getThemeFlow(): Flow<com.nltimer.core.designsystem.theme.Theme> = flowOf(com.nltimer.core.designsystem.theme.Theme())
         override suspend fun updateTheme(theme: com.nltimer.core.designsystem.theme.Theme) {}
         override fun getSavedTagCategories(): Flow<Set<String>> = _tagCategories
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = _tagCategories.map { it.toList() }
         override suspend fun saveTagCategories(categories: Set<String>) {
             saveTagCategoriesCalled = true
             lastSavedTagCategories = categories
             _tagCategories.value = categories
+        }
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {
+            saveTagCategoriesCalled = true
+            lastSavedTagCategories = categories.toSet()
+            _tagCategories.value = categories.toSet()
         }
         override fun getDialogConfigFlow(): Flow<com.nltimer.core.data.model.DialogGridConfig> = flowOf(com.nltimer.core.data.model.DialogGridConfig())
         override suspend fun updateDialogConfig(config: com.nltimer.core.data.model.DialogGridConfig) {}

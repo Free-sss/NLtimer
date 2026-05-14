@@ -18,8 +18,12 @@ interface SettingsPrefs {
 
     /** 获取已保存的标签分类集合 */
     fun getSavedTagCategories(): Flow<Set<String>>
+    /** 获取已保存的标签分类顺序 */
+    fun getSavedTagCategoriesOrder(): Flow<List<String>>
     /** 保存标签分类列表到持久化存储 */
     suspend fun saveTagCategories(categories: Set<String>)
+    /** 保存标签分类顺序到持久化存储 */
+    suspend fun saveTagCategoriesOrder(categories: List<String>)
 
     /** 以 Flow 形式监听弹窗配置 */
     fun getDialogConfigFlow(): Flow<DialogGridConfig>

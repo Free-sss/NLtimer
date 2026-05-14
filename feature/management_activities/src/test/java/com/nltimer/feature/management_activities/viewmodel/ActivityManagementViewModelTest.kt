@@ -292,6 +292,12 @@ class ActivityManagementViewModelTest {
         override suspend fun deleteGroup(id: Long) {
             deletedGroupId = id
         }
+        override suspend fun reorderGroups(orderedIds: List<Long>) {
+            val order = orderedIds.withIndex().associate { it.value to it.index }
+            _groups.value = _groups.value
+                .map { group -> group.copy(sortOrder = order[group.id] ?: group.sortOrder) }
+                .sortedWith(compareBy({ it.sortOrder }, { it.id }))
+        }
         override suspend fun initializePresets() {
             initializePresetsCalled = true
         }

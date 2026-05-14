@@ -4,24 +4,34 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -33,7 +43,9 @@ import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
+import com.nltimer.feature.tag_management.model.CategoryWithTags
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
+import kotlin.math.abs
 
 @Composable
 fun TagManagementScreen(
@@ -43,89 +55,165 @@ fun TagManagementScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val dragFabState = rememberDragFabState()
+    val reorderedCategories = remember { mutableStateListOf<CategoryWithTags>() }
+    var draggedIndex by remember { mutableIntStateOf(-1) }
+    var dragOffsetY by remember { mutableFloatStateOf(0f) }
+    var targetIndex by remember { mutableIntStateOf(-1) }
+    val itemLayouts = remember { mutableStateMapOf<Int, Pair<Float, Float>>() }
+    val shiftOffsets = remember { mutableStateMapOf<Int, Float>() }
+    val allExpanded = uiState.categories.isNotEmpty() &&
+        uiState.categories.all { it.categoryName in uiState.expandedCategoryNames }
+
+    LaunchedEffect(uiState.categories) {
+        if (draggedIndex == -1 && reorderedCategories.toList() != uiState.categories) {
+            reorderedCategories.clear()
+            reorderedCategories.addAll(uiState.categories)
+        }
+    }
+
+    fun computeTargetIndex(source: Int, offsetY: Float): Int {
+        val sourceInfo = itemLayouts[source] ?: return source
+        val sourceCenter = sourceInfo.first + sourceInfo.second / 2f + offsetY
+        return itemLayouts
+            .filterKeys { it != source }
+            .minByOrNull { (_, info) -> abs(sourceCenter - (info.first + info.second / 2f)) }
+            ?.key
+            ?.takeIf { index ->
+                val info = itemLayouts[index] ?: return@takeIf false
+                abs(sourceCenter - (info.first + info.second / 2f)) < (sourceInfo.second + info.second) / 2f
+            }
+            ?: source
+    }
+
+    fun updateShiftOffsets(source: Int, target: Int) {
+        shiftOffsets.clear()
+        if (source == target) return
+        val sourceHeight = itemLayouts[source]?.second ?: return
+        val shift = sourceHeight + 8f
+        if (target > source) {
+            for (index in (source + 1)..target) shiftOffsets[index] = -shift
+        } else {
+            for (index in target until source) shiftOffsets[index] = shift
+        }
+    }
 
     Box(
         modifier = modifier
             .onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
-        Scaffold(
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-            ) {
-                if (uiState.isLoading) {
-                    LoadingScreen()
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        item {
-                            val items = uiState.uncategorizedTags.map { tag ->
-                                ManagementTagItem(tag)
-                            }
-                            CategoryGroupCard(
-                                index = 0,
-                                groupName = "默认",
-                                items = items,
-                                collapsed = false,
-                                showDragHandle = false,
-                                emptyText = "暂无标签",
-                                onItemSelected = { id ->
-                                    uiState.uncategorizedTags
-                                        .firstOrNull { it.id == id }
-                                        ?.let(viewModel::showEditTagDialog)
-                                },
-                                onItemLongClick = { id ->
-                                    uiState.uncategorizedTags
-                                        .firstOrNull { it.id == id }
-                                        ?.let { viewModel.showMoveTagDialog(it, null) }
-                                },
-                                onAddItem = { viewModel.showAddTagDialog(null) },
-                            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (uiState.isLoading) {
+                LoadingScreen()
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 16.dp, top = 4.dp, end = 16.dp, bottom = 112.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    item {
+                        val items = uiState.uncategorizedTags.map { tag ->
+                            ManagementTagItem(tag)
                         }
+                        CategoryGroupCard(
+                            index = 0,
+                            groupName = "默认",
+                            items = items,
+                            collapsed = false,
+                            showDragHandle = false,
+                            emptyText = "暂无标签",
+                            onItemSelected = { id ->
+                                uiState.uncategorizedTags
+                                    .firstOrNull { it.id == id }
+                                    ?.let(viewModel::showEditTagDialog)
+                            },
+                            onItemLongClick = { id ->
+                                uiState.uncategorizedTags
+                                    .firstOrNull { it.id == id }
+                                    ?.let { viewModel.showMoveTagDialog(it, null) }
+                            },
+                            onAddItem = { viewModel.showAddTagDialog(null) },
+                        )
+                    }
 
-                        itemsIndexed(
-                            items = uiState.categories,
-                            key = { _, category -> category.categoryName },
-                        ) { index, category ->
-                            val items = category.tags.map { tag ->
-                                ManagementTagItem(tag)
-                            }
-                            CategoryGroupCard(
-                                index = index + 1,
-                                groupName = category.categoryName,
-                                items = items,
-                                collapsed = false,
-                                showDragHandle = false,
-                                emptyText = "暂无标签",
-                                headerActions = {
-                                    TagCategoryActions(
-                                        categoryName = category.categoryName,
-                                        onRenameCategory = viewModel::showRenameCategoryDialog,
-                                        onDeleteCategory = {
-                                            viewModel.showDeleteCategoryDialog(
-                                                category.categoryName,
-                                                category.tags.size,
-                                            )
-                                        },
-                                    )
-                                },
-                                onItemSelected = { id ->
-                                    category.tags
-                                        .firstOrNull { it.id == id }
-                                        ?.let(viewModel::showEditTagDialog)
-                                },
-                                onItemLongClick = { id ->
-                                    category.tags
-                                        .firstOrNull { it.id == id }
-                                        ?.let { viewModel.showMoveTagDialog(it, category.categoryName) }
-                                },
-                                onAddItem = { viewModel.showAddTagDialog(category.categoryName) },
-                            )
+                    itemsIndexed(
+                        items = reorderedCategories,
+                        key = { _, category -> category.categoryName },
+                    ) { index, category ->
+                        val items = category.tags.map { tag ->
+                            ManagementTagItem(tag)
                         }
+                        CategoryGroupCard(
+                            index = index,
+                            groupName = category.categoryName,
+                            items = items,
+                            collapsed = category.categoryName !in uiState.expandedCategoryNames,
+                            showDragHandle = true,
+                            emptyText = "暂无标签",
+                            isDragging = draggedIndex == index,
+                            dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
+                            shiftOffset = shiftOffsets[index] ?: 0f,
+                            onToggleCollapsed = {
+                                viewModel.toggleCategoryExpand(category.categoryName)
+                            },
+                            headerActions = {
+                                TagCategoryActions(
+                                    categoryName = category.categoryName,
+                                    onRenameCategory = viewModel::showRenameCategoryDialog,
+                                    onDeleteCategory = {
+                                        viewModel.showDeleteCategoryDialog(
+                                            category.categoryName,
+                                            category.tags.size,
+                                        )
+                                    },
+                                )
+                            },
+                            onItemSelected = { id ->
+                                category.tags
+                                    .firstOrNull { it.id == id }
+                                    ?.let(viewModel::showEditTagDialog)
+                            },
+                            onItemLongClick = { id ->
+                                category.tags
+                                    .firstOrNull { it.id == id }
+                                    ?.let { viewModel.showMoveTagDialog(it, category.categoryName) }
+                            },
+                            onAddItem = { viewModel.showAddTagDialog(category.categoryName) },
+                            onDragStart = {
+                                draggedIndex = index
+                                targetIndex = index
+                                dragOffsetY = 0f
+                            },
+                            onDrag = { delta ->
+                                dragOffsetY += delta
+                                val nextTarget = computeTargetIndex(index, dragOffsetY)
+                                if (nextTarget != targetIndex) {
+                                    targetIndex = nextTarget
+                                    updateShiftOffsets(index, nextTarget)
+                                }
+                            },
+                            onDragEnd = {
+                                if (draggedIndex in reorderedCategories.indices &&
+                                    targetIndex in reorderedCategories.indices &&
+                                    draggedIndex != targetIndex
+                                ) {
+                                    val item = reorderedCategories.removeAt(draggedIndex)
+                                    reorderedCategories.add(targetIndex.coerceIn(0, reorderedCategories.size), item)
+                                    viewModel.reorderCategories(reorderedCategories.map { it.categoryName })
+                                }
+                                draggedIndex = -1
+                                targetIndex = -1
+                                dragOffsetY = 0f
+                                shiftOffsets.clear()
+                            },
+                            onDragCancel = {
+                                draggedIndex = -1
+                                targetIndex = -1
+                                dragOffsetY = 0f
+                                shiftOffsets.clear()
+                            },
+                            onPositioned = { idx, y, height ->
+                                itemLayouts[idx] = y to height
+                            },
+                        )
                     }
                 }
             }
@@ -143,6 +231,20 @@ fun TagManagementScreen(
                 }
             },
         )
+
+        FilledTonalIconButton(
+            onClick = { viewModel.setAllCategoriesExpanded(!allExpanded) },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .navigationBarsPadding()
+                .padding(start = 92.dp, bottom = 8.dp)
+                .size(56.dp),
+        ) {
+            Icon(
+                imageVector = if (allExpanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
+                contentDescription = if (allExpanded) "一键收纳" else "一键展开",
+            )
+        }
 
         TagManagementSheetRouter(
             uiState = uiState,

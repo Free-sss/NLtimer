@@ -381,9 +381,15 @@ class CategoriesViewModelTest {
 
         override fun getSavedTagCategories(): Flow<Set<String>> =
             MutableStateFlow(savedTagCategories)
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> =
+            MutableStateFlow(savedTagCategories.toList())
         override suspend fun saveTagCategories(categories: Set<String>) {
             saveTagCategoriesCalled = true
             lastSavedTagCategories = categories
+        }
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {
+            saveTagCategoriesCalled = true
+            lastSavedTagCategories = categories.toSet()
         }
 
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())

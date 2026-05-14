@@ -144,7 +144,9 @@ class ThemeSettingsViewModelTest {
             currentTheme.value = theme
         }
         override fun getSavedTagCategories(): Flow<Set<String>> = flowOf(emptySet())
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = flowOf(emptyList())
         override suspend fun saveTagCategories(categories: Set<String>) {}
+        override suspend fun saveTagCategoriesOrder(categories: List<String>) {}
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
 
         override suspend fun updateDialogConfig(config: DialogGridConfig) {}

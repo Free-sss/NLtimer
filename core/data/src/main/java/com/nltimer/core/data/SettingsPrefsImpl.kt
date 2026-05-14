@@ -116,9 +116,20 @@ class SettingsPrefsImpl(private val dataStore: DataStore<Preferences>) : Setting
         if (raw.isBlank()) emptySet() else raw.split(",").toSet()
     }
 
+    override fun getSavedTagCategoriesOrder(): Flow<List<String>> = dataStore.data.map { prefs ->
+        val raw = prefs[savedTagCategoriesKey] ?: ""
+        if (raw.isBlank()) emptyList() else raw.split(",").filter { it.isNotBlank() }
+    }
+
     override suspend fun saveTagCategories(categories: Set<String>) {
         dataStore.edit { prefs ->
             prefs[savedTagCategoriesKey] = categories.joinToString(",")
+        }
+    }
+
+    override suspend fun saveTagCategoriesOrder(categories: List<String>) {
+        dataStore.edit { prefs ->
+            prefs[savedTagCategoriesKey] = categories.distinct().joinToString(",")
         }
     }
 

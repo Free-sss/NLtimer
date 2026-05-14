@@ -34,11 +34,12 @@ class TagManagementViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TagManagementUiState())
     val uiState: StateFlow<TagManagementUiState> = _uiState.asStateFlow()
 
-    private val _addedCategories = MutableStateFlow<Set<String>>(emptySet())
+    private val _addedCategories = MutableStateFlow<List<String>>(emptyList())
+    private val _expandedCategories = MutableStateFlow<Set<String>>(emptySet())
 
     init {
         viewModelScope.launch {
-            _addedCategories.value = settingsPrefs.getSavedTagCategories().first()
+            _addedCategories.value = settingsPrefs.getSavedTagCategoriesOrder().first()
         }
         loadData()
         loadActivities()
@@ -52,12 +53,19 @@ class TagManagementViewModel @Inject constructor(
         ) { allTags, dbCategories, addedCategories ->
             val uncategorizedTags = allTags.filter { it.category.isNullOrBlank() }
             val categorizedTags = allTags.filter { !it.category.isNullOrBlank() }
-            val allCategories = (dbCategories.toSet() + addedCategories).toList().sorted()
+            val addedSet = addedCategories.toSet()
+            val dbCategorySet = dbCategories.toSet()
+            val orderedKnownCategories = addedCategories.filter { it in dbCategorySet || it in addedSet }
+            val missingCategories = (dbCategorySet - orderedKnownCategories.toSet()).sorted()
+            val allCategories = orderedKnownCategories + missingCategories
             val categoriesWithTags = allCategories.map { categoryName ->
                 CategoryWithTags(
                     categoryName = categoryName,
                     tags = categorizedTags.filter { it.category == categoryName },
                 )
+            }
+            if (_expandedCategories.value.isEmpty() && _uiState.value.categories.isEmpty()) {
+                _expandedCategories.value = allCategories.toSet()
             }
             _uiState.update {
                 it.copy(
@@ -65,6 +73,7 @@ class TagManagementViewModel @Inject constructor(
                     uncategorizedTags = uncategorizedTags,
                     categories = categoriesWithTags,
                     categoryNames = allCategories,
+                    expandedCategoryNames = _expandedCategories.value,
                 )
             }
         }
@@ -82,6 +91,30 @@ class TagManagementViewModel @Inject constructor(
 
     fun showAddTagDialog(category: String? = null) {
         _uiState.update { it.copy(dialogState = DialogState.AddTag(category)) }
+    }
+
+    fun toggleCategoryExpand(categoryName: String) {
+        val current = _expandedCategories.value
+        _expandedCategories.value = if (categoryName in current) current - categoryName else current + categoryName
+        _uiState.update { it.copy(expandedCategoryNames = _expandedCategories.value) }
+    }
+
+    fun setAllCategoriesExpanded(expanded: Boolean) {
+        _expandedCategories.value = if (expanded) {
+            _uiState.value.categories.map { it.categoryName }.toSet()
+        } else {
+            emptySet()
+        }
+        _uiState.update { it.copy(expandedCategoryNames = _expandedCategories.value) }
+    }
+
+    fun reorderCategories(orderedNames: List<String>) {
+        viewModelScope.launch {
+            val allCurrent = _uiState.value.categoryNames
+            val ordered = orderedNames + allCurrent.filterNot { it in orderedNames }
+            _addedCategories.value = ordered
+            settingsPrefs.saveTagCategoriesOrder(ordered)
+        }
     }
 
     fun showEditTagDialog(tag: Tag) {
@@ -149,9 +182,10 @@ class TagManagementViewModel @Inject constructor(
 
     fun addCategory(name: String) {
         viewModelScope.launch {
-            val updated = _addedCategories.value + name.trim()
+            val trimmed = name.trim()
+            val updated = (_addedCategories.value + trimmed).distinct()
             _addedCategories.value = updated
-            settingsPrefs.saveTagCategories(updated)
+            settingsPrefs.saveTagCategoriesOrder(updated)
             dismissDialog()
         }
     }
@@ -160,9 +194,12 @@ class TagManagementViewModel @Inject constructor(
         viewModelScope.launch {
             tagRepository.renameCategory(oldName, newName)
             if (oldName in _addedCategories.value) {
-                val updated = _addedCategories.value - oldName + newName
+                val updated = _addedCategories.value.map { if (it == oldName) newName else it }.distinct()
                 _addedCategories.value = updated
-                settingsPrefs.saveTagCategories(updated)
+                settingsPrefs.saveTagCategoriesOrder(updated)
+            }
+            if (oldName in _expandedCategories.value) {
+                _expandedCategories.value = _expandedCategories.value - oldName + newName
             }
             dismissDialog()
         }
@@ -173,7 +210,8 @@ class TagManagementViewModel @Inject constructor(
             tagRepository.resetCategory(name)
             val updated = _addedCategories.value - name
             _addedCategories.value = updated
-            settingsPrefs.saveTagCategories(updated)
+            settingsPrefs.saveTagCategoriesOrder(updated)
+            _expandedCategories.value = _expandedCategories.value - name
             dismissDialog()
         }
     }

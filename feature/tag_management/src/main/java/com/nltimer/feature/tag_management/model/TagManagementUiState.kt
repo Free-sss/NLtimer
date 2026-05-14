@@ -17,6 +17,7 @@ data class TagManagementUiState(
     val uncategorizedTags: List<Tag> = emptyList(),
     val categories: List<CategoryWithTags> = emptyList(),
     val categoryNames: List<String> = emptyList(),
+    val expandedCategoryNames: Set<String> = emptySet(),
     val allActivities: List<Activity> = emptyList(),
     val isLoading: Boolean = true,
     val dialogState: DialogState? = null,

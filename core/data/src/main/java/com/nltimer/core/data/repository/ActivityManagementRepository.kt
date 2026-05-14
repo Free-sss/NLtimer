@@ -29,6 +29,7 @@ interface ActivityManagementRepository {
     suspend fun addGroup(name: String): Long
     suspend fun renameGroup(id: Long, newName: String)
     suspend fun deleteGroup(id: Long)
+    suspend fun reorderGroups(orderedIds: List<Long>)
 
     /** 初始化预设活动列表 */
     suspend fun initializePresets()
