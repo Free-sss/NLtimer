@@ -79,14 +79,18 @@ internal fun SheetPickerDialogs(
         )
     }
 
-    val categorizableActivities = remember(activities) { activities.map { ActivityCategorizable(it) } }
-    val categorizableTags = remember(allTags) { allTags.map { TagCategorizable(it) } }
+    val categorizableActivities = remember(activities, activityLastUsedMap) {
+        activities.map { ActivityCategorizable(it, activityLastUsedMap[it.id]) }
+    }
+    val categorizableTags = remember(allTags, tagLastUsedMap) {
+        allTags.map { TagCategorizable(it, tagLastUsedMap[it.id]) }
+    }
 
     if (showActivityPicker) {
         val activityGroupsMap = remember(activityGroups) {
             activityGroups.associateBy { it.id }
         }
-        val groupedActivities = remember(activities, activityGroups) {
+        val groupedActivities = remember(activities, activityGroups, activityLastUsedMap) {
             val groups = activities.groupBy { it.groupId }
                 .map { (groupId, items) ->
                     val group = if (groupId != null) activityGroupsMap[groupId] else null
@@ -118,7 +122,7 @@ internal fun SheetPickerDialogs(
     }
 
     if (showTagPicker) {
-        val groupedTags = remember(allTags) {
+        val groupedTags = remember(allTags, tagLastUsedMap) {
             val groups = allTags.groupBy { it.category ?: "未分类" }
                 .map { (category, items) ->
                     CategoryGroup(

@@ -44,6 +44,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.Collator
+import java.util.Locale
 
 private data class ItemLayoutInfo(
     val y: Float,
@@ -184,12 +186,7 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                         items = reorderedGroups,
                         key = { _, group -> group.id }
                     ) { index, group ->
-                        val sortedItems = when (sortMode) {
-                            SortMode.FREQUENCY -> group.items.sortedByDescending { it.usageCount }
-                            SortMode.ALPHA -> group.items.sortedBy { it.itemName }
-                            SortMode.RECENT -> group.items.sortedByDescending { it.lastUsedTimestamp ?: 0L }
-                        }
-
+                        val sortedItems = group.items.sortedFor(sortMode)
                         val collapsed = allCollapsed || (collapsedStates[index] == true)
 
                         CategoryGroupCard(
@@ -278,6 +275,33 @@ fun <T : CategorizableItem> CategoryPickerDialog(
             }
         },
     )
+}
+
+private fun <T : CategorizableItem> List<T>.sortedFor(sortMode: SortMode): List<T> =
+    sortedWith(itemComparator(sortMode))
+
+private fun <T : CategorizableItem> itemComparator(sortMode: SortMode): Comparator<T> {
+    val nameCollator = Collator.getInstance(Locale.CHINA)
+    val nameComparator = compareBy<T>(nameCollator) { it.itemName }
+
+    return when (sortMode) {
+        SortMode.FREQUENCY -> compareByDescending<T> { it.usageCount }
+            .thenByDescending { it.lastUsedTimestamp ?: Long.MIN_VALUE }
+            .then(nameComparator)
+            .thenBy { it.itemId }
+        SortMode.ALPHA -> nameComparator.thenBy { it.itemId }
+        SortMode.RECENT -> compareByDescending<T> { it.lastUsedTimestamp ?: Long.MIN_VALUE }
+            .thenByDescending { it.usageCount }
+            .then(nameComparator)
+            .thenBy { it.itemId }
+    }
+}
+
+private fun <T> compareBy(
+    collator: Collator,
+    selector: (T) -> String,
+): Comparator<T> = Comparator { left, right ->
+    collator.compare(selector(left), selector(right))
 }
 
 @Composable
