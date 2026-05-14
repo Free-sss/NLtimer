@@ -8,6 +8,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.behaviorui)
     implementation(projects.core.designsystem)
     implementation(projects.core.data)
     implementation(projects.core.debugui)

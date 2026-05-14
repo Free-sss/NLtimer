@@ -2,41 +2,45 @@ package com.nltimer.feature.management_activities.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nltimer.core.behaviorui.sheet.CategoryGroupCard
+import com.nltimer.core.behaviorui.sheet.CategorizableItem
+import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.designsystem.component.LoadingScreen
 import com.nltimer.core.designsystem.component.rememberDragFabState
 import com.nltimer.feature.management_activities.viewmodel.ActivityManagementViewModel
-import com.nltimer.feature.management_activities.ui.components.ActivityChip
-import com.nltimer.feature.management_activities.ui.components.GroupCard
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ActivityManagementScreen(
     viewModel: ActivityManagementViewModel,
@@ -69,73 +73,70 @@ fun ActivityManagementScreen(
                 } else {
                     LazyColumn(
                         contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         item {
-                            Text(
-                                text = "未分类",
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(bottom = 8.dp),
+                            val items = uiState.uncategorizedActivities.map { activity ->
+                                ManagementActivityItem(activity)
+                            }
+                            CategoryGroupCard(
+                                index = 0,
+                                groupName = "未分类",
+                                items = items,
+                                collapsed = false,
+                                showDragHandle = false,
+                                emptyText = "暂无未分类活动",
+                                onItemSelected = { id ->
+                                    uiState.uncategorizedActivities
+                                        .firstOrNull { it.id == id }
+                                        ?.let(viewModel::showActivityDetail)
+                                },
+                                onItemLongClick = { id ->
+                                    uiState.uncategorizedActivities
+                                        .firstOrNull { it.id == id }
+                                        ?.let(viewModel::showMoveToGroupDialog)
+                                },
+                                onAddItem = { viewModel.showAddActivityDialog() },
                             )
-
-                            if (uiState.uncategorizedActivities.isEmpty()) {
-                                Text(
-                                    "暂无未分类活动",
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            } else {
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    uiState.uncategorizedActivities.forEach { activity ->
-                                        ActivityChip(
-                                            activity = activity,
-                                            onClick = { viewModel.showActivityDetail(activity) },
-                                            onLongClick = {
-                                                viewModel.showMoveToGroupDialog(activity)
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = "自定义分组",
-                                    style = MaterialTheme.typography.titleMedium,
-                                )
-                            }
                         }
 
-                        items(items = uiState.groups, key = { it.group.id }) { groupWithActivities ->
-                            GroupCard(
-                                group = groupWithActivities.group,
-                                activities = groupWithActivities.activities,
-                                isExpanded = uiState.expandedGroupIds.contains(groupWithActivities.group.id),
-                                onToggleExpand = {
+                        itemsIndexed(
+                            items = uiState.groups,
+                            key = { _, groupWithActivities -> groupWithActivities.group.id },
+                        ) { index, groupWithActivities ->
+                            val items = groupWithActivities.activities.map { activity ->
+                                ManagementActivityItem(activity)
+                            }
+                            CategoryGroupCard(
+                                index = index + 1,
+                                groupName = groupWithActivities.group.name,
+                                items = items,
+                                collapsed = !uiState.expandedGroupIds.contains(groupWithActivities.group.id),
+                                showDragHandle = false,
+                                emptyText = "暂无活动",
+                                onToggleCollapsed = {
                                     viewModel.toggleGroupExpand(groupWithActivities.group.id)
                                 },
-                                onAddActivity = {
+                                headerActions = {
+                                    ActivityGroupActions(
+                                        group = groupWithActivities.group,
+                                        onAddActivity = viewModel::showAddActivityToGroupDialog,
+                                        onRename = viewModel::showRenameGroupDialog,
+                                        onDelete = viewModel::showDeleteGroupDialog,
+                                    )
+                                },
+                                onItemSelected = { id ->
+                                    groupWithActivities.activities
+                                        .firstOrNull { it.id == id }
+                                        ?.let(viewModel::showActivityDetail)
+                                },
+                                onItemLongClick = { id ->
+                                    groupWithActivities.activities
+                                        .firstOrNull { it.id == id }
+                                        ?.let(viewModel::showMoveToGroupDialog)
+                                },
+                                onAddItem = {
                                     viewModel.showAddActivityToGroupDialog(groupWithActivities.group)
-                                },
-                                onRename = {
-                                    viewModel.showRenameGroupDialog(groupWithActivities.group)
-                                },
-                                onDelete = {
-                                    viewModel.showDeleteGroupDialog(groupWithActivities.group)
-                                },
-                                onActivityClick = { activity ->
-                                    viewModel.showActivityDetail(activity)
-                                },
-                                onActivityLongClick = { activity ->
-                                    viewModel.showMoveToGroupDialog(activity)
                                 },
                             )
                         }
@@ -165,5 +166,58 @@ fun ActivityManagementScreen(
             uiState = uiState,
             viewModel = viewModel,
         )
+    }
+}
+
+private data class ManagementActivityItem(
+    val activity: Activity,
+) : CategorizableItem {
+    override val itemId: Long = activity.id
+    override val itemName: String = activity.name
+    override val category: String? = null
+    override val usageCount: Int = activity.usageCount
+    override val lastUsedTimestamp: Long? = null
+    override val iconKey: String? = activity.iconKey
+}
+
+@Composable
+private fun ActivityGroupActions(
+    group: ActivityGroup,
+    onAddActivity: (ActivityGroup) -> Unit,
+    onRename: (ActivityGroup) -> Unit,
+    onDelete: (ActivityGroup) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        IconButton(onClick = { expanded = true }) {
+            Icon(Icons.Default.MoreVert, contentDescription = "更多操作")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("添加活动") },
+                onClick = {
+                    expanded = false
+                    onAddActivity(group)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("重命名") },
+                onClick = {
+                    expanded = false
+                    onRename(group)
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                onClick = {
+                    expanded = false
+                    onDelete(group)
+                },
+            )
+        }
     }
 }

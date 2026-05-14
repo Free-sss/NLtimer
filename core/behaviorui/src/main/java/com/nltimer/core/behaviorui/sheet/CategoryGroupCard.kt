@@ -5,7 +5,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material3.Icon
@@ -45,26 +48,33 @@ import com.nltimer.core.designsystem.icon.IconRenderer
 import com.nltimer.core.designsystem.theme.styledAlpha
 import kotlin.math.roundToInt
 
+@Suppress("LongParameterList")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
-internal fun <T : CategorizableItem> CategoryGroupCard(
+fun <T : CategorizableItem> CategoryGroupCard(
     index: Int,
     groupName: String,
     items: List<T>,
-    selectedId: Long?,
-    selectedIds: Set<Long>,
-    multiSelect: Boolean,
-    onItemSelected: (Long) -> Unit,
-    onItemsSelected: (Set<Long>) -> Unit,
-    isDragging: Boolean,
-    dragOffsetY: Float,
-    shiftOffset: Float,
+    selectedId: Long? = null,
+    selectedIds: Set<Long> = emptySet(),
+    multiSelect: Boolean = false,
+    onItemSelected: (Long) -> Unit = {},
+    onItemsSelected: (Set<Long>) -> Unit = {},
+    onItemLongClick: (Long) -> Unit = {},
+    isDragging: Boolean = false,
+    dragOffsetY: Float = 0f,
+    shiftOffset: Float = 0f,
     collapsed: Boolean,
-    onDragStart: () -> Unit,
-    onDrag: (Float) -> Unit,
-    onDragEnd: () -> Unit,
-    onDragCancel: () -> Unit,
-    onPositioned: (index: Int, y: Float, height: Float) -> Unit,
+    onToggleCollapsed: (() -> Unit)? = null,
+    showDragHandle: Boolean = true,
+    emptyText: String = "暂无项目",
+    headerActions: @Composable (() -> Unit)? = null,
+    onAddItem: (() -> Unit)? = null,
+    onDragStart: () -> Unit = {},
+    onDrag: (Float) -> Unit = {},
+    onDragEnd: () -> Unit = {},
+    onDragCancel: () -> Unit = {},
+    onPositioned: (index: Int, y: Float, height: Float) -> Unit = { _, _, _ -> },
 ) {
     val shiftAnimatable = remember { Animatable(0f) }
 
@@ -110,30 +120,39 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
         },
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
+            val headerModifier = if (onToggleCollapsed != null) {
+                Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggleCollapsed() }
+            } else {
+                Modifier.fillMaxWidth()
+            }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = headerModifier,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = Icons.Default.DragHandle,
-                    contentDescription = "拖拽排序",
-                    modifier = Modifier
-                        .size(32.dp)
-                        .alpha(0.5f)
-                        .pointerInput(index) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = { onDragStart() },
-                                onDrag = { change, dragAmount ->
-                                    change.consume()
-                                    onDrag(dragAmount.y)
-                                },
-                                onDragEnd = { onDragEnd() },
-                                onDragCancel = { onDragCancel() },
-                            )
-                        },
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+                if (showDragHandle) {
+                    Icon(
+                        imageVector = Icons.Default.DragHandle,
+                        contentDescription = "拖拽排序",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .alpha(0.5f)
+                            .pointerInput(index) {
+                                detectDragGesturesAfterLongPress(
+                                    onDragStart = { onDragStart() },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        onDrag(dragAmount.y)
+                                    },
+                                    onDragEnd = { onDragEnd() },
+                                    onDragCancel = { onDragCancel() },
+                                )
+                            },
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                }
                 Text(
                     text = groupName,
                     style = MaterialTheme.typography.labelMedium,
@@ -146,6 +165,7 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = styledAlpha(0.6f)),
                 )
+                headerActions?.invoke()
             }
             AnimatedVisibility(
                 visible = !collapsed,
@@ -159,24 +179,37 @@ internal fun <T : CategorizableItem> CategoryGroupCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
-                        items.forEach { item ->
-                            val isSelected = if (multiSelect) {
-                                item.itemId in selectedIds
-                            } else {
-                                item.itemId == selectedId
-                            }
-                            ItemChip(
-                                item = item,
-                                isSelected = isSelected,
-                                onClick = {
-                                    if (multiSelect) {
-                                        val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
-                                        onItemsSelected(newIds)
-                                    } else {
-                                        onItemSelected(item.itemId)
-                                    }
-                                },
+                        if (items.isEmpty()) {
+                            Text(
+                                text = emptyText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
                             )
+                        } else {
+                            items.forEach { item ->
+                                val isSelected = if (multiSelect) {
+                                    item.itemId in selectedIds
+                                } else {
+                                    item.itemId == selectedId
+                                }
+                                ItemChip(
+                                    item = item,
+                                    isSelected = isSelected,
+                                    onClick = {
+                                        if (multiSelect) {
+                                            val newIds = if (isSelected) selectedIds - item.itemId else selectedIds + item.itemId
+                                            onItemsSelected(newIds)
+                                        } else {
+                                            onItemSelected(item.itemId)
+                                        }
+                                    },
+                                    onLongClick = { onItemLongClick(item.itemId) },
+                                )
+                            }
+                        }
+                        if (onAddItem != null) {
+                            AddItemChip(onClick = onAddItem)
                         }
                     }
                 }
@@ -190,6 +223,7 @@ private fun <T : CategorizableItem> ItemChip(
     item: T,
     isSelected: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val containerColor = if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer
@@ -203,7 +237,10 @@ private fun <T : CategorizableItem> ItemChip(
     }
 
     Surface(
-        onClick = onClick,
+        modifier = Modifier.combinedClickable(
+            onClick = onClick,
+            onLongClick = onLongClick,
+        ),
         shape = RoundedCornerShape(6.dp),
         color = containerColor,
     ) {
@@ -223,6 +260,35 @@ private fun <T : CategorizableItem> ItemChip(
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddItemChip(
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(6.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "添加",
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
+            Spacer(modifier = Modifier.width(2.dp))
+            Text(
+                text = "添加",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
         }
     }
