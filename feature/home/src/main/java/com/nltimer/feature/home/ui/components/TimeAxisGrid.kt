@@ -69,7 +69,6 @@ fun TimeAxisGrid(
         val map = mutableMapOf<Int, String>()
         var index = 0
         if (isLoadingMore) index++
-        if (hasReachedEarliest) index++
         sections.forEach { section ->
             map[index] = section.label
             index++
@@ -97,7 +96,6 @@ fun TimeAxisGrid(
         contentPadding = PaddingValues(bottom = 630.dp),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
-        if (hasReachedEarliest) item("reached-earliest") { ReachedEarliestIndicator() }
         sections.forEach { section ->
             item(key = "header-${section.date}") {
                 DayDividerRow(label = section.label)
@@ -139,19 +137,5 @@ private fun LoadingMoreIndicator() {
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-    }
-}
-
-@Composable
-private fun ReachedEarliestIndicator() {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "已到最早一条记录",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }

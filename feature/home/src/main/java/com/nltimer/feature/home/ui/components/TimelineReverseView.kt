@@ -136,7 +136,6 @@ fun TimelineReverseView(
                 }
             }
             if (isLoadingMore) item { LoadingMoreIndicator() }
-            if (hasReachedEarliest) item { ReachedEarliestIndicator() }
         }
     }
 
@@ -205,20 +204,6 @@ private fun LoadingMoreIndicator() {
         contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
-    }
-}
-
-@Composable
-private fun ReachedEarliestIndicator() {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "已到最早一条记录",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 

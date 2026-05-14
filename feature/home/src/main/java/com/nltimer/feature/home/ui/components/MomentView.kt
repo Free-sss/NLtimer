@@ -25,9 +25,62 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.feature.home.model.GridCellUiState
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+
+private sealed class MomentDisplayItem(val key: String) {
+    class FocusCard : MomentDisplayItem("focus-card")
+    class Divider(val label: String) : MomentDisplayItem("divider-$label")
+    class Behavior(val cell: GridCellUiState) : MomentDisplayItem("behavior-${cell.behaviorId}")
+}
+
+private fun momentDayLabel(date: LocalDate, today: LocalDate): String {
+    val datePart = "${date.monthValue}月${date.dayOfMonth}日"
+    val days = ChronoUnit.DAYS.between(date, today)
+    return when (days) {
+        0L -> "今天 $datePart"
+        1L -> "昨天 $datePart"
+        else -> datePart
+    }
+}
+
+private fun cellDate(cell: GridCellUiState): LocalDate? {
+    val epoch = cell.startEpochMs ?: return null
+    return Instant.ofEpochMilli(epoch).atZone(ZoneId.systemDefault()).toLocalDate()
+}
+
+private fun buildMomentDisplayItems(
+    behaviors: List<GridCellUiState>,
+    today: LocalDate,
+): List<MomentDisplayItem> {
+    val pending = behaviors.filter { it.status == BehaviorNature.PENDING }
+    val nonPending = behaviors.filter { it.status != BehaviorNature.PENDING }
+
+    val byDate = nonPending.groupBy { cellDate(it) }
+        .toSortedMap(compareBy { it })
+
+    val result = mutableListOf<MomentDisplayItem>()
+    result.add(MomentDisplayItem.FocusCard())
+
+    if (pending.isNotEmpty()) {
+        result.add(MomentDisplayItem.Divider("待办"))
+        pending.forEach { result.add(MomentDisplayItem.Behavior(it)) }
+    }
+
+    byDate.entries.reversed().forEach { (date, cells) ->
+        if (date != null) {
+            result.add(MomentDisplayItem.Divider(momentDayLabel(date, today)))
+        }
+        cells.forEach { result.add(MomentDisplayItem.Behavior(it)) }
+    }
+
+    return result
+}
 
 enum class MomentFilterTab {
     ALL,
@@ -85,14 +138,6 @@ fun MomentView(
 
     val listState = rememberLazyListState()
 
-    LaunchedEffect(cells, hasReachedEarliest) {
-        if (hasReachedEarliest) return@LaunchedEffect
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .filter { it <= 5 }
-            .collect { onLoadMore() }
-    }
-
     val behaviors = remember(cells, filterTab, sortMode) {
         val filtered = cells.filter { it.behaviorId != null }.let { list ->
             when (filterTab) {
@@ -110,6 +155,41 @@ fun MomentView(
             MomentSortMode.DURATION -> nonPending.sortedByDescending { it.actualDuration ?: it.durationMs ?: 0L }
         }
         pending + sortedNonPending
+    }
+
+    val today = remember { LocalDate.now() }
+    val displayItems = remember(behaviors, today) {
+        buildMomentDisplayItems(behaviors, today)
+    }
+
+    val dateIndexMap = remember(displayItems) {
+        val map = mutableMapOf<Int, String>()
+        displayItems.forEachIndexed { index, item ->
+            if (item is MomentDisplayItem.Divider) map[index] = item.label
+        }
+        map
+    }
+
+    val visibleDateLabelState = LocalVisibleDateLabel.current
+
+    LaunchedEffect(listState, dateIndexMap) {
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .collect { firstIndex ->
+                val label = dateIndexMap.entries
+                    .filter { it.key <= firstIndex }
+                    .maxByOrNull { it.key }
+                    ?.value
+                visibleDateLabelState.value = label
+            }
+    }
+
+    LaunchedEffect(displayItems, hasReachedEarliest) {
+        if (hasReachedEarliest) return@LaunchedEffect
+        snapshotFlow { listState.firstVisibleItemIndex }
+            .distinctUntilChanged()
+            .filter { it <= 5 }
+            .collect { onLoadMore() }
     }
 
     detailCell?.let { cell ->
@@ -132,36 +212,33 @@ fun MomentView(
                 CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             }
         }
-        if (hasReachedEarliest) item("reached-earliest") {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "已到最早一条记录",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+
+        items(items = displayItems, key = { it.key }) { item ->
+            when (item) {
+                is MomentDisplayItem.FocusCard -> MomentFocusCard(
+                    activeCell = activeCell,
+                    nextPendingCell = nextPendingCell,
+                    onCompleteBehavior = onCompleteBehavior,
+                    onStartNextPending = onStartNextPending,
+                    onStartBehavior = onStartBehavior,
+                    onEmptyCellClick = { onEmptyCellClick(null, null) },
+                )
+                is MomentDisplayItem.Divider -> Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                is MomentDisplayItem.Behavior -> MomentBehaviorItem(
+                    behavior = item.cell,
+                    onClick = { detailCell = item.cell },
+                    onLongClick = { onCellLongClick(item.cell) },
                 )
             }
-        }
-
-        item {
-            MomentFocusCard(
-                activeCell = activeCell,
-                nextPendingCell = nextPendingCell,
-                onCompleteBehavior = onCompleteBehavior,
-                onStartNextPending = onStartNextPending,
-                onStartBehavior = onStartBehavior,
-                onEmptyCellClick = { onEmptyCellClick(null, null) },
-            )
-        }
-
-        items(items = behaviors, key = { it.behaviorId!! }) { behavior ->
-            MomentBehaviorItem(
-                behavior = behavior,
-                onClick = { detailCell = behavior },
-                onLongClick = { onCellLongClick(behavior) },
-            )
         }
     }
 }
