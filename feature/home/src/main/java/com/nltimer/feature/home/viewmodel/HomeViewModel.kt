@@ -23,6 +23,8 @@ import com.nltimer.core.data.usecase.AddBehaviorUseCase
 import com.nltimer.core.data.usecase.AddTagUseCase
 import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
+import com.nltimer.core.tools.match.NoteDirectiveParser
 import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.match.MatchStrategy
@@ -62,6 +64,7 @@ class HomeViewModel @Inject constructor(
     private val addBehaviorUseCase: AddBehaviorUseCase,
     private val addTagUseCase: AddTagUseCase,
     private val addActivityUseCase: AddActivityUseCase,
+    private val applyNoteDirectivesUseCase: ApplyNoteDirectivesUseCase,
     private val clockService: ClockService,
 ) : ViewModel() {
 
@@ -322,6 +325,38 @@ class HomeViewModel @Inject constructor(
      */
     fun matchNoteFromText(note: String): NoteScanResult =
         noteMatcher.scan(note, _activities.value, _allTags.value)
+
+    /**
+     * `processNote` 输出包：cleanedNote + directive 处理结果 + 反向扫描结果。
+     */
+    data class NoteProcessOutcome(
+        val cleanedNote: String,
+        val directiveOutcome: ApplyNoteDirectivesUseCase.Outcome,
+        val scanResult: NoteScanResult,
+    ) {
+        companion object {
+            val Empty = NoteProcessOutcome(
+                cleanedNote = "",
+                directiveOutcome = ApplyNoteDirectivesUseCase.Outcome.Empty,
+                scanResult = NoteScanResult(null, emptySet()),
+            )
+        }
+    }
+
+    /**
+     * 智能识别按钮的入口：解析 @/# directive → 创建/复用 → 反向扫描备注，
+     * 由 UI 层接管把结果合并到 sheet 状态。
+     */
+    suspend fun processNote(note: String): NoteProcessOutcome {
+        val parsed = NoteDirectiveParser.parse(note)
+        val directive = applyNoteDirectivesUseCase(
+            parsed.directives,
+            _activities.value,
+            _allTags.value,
+        )
+        val scan = noteMatcher.scan(parsed.cleanedNote, _activities.value, _allTags.value)
+        return NoteProcessOutcome(parsed.cleanedNote, directive, scan)
+    }
 
     fun toggleIdleMode() {
         _uiState.update { it.copy(isIdleMode = !it.isIdleMode) }
