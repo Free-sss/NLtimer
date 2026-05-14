@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"& { $repoRoot = (& git rev-parse --show-toplevel).Trim(); & (Join-Path $repoRoot '.codex/hooks/install_debug_on_stop.ps1') }\"",
+            "command": "gradlew.bat installDebug",
             "timeout": 600,
             "statusMessage": "Running gradlew.bat installDebug"
           }
