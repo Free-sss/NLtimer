@@ -81,6 +81,12 @@ fun HomeRoute(
     val onMatchNote = remember(viewModel) {
         { note: String -> viewModel.matchNoteFromText(note) }
     }
+    val onProcessNote = remember(viewModel) {
+        val lambda: suspend (String) -> com.nltimer.core.tools.match.NoteProcessOutcome = { note ->
+            viewModel.processNote(note)
+        }
+        lambda
+    }
 
     HomeScreen(
         uiState = uiState,
@@ -111,5 +117,6 @@ fun HomeRoute(
         onTimeLabelConfigChange = onTimeLabelConfigChange,
         onHomeLayoutConfigChange = onHomeLayoutConfigChange,
         onMatchNote = onMatchNote,
+        onProcessNote = onProcessNote,
     )
 }

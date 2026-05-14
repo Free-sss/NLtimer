@@ -47,6 +47,7 @@ import com.nltimer.core.designsystem.theme.HomeLayout
 import com.nltimer.core.designsystem.theme.LocalTheme
 import com.nltimer.core.designsystem.theme.NLtimerTheme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
@@ -95,6 +96,7 @@ fun HomeScreen(
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
+    onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
     modifier: Modifier = Modifier,
 ) {
     val theme = LocalTheme.current
@@ -171,6 +173,7 @@ fun HomeScreen(
                 onActivityGroupsReordered = onActivityGroupsReordered,
                 onTagCategoriesReordered = onTagCategoriesReordered,
                 onMatchNote = onMatchNote,
+                onProcessNote = onProcessNote,
             )
         }
 

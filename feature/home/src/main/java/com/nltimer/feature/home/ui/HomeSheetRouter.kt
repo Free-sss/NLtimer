@@ -15,6 +15,7 @@ import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.core.behaviorui.sheet.AddBehaviorSheet
 import com.nltimer.core.behaviorui.sheet.AddCurrentBehaviorSheet
 import com.nltimer.core.behaviorui.sheet.AddTargetBehaviorSheet
+import com.nltimer.core.tools.match.NoteProcessOutcome
 import com.nltimer.core.tools.match.NoteScanResult
 import java.time.LocalDate
 import java.time.LocalTime
@@ -37,6 +38,7 @@ internal fun HomeSheetRouter(
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult,
+    onProcessNote: suspend (String) -> NoteProcessOutcome,
 ) {
     if (uiState.addSheetMode == null) return
 
@@ -94,6 +96,7 @@ internal fun HomeSheetRouter(
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
+            onProcessNote = onProcessNote,
         )
 
         AddSheetMode.CURRENT -> AddCurrentBehaviorSheet(
@@ -117,6 +120,7 @@ internal fun HomeSheetRouter(
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
+            onProcessNote = onProcessNote,
         )
 
         AddSheetMode.TARGET -> AddTargetBehaviorSheet(
@@ -139,6 +143,7 @@ internal fun HomeSheetRouter(
             onAddActivity = onAddActivity,
             onAddTag = onAddTag,
             onMatchNote = onMatchNote,
+            onProcessNote = onProcessNote,
         )
     }
 }
