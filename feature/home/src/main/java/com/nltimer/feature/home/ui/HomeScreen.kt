@@ -36,6 +36,8 @@ import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.data.model.MomentLayoutStyle
+import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.designsystem.component.BottomBarDragFab
 import com.nltimer.core.designsystem.component.LoadingScreen
@@ -235,6 +237,7 @@ private fun HomeLayoutContent(
             onEmptyCellClick = onEmptyCellClick,
             onCellLongClick = onCellLongClick,
             onLoadMore = onLoadMore,
+            timelineStyle = homeLayoutConfig.timeline,
             modifier = modifier,
         )
         HomeLayout.LOG -> LogContent(
@@ -255,6 +258,7 @@ private fun HomeLayoutContent(
             onLoadMore = onLoadMore,
             isLoadingMore = uiState.isLoadingMore,
             hasReachedEarliest = uiState.hasReachedEarliest,
+            momentStyle = homeLayoutConfig.moment,
             modifier = modifier,
         )
     }
@@ -312,6 +316,7 @@ private fun TimelineReverseContent(
     onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
+    timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     TimelineReverseView(
@@ -321,6 +326,7 @@ private fun TimelineReverseContent(
         onLoadMore = onLoadMore,
         isLoadingMore = uiState.isLoadingMore,
         hasReachedEarliest = uiState.hasReachedEarliest,
+        timelineStyle = timelineStyle,
         modifier = modifier,
     )
 }
@@ -356,6 +362,7 @@ private fun MomentContent(
     onLoadMore: () -> Unit,
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
+    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     MomentView(
@@ -370,6 +377,7 @@ private fun MomentContent(
         onLoadMore = onLoadMore,
         isLoadingMore = isLoadingMore,
         hasReachedEarliest = hasReachedEarliest,
+        momentStyle = momentStyle,
         modifier = modifier,
     )
 }

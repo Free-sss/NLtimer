@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.designsystem.icon.IconRenderer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +37,7 @@ private val FOCUS_CARD_HEIGHT = 260.dp
 internal fun PendingCard(
     cell: GridCellUiState,
     onStart: () -> Unit,
+    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val estimatedText = cell.estimatedDuration?.let { "预计 ${formatDuration(it)}" } ?: ""
@@ -49,7 +52,8 @@ internal fun PendingCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .height(FOCUS_CARD_HEIGHT),
+                .height(FOCUS_CARD_HEIGHT)
+                .padding(momentStyle.cardPadding.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

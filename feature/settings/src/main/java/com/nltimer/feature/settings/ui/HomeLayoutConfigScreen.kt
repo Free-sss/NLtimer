@@ -26,11 +26,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.GridLayoutStyle
+import com.nltimer.core.data.model.HomeLayoutConfig
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.designsystem.component.ExpandableCard
-import com.nltimer.core.designsystem.component.atom.SelectableOptionChip
 
 @Composable
 fun HomeLayoutConfigRoute(
@@ -51,7 +50,8 @@ fun HomeLayoutConfigScreen(
 ) {
     var expandedGrid by remember { mutableStateOf(false) }
     var expandedLog by remember { mutableStateOf(false) }
-    var expandedOther by remember { mutableStateOf(false) }
+    var expandedTimeline by remember { mutableStateOf(false) }
+    var expandedMoment by remember { mutableStateOf(false) }
 
     Scaffold { padding ->
         LazyColumn(
@@ -182,14 +182,36 @@ fun HomeLayoutConfigScreen(
 
             item {
                 ExpandableCard(
-                    title = "其他布局",
-                    expanded = expandedOther,
-                    onToggle = { expandedOther = !expandedOther },
+                    title = "时间轴布局",
+                    expanded = expandedTimeline,
+                    onToggle = { expandedTimeline = !expandedTimeline },
                 ) {
-                    Text(
-                        text = "时间轴和当前时刻布局暂无可配置参数",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ConfigStepper(
+                        label = "条目间距",
+                        value = config.timeline.itemSpacing,
+                        suffix = "dp",
+                        min = 4, max = 32,
+                        onValueChange = {
+                            onUpdateConfig(config.copy(timeline = config.timeline.copy(itemSpacing = it)))
+                        },
+                    )
+                }
+            }
+
+            item {
+                ExpandableCard(
+                    title = "当前时刻布局",
+                    expanded = expandedMoment,
+                    onToggle = { expandedMoment = !expandedMoment },
+                ) {
+                    ConfigStepper(
+                        label = "卡片内边距",
+                        value = config.moment.cardPadding,
+                        suffix = "dp",
+                        min = 8, max = 32,
+                        onValueChange = {
+                            onUpdateConfig(config.copy(moment = config.moment.copy(cardPadding = it)))
+                        },
                     )
                 }
             }

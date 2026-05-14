@@ -44,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.TimelineLayoutStyle
 import com.nltimer.core.data.util.formatDuration
 import com.nltimer.core.data.util.hhmmFormatter
 import com.nltimer.core.designsystem.icon.IconRenderer
@@ -70,6 +71,7 @@ fun TimelineReverseView(
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
+    timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val timeFormatter = hhmmFormatter
@@ -115,7 +117,7 @@ fun TimelineReverseView(
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
             contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 180.dp),
         ) {
             items(items = timelineItems, key = { it.key }) { item ->

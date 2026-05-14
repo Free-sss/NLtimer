@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
+import com.nltimer.core.data.model.LogLayoutStyle
+import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.LocalDate
@@ -107,6 +109,7 @@ fun MomentView(
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
+    momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
 ) {
     val momentFilterState = LocalMomentFilterState.current
@@ -222,6 +225,7 @@ fun MomentView(
                     onStartNextPending = onStartNextPending,
                     onStartBehavior = onStartBehavior,
                     onEmptyCellClick = { onEmptyCellClick(null, null) },
+                    momentStyle = momentStyle,
                 )
                 is MomentDisplayItem.Divider -> Box(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -237,6 +241,7 @@ fun MomentView(
                     behavior = item.cell,
                     onClick = { detailCell = item.cell },
                     onLongClick = { onCellLongClick(item.cell) },
+                    logStyle = LogLayoutStyle(cardPadding = momentStyle.cardPadding),
                 )
             }
         }
