@@ -24,12 +24,9 @@
 
   <g fill="none" stroke-linecap="round" stroke-linejoin="round">
 
-    <path d="M83 37h23" stroke="#d62805" stroke-width="4"/>
-    <path d="M92 50h22" stroke="#2a0183" stroke-width="4" opacity="0.88"/>
-    <path d="M94 63h23" stroke="#625B71" stroke-width="4" opacity="0.72"/>
-    <path d="M92 76h22" stroke="#d62805" stroke-width="4"/>
-    <path d="M87 89h19" stroke="#d62805" stroke-width="4"/>
-
+    <path d="M83 40h25" stroke="#d62805" stroke-width="6"/>
+    <path d="M83 50h29" stroke="#d62805" stroke-width="6" opacity="0.78"/>
+    <path d="M83 60h30" stroke="#d62805" stroke-width="6" opacity="0.63"/>
   </g>
 
   <g filter="url(#shadow)">
