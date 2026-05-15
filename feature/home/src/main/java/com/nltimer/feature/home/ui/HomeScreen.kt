@@ -3,6 +3,8 @@ package com.nltimer.feature.home.ui
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -26,11 +28,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
@@ -38,6 +41,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.AddActivityCallback
@@ -255,8 +259,9 @@ private fun HomeLayoutContent(
     onHomeLayoutChange: (HomeLayout) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    val scope = rememberCoroutineScope()
     var swipeDirection by remember { mutableStateOf(0) } // 1 for next (left swipe), -1 for prev (right swipe)
-    var offsetX by remember { mutableFloatStateOf(0f) }
+    val animOffsetX = remember { Animatable(0f) }
     val density = LocalDensity.current
     val swipeThreshold = remember { with(density) { 56.dp.toPx() } }
 
@@ -278,28 +283,48 @@ private fun HomeLayoutContent(
             }
         }
         onHomeLayoutChange(nextLayout)
+        // 切换后立即重置动画位移，避免影响新视图
+        scope.launch { animOffsetX.snapTo(0f) }
     }
 
     val focusCard = @Composable {
         Box(
             modifier = Modifier
                 .padding(vertical = 8.dp)
+                .graphicsLayer {
+                    // 应用阻尼效果的位移 (x * 0.4 产生阻力感)
+                    translationX = animOffsetX.value * 0.4f
+                }
                 .pointerInput(layout) {
                     detectHorizontalDragGestures(
                         onDragEnd = {
-                            if (offsetX < -swipeThreshold) {
-                                handleSwipe(1)
-                            } else if (offsetX > swipeThreshold) {
-                                handleSwipe(-1)
+                            val finalOffset = animOffsetX.value
+                            scope.launch {
+                                if (finalOffset < -swipeThreshold) {
+                                    handleSwipe(1)
+                                } else if (finalOffset > swipeThreshold) {
+                                    handleSwipe(-1)
+                                }
+                                // 无论是否切换，都执行弹性回弹
+                                animOffsetX.animateTo(
+                                    targetValue = 0f,
+                                    animationSpec = spring(
+                                        dampingRatio = 0.7f,
+                                        stiffness = 500f
+                                    )
+                                )
                             }
-                            offsetX = 0f
                         },
                         onDragCancel = {
-                            offsetX = 0f
+                            scope.launch {
+                                animOffsetX.animateTo(0f, spring(0.7f, 500f))
+                            }
                         },
                         onHorizontalDrag = { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount
+                            scope.launch {
+                                animOffsetX.snapTo(animOffsetX.value + dragAmount)
+                            }
                         }
                     )
                 }
