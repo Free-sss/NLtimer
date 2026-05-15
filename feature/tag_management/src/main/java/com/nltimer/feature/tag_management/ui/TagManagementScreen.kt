@@ -51,6 +51,41 @@ import com.nltimer.feature.tag_management.model.CategoryWithTags
 import com.nltimer.feature.tag_management.viewmodel.TagManagementViewModel
 import kotlin.math.abs
 
+private fun computeDragTargetIndex(
+    itemLayouts: Map<Int, Pair<Float, Float>>,
+    source: Int,
+    offsetY: Float,
+): Int {
+    val sourceInfo = itemLayouts[source] ?: return source
+    val sourceCenter = sourceInfo.first + sourceInfo.second / 2f + offsetY
+    return itemLayouts
+        .filterKeys { it != source }
+        .minByOrNull { (_, info) -> abs(sourceCenter - (info.first + info.second / 2f)) }
+        ?.key
+        ?.takeIf { index ->
+            val info = itemLayouts[index] ?: return@takeIf false
+            abs(sourceCenter - (info.first + info.second / 2f)) < (sourceInfo.second + info.second) / 2f
+        }
+        ?: source
+}
+
+private fun applyDragShiftOffsets(
+    itemLayouts: Map<Int, Pair<Float, Float>>,
+    shiftOffsets: MutableMap<Int, Float>,
+    source: Int,
+    target: Int,
+) {
+    shiftOffsets.clear()
+    if (source == target) return
+    val sourceHeight = itemLayouts[source]?.second ?: return
+    val shift = sourceHeight + 8f
+    if (target > source) {
+        for (index in (source + 1)..target) shiftOffsets[index] = -shift
+    } else {
+        for (index in target until source) shiftOffsets[index] = shift
+    }
+}
+
 @Composable
 fun TagManagementScreen(
     viewModel: TagManagementViewModel,
@@ -82,30 +117,11 @@ fun TagManagementScreen(
         }
     }
 
-    fun computeTargetIndex(source: Int, offsetY: Float): Int {
-        val sourceInfo = itemLayouts[source] ?: return source
-        val sourceCenter = sourceInfo.first + sourceInfo.second / 2f + offsetY
-        return itemLayouts
-            .filterKeys { it != source }
-            .minByOrNull { (_, info) -> abs(sourceCenter - (info.first + info.second / 2f)) }
-            ?.key
-            ?.takeIf { index ->
-                val info = itemLayouts[index] ?: return@takeIf false
-                abs(sourceCenter - (info.first + info.second / 2f)) < (sourceInfo.second + info.second) / 2f
-            }
-            ?: source
+    val computeTargetIndex: (Int, Float) -> Int = { source, offsetY ->
+        computeDragTargetIndex(itemLayouts, source, offsetY)
     }
-
-    fun updateShiftOffsets(source: Int, target: Int) {
-        shiftOffsets.clear()
-        if (source == target) return
-        val sourceHeight = itemLayouts[source]?.second ?: return
-        val shift = sourceHeight + 8f
-        if (target > source) {
-            for (index in (source + 1)..target) shiftOffsets[index] = -shift
-        } else {
-            for (index in target until source) shiftOffsets[index] = shift
-        }
+    val updateShiftOffsets: (Int, Int) -> Unit = { source, target ->
+        applyDragShiftOffsets(itemLayouts, shiftOffsets, source, target)
     }
 
     Box(

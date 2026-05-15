@@ -58,6 +58,18 @@ import com.nltimer.feature.home.ui.components.MomentFilterState
 import com.nltimer.feature.settings.ui.ThemeSettingsViewModel
 import kotlinx.coroutines.launch
 
+private val MomentFilterOptions = listOf(
+    MomentFilterOption("乃大", "ALL"),
+    MomentFilterOption("曾经", "COMPLETED"),
+    MomentFilterOption("此后", "PENDING"),
+)
+
+private val MomentSortOptions = listOf(
+    MomentSortOption("时间反", "TIME_DESC"),
+    MomentSortOption("时间正", "TIME_ASC"),
+    MomentSortOption("用时", "DURATION"),
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NLtimerScaffold(
@@ -82,23 +94,13 @@ fun NLtimerScaffold(
     var showLayoutPopup by remember { mutableStateOf(false) }
     var momentFilterKey by remember { mutableStateOf("ALL") }
     var momentSortKey by remember { mutableStateOf("TIME_DESC") }
-    val momentFilterOptions = listOf(
-        MomentFilterOption("乃大", "ALL"),
-        MomentFilterOption("曾经", "COMPLETED"),
-        MomentFilterOption("此后", "PENDING"),
-    )
-    val momentSortOptions = listOf(
-        MomentSortOption("时间反", "TIME_DESC"),
-        MomentSortOption("时间正", "TIME_ASC"),
-        MomentSortOption("用时", "DURATION"),
-    )
     val theme = LocalTheme.current
     val themeViewModel: ThemeSettingsViewModel = hiltViewModel()
     val drawerViewModel: DrawerViewModel = hiltViewModel()
     val totalDurationMs by drawerViewModel.totalDurationMs.collectAsStateWithLifecycle()
     val momentFilterLabel = if (isHomePage && theme.homeLayout == HomeLayout.MOMENT) {
-        val filterLabel = momentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
-        val sortLabel = momentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
+        val filterLabel = MomentFilterOptions.firstOrNull { it.key == momentFilterKey }?.label ?: ""
+        val sortLabel = MomentSortOptions.firstOrNull { it.key == momentSortKey }?.label ?: ""
         "$filterLabel · $sortLabel"
     } else null
     val layoutLabel = if (isHomePage) theme.homeLayout.toDisplayString() else null
@@ -194,10 +196,10 @@ fun NLtimerScaffold(
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                                 momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = momentFilterOptions,
+                                momentFilterOptions = MomentFilterOptions,
                                 momentFilterKey = momentFilterKey,
                                 onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = momentSortOptions,
+                                momentSortOptions = MomentSortOptions,
                                 momentSortKey = momentSortKey,
                                 onMomentSortChange = { momentSortKey = it },
                             )
@@ -209,10 +211,10 @@ fun NLtimerScaffold(
                                 layoutLabel = layoutLabel,
                                 onLayoutChange = if (isHomePage) {{ themeViewModel.onHomeLayoutChange(it) }} else null,
                                 momentFilterLabel = momentFilterLabel,
-                                momentFilterOptions = momentFilterOptions,
+                                momentFilterOptions = MomentFilterOptions,
                                 momentFilterKey = momentFilterKey,
                                 onMomentFilterChange = { momentFilterKey = it },
-                                momentSortOptions = momentSortOptions,
+                                momentSortOptions = MomentSortOptions,
                                 momentSortKey = momentSortKey,
                                 onMomentSortChange = { momentSortKey = it },
                             )

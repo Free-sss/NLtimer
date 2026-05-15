@@ -42,10 +42,19 @@ class HomeUiStateBuilder {
         val sortedBehaviors = buildTimelineBehaviors(behaviors)
         val allCellsRaw = buildMomentBehaviors(sortedBehaviors, activityMap, tagsByBehaviorId, currentTimeMs)
 
-        val todayBehaviorIds = sortedBehaviors.filter { isToday(it, today) }.map { it.id }.toSet()
-        val todayCells = allCellsRaw.filter { it.behaviorId != null && it.behaviorId in todayBehaviorIds }
-        val pendingCells = allCellsRaw.filter { it.status == BehaviorNature.PENDING }
-        val nonTodayCells = allCellsRaw.filter { it.behaviorId != null && it.behaviorId !in todayBehaviorIds && it.status != BehaviorNature.PENDING }
+        val todayBehaviorIds = sortedBehaviors
+            .filter { isToday(it, today) }
+            .mapTo(mutableSetOf()) { it.id }
+        val todayCells = mutableListOf<GridCellUiState>()
+        val pendingCells = mutableListOf<GridCellUiState>()
+        val nonTodayCells = mutableListOf<GridCellUiState>()
+        for (cell in allCellsRaw) {
+            when {
+                cell.status == BehaviorNature.PENDING -> pendingCells.add(cell)
+                cell.behaviorId != null && cell.behaviorId in todayBehaviorIds -> todayCells.add(cell)
+                cell.behaviorId != null && cell.status != BehaviorNature.PENDING -> nonTodayCells.add(cell)
+            }
+        }
         val momentCells = todayCells + pendingCells + nonTodayCells
 
         val addCell = buildAddCell(todayCells, now)

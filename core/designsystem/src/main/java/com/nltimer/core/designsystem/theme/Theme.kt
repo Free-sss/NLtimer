@@ -1,6 +1,5 @@
 package com.nltimer.core.designsystem.theme
 
-import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -52,10 +51,7 @@ fun NLtimerTheme(
             LocalTheme provides theme,
             LocalTimerTypography provides resolveTimerTextStyle(),
         ) {
-            @Suppress("UnusedCrossfadeTargetStateParameter")
-            Crossfade(targetState = theme.appTheme to theme.isAmoled, label = "theme") {
-                content()
-            }
+            content()
         }
     }
 }

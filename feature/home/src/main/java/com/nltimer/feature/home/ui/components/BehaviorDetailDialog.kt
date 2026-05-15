@@ -24,6 +24,37 @@ import com.nltimer.feature.home.model.GridCellUiState
 import java.time.Instant
 import java.time.ZoneId
 
+private fun epochToMsString(epochMs: Long?): String {
+    if (epochMs == null) return "(空)"
+    return Instant.ofEpochMilli(epochMs)
+        .atZone(ZoneId.systemDefault())
+        .format(yyyyMMddHHmmFormatter)
+}
+
+private fun buildExportText(cell: GridCellUiState): String {
+    val stringBuilder = StringBuilder()
+    stringBuilder.appendLine("=== 行为详情 ===")
+    stringBuilder.appendLine("behaviorId: ${cell.behaviorId ?: "null"}")
+    stringBuilder.appendLine("activityIconKey: ${cell.activityIconKey ?: "(空)"}")
+    stringBuilder.appendLine("activityName: ${cell.activityName ?: "(空)"}")
+    stringBuilder.appendLine("status: ${cell.status?.name ?: "null"}")
+    stringBuilder.appendLine("isCurrent: ${cell.isCurrent}")
+    stringBuilder.appendLine("wasPlanned: ${cell.wasPlanned}")
+    stringBuilder.appendLine("isAddPlaceholder: ${cell.isAddPlaceholder}")
+    stringBuilder.appendLine("tags: ${cell.tags.joinToString("、") { "id=${it.id}, name=${it.name}, color=${it.color}, isActive=${it.isActive}" }.ifEmpty { "(空)" }}")
+    stringBuilder.appendLine("startTime: ${cell.startTime?.format(hhmmssFormatter) ?: "(空)"}")
+    stringBuilder.appendLine("startEpochMs: ${epochToMsString(cell.startEpochMs)}")
+    stringBuilder.appendLine("endTime: ${cell.endTime?.format(hhmmssFormatter) ?: "(空)"}")
+    stringBuilder.appendLine("endEpochMs: ${epochToMsString(cell.endEpochMs)}")
+    stringBuilder.appendLine("estimatedDuration: ${cell.estimatedDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
+    stringBuilder.appendLine("actualDuration: ${cell.actualDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
+    stringBuilder.appendLine("durationMs: ${cell.durationMs?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
+    stringBuilder.appendLine("achievementLevel: ${cell.achievementLevel?.toString() ?: "(空)"}")
+    stringBuilder.appendLine("pomodoroCount: ${cell.pomodoroCount}")
+    stringBuilder.appendLine("note: ${cell.note ?: "(空)"}")
+    return stringBuilder.toString()
+}
+
 @Composable
 fun BehaviorDetailDialog(
     cell: GridCellUiState,
@@ -31,37 +62,6 @@ fun BehaviorDetailDialog(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-
-    fun epochToMsString(epochMs: Long?): String {
-        if (epochMs == null) return "(空)"
-        return Instant.ofEpochMilli(epochMs)
-            .atZone(ZoneId.systemDefault())
-            .format(yyyyMMddHHmmFormatter)
-    }
-
-    fun buildExportText(): String {
-        val stringBuilder = StringBuilder()
-        stringBuilder.appendLine("=== 行为详情 ===")
-        stringBuilder.appendLine("behaviorId: ${cell.behaviorId ?: "null"}")
-        stringBuilder.appendLine("activityIconKey: ${cell.activityIconKey ?: "(空)"}")
-        stringBuilder.appendLine("activityName: ${cell.activityName ?: "(空)"}")
-        stringBuilder.appendLine("status: ${cell.status?.name ?: "null"}")
-        stringBuilder.appendLine("isCurrent: ${cell.isCurrent}")
-        stringBuilder.appendLine("wasPlanned: ${cell.wasPlanned}")
-        stringBuilder.appendLine("isAddPlaceholder: ${cell.isAddPlaceholder}")
-        stringBuilder.appendLine("tags: ${cell.tags.joinToString("、") { "id=${it.id}, name=${it.name}, color=${it.color}, isActive=${it.isActive}" }.ifEmpty { "(空)" }}")
-        stringBuilder.appendLine("startTime: ${cell.startTime?.format(hhmmssFormatter) ?: "(空)"}")
-        stringBuilder.appendLine("startEpochMs: ${epochToMsString(cell.startEpochMs)}")
-        stringBuilder.appendLine("endTime: ${cell.endTime?.format(hhmmssFormatter) ?: "(空)"}")
-        stringBuilder.appendLine("endEpochMs: ${epochToMsString(cell.endEpochMs)}")
-        stringBuilder.appendLine("estimatedDuration: ${cell.estimatedDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
-        stringBuilder.appendLine("actualDuration: ${cell.actualDuration?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
-        stringBuilder.appendLine("durationMs: ${cell.durationMs?.let { "${formatDuration(it)} (${it}ms)" } ?: "(空)"}")
-        stringBuilder.appendLine("achievementLevel: ${cell.achievementLevel?.toString() ?: "(空)"}")
-        stringBuilder.appendLine("pomodoroCount: ${cell.pomodoroCount}")
-        stringBuilder.appendLine("note: ${cell.note ?: "(空)"}")
-        return stringBuilder.toString()
-    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -106,7 +106,7 @@ fun BehaviorDetailDialog(
         },
         dismissButton = {
             TextButton(onClick = {
-                clipboardManager.setText(AnnotatedString(buildExportText()))
+                clipboardManager.setText(AnnotatedString(buildExportText(cell)))
                 Toast.makeText(context, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
             }) {
                 Text("导出到剪贴板")

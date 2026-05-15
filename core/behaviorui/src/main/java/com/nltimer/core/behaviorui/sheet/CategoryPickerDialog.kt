@@ -52,6 +52,66 @@ private data class ItemLayoutInfo(
     val height: Float,
 )
 
+private fun computeCategoryDragTargetIndex(
+    itemLayouts: Map<Int, ItemLayoutInfo>,
+    draggedIdx: Int,
+    offsetY: Float,
+): Int {
+    val draggedInfo = itemLayouts[draggedIdx] ?: return draggedIdx
+    val draggedCenter = draggedInfo.y + draggedInfo.height / 2f + offsetY
+    val spacing = 8.dp.value
+
+    var bestIndex = draggedIdx
+    var bestDist = Float.MAX_VALUE
+
+    for ((idx, info) in itemLayouts) {
+        if (idx == draggedIdx) continue
+        val itemCenter = info.y + info.height / 2f
+        val dist = kotlin.math.abs(draggedCenter - itemCenter)
+        if (dist < bestDist && dist < info.height / 2f + draggedInfo.height / 2f + spacing) {
+            bestDist = dist
+            bestIndex = idx
+        }
+    }
+
+    if (bestIndex == draggedIdx) return draggedIdx
+
+    val targetInfo = itemLayouts[bestIndex] ?: return draggedIdx
+    val targetCenter = targetInfo.y + targetInfo.height / 2f
+
+    return if (draggedCenter < targetCenter) {
+        if (bestIndex > draggedIdx) bestIndex - 1 else bestIndex
+    } else {
+        if (bestIndex < draggedIdx) bestIndex + 1 else bestIndex
+    }
+}
+
+private fun applyCategoryDragShiftOffsets(
+    itemLayouts: Map<Int, ItemLayoutInfo>,
+    shiftOffsets: MutableMap<Int, Float>,
+    draggedIdx: Int,
+    targetIdx: Int,
+) {
+    shiftOffsets.clear()
+    if (draggedIdx == -1 || targetIdx == -1 || draggedIdx == targetIdx) return
+
+    val draggedInfo = itemLayouts[draggedIdx] ?: return
+    val draggedHeight = draggedInfo.height
+    val spacing = 8.dp.value
+
+    if (targetIdx > draggedIdx) {
+        for (i in (draggedIdx + 1)..targetIdx) {
+            val info = itemLayouts[i] ?: continue
+            shiftOffsets[i] = -(draggedHeight + spacing)
+        }
+    } else {
+        for (i in targetIdx until draggedIdx) {
+            val info = itemLayouts[i] ?: continue
+            shiftOffsets[i] = draggedHeight + spacing
+        }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun <T : CategorizableItem> CategoryPickerDialog(
@@ -87,55 +147,11 @@ fun <T : CategorizableItem> CategoryPickerDialog(
     var allCollapsed by remember { mutableStateOf(false) }
     val collapsedStates = remember { mutableStateMapOf<Int, Boolean>() }
 
-    fun computeTargetIndex(draggedIdx: Int, offsetY: Float): Int {
-        val draggedInfo = itemLayouts[draggedIdx] ?: return draggedIdx
-        val draggedCenter = draggedInfo.y + draggedInfo.height / 2f + offsetY
-        val spacing = 8.dp.value
-
-        var bestIndex = draggedIdx
-        var bestDist = Float.MAX_VALUE
-
-        for ((idx, info) in itemLayouts) {
-            if (idx == draggedIdx) continue
-            val itemCenter = info.y + info.height / 2f
-            val dist = kotlin.math.abs(draggedCenter - itemCenter)
-            if (dist < bestDist && dist < info.height / 2f + draggedInfo.height / 2f + spacing) {
-                bestDist = dist
-                bestIndex = idx
-            }
-        }
-
-        if (bestIndex == draggedIdx) return draggedIdx
-
-        val targetInfo = itemLayouts[bestIndex] ?: return draggedIdx
-        val targetCenter = targetInfo.y + targetInfo.height / 2f
-
-        return if (draggedCenter < targetCenter) {
-            if (bestIndex > draggedIdx) bestIndex - 1 else bestIndex
-        } else {
-            if (bestIndex < draggedIdx) bestIndex + 1 else bestIndex
-        }
+    val computeTargetIndex: (Int, Float) -> Int = { draggedIdx, offsetY ->
+        computeCategoryDragTargetIndex(itemLayouts, draggedIdx, offsetY)
     }
-
-    fun computeShiftOffsets(draggedIdx: Int, targetIdx: Int) {
-        shiftOffsets.clear()
-        if (draggedIdx == -1 || targetIdx == -1 || draggedIdx == targetIdx) return
-
-        val draggedInfo = itemLayouts[draggedIdx] ?: return
-        val draggedHeight = draggedInfo.height
-        val spacing = 8.dp.value
-
-        if (targetIdx > draggedIdx) {
-            for (i in (draggedIdx + 1)..targetIdx) {
-                val info = itemLayouts[i] ?: continue
-                shiftOffsets[i] = -(draggedHeight + spacing)
-            }
-        } else {
-            for (i in targetIdx until draggedIdx) {
-                val info = itemLayouts[i] ?: continue
-                shiftOffsets[i] = draggedHeight + spacing
-            }
-        }
+    val computeShiftOffsets: (Int, Int) -> Unit = { draggedIdx, targetIdx ->
+        applyCategoryDragShiftOffsets(itemLayouts, shiftOffsets, draggedIdx, targetIdx)
     }
 
     AlertDialog(
