@@ -18,10 +18,10 @@
 ```
 包名: com.nltimer
 语言: Kotlin 2.3.21
-UI: Jetpack Compose + Material3
+UI: Jetpack Compose + Material3 + Material3 Expressive
 最低SDK: 31 (Android 12)
 目标SDK: 36
-数据库: Room (当前版本 6)
+数据库: Room (当前版本 12)
 DI: Hilt
 构建: Gradle Kotlin DSL + Convention Plugins
 ```
@@ -33,17 +33,21 @@ NLtimer/
 ├── app/                    # 壳模块：MainActivity + 导航 + Scaffold
 ├── core/
 │   ├── data/               # 数据层：Room DB + Repository + SettingsPrefs
-│   └── designsystem/       # 设计系统：主题 + 表单 + 调试组件
+│   ├── designsystem/       # 设计系统：基础组件 + 主题
+│   ├── behaviorui/         # 行为记录专用 UI 组件
+│   ├── debugui/            # 调试专用的通用 UI
+│   └── tools/              # 通用 Kotlin/Android 工具类
 ├── feature/
-│   ├── home/               # 首页：网格行为视图 + 添加/完成行为
-│   ├── sub/                # 副页（占位）
-│   ├── stats/              # 统计页（占位）
+│   ├── home/               # 首页：网格/时间轴/日志视图
+│   ├── behavior_management/ # 行为记录管理（增删改查逻辑）
+│   ├── sub/                # 副页（备用）
+│   ├── stats/              # 统计页
 │   ├── settings/           # 设置：主题 + 弹窗配置
 │   ├── categories/         # 分类管理
 │   ├── management_activities/ # 活动管理 CRUD
 │   ├── tag_management/     # 标签管理 CRUD
-│   └── debug/              # 调试工具（仅 debug 构建）
+│   └── debug/              # 调试入口与工具集（仅 debug 构建）
 ├── buildSrc/               # Convention Plugins
-├── docs/                   # 设计文档 + 日志
+├── docs/                   # 设计文档 + AI 上下文 + 日志
 └── gradle/                 # Version Catalog (libs.versions.toml)
 ```

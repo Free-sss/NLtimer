@@ -25,7 +25,7 @@ Behavior (N) ──→ Activity (1)
 | groupId | Long? | 外键 → ActivityGroup.id |
 | isPreset | Boolean | 是否预设 |
 | isArchived | Boolean | 是否归档 |
-| archivedAt | Long? | 归档时间（毫秒） |
+| archivedAt | Long? | 归档时间（毫���） |
 | color | Long? | ARGB 颜色 |
 | usageCount | Int | 使用次数统计 |
 
@@ -53,13 +53,14 @@ Behavior (N) ──→ Activity (1)
 | sortOrder | Int | 排序权重 |
 | isArchived | Boolean | 是否归档 |
 | archivedAt | Long? | 归档时间（毫秒） |
+| keywords | String? | 关键词（正则联动） |
 
 ### Behavior（行为记录）
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | id | Long | 自增主键 |
-| activityId | Long | 外键 → Activity.id |
+| activityId | Long | 外键 → Activity.id (级联删除) |
 | startTime | Long | 开始时间戳（ms） |
 | endTime | Long? | 结束时间戳（ms），null=未结束 |
 | status | BehaviorNature | PENDING / ACTIVE / COMPLETED |
@@ -96,13 +97,16 @@ Behavior (N) ──→ Activity (1)
 ## 数据库
 
 - 名称：`nltimer-database`
-- 当前版本：**9**
+- 当前版本：**12**
 - 迁移策略：`fallbackToDestructiveMigration(false)` + 显式迁移
 - 迁移链：
   - 3→4：category 字段迁移到 activity_groups 表
   - 4→5：activities 新增 color 列
-  - 5→6：activities/groups/tags 的 name 列添加唯一索引（去重后创建）
-  - 8→9：activities 删除 emoji 新增 keywords/archivedAt/usageCount，activity_groups 新增 isArchived/archivedAt，tags 删除 textColor 重命名 icon→iconKey 新增 archivedAt
+  - 5→6：activities/groups/tags 的 name 列添加唯一索引
+  - 8→9：activities 删除 emoji 新增 keywords/archivedAt/usageCount，activity_groups 新增 isArchived/archivedAt，tags 重命名 icon→iconKey 新增 archivedAt
+  - 9���10：为 activities(isArchived, groupId), tags(isArchived, category), behaviors(startTime, status) 添加索引
+  - 10→11：tags 表新增 keywords 字段
+  - 11→12：behaviors 表 activityId 增加级联删除外键约束，调整索引
 
 ## Repository 接口速查
 
@@ -127,7 +131,7 @@ Behavior (N) ──→ Activity (1)
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | activityDisplayMode | ChipDisplayMode | Filled | 活动 Chip 样式 |
-| activityLayoutMode | GridLayoutMode | Horizontal | 活动布局方向 |
+| activityLayoutMode | GridLayoutMode | Horizontal | ���动布局方向 |
 | activityColumnLines | Int | 2 | 列数 |
 | activityHorizontalLines | Int | 2 | 行数 |
 | activityUseColorForText | Boolean | true | 用活动颜色做文字色 |

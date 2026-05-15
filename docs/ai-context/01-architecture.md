@@ -11,8 +11,11 @@
 │  feature/* (功能模块)                        │
 │  Route → Screen → ViewModel → Repository    │
 ├─────────────────────────────────────────────┤
+│  core/behaviorui (行为 UI)                   │
+│  AddBehaviorSheet / WheelPicker / TimePicker │
+├─────────────────────────────────────────────┤
 │  core/designsystem (设计系统)                │
-│  Theme / FormSpec / DebugComponent           │
+│  Theme / FormSpec / ColorPicker             │
 ├─────────────────────────────────────────────┤
 │  core/data (数据层)                          │
 │  Repository → DAO → Room DB                  │
@@ -24,58 +27,44 @@
 
 ```
 app ──→ feature/* ──→ core/data ──→ core/designsystem
+              │              │          ↑
+              │              └────→ core/behaviorui
               │                        ↑
               └────────────────────────┘
 ```
 
 - `app` 依赖所有 feature 模块和 core 模块
-- `feature/*` 依赖 `core/data` 和 `core/designsystem`
-- `core/data` 依赖 `core/designsystem`（仅 Theme 枚举引用）
-- `core/designsystem` 不依赖任何项目模块
+- `feature/home` 额外依赖 `core/behaviorui` 和 `core/tools`
+- `core/data` 依赖 `core/designsystem`（枚举引用）
+- `core/behaviorui` 依赖 `core/designsystem` 和 `core/data`（模型引用）
 
 ## 导航结构
 
 ```
 NavHost (startDestination = "home")
 ├── home              → HomeRoute
-├── sub               → SubRoute
 ├── stats             → StatsRoute
 ├── settings          → SettingsRoute
-│   ├── theme_settings  → ThemeSettingsRoute
-│   └── dialog_config   → DialogConfigRoute
+│   ├── theme_settings    → ThemeSettingsRoute
+│   ├── dialog_config     → DialogConfigRoute
+│   ├── data_management   → DataManagementRoute
+│   ├── home_layout_config → HomeLayoutConfigRoute
+│   └── color_palette     → ColorPaletteRoute
 ├── categories        → CategoriesRoute
 ├── management_activities → ActivityManagementRoute
 ├── tag_management    → TagManagementRoute
+├── behavior_management → BehaviorManagementRoute
 └── [debugRoutes]     → DebugRoute (仅 debug 构建)
 ```
-
-底部导航栏固定 4 项：主页 / 副页 / 统计 / 设置
 
 ## DI 架构
 
 - **Hilt** + `@HiltViewModel`
 - `core/data/di/DataModule`：绑定 Repository 接口 → 实现，提供 Room DB + DAO
-- `app/di/DataModule`：提供 SettingsPrefs
-- `feature/home/di/HomeModule`：绑定 MatchStrategy → KeywordMatchStrategy
+- `app/di/SettingsModule`：提供 SettingsPrefs
+- `core/tools/di/ToolsModule`：提供通用工具类注入
 
-## 主题注入链
+## 调试机制
 
-```
-SettingsPrefs (DataStore)
-  → ThemeSettingsViewModel 读取 Flow<Theme>
-    → NLtimerTheme(theme) 包裹根 Composable
-      → LocalTheme 提供给子组件
-      → DynamicMaterialTheme 生成 Material3 调色板
-```
-
-## Debug 模块注入机制
-
-```
-DebugInitializer (app/src/debug) → 调用各 feature 的 DebugComponents.registerAll()
-                                    ↓
-FeatureDebugComponents.registerAll() → DebugComponentRegistry.register(...)
-                                    ↓
-DebugPage → 读取 DebugComponentRegistry.components 渲染列表
-
-NLtimerNavHost.debugRoutes → 动态注入 debug 路由（release 为 null）
-```
+- `DebugInitializer` 动态注册各模块的调试组件
+- `NLtimerNavHost.debugRoutes` 动态注入调试路由

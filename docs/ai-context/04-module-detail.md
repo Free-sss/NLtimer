@@ -5,136 +5,47 @@
 | 文件 | 职责 |
 |------|------|
 | MainActivity | 入口 Activity，setContent → NLtimerApp |
-| NLtimerApp | 根 Composable，创建 NavController |
-| NLtimerScaffold | 主框架：Drawer + TopBar + BottomNav + NavHost + 设置弹窗 |
-| NLtimerNavHost | 路由注册表，所有 feature Route 在此注册 |
-| NLtimerApplication | Application 类，Hilt 入口 |
-| component/AppBottomNavigation | 底部导航栏（主页/副页/统计/设置） |
-| component/AppDrawer | 侧边抽屉导航 |
-| component/AppTopAppBar | 顶栏（菜单+设置按钮） |
-| component/RouteSettingsPopup | 路由级设置弹窗（布局切换等） |
-| di/DataModule | 提供 SettingsPrefs 绑定 |
+| NLtimerApp | 根 Composable，处理主题包裹与 NavController |
+| NLtimerScaffold | 主框架：Drawer + TopBar + BottomNav + NavHost |
+| NLtimerNavHost | 路由注册表，定义页面跳转与过渡动画 |
+| NLtimerApplication | Hilt Application 入口 |
+| component/* | AppDrawer, AppBottomNavigation, AppTopAppBar 等框架组件 |
 
 ## core/data（数据层）
 
-```
-core/data/
-├── database/
-│   ├── NLtimerDatabase.kt    # Room DB 定义 + 迁移
-│   ├── dao/                   # ActivityDao, ActivityGroupDao, TagDao, BehaviorDao
-│   └── entity/                # Entity 类（与 DB 表一一对应）
-├── model/                     # 领域模型（Activity, Tag, Behavior, 等）
-├── repository/                # Repository 接口
-│   └── impl/                  # Repository 实现
-├── migration/                 # 迁移验证器
-├── di/DataModule.kt           # Hilt DI 绑定
-├── SettingsPrefs.kt           # 偏好接口
-└── SettingsPrefsImpl.kt       # DataStore 实现
-```
+- **database/**: `NLtimerDatabase` (Room) 定义，包含 Activity, Group, Tag, Behavior 实体及 DAO。
+- **repository/**: 提供对数据的抽象访问，处理缓存与数据库同步。
+- **SettingsPrefs**: 基于 DataStore 的偏好设���（主题、布局、弹窗配置）。
+
+## core/behaviorui（行为 UI）
+
+- **sheet/**: `AddBehaviorSheet` (核心底部弹窗)，包含 `WheelPicker`, `TimePickerCompact`, `ActivityPicker`, `TagPicker` 等交互组件。
+- **components**: `AdaptiveActivityChip`, `StaggeredHorizontalGrid` 等。
 
 ## core/designsystem（设计系统）
 
-```
-core/designsystem/
-├── theme/
-│   ├── Theme.kt               # NLtimerTheme 入口
-│   ├── ThemeConfig.kt         # Theme 数据类
-│   ├── AppTheme.kt            # LIGHT / DARK / SYSTEM 枚举
-│   ├── PaletteStyle.kt        # 9 种调色板风格枚举
-│   ├── Fonts.kt               # FIGTREE / SYSTEM_DEFAULT 枚举
-│   ├── HomeLayout.kt          # GRID / TIMELINE_REVERSE / LOG 枚举
-│   ├── Color.kt               # 颜色常量
-│   ├── Type.kt                # 排版系统
-│   ├── ComponentExt.kt        # 组件扩展函数
-│   ├── DialogDisplayConfig.kt # Chip/Grid/Path 绘制模式枚举
-│   ├── EnumExt.kt             # 枚举扩展
-│   ├── ListItemExt.kt         # 列表项扩展
-│   ├── ModifierExt.kt         # Modifier 扩展
-│   └── Fonts.kt               # 字体资源映射
-├── form/
-│   ├── FormSpec.kt            # 声明式表单规范（FormRow sealed class）
-│   ├── ActivityFormSpecs.kt   # 活动/标签表单规范定义
-│   ├── GenericFormDialog.kt   # 通用表单弹窗
-│   └── GenericFormSheet.kt    # 通用表单底部弹窗
-├── component/
-│   └── ColorPickerDialog.kt   # 颜色选择弹窗
-└── debug/
-    ├── DebugComponent.kt      # 调试组件描述 + 注册中心
-    └── DebugComponentRegistry # 全局组件注册表
-```
+- **theme/**: `NLtimerTheme`, `AppTheme` 枚举, `PaletteStyle`, 动态色彩生成。
+- **form/**: `GenericFormDialog`, `FormSpec` 声明式表单构建。
+
+## core/tools（通用工具）
+
+- **match/**: `NoteMatcher`, `NoteDirectiveParser` (解析备注中的指令如 `-30m`)。
+- **timing/**: `StartBehaviorTool`, `QueryCurrentBehaviorTool` 等逻辑单元。
+- **registry**: 通用 `ToolRegistry` 机制。
 
 ## feature/home（首页）
 
-| 文件 | 职责 |
-|------|------|
-| HomeRoute | Composable 入口，连接 ViewModel |
-| HomeScreen | 主页 UI：网格/时间轴/日志布局 |
-| HomeViewModel | 核心逻辑：加载行为、添加/完成行为、布局切换 |
-| HomeUiState | 首页整体状态（行列表 + 弹窗状态 + 空闲模式） |
-| GridRowUiState | 网格行状态 |
-| GridCellUiState | 网格单元格状态（行为/占位/添加按钮） |
-| TagUiState | 标签 UI 状态 |
-| BehaviorDetailUiState | 行为详情弹窗状态 |
-| MatchStrategy | 搜索匹配策略接口 |
-| KeywordMatchStrategy | 关键词模糊匹配实现 |
-| di/HomeModule | 绑定 MatchStrategy |
+- **HomeScreen**: 支持 Grid (网格), Timeline (时间轴), Log (日志) 三种行为展示布局。
+- **HomeViewModel**: 状态驱动，聚合 Behavior 记录并转换为 UI 模型。
 
-**HomeViewModel 核心流程：**
-1. `init` → 加载当天行为 + 活动列表 + 标签列表
-2. `buildUiState()` → Behavior 列表 → GridRow + GridCell（每行 4 格）
-3. `addBehavior()` → ACTIVE 时先结束当前 → 插入新记录
-4. `completeBehavior()` → 调用 `completeCurrentAndStartNext`
+## feature/behavior_management（行为管理）
 
-## feature/settings（设置）
+- **功能**: 历史行为过滤、批量导入导出 (JSON)、计时修正。
+- **组件**: `BehaviorTimelineItem`, `ImportExportDialog`。
 
-| 文件 | 职责 |
-|------|------|
-| SettingsScreen | 设置主页（主题/弹窗配置入口） |
-| ThemeSettingsScreen | 主题配置 UI |
-| ThemeSettingsViewModel | 主题读写 + 布局切换回调 |
-| DialogConfigScreen | 弹窗网格配置 UI |
-| DialogConfigViewModel | 弹窗配置读写 |
+## 其他功能模块
 
-## feature/categories（分类管理）
-
-| 文件 | 职责 |
-|------|------|
-| CategoriesRoute | 入口 |
-| CategoriesScreen | 分类列表 UI |
-| CategoriesViewModel | 分类 CRUD |
-| CategoriesUiState | 分类状态 |
-
-## feature/management_activities（活动管理）
-
-| 文件 | 职责 |
-|------|------|
-| ActivityManagementRoute | 入口 |
-| ActivityManagementScreen | 活动列表 + 分组 UI |
-| ActivityManagementViewModel | 活动/分组 CRUD + 预设初始化 |
-| ActivityManagementUiState | 管理页状态 |
-
-## feature/tag_management（标签管理）
-
-| 文件 | 职责 |
-|------|------|
-| TagManagementRoute | 入口 |
-| TagManagementScreen | 标签列表 UI |
-| TagManagementViewModel | 标签 CRUD |
-| TagManagementUiState | 标签管理状态 |
-
-## feature/debug（调试工具）
-
-| 文件 | 职责 |
-|------|------|
-| DebugRoute | 调试页入口 |
-| DebugPage | 调试组件列表页 |
-| FeatureDebugComponents | 注册所有调试预览组件 |
-| GenericFormSheet | 通用表单底部弹窗 |
-| DebugDatabaseHelper | 数据库调试工具 |
-| FormSpec | 表单规范模型 |
-
-**调试组件分组：** Pickers / Inputs / Forms / Components / Dialogs / Database
-
-## feature/sub & feature/stats（占位模块）
-
-- SubScreen / StatsScreen：简单占位页面，待后续开发
+- **settings**: 主题切换、弹窗行为配置、色彩方案选择、数据导出。
+- **management_activities**: 活动的 CRUD 与分组管理。
+- **tag_management**: 标签的 CRUD 与分类管理。
+- **debug**: 仅在 Debug 构建中可见，用于测试 UI 组件与数据库状态。
