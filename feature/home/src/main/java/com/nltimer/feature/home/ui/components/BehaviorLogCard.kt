@@ -79,13 +79,13 @@ internal fun BehaviorLogCard(
             }
 
             behavior.status?.let { status ->
-                val (bgColor, textColor) = when (status) {
+                val (statusLabel, bgColor, textColor) = when (status) {
                     BehaviorNature.ACTIVE ->
-                        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
+                        Triple("进行中", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer)
                     BehaviorNature.COMPLETED ->
-                        MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+                        Triple("已完成", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer)
                     BehaviorNature.PENDING ->
-                        MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+                        Triple("目标", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer)
                 }
                 Box(
                     modifier = Modifier
@@ -94,7 +94,7 @@ internal fun BehaviorLogCard(
                         .padding(horizontal = logStyle.statusBadgePaddingH.dp, vertical = logStyle.statusBadgePaddingV.dp)
                 ) {
                     Text(
-                        text = status.name,
+                        text = statusLabel,
                         style = MaterialTheme.typography.labelSmall,
                         color = textColor,
                         fontWeight = FontWeight.Medium

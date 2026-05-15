@@ -47,6 +47,7 @@ class HomeUiStateBuilder {
         // 预计算所有 Cell 的日期，避免重复转换
         val cellDateMap = allCellsRaw.associateWith { cell ->
             cell.startEpochMs?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalDate() }
+                ?: if (cell.status == BehaviorNature.PENDING) today else null
         }
 
         val todayBehaviorIds = sortedBehaviors
@@ -127,15 +128,17 @@ class HomeUiStateBuilder {
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
         datedCellsByDate.keys.sorted().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: 0L }
+            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
             val cellsForSection = if (date == today) cells + todayAddCell else cells
             val dateBehaviors = sortedBehaviors.filter { b ->
-                b.startTime > 0L &&
-                    Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
-            }
+                if (b.status == BehaviorNature.PENDING) date == today
+                else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
+            }.sortedBy { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
+
             val isTodaySection = date == today
             val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
-                Instant.ofEpochMilli(it.startTime).atZone(zoneId).toLocalTime()
+                if (it.status == BehaviorNature.PENDING) now
+                else Instant.ofEpochMilli(it.startTime).atZone(zoneId).toLocalTime()
             } ?: LocalTime.MIDNIGHT
             val (rows, _) = buildGridRows(
                 allCells = cellsForSection,
