@@ -1,5 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.LogLayoutStyle
@@ -141,7 +144,9 @@ fun MomentView(
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val listState = rememberLazyListState()
+    val initialScrollDone = remember { mutableStateOf(false) }
 
+    val today = remember { LocalDate.now() }
     val behaviors = remember(cells, filterTab, sortMode) {
         val filtered = cells.filter { it.behaviorId != null }.let { list ->
             when (filterTab) {
@@ -161,10 +166,21 @@ fun MomentView(
         pending + sortedNonPending
     }
 
-    val today = remember { LocalDate.now() }
     val displayItems = remember(behaviors, today) {
         buildMomentDisplayItems(behaviors, today)
     }
+
+    LaunchedEffect(displayItems) {
+        if (displayItems.isNotEmpty() && !initialScrollDone.value) {
+            initialScrollDone.value = true
+        }
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (initialScrollDone.value) 1f else 0f,
+        animationSpec = tween(durationMillis = 400),
+        label = "MomentFadeIn"
+    )
 
     val dateIndexMap = remember(displayItems) {
         val map = mutableMapOf<Int, String>()
@@ -203,7 +219,9 @@ fun MomentView(
 
     LazyColumn(
         state = listState,
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .graphicsLayer { this.alpha = alpha },
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
             start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp

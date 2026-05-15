@@ -1,5 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -31,17 +32,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.BehaviorNature
@@ -79,8 +80,21 @@ fun TimelineReverseView(
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
+    val initialScrollDone = remember { mutableStateOf(false) }
 
     val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
+
+    LaunchedEffect(timelineItems) {
+        if (timelineItems.isNotEmpty() && !initialScrollDone.value) {
+            initialScrollDone.value = true
+        }
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (initialScrollDone.value) 1f else 0f,
+        animationSpec = tween(durationMillis = 400),
+        label = "TimelineFadeIn"
+    )
 
     val dateIndexMap = remember(timelineItems) {
         val map = mutableMapOf<Int, String>()
@@ -116,7 +130,9 @@ fun TimelineReverseView(
             .collect { onLoadMore() }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier
+        .fillMaxSize()
+        .graphicsLayer { this.alpha = alpha }) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),

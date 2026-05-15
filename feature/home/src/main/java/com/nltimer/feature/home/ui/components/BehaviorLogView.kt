@@ -1,5 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.util.hhmmFormatter
@@ -45,8 +48,22 @@ fun BehaviorLogView(
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
+    val initialScrollDone = remember { mutableStateOf(false) }
 
     val displayItems = remember(items) { reverseGroupedItems(items) }
+
+    // 初始定位到顶部（日志视图默认即为最新）
+    LaunchedEffect(displayItems) {
+        if (displayItems.isNotEmpty() && !initialScrollDone.value) {
+            initialScrollDone.value = true
+        }
+    }
+
+    val alpha by animateFloatAsState(
+        targetValue = if (initialScrollDone.value) 1f else 0f,
+        animationSpec = tween(durationMillis = 400),
+        label = "LogFadeIn"
+    )
 
     val dateIndexMap = remember(displayItems) {
         val map = mutableMapOf<Int, String>()
@@ -85,7 +102,9 @@ fun BehaviorLogView(
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer { this.alpha = alpha },
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
