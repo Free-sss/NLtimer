@@ -51,7 +51,23 @@ fun TimeAxisGrid(
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
-    val initialScrollDone = rememberSaveable { mutableStateOf(false) }
+    val initialScrollDone = remember { mutableStateOf(false) }
+
+    // 初始定位到今天及当前小时
+    LaunchedEffect(sections) {
+        if (sections.isNotEmpty() && !initialScrollDone.value) {
+            val todaySection = sections.lastOrNull()
+            if (todaySection != null) {
+                val precedingItems = sections.dropLast(1).sumOf { 1 + it.rows.size }
+                val todayHeaderIndex = if (isLoadingMore) precedingItems + 1 else precedingItems
+                val targetRowIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
+                val absoluteIndex = todayHeaderIndex + 1 + (if (targetRowIndex >= 0) targetRowIndex else 0)
+                
+                listState.scrollToItem(absoluteIndex)
+                initialScrollDone.value = true
+            }
+        }
+    }
 
     val dateIndexMap = remember(sections) {
         val map = mutableMapOf<Int, String>()
