@@ -53,6 +53,7 @@ fun TimeAxisGrid(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    footer: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
@@ -150,6 +151,11 @@ fun TimeAxisGrid(
                     timeLabelConfig = timeLabelConfig,
                     gridStyle = gridStyle,
                 )
+            }
+        }
+        if (footer != null) {
+            item(key = "footer", contentType = "footer") {
+                footer()
             }
         }
     }

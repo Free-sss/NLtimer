@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -59,6 +60,7 @@ import com.nltimer.core.designsystem.theme.styledBorder
 import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeListItem
+import com.nltimer.feature.home.model.TagUiState
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -76,6 +78,7 @@ fun TimelineReverseView(
     hasReachedEarliest: Boolean = false,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
     modifier: Modifier = Modifier,
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
@@ -83,6 +86,7 @@ fun TimelineReverseView(
     val initialScrollDone = remember { mutableStateOf(false) }
 
     val timelineItems = remember(items) { buildTimelineItemsReversed(items) }
+    val hasHeader = header != null
 
     LaunchedEffect(timelineItems) {
         if (timelineItems.isNotEmpty() && !initialScrollDone.value) {
@@ -96,10 +100,11 @@ fun TimelineReverseView(
         label = "TimelineFadeIn"
     )
 
-    val dateIndexMap = remember(timelineItems) {
+    val dateIndexMap = remember(timelineItems, hasHeader) {
         val map = mutableMapOf<Int, String>()
+        val headerOffset = if (hasHeader) 1 else 0
         timelineItems.forEachIndexed { index, item ->
-            if (item is TimelineDisplayItem.Divider) map[index] = item.label
+            if (item is TimelineDisplayItem.Divider) map[index + headerOffset] = item.label
         }
         map
     }
@@ -139,6 +144,11 @@ fun TimelineReverseView(
             verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
+            if (header != null) {
+                item(key = "header", contentType = "header") {
+                    header()
+                }
+            }
             items(
                 items = timelineItems,
                 key = { it.key },

@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -115,6 +116,7 @@ fun MomentView(
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val momentFilterState = LocalMomentFilterState.current
     val filterTab = remember(momentFilterState.filterKey) {
@@ -169,6 +171,7 @@ fun MomentView(
     val displayItems = remember(behaviors, today) {
         buildMomentDisplayItems(behaviors, today)
     }
+    val hasHeader = header != null
 
     LaunchedEffect(displayItems) {
         if (displayItems.isNotEmpty() && !initialScrollDone.value) {
@@ -182,10 +185,11 @@ fun MomentView(
         label = "MomentFadeIn"
     )
 
-    val dateIndexMap = remember(displayItems) {
+    val dateIndexMap = remember(displayItems, hasHeader) {
         val map = TreeMap<Int, String>()
+        val headerOffset = if (hasHeader) 1 else 0
         displayItems.forEachIndexed { index, item ->
-            if (item is MomentDisplayItem.Divider) map[index] = item.label
+            if (item is MomentDisplayItem.Divider) map[index + headerOffset] = item.label
         }
         map
     }
@@ -224,6 +228,11 @@ fun MomentView(
             start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp
         ),
     ) {
+        if (header != null) {
+            item(key = "header", contentType = "header") {
+                header()
+            }
+        }
         if (isLoadingMore) item("loading-top") {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
