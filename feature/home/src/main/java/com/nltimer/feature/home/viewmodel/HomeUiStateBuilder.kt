@@ -37,18 +37,37 @@ class HomeUiStateBuilder {
             return buildEmptyState(now)
         }
 
+        val zoneId = ZoneId.systemDefault()
         val hasActive = calculateCurrentBehavior(behaviors)
         val activityMap = activities.associateBy { it.id }
         val sortedBehaviors = buildTimelineBehaviors(behaviors)
-        val allCellsRaw = buildMomentBehaviors(sortedBehaviors, activityMap, tagsByBehaviorId, currentTimeMs)
+        val allCellsRaw = buildMomentBehaviors(sortedBehaviors, activityMap, tagsByBehaviorId, currentTimeMs, zoneId)
+
+        // 预计算所有 Cell 的日期，避免重复转换
+        val cellDateMap = allCellsRaw.associateWith { cell ->
+            cell.startEpochMs?.let { Instant.ofEpochMilli(it).atZone(zoneId).toLocalDate() }
+        }
 
         val todayBehaviorIds = sortedBehaviors
-            .filter { isToday(it, today) }
+            .filter { b ->
+                if (b.status == BehaviorNature.PENDING || b.startTime <= 0L) false
+                else Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == today
+            }
             .mapTo(mutableSetOf()) { it.id }
+
         val todayCells = mutableListOf<GridCellUiState>()
         val pendingCells = mutableListOf<GridCellUiState>()
         val nonTodayCells = mutableListOf<GridCellUiState>()
+        
+        // 分离 datedCells 用于后续 List 和 Grid 构建
+        val datedCellsByDate = mutableMapOf<LocalDate, MutableList<GridCellUiState>>()
+
         for (cell in allCellsRaw) {
+            val date = cellDateMap[cell]
+            if (cell.behaviorId != null && date != null) {
+                datedCellsByDate.getOrPut(date) { mutableListOf() }.add(cell)
+            }
+
             when {
                 cell.status == BehaviorNature.PENDING -> pendingCells.add(cell)
                 cell.behaviorId != null && cell.behaviorId in todayBehaviorIds -> todayCells.add(cell)
@@ -58,10 +77,10 @@ class HomeUiStateBuilder {
         val momentCells = todayCells + pendingCells + nonTodayCells
 
         val addCell = buildAddCell(todayCells, now)
-        val gridSections = buildGridSections(allCellsRaw, sortedBehaviors, today, addCell, now, gridColumns)
-        val items = buildListItems(allCellsRaw, today)
+        val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, addCell, now, gridColumns, zoneId)
+        val items = buildListItems(datedCellsByDate, today)
 
-        val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors)
+        val lastBehaviorEndTime = calculateLastBehaviorEndTime(behaviors, zoneId)
 
         return HomeUiState(
             items = items,
@@ -72,17 +91,6 @@ class HomeUiStateBuilder {
             hasActiveBehavior = hasActive,
             lastBehaviorEndTime = lastBehaviorEndTime,
         )
-    }
-
-    private fun isToday(behavior: Behavior, today: LocalDate): Boolean {
-        if (behavior.status == BehaviorNature.PENDING) return false
-        if (behavior.startTime <= 0L) return false
-        return Instant.ofEpochMilli(behavior.startTime).atZone(ZoneId.systemDefault()).toLocalDate() == today
-    }
-
-    private fun cellDate(cell: GridCellUiState): LocalDate? {
-        val epoch = cell.startEpochMs ?: return null
-        return Instant.ofEpochMilli(epoch).atZone(ZoneId.systemDefault()).toLocalDate()
     }
 
     private fun dayLabel(date: LocalDate, today: LocalDate): String {
@@ -96,48 +104,37 @@ class HomeUiStateBuilder {
     }
 
     private fun buildListItems(
-        allCells: List<GridCellUiState>,
+        datedCellsByDate: Map<LocalDate, List<GridCellUiState>>,
         today: LocalDate,
     ): List<HomeListItem> {
-        val datedCells = allCells
-            .filter { it.behaviorId != null && cellDate(it) != null }
-            .sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
-        val byDate: Map<LocalDate, List<GridCellUiState>> = datedCells
-            .groupBy { cellDate(it)!! }
-            .filterValues { it.isNotEmpty() }
-
         val result = mutableListOf<HomeListItem>()
-        byDate.keys.sorted().forEach { date ->
+        datedCellsByDate.keys.sorted().forEach { date ->
             result.add(HomeListItem.DayDivider(date = date, label = dayLabel(date, today)))
-            byDate[date]!!.forEach { cell -> result.add(HomeListItem.CellItem(cell)) }
+            datedCellsByDate[date]!!.forEach { cell -> result.add(HomeListItem.CellItem(cell)) }
         }
         return result
     }
 
     private fun buildGridSections(
-        allCells: List<GridCellUiState>,
+        datedCellsByDate: Map<LocalDate, List<GridCellUiState>>,
         sortedBehaviors: List<Behavior>,
         today: LocalDate,
         todayAddCell: GridCellUiState,
         now: LocalTime,
         gridColumns: Int,
+        zoneId: ZoneId,
     ): List<GridDaySection> {
-        val datedCells = allCells.filter { it.behaviorId != null && cellDate(it) != null }
-        val byDate: Map<LocalDate, List<GridCellUiState>> = datedCells
-            .groupBy { cellDate(it)!! }
-            .filterValues { it.isNotEmpty() }
-
         val sections = mutableListOf<GridDaySection>()
-        byDate.keys.sorted().forEach { date ->
-            val cells = byDate[date]!!.sortedBy { it.startEpochMs ?: 0L }
+        datedCellsByDate.keys.sorted().forEach { date ->
+            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: 0L }
             val cellsForSection = if (date == today) cells + todayAddCell else cells
             val dateBehaviors = sortedBehaviors.filter { b ->
                 b.startTime > 0L &&
-                    Instant.ofEpochMilli(b.startTime).atZone(ZoneId.systemDefault()).toLocalDate() == date
+                    Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
             }
             val isTodaySection = date == today
             val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
-                Instant.ofEpochMilli(it.startTime).atZone(ZoneId.systemDefault()).toLocalTime()
+                Instant.ofEpochMilli(it.startTime).atZone(zoneId).toLocalTime()
             } ?: LocalTime.MIDNIGHT
             val (rows, _) = buildGridRows(
                 allCells = cellsForSection,
@@ -145,6 +142,7 @@ class HomeUiStateBuilder {
                 now = rowsTime,
                 gridColumns = gridColumns,
                 isCurrentDay = isTodaySection,
+                zoneId = zoneId,
             )
             sections.add(GridDaySection(date = date, label = dayLabel(date, today), rows = rows))
         }
@@ -198,6 +196,7 @@ class HomeUiStateBuilder {
         activityMap: Map<Long, Activity>,
         tagsByBehaviorId: Map<Long, List<Tag>>,
         currentTimeMs: Long,
+        zoneId: ZoneId,
     ): List<GridCellUiState> {
         return sortedBehaviors.map { behavior ->
             val activity = activityMap[behavior.activityId]
@@ -211,12 +210,12 @@ class HomeUiStateBuilder {
                 null
             } else {
                 Instant.ofEpochMilli(behavior.startTime)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(zoneId)
                     .toLocalTime()
             }
             val endLocal = behavior.endTime?.let {
                 Instant.ofEpochMilli(it)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(zoneId)
                     .toLocalTime()
             }
 
@@ -268,6 +267,7 @@ class HomeUiStateBuilder {
         now: LocalTime,
         gridColumns: Int = DEFAULT_GRID_COLUMNS,
         isCurrentDay: Boolean = true,
+        zoneId: ZoneId,
     ): Pair<List<GridRowUiState>, String?> {
         val rows = mutableListOf<GridRowUiState>()
         var currentRowId: String? = null
@@ -284,7 +284,7 @@ class HomeUiStateBuilder {
                     && behavior.startTime > 0L
                 ) {
                     Instant.ofEpochMilli(behavior.startTime)
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(zoneId)
                         .toLocalTime()
                 } else {
                     now
@@ -325,13 +325,13 @@ class HomeUiStateBuilder {
         return behaviors.any { it.status == BehaviorNature.ACTIVE }
     }
 
-    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>): LocalTime? {
+    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>, zoneId: ZoneId): LocalTime? {
         return behaviors
             .filter { it.endTime != null }
             .maxByOrNull { it.endTime ?: 0 }
             ?.let {
                 Instant.ofEpochMilli(it.endTime!!)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(zoneId)
                     .toLocalTime()
             }
     }
