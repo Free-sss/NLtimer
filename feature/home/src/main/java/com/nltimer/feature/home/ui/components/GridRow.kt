@@ -35,8 +35,8 @@ fun GridRow(
 ) {
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val gridMinHeight = remember(gridStyle.minRowHeight) { gridStyle.minRowHeight.dp }
-    val columnSpacing = remember(gridStyle.columnSpacing) { gridStyle.columnSpacing.dp }
+    val gridMinHeight = gridStyle.minRowHeight.dp
+    val columnSpacing = gridStyle.columnSpacing.dp
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (row.cells.isNotEmpty() && timeLabelConfig.visible) {

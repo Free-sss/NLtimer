@@ -180,16 +180,7 @@ private fun GridDurationLabel(
     style: TextStyle,
     color: Color,
 ) {
-    val durationText = if (cell.isCurrent && cell.startEpochMs != null) {
-        val ms = LiveElapsedDuration(
-            startEpochMs = cell.startEpochMs,
-            isCurrent = true,
-            fallbackDurationMs = cell.durationMs ?: (cell.actualDuration ?: 0L),
-        )
-        formatGridDurationHours(ms)
-    } else {
-        cell.formattedDuration
-    }
+    val durationText = cell.formattedDuration
 
     if (durationText.isNotEmpty()) {
         Box(
