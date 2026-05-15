@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -34,10 +33,6 @@ import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
-import com.nltimer.feature.home.ui.components.LocalMomentFilterState
-import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
-import com.nltimer.feature.home.ui.components.BehaviorDetailDialog
-import com.nltimer.feature.home.ui.components.MomentBehaviorItem
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -46,7 +41,6 @@ import java.time.temporal.ChronoUnit
 import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.collect
 
 private sealed class MomentDisplayItem(val key: String) {
     class Divider(val label: String) : MomentDisplayItem("divider-$label")
@@ -121,7 +115,6 @@ fun MomentView(
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
-    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val momentFilterState = LocalMomentFilterState.current
     val filterTab = remember(momentFilterState.filterKey) {
@@ -231,11 +224,6 @@ fun MomentView(
             start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp
         ),
     ) {
-        if (header != null) {
-            item(key = "header", contentType = "header") {
-                header()
-            }
-        }
         if (isLoadingMore) item("loading-top") {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),

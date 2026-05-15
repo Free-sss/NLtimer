@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -60,19 +59,12 @@ import com.nltimer.core.designsystem.theme.styledBorder
 import com.nltimer.core.designsystem.theme.styledCorner
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeListItem
-import com.nltimer.feature.home.model.TagUiState
-import com.nltimer.feature.home.ui.components.LiveElapsedDuration
-import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
-import com.nltimer.feature.home.ui.components.BehaviorDetailDialog
-import com.nltimer.feature.home.ui.components.BehaviorTagRow
-import com.nltimer.feature.home.ui.components.behaviorCardStyle
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.collect
 
 @Composable
 fun TimelineReverseView(
@@ -84,7 +76,6 @@ fun TimelineReverseView(
     hasReachedEarliest: Boolean = false,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
     modifier: Modifier = Modifier,
-    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
@@ -148,11 +139,6 @@ fun TimelineReverseView(
             verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
-            if (header != null) {
-                item(key = "header", contentType = "header") {
-                    header()
-                }
-            }
             items(
                 items = timelineItems,
                 key = { it.key },

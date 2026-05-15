@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -21,6 +22,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,8 +34,6 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import java.time.LocalTime
 import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -53,7 +53,6 @@ fun TimeAxisGrid(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
-    footer: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
@@ -129,7 +128,7 @@ fun TimeAxisGrid(
             .graphicsLayer { this.alpha = alphaState.value }
             .padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
-        contentPadding = PaddingValues(bottom = 630.dp, top = LocalImmersiveTopPadding.current),
+        contentPadding = PaddingValues(bottom = 100.dp, top = LocalImmersiveTopPadding.current),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         sections.forEach { section ->
@@ -151,11 +150,6 @@ fun TimeAxisGrid(
                     timeLabelConfig = timeLabelConfig,
                     gridStyle = gridStyle,
                 )
-            }
-        }
-        if (footer != null) {
-            item(key = "footer", contentType = "footer") {
-                footer()
             }
         }
     }

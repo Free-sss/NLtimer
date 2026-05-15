@@ -258,70 +258,78 @@ private fun HomeLayoutContent(
             onStartBehavior = onStartBehavior,
             onEmptyCellClick = { onEmptyCellClick(null, null) },
             momentStyle = homeLayoutConfig.moment,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
     }
 
-    AnimatedContent(
-        targetState = layout,
-        transitionSpec = {
-            val initialIndex = initialState.ordinal
-            val targetIndex = targetState.ordinal
-            if (targetIndex > initialIndex) {
-                slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-            } else {
-                slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
-            }.using(SizeTransform(clip = false))
-        },
-        label = "HomeLayoutSwitch",
-        modifier = modifier,
-    ) { currentLayout ->
-        when (currentLayout) {
-            HomeLayout.GRID -> GridContent(
-                uiState = uiState,
-                onEmptyCellClick = onEmptyCellClick,
-                onCellLongClick = onCellLongClick,
-                onHourClick = onHourClick,
-                onLoadMore = onLoadMore,
-                timeLabelConfig = timeLabelConfig,
-                onTimeLabelSettingsClick = onTimeLabelSettingsClick,
-                gridStyle = homeLayoutConfig.grid,
-                footer = focusCard,
-                modifier = Modifier.fillMaxSize(),
-            )
-            HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
-                uiState = uiState,
-                onEmptyCellClick = onEmptyCellClick,
-                onCellLongClick = onCellLongClick,
-                onLoadMore = onLoadMore,
-                timelineStyle = homeLayoutConfig.timeline,
-                header = focusCard,
-                modifier = Modifier.fillMaxSize(),
-            )
-            HomeLayout.LOG -> LogContent(
-                uiState = uiState,
-                onCellLongClick = onCellLongClick,
-                onLoadMore = onLoadMore,
-                logStyle = homeLayoutConfig.log,
-                header = focusCard,
-                modifier = Modifier.fillMaxSize(),
-            )
-            HomeLayout.MOMENT -> MomentContent(
-                uiState = uiState,
-                activeCell = activeCell,
-                nextPendingCell = nextPendingCell,
-                onEmptyCellClick = onEmptyCellClick,
-                onCellLongClick = onCellLongClick,
-                onCompleteBehavior = onCompleteBehavior,
-                onStartNextPending = onStartNextPending,
-                onStartBehavior = onStartBehavior,
-                onLoadMore = onLoadMore,
-                isLoadingMore = uiState.isLoadingMore,
-                hasReachedEarliest = uiState.hasReachedEarliest,
-                momentStyle = homeLayoutConfig.moment,
-                header = focusCard,
-                modifier = Modifier.fillMaxSize(),
-            )
+    Column(modifier = modifier) {
+        // 非 GRID 布局时，专注卡片固定在顶部
+        if (layout != HomeLayout.GRID) {
+            focusCard()
+        }
+
+        AnimatedContent(
+            targetState = layout,
+            transitionSpec = {
+                val initialIndex = initialState.ordinal
+                val targetIndex = targetState.ordinal
+                if (targetIndex > initialIndex) {
+                    slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                } else {
+                    slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                }.using(SizeTransform(clip = false))
+            },
+            label = "HomeLayoutSwitch",
+            modifier = Modifier.weight(1f),
+        ) { currentLayout ->
+            when (currentLayout) {
+                HomeLayout.GRID -> GridContent(
+                    uiState = uiState,
+                    onEmptyCellClick = onEmptyCellClick,
+                    onCellLongClick = onCellLongClick,
+                    onHourClick = onHourClick,
+                    onLoadMore = onLoadMore,
+                    timeLabelConfig = timeLabelConfig,
+                    onTimeLabelSettingsClick = onTimeLabelSettingsClick,
+                    gridStyle = homeLayoutConfig.grid,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
+                    uiState = uiState,
+                    onEmptyCellClick = onEmptyCellClick,
+                    onCellLongClick = onCellLongClick,
+                    onLoadMore = onLoadMore,
+                    timelineStyle = homeLayoutConfig.timeline,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                HomeLayout.LOG -> LogContent(
+                    uiState = uiState,
+                    onCellLongClick = onCellLongClick,
+                    onLoadMore = onLoadMore,
+                    logStyle = homeLayoutConfig.log,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                HomeLayout.MOMENT -> MomentContent(
+                    uiState = uiState,
+                    activeCell = activeCell,
+                    nextPendingCell = nextPendingCell,
+                    onEmptyCellClick = onEmptyCellClick,
+                    onCellLongClick = onCellLongClick,
+                    onCompleteBehavior = onCompleteBehavior,
+                    onStartNextPending = onStartNextPending,
+                    onStartBehavior = onStartBehavior,
+                    onLoadMore = onLoadMore,
+                    isLoadingMore = uiState.isLoadingMore,
+                    hasReachedEarliest = uiState.hasReachedEarliest,
+                    momentStyle = homeLayoutConfig.moment,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
+
+        // GRID 布局时，专注卡片固定在底部
+        if (layout == HomeLayout.GRID) {
+            focusCard()
         }
     }
 }
@@ -336,7 +344,6 @@ private fun GridContent(
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
-    footer: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val showSideBar = LocalTheme.current.showTimeSideBar
@@ -353,7 +360,6 @@ private fun GridContent(
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             gridStyle = gridStyle,
-            footer = footer?.let { { it() } },
             modifier = Modifier.weight(1f),
         )
         if (showSideBar) {
@@ -381,7 +387,6 @@ private fun TimelineReverseContent(
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
-    header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     TimelineReverseView(
@@ -392,7 +397,6 @@ private fun TimelineReverseContent(
         isLoadingMore = uiState.isLoadingMore,
         hasReachedEarliest = uiState.hasReachedEarliest,
         timelineStyle = timelineStyle,
-        header = header?.let { { it() } },
         modifier = modifier,
     )
 }
@@ -403,7 +407,6 @@ private fun LogContent(
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
-    header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     BehaviorLogView(
@@ -413,7 +416,6 @@ private fun LogContent(
         isLoadingMore = uiState.isLoadingMore,
         hasReachedEarliest = uiState.hasReachedEarliest,
         logStyle = logStyle,
-        header = header?.let { { it() } },
         modifier = modifier,
     )
 }
@@ -432,7 +434,6 @@ private fun MomentContent(
     isLoadingMore: Boolean = false,
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
-    header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     MomentView(
@@ -448,7 +449,6 @@ private fun MomentContent(
         isLoadingMore = isLoadingMore,
         hasReachedEarliest = hasReachedEarliest,
         momentStyle = momentStyle,
-        header = header?.let { { it() } },
         modifier = modifier,
     )
 }
