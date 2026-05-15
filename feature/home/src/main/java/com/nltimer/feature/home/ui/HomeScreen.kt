@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,13 +26,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Activity
@@ -103,6 +107,7 @@ fun HomeScreen(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelConfigChange: (TimeLabelConfig) -> Unit = {},
     onHomeLayoutConfigChange: (HomeLayoutConfig) -> Unit = {},
+    onHomeLayoutChange: (HomeLayout) -> Unit = {},
     onMatchNote: (String) -> NoteScanResult = { NoteScanResult(null, emptySet()) },
     onProcessNote: suspend (String) -> NoteProcessOutcome = { NoteProcessOutcome.Empty },
     modifier: Modifier = Modifier,
@@ -110,6 +115,21 @@ fun HomeScreen(
     val theme = LocalTheme.current
     val layout = theme.homeLayout
     var showTimeLabelSettings by remember { mutableStateOf(false) }
+
+    // 处理向左滑动循环切换布局
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    val swipeThreshold = remember { with(density) { 56.dp.toPx() } }
+
+    val handleSwipeLeft = {
+        val nextLayout = when (layout) {
+            HomeLayout.GRID -> HomeLayout.TIMELINE_REVERSE
+            HomeLayout.TIMELINE_REVERSE -> HomeLayout.LOG
+            HomeLayout.LOG -> HomeLayout.MOMENT
+            HomeLayout.MOMENT -> HomeLayout.GRID
+        }
+        onHomeLayoutChange(nextLayout)
+    }
 
     val activeCell by remember(uiState.momentCells) {
         derivedStateOf {
@@ -144,7 +164,28 @@ fun HomeScreen(
         modifier = modifier.onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
         Scaffold(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(layout) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            if (offsetX < -swipeThreshold) {
+                                handleSwipeLeft()
+                            }
+                            offsetX = 0f
+                        },
+                        onDragCancel = {
+                            offsetX = 0f
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            // 仅累积并拦截负值（向左划），正值（向右划）不做处理，让渡给侧边栏
+                            if (dragAmount < 0 || offsetX < 0) {
+                                change.consume()
+                                offsetX += dragAmount
+                            }
+                        }
+                    )
+                },
             snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { padding ->
             if (uiState.isLoading) {
@@ -266,7 +307,11 @@ private fun HomeLayoutContent(
         transitionSpec = {
             val initialIndex = initialState.ordinal
             val targetIndex = targetState.ordinal
-            if (targetIndex > initialIndex) {
+            
+            // 判断是否是向前循环（例如 MOMENT -> GRID）
+            val isForwardCycle = (targetIndex == 0 && initialIndex == HomeLayout.entries.size - 1)
+            
+            if (targetIndex > initialIndex || isForwardCycle) {
                 slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
             } else {
                 slideInHorizontally { -it } togetherWith slideOutHorizontally { it }

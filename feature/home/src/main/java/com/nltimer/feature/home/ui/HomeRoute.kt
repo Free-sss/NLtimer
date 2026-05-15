@@ -88,6 +88,10 @@ fun HomeRoute(
         lambda
     }
 
+    val onHomeLayoutChange = remember(viewModel) {
+        { layout: com.nltimer.core.designsystem.theme.HomeLayout -> viewModel.onHomeLayoutChange(layout) }
+    }
+
     HomeScreen(
         uiState = uiState,
         activities = activities,
@@ -116,6 +120,7 @@ fun HomeRoute(
         timeLabelConfig = timeLabelConfig,
         onTimeLabelConfigChange = onTimeLabelConfigChange,
         onHomeLayoutConfigChange = onHomeLayoutConfigChange,
+        onHomeLayoutChange = onHomeLayoutChange,
         onMatchNote = onMatchNote,
         onProcessNote = onProcessNote,
     )

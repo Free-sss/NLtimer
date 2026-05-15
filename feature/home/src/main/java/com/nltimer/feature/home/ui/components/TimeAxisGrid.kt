@@ -129,7 +129,7 @@ fun TimeAxisGrid(
             .graphicsLayer { this.alpha = alphaState.value }
             .padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
-        contentPadding = PaddingValues(bottom = 100.dp, top = LocalImmersiveTopPadding.current),
+        contentPadding = PaddingValues(bottom = 130.dp, top = LocalImmersiveTopPadding.current),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         sections.forEach { section ->
