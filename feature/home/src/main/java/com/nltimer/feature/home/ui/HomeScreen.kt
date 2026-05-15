@@ -116,21 +116,6 @@ fun HomeScreen(
     val layout = theme.homeLayout
     var showTimeLabelSettings by remember { mutableStateOf(false) }
 
-    // 处理向左滑动循环切换布局
-    var offsetX by remember { mutableFloatStateOf(0f) }
-    val density = LocalDensity.current
-    val swipeThreshold = remember { with(density) { 56.dp.toPx() } }
-
-    val handleSwipeLeft = {
-        val nextLayout = when (layout) {
-            HomeLayout.GRID -> HomeLayout.TIMELINE_REVERSE
-            HomeLayout.TIMELINE_REVERSE -> HomeLayout.LOG
-            HomeLayout.LOG -> HomeLayout.MOMENT
-            HomeLayout.MOMENT -> HomeLayout.GRID
-        }
-        onHomeLayoutChange(nextLayout)
-    }
-
     val activeCell by remember(uiState.momentCells) {
         derivedStateOf {
             uiState.momentCells.firstOrNull {
@@ -164,28 +149,7 @@ fun HomeScreen(
         modifier = modifier.onGloballyPositioned { dragFabState.boxPositionInWindow = it.positionInWindow() }
     ) {
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(layout) {
-                    detectHorizontalDragGestures(
-                        onDragEnd = {
-                            if (offsetX < -swipeThreshold) {
-                                handleSwipeLeft()
-                            }
-                            offsetX = 0f
-                        },
-                        onDragCancel = {
-                            offsetX = 0f
-                        },
-                        onHorizontalDrag = { change, dragAmount ->
-                            // 仅累积并拦截负值（向左划），正值（向右划）不做处理，让渡给侧边栏
-                            if (dragAmount < 0 || offsetX < 0) {
-                                change.consume()
-                                offsetX += dragAmount
-                            }
-                        }
-                    )
-                },
+            modifier = Modifier.fillMaxSize(),
             snackbarHost = { SnackbarHost(snackbarHostState) },
         ) { padding ->
             if (uiState.isLoading) {
@@ -207,6 +171,7 @@ fun HomeScreen(
                         timeLabelConfig = timeLabelConfig,
                         onTimeLabelSettingsClick = { showTimeLabelSettings = true },
                         homeLayoutConfig = homeLayoutConfig,
+                        onHomeLayoutChange = onHomeLayoutChange,
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -287,34 +252,89 @@ private fun HomeLayoutContent(
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     homeLayoutConfig: HomeLayoutConfig = HomeLayoutConfig(),
+    onHomeLayoutChange: (HomeLayout) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var swipeDirection by remember { mutableStateOf(0) } // 1 for next (left swipe), -1 for prev (right swipe)
+    var offsetX by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    val swipeThreshold = remember { with(density) { 56.dp.toPx() } }
+
+    val handleSwipe = { direction: Int ->
+        swipeDirection = direction
+        val nextLayout = if (direction > 0) {
+            when (layout) {
+                HomeLayout.GRID -> HomeLayout.TIMELINE_REVERSE
+                HomeLayout.TIMELINE_REVERSE -> HomeLayout.LOG
+                HomeLayout.LOG -> HomeLayout.MOMENT
+                HomeLayout.MOMENT -> HomeLayout.GRID
+            }
+        } else {
+            when (layout) {
+                HomeLayout.GRID -> HomeLayout.MOMENT
+                HomeLayout.MOMENT -> HomeLayout.LOG
+                HomeLayout.LOG -> HomeLayout.TIMELINE_REVERSE
+                HomeLayout.TIMELINE_REVERSE -> HomeLayout.GRID
+            }
+        }
+        onHomeLayoutChange(nextLayout)
+    }
+
     val focusCard = @Composable {
-        MomentFocusCard(
-            activeCell = activeCell,
-            nextPendingCell = nextPendingCell,
-            onCompleteBehavior = onCompleteBehavior,
-            onStartNextPending = onStartNextPending,
-            onStartBehavior = onStartBehavior,
-            onEmptyCellClick = { onEmptyCellClick(null, null) },
-            momentStyle = homeLayoutConfig.moment,
-            modifier = Modifier.padding(vertical = 8.dp),
-        )
+        Box(
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .pointerInput(layout) {
+                    detectHorizontalDragGestures(
+                        onDragEnd = {
+                            if (offsetX < -swipeThreshold) {
+                                handleSwipe(1)
+                            } else if (offsetX > swipeThreshold) {
+                                handleSwipe(-1)
+                            }
+                            offsetX = 0f
+                        },
+                        onDragCancel = {
+                            offsetX = 0f
+                        },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetX += dragAmount
+                        }
+                    )
+                }
+        ) {
+            MomentFocusCard(
+                activeCell = activeCell,
+                nextPendingCell = nextPendingCell,
+                onCompleteBehavior = onCompleteBehavior,
+                onStartNextPending = onStartNextPending,
+                onStartBehavior = onStartBehavior,
+                onEmptyCellClick = { onEmptyCellClick(null, null) },
+                momentStyle = homeLayoutConfig.moment,
+            )
+        }
     }
 
     AnimatedContent(
         targetState = layout,
         transitionSpec = {
-            val initialIndex = initialState.ordinal
-            val targetIndex = targetState.ordinal
-            
-            // 判断是否是向前循环（例如 MOMENT -> GRID）
-            val isForwardCycle = (targetIndex == 0 && initialIndex == HomeLayout.entries.size - 1)
-            
-            if (targetIndex > initialIndex || isForwardCycle) {
+            if (swipeDirection > 0) {
+                // 左滑 -> 内容从右侧滑入
                 slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
-            } else {
+            } else if (swipeDirection < 0) {
+                // 右滑 -> 内容从左侧滑入
                 slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+            } else {
+                // 默认/点击切换
+                val initialIndex = initialState.ordinal
+                val targetIndex = targetState.ordinal
+                val isForwardCycle = (targetIndex == 0 && initialIndex == HomeLayout.entries.size - 1)
+                if (targetIndex > initialIndex || isForwardCycle) {
+                    slideInHorizontally { it } togetherWith slideOutHorizontally { -it }
+                } else {
+                    slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
+                }
             }.using(SizeTransform(clip = false))
         },
         label = "HomeLayoutSwitch",
