@@ -1,5 +1,7 @@
 package com.nltimer.feature.home.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.GridLayoutStyle
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
@@ -114,9 +117,17 @@ fun TimeAxisGrid(
             .collect { onLoadMore() }
     }
 
+    val alpha by animateFloatAsState(
+        targetValue = if (initialScrollDone.value) 1f else 0f,
+        animationSpec = tween(durationMillis = 400),
+        label = "GridFadeIn"
+    )
+
     LazyColumn(
         state = listState,
-        modifier = modifier.padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
+        modifier = modifier
+            .graphicsLayer { this.alpha = alpha }
+            .padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 630.dp, top = LocalImmersiveTopPadding.current),
     ) {
