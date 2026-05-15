@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -33,6 +34,10 @@ import com.nltimer.core.data.model.LogLayoutStyle
 import com.nltimer.core.data.model.MomentLayoutStyle
 import com.nltimer.core.designsystem.theme.LocalImmersiveTopPadding
 import com.nltimer.feature.home.model.GridCellUiState
+import com.nltimer.feature.home.ui.components.LocalMomentFilterState
+import com.nltimer.feature.home.ui.components.LocalVisibleDateLabel
+import com.nltimer.feature.home.ui.components.BehaviorDetailDialog
+import com.nltimer.feature.home.ui.components.MomentBehaviorItem
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -41,9 +46,9 @@ import java.time.temporal.ChronoUnit
 import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collect
 
 private sealed class MomentDisplayItem(val key: String) {
-    class FocusCard : MomentDisplayItem("focus-card")
     class Divider(val label: String) : MomentDisplayItem("divider-$label")
     class Behavior(val cell: GridCellUiState) : MomentDisplayItem("behavior-${cell.behaviorId}")
 }
@@ -74,7 +79,6 @@ private fun buildMomentDisplayItems(
         .toSortedMap(compareBy { it })
 
     val result = mutableListOf<MomentDisplayItem>()
-    result.add(MomentDisplayItem.FocusCard())
 
     if (pending.isNotEmpty()) {
         pending.forEach { result.add(MomentDisplayItem.Behavior(it)) }
@@ -117,6 +121,7 @@ fun MomentView(
     hasReachedEarliest: Boolean = false,
     momentStyle: MomentLayoutStyle = MomentLayoutStyle(),
     modifier: Modifier = Modifier,
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val momentFilterState = LocalMomentFilterState.current
     val filterTab = remember(momentFilterState.filterKey) {
@@ -226,6 +231,11 @@ fun MomentView(
             start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp
         ),
     ) {
+        if (header != null) {
+            item(key = "header", contentType = "header") {
+                header()
+            }
+        }
         if (isLoadingMore) item("loading-top") {
             Box(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
@@ -240,22 +250,12 @@ fun MomentView(
             key = { it.key },
             contentType = {
                 when (it) {
-                    is MomentDisplayItem.FocusCard -> "focus_card"
                     is MomentDisplayItem.Divider -> "divider"
                     is MomentDisplayItem.Behavior -> "behavior"
                 }
             }
         ) { item ->
             when (item) {
-                is MomentDisplayItem.FocusCard -> MomentFocusCard(
-                    activeCell = activeCell,
-                    nextPendingCell = nextPendingCell,
-                    onCompleteBehavior = onCompleteBehavior,
-                    onStartNextPending = onStartNextPending,
-                    onStartBehavior = onStartBehavior,
-                    onEmptyCellClick = { onEmptyCellClick(null, null) },
-                    momentStyle = momentStyle,
-                )
                 is MomentDisplayItem.Divider -> Box(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center,

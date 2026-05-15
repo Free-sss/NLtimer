@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -44,6 +45,7 @@ fun BehaviorLogView(
     hasReachedEarliest: Boolean = false,
     modifier: Modifier = Modifier,
     logStyle: LogLayoutStyle = LogLayoutStyle(),
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val timeFormatter = hhmmFormatter
     val listState = rememberLazyListState()
@@ -108,6 +110,11 @@ fun BehaviorLogView(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
+            if (header != null) {
+                item(key = "header", contentType = "header") {
+                    header()
+                }
+            }
             if (displayItems.isEmpty()) {
                 item {
                     Box(

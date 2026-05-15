@@ -32,6 +32,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import java.time.LocalTime
 import java.util.TreeMap
@@ -52,6 +53,7 @@ fun TimeAxisGrid(
     timeLabelConfig: TimeLabelConfig = TimeLabelConfig(),
     onTimeLabelSettingsClick: () -> Unit = {},
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
+    footer: @Composable (LazyItemScope.() -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
@@ -149,6 +151,11 @@ fun TimeAxisGrid(
                     timeLabelConfig = timeLabelConfig,
                     gridStyle = gridStyle,
                 )
+            }
+        }
+        if (footer != null) {
+            item(key = "footer", contentType = "footer") {
+                footer()
             }
         }
     }
