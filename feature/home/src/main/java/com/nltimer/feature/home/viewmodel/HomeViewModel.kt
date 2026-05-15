@@ -184,10 +184,18 @@ class HomeViewModel @Inject constructor(
             }.collect { snapshot ->
                 val state = buildUiState(snapshot.behaviors)
                 val reached = snapshot.earliestRecord?.let { !snapshot.loadedEarliest.isAfter(it) } ?: false
-                _uiState.update {
+                _uiState.update { current ->
                     state.copy(
                         isLoadingMore = snapshot.isLoadingMore,
                         hasReachedEarliest = reached,
+                        addSheetMode = current.addSheetMode,
+                        idleStartTime = current.idleStartTime,
+                        idleEndTime = current.idleEndTime,
+                        editBehaviorId = current.editBehaviorId,
+                        editInitialActivityId = current.editInitialActivityId,
+                        editInitialTagIds = current.editInitialTagIds,
+                        editInitialNote = current.editInitialNote,
+                        errorMessage = current.errorMessage,
                     )
                 }
                 _isLoadingMore.value = false
