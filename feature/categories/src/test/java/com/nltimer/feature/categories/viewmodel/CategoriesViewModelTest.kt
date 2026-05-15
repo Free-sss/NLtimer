@@ -3,7 +3,9 @@ package com.nltimer.feature.categories.viewmodel
 import com.nltimer.core.data.SettingsPrefs
 import com.nltimer.core.data.model.DialogGridConfig
 import com.nltimer.core.data.repository.CategoryRepository
+import com.nltimer.core.designsystem.theme.Theme
 import com.nltimer.core.designsystem.theme.TimeLabelConfig
+import com.nltimer.feature.categories.model.CategoriesUiState
 import com.nltimer.feature.categories.model.DialogState
 import com.nltimer.feature.categories.model.SectionType
 import kotlinx.coroutines.Dispatchers
@@ -54,319 +56,322 @@ class CategoriesViewModelTest {
     }
 
     @Test
-    fun initialState_hasEmptyCategories() = runTest {
+    fun initialState_hasEmptyGroupsWithBothExpanded() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
         val state = viewModel.uiState.value
         assertFalse(state.isLoading)
-        assertTrue(state.activityCategories.isEmpty())
-        assertTrue(state.tagCategories.isEmpty())
+        assertEquals(2, state.groups.size)
+        assertTrue(state.groups.all { it.items.isEmpty() })
+        assertTrue(state.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
+        assertTrue(state.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_TAG))
         assertNull(state.dialogState)
     }
 
     @Test
-    fun searchQuery_filtersCategories() = runTest {
+    fun groupsPopulate_fromRepositoryFlows() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         tagCategoriesFlow.value = listOf("优先级", "状态")
         advanceUntilIdle()
-
-        viewModel.onSearchQueryChange("运动")
-        advanceUntilIdle()
-
         val state = viewModel.uiState.value
-        assertEquals("运动", state.searchQuery)
-        assertEquals(listOf("运动"), state.activityCategories)
+        assertEquals(2, state.groups.size)
+        val activityGroup = state.groups.first { it.type == SectionType.ACTIVITY }
+        val tagGroup = state.groups.first { it.type == SectionType.TAG }
+        assertEquals(listOf("学习", "运动"), activityGroup.items.map { it.name })
+        assertEquals(listOf("优先级", "状态"), tagGroup.items.map { it.name })
     }
 
     @Test
-    fun searchQuery_emptyShowsAll() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动", "学习")
-        tagCategoriesFlow.value = listOf("优先级", "状态")
-        advanceUntilIdle()
-
-        viewModel.onSearchQueryChange("运动")
-        advanceUntilIdle()
-        viewModel.onSearchQueryChange("")
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertEquals("", state.searchQuery)
-        assertEquals(listOf("学习", "运动"), state.activityCategories)
-        assertEquals(listOf("优先级", "状态"), state.tagCategories)
-    }
-
-    @Test
-    fun addCategoryDialog_showsForActivity() = runTest {
+    fun showAddCategoryDialog_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.ACTIVITY)
+        viewModel.showAddCategoryDialog(SectionType.ACTIVITY)
         advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertTrue(state.dialogState is DialogState.AddActivityCategory)
-    }
-
-    @Test
-    fun addCategoryDialog_showsForTag() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.TAG)
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertTrue(state.dialogState is DialogState.AddTagCategory)
-    }
-
-    @Test
-    fun renameCategory_showsDialog() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动")
-        advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
-        advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        val dialog = state.dialogState as? DialogState.RenameActivityCategory
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.AddCategory
         assertNotNull(dialog)
-        assertEquals("运动", dialog?.oldName)
+        assertEquals(SectionType.ACTIVITY, dialog!!.sectionType)
     }
 
     @Test
-    fun confirmRename_withConflict_setsConflictFlag() = runTest {
+    fun showAddCategoryDialog_forTag_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showAddCategoryDialog(SectionType.TAG)
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "学习")
-        advanceUntilIdle()
-
-        assertEquals("学习", viewModel.renameConflict.value)
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.AddCategory
+        assertNotNull(dialog)
+        assertEquals(SectionType.TAG, dialog!!.sectionType)
     }
 
     @Test
-    fun confirmRename_noConflict_callsRepository() = runTest {
+    fun showRenameCategoryDialog_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "体育")
-        advanceUntilIdle()
-
-        assertTrue(repository.renameActivityCategoryCalled)
-        assertEquals("运动" to "体育", repository.lastRenameActivityPair)
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.RenameCategory
+        assertNotNull(dialog)
+        assertEquals("运动", dialog!!.oldName)
+        assertEquals(SectionType.ACTIVITY, dialog.sectionType)
     }
 
     @Test
-    fun confirmRename_sameName_dismissesDialog() = runTest {
+    fun showRenameCategoryDialog_forTag_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showRenameCategoryDialog(SectionType.TAG, "标签A")
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "运动")
-        advanceUntilIdle()
-
-        assertNull(viewModel.uiState.value.dialogState)
-        assertFalse(repository.renameActivityCategoryCalled)
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.RenameCategory
+        assertNotNull(dialog)
+        assertEquals("标签A", dialog!!.oldName)
+        assertEquals(SectionType.TAG, dialog.sectionType)
     }
 
     @Test
-    fun confirmDelete_callsRepository() = runTest {
+    fun showDeleteCategoryDialog_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动")
         advanceUntilIdle()
-
-        viewModel.confirmDeleteCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showDeleteCategoryDialog(SectionType.ACTIVITY, "运动")
         advanceUntilIdle()
-
-        assertTrue(repository.resetActivityCategoryCalled)
-        assertEquals("运动", repository.lastResetActivityCategory)
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.DeleteCategory
+        assertNotNull(dialog)
+        assertEquals("运动", dialog!!.category)
+        assertEquals(SectionType.ACTIVITY, dialog.sectionType)
     }
 
     @Test
-    fun confirmDeleteTag_callsRepository() = runTest {
+    fun showDeleteCategoryDialog_forTag_setsCorrectDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
-        viewModel.confirmDeleteCategory(SectionType.TAG, "优先级")
+        viewModel.showDeleteCategoryDialog(SectionType.TAG, "优先级")
         advanceUntilIdle()
-
-        assertTrue(repository.resetTagCategoryCalled)
-        assertTrue(settingsPrefs.saveTagCategoriesCalled)
+        val dialog = viewModel.uiState.value.dialogState as? DialogState.DeleteCategory
+        assertNotNull(dialog)
+        assertEquals("优先级", dialog!!.category)
+        assertEquals(SectionType.TAG, dialog.sectionType)
     }
 
     @Test
     fun dismissDialog_clearsDialogState() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.ACTIVITY)
+        viewModel.showAddCategoryDialog(SectionType.ACTIVITY)
         advanceUntilIdle()
         assertNotNull(viewModel.uiState.value.dialogState)
-
         viewModel.dismissDialog()
         advanceUntilIdle()
-
         assertNull(viewModel.uiState.value.dialogState)
     }
 
     @Test
-    fun dismissDialog_clearsConflict() = runTest {
+    fun confirmAddCategory_emptyName_dismissesWithoutCallingRepository() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showAddCategoryDialog(SectionType.ACTIVITY)
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "学习")
+        viewModel.confirmAddCategory(SectionType.ACTIVITY, "  ")
         advanceUntilIdle()
-        assertEquals("学习", viewModel.renameConflict.value)
-
-        viewModel.dismissDialog()
-        advanceUntilIdle()
-
-        assertNull(viewModel.renameConflict.value)
+        assertNull(viewModel.uiState.value.dialogState)
+        assertFalse(repository.addActivityCategoryCalled)
     }
 
     @Test
-    fun confirmAddActivityCategory_callsRepository() = runTest {
+    fun confirmAddCategory_forActivity_callsRepository() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
         viewModel.confirmAddCategory(SectionType.ACTIVITY, "新分类")
         advanceUntilIdle()
-
         assertTrue(repository.addActivityCategoryCalled)
         assertEquals("新分类", repository.lastAddedActivityCategory)
         assertNull(viewModel.uiState.value.dialogState)
     }
 
     @Test
-    fun confirmAddTagCategory_updatesSettingsPrefs() = runTest {
+    fun confirmAddCategory_forTag_updatesSettingsPrefs() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
         viewModel.confirmAddCategory(SectionType.TAG, "我的标签")
         advanceUntilIdle()
-
         assertTrue(settingsPrefs.saveTagCategoriesCalled)
         assertEquals(setOf("我的标签"), settingsPrefs.lastSavedTagCategories)
-        assertTrue(viewModel.uiState.value.tagCategories.contains("我的标签"))
+        val tagGroup = viewModel.uiState.value.groups.first { it.type == SectionType.TAG }
+        assertTrue(tagGroup.items.any { it.name == "我的标签" })
     }
 
     @Test
-    fun clearConflict_resetsToNull() = runTest {
+    fun confirmRenameCategory_sameName_dismissesWithoutCallingRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        activityCategoriesFlow.value = listOf("运动")
+        advanceUntilIdle()
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "运动")
+        advanceUntilIdle()
+        assertNull(viewModel.uiState.value.dialogState)
+        assertFalse(repository.renameActivityCategoryCalled)
+    }
+
+    @Test
+    fun confirmRenameCategory_withConflict_setsRenameConflict() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
         advanceUntilIdle()
         viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "学习")
         advanceUntilIdle()
         assertEquals("学习", viewModel.renameConflict.value)
-
-        viewModel.clearConflict()
-        advanceUntilIdle()
-
-        assertNull(viewModel.renameConflict.value)
+        assertTrue(repository.renameActivityCategoryCalled.not())
     }
 
     @Test
-    fun confirmRenameTagCategory_updatesSettingsPrefs() = runTest {
+    fun confirmRenameCategory_withoutConflict_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        activityCategoriesFlow.value = listOf("运动")
+        advanceUntilIdle()
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "体育")
+        advanceUntilIdle()
+        assertTrue(repository.renameActivityCategoryCalled)
+        assertEquals("运动" to "体育", repository.lastRenameActivityPair)
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun confirmRenameCategory_forTag_withLocalTag_updatesSettingsPrefs() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         settingsPrefs.savedTagCategories = setOf("旧标签")
         viewModel = CategoriesViewModel(repository, settingsPrefs)
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.TAG, "旧标签")
+        viewModel.showRenameCategoryDialog(SectionType.TAG, "旧标签")
         advanceUntilIdle()
         viewModel.confirmRenameCategory(SectionType.TAG, "旧标签", "新标签")
         advanceUntilIdle()
-
         assertTrue(settingsPrefs.saveTagCategoriesCalled)
         assertEquals(setOf("新标签"), settingsPrefs.lastSavedTagCategories)
+        assertTrue(repository.renameTagCategoryCalled)
     }
 
     @Test
-    fun confirmDeleteTagCategory_removesFromSettingsPrefs() = runTest {
+    fun confirmRenameCategory_forTag_conflict_setsConflictFlag() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        tagCategoriesFlow.value = listOf("标签A", "标签B")
+        advanceUntilIdle()
+        viewModel.showRenameCategoryDialog(SectionType.TAG, "标签A")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "标签B")
+        advanceUntilIdle()
+        assertEquals("标签B", viewModel.renameConflict.value)
+    }
+
+    @Test
+    fun confirmRenameCategory_forTag_noConflict_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        tagCategoriesFlow.value = listOf("标签A")
+        advanceUntilIdle()
+        viewModel.showRenameCategoryDialog(SectionType.TAG, "标签A")
+        advanceUntilIdle()
+        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "新标签")
+        advanceUntilIdle()
+        assertTrue(repository.renameTagCategoryCalled)
+        assertNull(viewModel.uiState.value.dialogState)
+    }
+
+    @Test
+    fun confirmDeleteCategory_forActivity_callsRepository() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        advanceUntilIdle()
+        viewModel.confirmDeleteCategory(SectionType.ACTIVITY, "运动")
+        advanceUntilIdle()
+        assertTrue(repository.resetActivityCategoryCalled)
+        assertEquals("运动", repository.lastResetActivityCategory)
+    }
+
+    @Test
+    fun confirmDeleteCategory_forTag_updatesSettingsPrefsAndCallsRepository() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         settingsPrefs.savedTagCategories = setOf("待删除", "保留")
         viewModel = CategoriesViewModel(repository, settingsPrefs)
+        viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
         viewModel.confirmDeleteCategory(SectionType.TAG, "待删除")
         advanceUntilIdle()
-
+        assertTrue(repository.resetTagCategoryCalled)
         assertTrue(settingsPrefs.saveTagCategoriesCalled)
         assertEquals(setOf("保留"), settingsPrefs.lastSavedTagCategories)
     }
 
     @Test
-    fun onDeleteCategory_showsDeleteDialog() = runTest {
+    fun clearConflict_resetsRenameConflict() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
+        activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
-
-        viewModel.onDeleteCategory(SectionType.ACTIVITY, "运动")
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
         advanceUntilIdle()
-
-        val state = viewModel.uiState.value
-        assertTrue(state.dialogState is DialogState.DeleteActivityCategory)
-        assertEquals("运动", (state.dialogState as DialogState.DeleteActivityCategory).category)
+        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "学习")
+        advanceUntilIdle()
+        assertEquals("学习", viewModel.renameConflict.value)
+        viewModel.clearConflict()
+        advanceUntilIdle()
+        assertNull(viewModel.renameConflict.value)
     }
 
     @Test
-    fun confirmAdd_emptyName_dismissesDialog() = runTest {
+    fun toggleGroupExpand_addsAndRemovesGroupIds() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
         advanceUntilIdle()
-
-        viewModel.onAddCategory(SectionType.ACTIVITY)
+        assertTrue(viewModel.uiState.value.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
+        viewModel.toggleGroupExpand(CategoriesViewModel.GROUP_ID_ACTIVITY)
         advanceUntilIdle()
-        viewModel.confirmAddCategory(SectionType.ACTIVITY, "  ")
+        assertFalse(viewModel.uiState.value.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
+        assertTrue(viewModel.uiState.value.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_TAG))
+        viewModel.toggleGroupExpand(CategoriesViewModel.GROUP_ID_ACTIVITY)
         advanceUntilIdle()
-
-        assertNull(viewModel.uiState.value.dialogState)
-        assertFalse(repository.addActivityCategoryCalled)
+        assertTrue(viewModel.uiState.value.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
     }
 
     @Test
-    fun confirmRenameTagCategory_withLocalTag_updatesLocalSet() = runTest {
+    fun setAllGroupsExpanded_true_setsAllGroupIds() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        settingsPrefs.savedTagCategories = setOf("本地标签")
-        viewModel = CategoriesViewModel(repository, settingsPrefs)
+        activityCategoriesFlow.value = listOf("运动")
+        tagCategoriesFlow.value = listOf("优先级")
         advanceUntilIdle()
-
-        viewModel.onRenameCategory(SectionType.TAG, "本地标签")
+        viewModel.toggleGroupExpand(CategoriesViewModel.GROUP_ID_ACTIVITY)
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.TAG, "本地标签", "重命名后")
+        assertFalse(viewModel.uiState.value.expandedGroupIds.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
+        viewModel.setAllGroupsExpanded(true)
         advanceUntilIdle()
-
-        assertTrue(settingsPrefs.saveTagCategoriesCalled)
-        assertEquals(setOf("重命名后"), settingsPrefs.lastSavedTagCategories)
+        val expanded = viewModel.uiState.value.expandedGroupIds
+        assertTrue(expanded.contains(CategoriesViewModel.GROUP_ID_ACTIVITY))
+        assertTrue(expanded.contains(CategoriesViewModel.GROUP_ID_TAG))
     }
 
     @Test
-    fun confirmRenameTagCategory_conflict_setsConflictFlag() = runTest {
+    fun setAllGroupsExpanded_false_clearsAllGroupIds() = runTest {
         viewModel.uiState.launchIn(backgroundScope)
-        tagCategoriesFlow.value = listOf("标签A", "标签B")
         advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.expandedGroupIds.isNotEmpty())
+        viewModel.setAllGroupsExpanded(false)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.expandedGroupIds.isEmpty())
+    }
 
-        viewModel.onRenameCategory(SectionType.TAG, "标签A")
+    @Test
+    fun dismissDialog_clearsRenameConflict() = runTest {
+        viewModel.uiState.launchIn(backgroundScope)
+        activityCategoriesFlow.value = listOf("运动", "学习")
         advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "标签B")
+        viewModel.showRenameCategoryDialog(SectionType.ACTIVITY, "运动")
         advanceUntilIdle()
-
-        assertEquals("标签B", viewModel.renameConflict.value)
+        viewModel.confirmRenameCategory(SectionType.ACTIVITY, "运动", "学习")
+        advanceUntilIdle()
+        assertEquals("学习", viewModel.renameConflict.value)
+        viewModel.dismissDialog()
+        advanceUntilIdle()
+        assertNull(viewModel.renameConflict.value)
     }
 
     private class FakeSettingsPrefs : SettingsPrefs {
@@ -375,14 +380,10 @@ class CategoriesViewModelTest {
         var lastSavedTagCategories: Set<String>? = null
         var saveTagCategoriesCalled = false
 
-        override fun getThemeFlow(): Flow<com.nltimer.core.designsystem.theme.Theme> =
-            flowOf(com.nltimer.core.designsystem.theme.Theme())
-        override suspend fun updateTheme(theme: com.nltimer.core.designsystem.theme.Theme) {}
-
-        override fun getSavedTagCategories(): Flow<Set<String>> =
-            MutableStateFlow(savedTagCategories)
-        override fun getSavedTagCategoriesOrder(): Flow<List<String>> =
-            MutableStateFlow(savedTagCategories.toList())
+        override fun getThemeFlow(): Flow<Theme> = flowOf(Theme())
+        override suspend fun updateTheme(theme: Theme) {}
+        override fun getSavedTagCategories(): Flow<Set<String>> = MutableStateFlow(savedTagCategories)
+        override fun getSavedTagCategoriesOrder(): Flow<List<String>> = MutableStateFlow(savedTagCategories.toList())
         override suspend fun saveTagCategories(categories: Set<String>) {
             saveTagCategoriesCalled = true
             lastSavedTagCategories = categories
@@ -391,17 +392,14 @@ class CategoriesViewModelTest {
             saveTagCategoriesCalled = true
             lastSavedTagCategories = categories.toSet()
         }
-
         override fun getDialogConfigFlow(): Flow<DialogGridConfig> = flowOf(DialogGridConfig())
-
         override suspend fun updateDialogConfig(config: DialogGridConfig) {}
-
         override fun getTimeLabelConfigFlow(): Flow<TimeLabelConfig> = flowOf(TimeLabelConfig())
-
         override suspend fun updateTimeLabelConfig(config: TimeLabelConfig) {}
-
         override fun getHasSeenIntroFlow(): Flow<Boolean> = flowOf(false)
         override suspend fun setHasSeenIntro(seen: Boolean) {}
+        override fun getHomeLayoutConfigFlow(): Flow<com.nltimer.core.data.model.HomeLayoutConfig> = flowOf(com.nltimer.core.data.model.HomeLayoutConfig())
+        override suspend fun updateHomeLayoutConfig(config: com.nltimer.core.data.model.HomeLayoutConfig) {}
     }
 
     private class FakeCategoryRepository(
@@ -445,66 +443,4 @@ class CategoriesViewModelTest {
             resetTagCategoryCalled = true
         }
     }
-
-    @Test
-    fun onRenameCategory_tag_showsTagRenameDialog() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        advanceUntilIdle()
-        viewModel.onRenameCategory(SectionType.TAG, "标签A")
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        val dialog = state.dialogState as? DialogState.RenameTagCategory
-        assertNotNull(dialog)
-        assertEquals("标签A", dialog?.oldName)
-        assertEquals(SectionType.TAG, dialog?.sectionType)
-    }
-
-    @Test
-    fun onDeleteCategory_tag_showsTagDeleteDialog() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        advanceUntilIdle()
-        viewModel.onDeleteCategory(SectionType.TAG, "标签分类")
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        val dialog = state.dialogState as? DialogState.DeleteTagCategory
-        assertNotNull(dialog)
-        assertEquals("标签分类", dialog?.category)
-    }
-
-    @Test
-    fun confirmAddCategory_tag_emptyName_dismissesDialog() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        advanceUntilIdle()
-        viewModel.onAddCategory(SectionType.TAG)
-        advanceUntilIdle()
-        viewModel.confirmAddCategory(SectionType.TAG, "  ")
-        advanceUntilIdle()
-        assertNull(viewModel.uiState.value.dialogState)
-        assertFalse(settingsPrefs.saveTagCategoriesCalled)
-    }
-
-    @Test
-    fun searchQuery_filtersTagCategories() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        tagCategoriesFlow.value = listOf("优先级", "状态", "紧急")
-        advanceUntilIdle()
-        viewModel.onSearchQueryChange("优先")
-        advanceUntilIdle()
-        val state = viewModel.uiState.value
-        assertEquals(listOf("优先级"), state.tagCategories)
-    }
-
-    @Test
-    fun confirmRenameTagCategory_noConflict_callsRepository() = runTest {
-        viewModel.uiState.launchIn(backgroundScope)
-        tagCategoriesFlow.value = listOf("标签A")
-        advanceUntilIdle()
-        viewModel.onRenameCategory(SectionType.TAG, "标签A")
-        advanceUntilIdle()
-        viewModel.confirmRenameCategory(SectionType.TAG, "标签A", "新标签")
-        advanceUntilIdle()
-        assertTrue(repository.renameTagCategoryCalled)
-        assertNull(viewModel.uiState.value.dialogState)
-    }
-
 }

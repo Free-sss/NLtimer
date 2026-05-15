@@ -138,5 +138,6 @@ class CategoryMigrationValidatorTest {
         override suspend fun getMaxSortOrder(): Int? = groups.maxOfOrNull { it.sortOrder }
         override suspend fun getById(id: Long): ActivityGroupEntity? = groups.find { it.id == id }
         override suspend fun getAllSync(): List<ActivityGroupEntity> = emptyList()
+        override suspend fun updateSortOrder(id: Long, sortOrder: Int) {}
     }
 }

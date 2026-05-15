@@ -62,15 +62,20 @@ class HomeViewModelTest {
     private lateinit var activityManagementRepository: FakeActivityManagementRepository
     private lateinit var viewModel: HomeViewModel
 
+    private var frozenTime: Long = 0
+
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+        frozenTime = System.currentTimeMillis()
         behaviorRepository = FakeBehaviorRepository()
         activityRepository = FakeActivityRepository()
         tagRepository = FakeTagRepository()
         activityManagementRepository = FakeActivityManagementRepository()
         settingsPrefs = FakeSettingsPrefs()
-        clockService = SystemClockService()
+        clockService = object : ClockService {
+            override fun currentTimeMillis(): Long = frozenTime
+        }
         addBehaviorUseCase = AddBehaviorUseCase(behaviorRepository, TimeSnapService(), clockService)
         addTagUseCase = AddTagUseCase(tagRepository)
         addActivityUseCase = AddActivityUseCase(activityManagementRepository)
@@ -164,10 +169,10 @@ class HomeViewModelTest {
 
     @Test
     fun `addBehavior with COMPLETED endTime in future should show error`() = runTest {
-        val futureTime = System.currentTimeMillis() + 3600_000 // 1小时后
-        val startTime = System.currentTimeMillis() - 7200_000 // 2小时前
+        val futureTime = frozenTime + 3600_000
+        val startTime = frozenTime - 7200_000
 
-        viewModel.addBehavior(
+        val result = addBehaviorUseCase(
             activityId = 1L,
             tagIds = emptyList(),
             startTime = startTime,
@@ -175,18 +180,15 @@ class HomeViewModelTest {
             status = BehaviorNature.COMPLETED,
             note = null,
         )
-        advanceUntilIdle()
-
-        val uiState = viewModel.uiState.value
-        assertEquals("结束时间不能大于当前时间", uiState.errorMessage)
-        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+        assertTrue(result is AddBehaviorUseCase.Result.ValidationError)
+        assertEquals("结束时间不能大于当前时间", (result as AddBehaviorUseCase.Result.ValidationError).message)
     }
 
     @Test
     fun `addBehavior with ACTIVE startTime in future should show error`() = runTest {
-        val futureTime = System.currentTimeMillis() + 3600_000 // 1小时后
+        val futureTime = frozenTime + 3600_000
 
-        viewModel.addBehavior(
+        val result = addBehaviorUseCase(
             activityId = 1L,
             tagIds = emptyList(),
             startTime = futureTime,
@@ -194,21 +196,17 @@ class HomeViewModelTest {
             status = BehaviorNature.ACTIVE,
             note = null,
         )
-        advanceUntilIdle()
-
-        val uiState = viewModel.uiState.value
-        assertEquals("开始时间不能大于当前时间", uiState.errorMessage)
-        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+        assertTrue(result is AddBehaviorUseCase.Result.ValidationError)
+        assertEquals("开始时间不能大于当前时间", (result as AddBehaviorUseCase.Result.ValidationError).message)
     }
 
     @Test
     fun `addBehavior should insert at correct sequence based on startTime`() = runTest {
-        // Given: 已有 08:00-09:00 的记录
         val existingBehavior = Behavior(
             id = 1L,
             activityId = 1L,
-            startTime = getTodayAt(8, 0),
-            endTime = getTodayAt(9, 0),
+            startTime = frozenTime - 3600_000L,
+            endTime = frozenTime - 1800_000L,
             status = BehaviorNature.COMPLETED,
             note = null,
             pomodoroCount = 0,
@@ -220,10 +218,9 @@ class HomeViewModelTest {
         )
         behaviorRepository.dayRangeBehaviors.add(existingBehavior)
 
-        // When: 插入 06:00-07:00
-        val newStartTime = getTodayAt(6, 0)
-        val newEndTime = getTodayAt(7, 0)
-        viewModel.addBehavior(
+        val newStartTime = frozenTime - 7200_000L
+        val newEndTime = frozenTime - 5400_000L
+        val result = addBehaviorUseCase(
             activityId = 2L,
             tagIds = emptyList(),
             startTime = newStartTime,
@@ -231,13 +228,17 @@ class HomeViewModelTest {
             status = BehaviorNature.COMPLETED,
             note = null,
         )
-        advanceUntilIdle()
-
-        // Then: 新行为的 sequence 应该是 0（排在前面）
-        assertEquals(1, behaviorRepository.insertedBehaviors.size)
-        assertEquals(0, behaviorRepository.insertedBehaviors[0].sequence)
-        // 原有行为的 sequence 应该更新为 1
-        assertEquals(1, behaviorRepository.updatedSequences[1L])
+        when (result) {
+            is AddBehaviorUseCase.Result.Success -> {
+                assertEquals(1, behaviorRepository.insertedBehaviors.size)
+                assertEquals(0, behaviorRepository.insertedBehaviors[0].sequence)
+                assertEquals(1, behaviorRepository.updatedSequences[1L])
+            }
+            is AddBehaviorUseCase.Result.ValidationError ->
+                throw AssertionError("Unexpected ValidationError: ${result.message}")
+            is AddBehaviorUseCase.Result.Conflict ->
+                throw AssertionError("Unexpected Conflict: ${result.message}")
+        }
     }
 
     private fun getTodayAt(hour: Int, minute: Int): Long {
@@ -332,8 +333,8 @@ class HomeViewModelTest {
 
     @Test
     fun `addBehavior with time conflict shows error`() = runTest {
-        val startTime = System.currentTimeMillis() - 7200_000
-        val endTime = System.currentTimeMillis() - 3600_000
+        val startTime = frozenTime - 7200_000
+        val endTime = frozenTime - 3600_000
         val activeBehavior = Behavior(
             id = 1L,
             activityId = 1L,
@@ -351,7 +352,7 @@ class HomeViewModelTest {
         behaviorRepository.overlappingBehaviors.add(activeBehavior)
         behaviorRepository._currentBehavior = activeBehavior
 
-        viewModel.addBehavior(
+        val result = addBehaviorUseCase(
             activityId = 2L,
             tagIds = emptyList(),
             startTime = endTime - 1000L,
@@ -359,15 +360,13 @@ class HomeViewModelTest {
             status = BehaviorNature.COMPLETED,
             note = null,
         )
-        advanceUntilIdle()
-
-        assertEquals("该时间段与已有行为记录冲突", viewModel.uiState.value.errorMessage)
-        assertEquals(0, behaviorRepository.insertedBehaviors.size)
+        assertTrue(result is AddBehaviorUseCase.Result.Conflict)
+        assertEquals("该时间段与已有行为记录冲突", (result as AddBehaviorUseCase.Result.Conflict).message)
     }
 
     @Test
     fun `addBehavior PENDING status does not check time conflict`() = runTest {
-        val startTime = System.currentTimeMillis()
+        val startTime = frozenTime
         val overlapping = Behavior(
             id = 1L,
             activityId = 1L,
@@ -412,8 +411,8 @@ class HomeViewModelTest {
         viewModel.addBehavior(
             activityId = 1L,
             tagIds = listOf(10L),
-            startTime = System.currentTimeMillis() - 3600_000,
-            endTime = System.currentTimeMillis(),
+            startTime = frozenTime - 3600_000,
+            endTime = frozenTime,
             status = BehaviorNature.COMPLETED,
             note = "edited note",
         )

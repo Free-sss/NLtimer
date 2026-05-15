@@ -105,7 +105,7 @@ class HomeUiStateBuilderTest {
     }
 
     @Test
-    fun `momentCells contain only today behaviors`() {
+    fun `momentCells lists today behaviors first then non-today`() {
         val yesterday = today.minusDays(1)
         val behaviors = listOf(
             behavior(1L, yesterday, 10),
@@ -122,6 +122,6 @@ class HomeUiStateBuilderTest {
         )
 
         val ids = state.momentCells.mapNotNull { it.behaviorId }
-        assertEquals(listOf(2L), ids)
+        assertEquals(listOf(2L, 1L), ids)
     }
 }

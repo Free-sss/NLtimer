@@ -5,6 +5,7 @@ import com.nltimer.core.data.database.dao.ActivityGroupDao
 import com.nltimer.core.data.database.dao.ActivityStatsRow
 import com.nltimer.core.data.database.dao.BehaviorDao
 import com.nltimer.core.data.database.dao.BehaviorTagRow
+import com.nltimer.core.data.database.dao.LastUsedRow
 import com.nltimer.core.data.database.dao.TagDao
 import com.nltimer.core.data.database.entity.ActivityEntity
 import com.nltimer.core.data.database.entity.ActivityGroupEntity
@@ -370,6 +371,7 @@ class ActivityManagementRepositoryImplTest {
         override suspend fun getMaxSortOrder(): Int? = groups.maxOfOrNull { it.sortOrder }
         override suspend fun getById(id: Long): ActivityGroupEntity? = groups.find { it.id == id }
         override suspend fun getAllSync(): List<ActivityGroupEntity> = emptyList()
+        override suspend fun updateSortOrder(id: Long, sortOrder: Int) {}
     }
 
     private class FakeBehaviorDao : BehaviorDao {
@@ -427,6 +429,8 @@ class ActivityManagementRepositoryImplTest {
         )
         override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
         override suspend fun getEarliestStartTime(): Long? = null
+        override fun getAllActivityLastUsed(): Flow<List<LastUsedRow>> = flowOf(emptyList())
+        override fun getAllTagLastUsed(): Flow<List<LastUsedRow>> = flowOf(emptyList())
     }
 
 }

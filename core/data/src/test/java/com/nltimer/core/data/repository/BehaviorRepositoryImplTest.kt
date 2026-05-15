@@ -626,6 +626,8 @@ class BehaviorRepositoryImplTest {
         override fun getTotalDurationAllBehaviors(): Flow<Long> = flowOf(0L)
         override suspend fun getEarliestStartTime(): Long? =
             behaviors.filter { it.startTime > 0 }.minOfOrNull { it.startTime }
+        override fun getAllActivityLastUsed(): Flow<List<com.nltimer.core.data.database.dao.LastUsedRow>> = flowOf(emptyList())
+        override fun getAllTagLastUsed(): Flow<List<com.nltimer.core.data.database.dao.LastUsedRow>> = flowOf(emptyList())
     }
 
     private class FakeActivityDao : ActivityDao {
