@@ -32,12 +32,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -90,17 +91,18 @@ fun TimelineReverseView(
     }
 
     val visibleDateLabelState = LocalVisibleDateLabel.current
+    val currentLabel by remember(dateIndexMap) {
+        derivedStateOf {
+            val firstIndex = listState.firstVisibleItemIndex
+            dateIndexMap.entries
+                .filter { it.key <= firstIndex }
+                .maxByOrNull { it.key }
+                ?.value
+        }
+    }
 
-    LaunchedEffect(listState, dateIndexMap) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .collect { firstIndex ->
-                val label = dateIndexMap.entries
-                    .filter { it.key <= firstIndex }
-                    .maxByOrNull { it.key }
-                    ?.value
-                visibleDateLabelState.value = label
-            }
+    LaunchedEffect(currentLabel) {
+        visibleDateLabelState.value = currentLabel
     }
 
     LaunchedEffect(timelineItems, hasReachedEarliest) {
