@@ -390,6 +390,8 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onHomeLayoutChange(layout: HomeLayout) {
+        _loadedEarliest.value = today
+        _isLoadingMore.value = false
         viewModelScope.launch {
             settingsPrefs.getThemeFlow().firstOrNull()?.let { theme ->
                 settingsPrefs.updateTheme(theme.copy(homeLayout = layout))

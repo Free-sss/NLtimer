@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -47,8 +48,22 @@ fun TimeAxisGrid(
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
+    val initialScrollDone = remember { mutableStateOf(false) }
 
-    LaunchedEffect(currentHour, sections) {
+    LaunchedEffect(sections.isNotEmpty()) {
+        if (!sections.isNotEmpty() || initialScrollDone.value) return@LaunchedEffect
+        val todaySection = sections.lastOrNull() ?: return@LaunchedEffect
+        val targetIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
+        if (targetIndex >= 0) {
+            val precedingItems = sections.dropLast(1).sumOf { 1 + it.rows.size }
+            val absoluteIndex = precedingItems + 1 + targetIndex
+            listState.scrollToItem(absoluteIndex)
+            initialScrollDone.value = true
+        }
+    }
+
+    LaunchedEffect(currentHour) {
+        if (!initialScrollDone.value) return@LaunchedEffect
         val todaySection = sections.lastOrNull() ?: return@LaunchedEffect
         val targetIndex = todaySection.rows.indexOfFirst { it.startTime.hour >= currentHour }
         if (targetIndex >= 0) {
@@ -62,7 +77,7 @@ fun TimeAxisGrid(
         if (hasReachedEarliest) return@LaunchedEffect
         snapshotFlow { listState.firstVisibleItemIndex }
             .distinctUntilChanged()
-            .filter { it <= 5 }
+            .filter { it <= 5 && initialScrollDone.value }
             .collect { onLoadMore() }
     }
 
