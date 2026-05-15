@@ -130,20 +130,30 @@ fun EditTagFormSheet(
             }
             if (showCategoryPicker) {
                 val categoryItems = remember(categories) {
-                    val list = listOf("未分类") + categories
-                    list.map { StringCategoryCategorizable(it) }
+                    categories.map { StringCategoryCategorizable(it) }
                 }
                 val groupedCategories = remember(categoryItems) {
-                    listOf(CategoryGroup(id = 0L, name = "所有分类", items = categoryItems))
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分类",
+                            items = categoryItems,
+                            onClear = {
+                                selectedCategory = null
+                                showCategoryPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
                 }
                 CategoryPickerDialog(
                     title = "选择所属分类",
                     items = categoryItems,
                     categoryGroups = groupedCategories,
-                    selectedId = selectedCategory?.hashCode()?.toLong() ?: "未分类".hashCode().toLong(),
+                    selectedId = selectedCategory?.hashCode()?.toLong() ?: 0L,
                     onItemSelected = { id ->
                         val selectedName = categoryItems.find { it.itemId == id }?.name
-                        selectedCategory = if (selectedName == "未分类") null else selectedName
+                        selectedCategory = selectedName
                         showCategoryPicker = false
                     },
                     onDismiss = { showCategoryPicker = false },
@@ -158,25 +168,41 @@ fun EditTagFormSheet(
                     activityGroups.associateBy { it.id }
                 }
                 val groupedActivities = remember(allActivities, activityGroups) {
-                    val groups = allActivities.groupBy { it.groupId }
-                        .map { (groupId, items) ->
-                            val group = if (groupId != null) activityGroupsMap[groupId] else null
-                            CategoryGroup(
-                                id = groupId ?: -1L,
-                                name = group?.name ?: "未分类",
-                                items = items.map { ActivityCategorizable(it) },
-                            )
-                        }
-                        .sortedBy { if (it.id == -1L) Long.MIN_VALUE else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
+                    val initialGroups = allActivities.groupBy { it.groupId }
+                    val hasUncategorized = initialGroups.containsKey(null)
                     
-                    val noneGroup = CategoryGroup(
-                        id = -2L,
-                        name = "无关联",
-                        items = listOf(ActivityCategorizable(
-                            Activity(id = -1L, name = "未关联")
-                        ))
-                    )
-                    listOf(noneGroup) + groups
+                    val baseGroups = initialGroups.map { (groupId, items) ->
+                        val group = if (groupId != null) activityGroupsMap[groupId] else null
+                        CategoryGroup(
+                            id = groupId ?: -1L,
+                            name = group?.name ?: "未分类",
+                            items = items.map { ActivityCategorizable(it) },
+                            onClear = if (groupId == null) {
+                                {
+                                    selectedActivityId = null
+                                    showActivityPicker = false
+                                }
+                            } else null,
+                            clearLabel = if (groupId == null) "清除" else null,
+                        )
+                    }
+                    
+                    val finalGroups = if (hasUncategorized) {
+                        baseGroups
+                    } else {
+                        baseGroups + CategoryGroup<ActivityCategorizable>(
+                            id = -1L,
+                            name = "未分类",
+                            items = emptyList(),
+                            onClear = {
+                                selectedActivityId = null
+                                showActivityPicker = false
+                            },
+                            clearLabel = "未关联",
+                        )
+                    }
+                    
+                    finalGroups.sortedBy { if (it.id == -1L) Long.MIN_VALUE else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
                 }
 
                 CategoryPickerDialog(

@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -221,6 +222,21 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                             shiftOffset = shiftOffsets[index] ?: 0f,
                             collapsed = collapsed,
                             showHeader = showHeader,
+                            headerActions = if (group.onClear != null) {
+                                {
+                                    TextButton(
+                                        onClick = group.onClear,
+                                        modifier = Modifier.height(24.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                                    ) {
+                                        Text(
+                                            text = group.clearLabel ?: "清除",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.error,
+                                        )
+                                    }
+                                }
+                            } else null,
                             onDragStart = {
                                 draggedIndex = index
                                 currentTargetIndex = index

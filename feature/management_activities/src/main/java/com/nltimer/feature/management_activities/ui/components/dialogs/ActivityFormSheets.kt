@@ -78,11 +78,21 @@ fun AddActivityFormSheet(
         overlay = {
             if (showGroupPicker) {
                 val groupItems = remember(allGroups) {
-                    val list = listOf(ActivityGroup(id = 0L, name = "未分类", sortOrder = -1)) + allGroups
-                    list.map { ActivityGroupCategorizable(it) }
+                    allGroups.map { ActivityGroupCategorizable(it) }
                 }
                 val groupedGroups = remember(groupItems) {
-                    listOf(CategoryGroup(id = 0L, name = "所有分组", items = groupItems))
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分组",
+                            items = groupItems,
+                            onClear = {
+                                selectedGroupId = null
+                                showGroupPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
                 }
                 CategoryPickerDialog(
                     title = "选择所属分组",
@@ -90,7 +100,7 @@ fun AddActivityFormSheet(
                     categoryGroups = groupedGroups,
                     selectedId = selectedGroupId ?: 0L,
                     onItemSelected = { id ->
-                        selectedGroupId = if (id == 0L) null else id
+                        selectedGroupId = id
                         showGroupPicker = false
                     },
                     onDismiss = { showGroupPicker = false },
@@ -199,11 +209,21 @@ fun EditActivityFormSheet(
         overlay = {
             if (showGroupPicker) {
                 val groupItems = remember(allGroups) {
-                    val list = listOf(ActivityGroup(id = 0L, name = "未分类", sortOrder = -1)) + allGroups
-                    list.map { ActivityGroupCategorizable(it) }
+                    allGroups.map { ActivityGroupCategorizable(it) }
                 }
                 val groupedGroups = remember(groupItems) {
-                    listOf(CategoryGroup(id = 0L, name = "所有分组", items = groupItems))
+                    listOf(
+                        CategoryGroup(
+                            id = 0L,
+                            name = "所有分组",
+                            items = groupItems,
+                            onClear = {
+                                selectedGroupId = null
+                                showGroupPicker = false
+                            },
+                            clearLabel = "清除",
+                        )
+                    )
                 }
                 CategoryPickerDialog(
                     title = "选择所属分组",
@@ -211,7 +231,7 @@ fun EditActivityFormSheet(
                     categoryGroups = groupedGroups,
                     selectedId = selectedGroupId ?: 0L,
                     onItemSelected = { id ->
-                        selectedGroupId = if (id == 0L) null else id
+                        selectedGroupId = id
                         showGroupPicker = false
                     },
                     onDismiss = { showGroupPicker = false },

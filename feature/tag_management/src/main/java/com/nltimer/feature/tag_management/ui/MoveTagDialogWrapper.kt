@@ -28,21 +28,30 @@ fun MoveTagDialogWrapper(
     onConfirm: (String?) -> Unit,
 ) {
     val categoryItems = remember(categories) {
-        val list = listOf("未分类") + categories
-        list.map { StringCategoryCategorizable(it) }
+        categories.map { StringCategoryCategorizable(it) }
     }
     val groupedCategories = remember(categoryItems) {
-        listOf(CategoryGroup(id = 0L, name = "所有分类", items = categoryItems))
+        listOf(
+            CategoryGroup(
+                id = 0L,
+                name = "所有分类",
+                items = categoryItems,
+                onClear = {
+                    onConfirm(null)
+                },
+                clearLabel = "清除",
+            )
+        )
     }
 
     CategoryPickerDialog(
         title = "将「${tag.name}」移动到：",
         items = categoryItems,
         categoryGroups = groupedCategories,
-        selectedId = currentCategory?.hashCode()?.toLong() ?: "未分类".hashCode().toLong(),
+        selectedId = currentCategory?.hashCode()?.toLong() ?: 0L,
         onItemSelected = { id ->
             val selectedName = categoryItems.find { it.itemId == id }?.name
-            onConfirm(if (selectedName == "未分类") null else selectedName)
+            onConfirm(selectedName)
         },
         onDismiss = onDismiss,
         showHeader = false,

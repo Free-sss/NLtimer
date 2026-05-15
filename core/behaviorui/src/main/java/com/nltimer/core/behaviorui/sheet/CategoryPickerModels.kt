@@ -16,6 +16,8 @@ data class CategoryGroup<T>(
     val id: Long,
     val name: String,
     val items: List<T>,
+    val onClear: (() -> Unit)? = null,
+    val clearLabel: String? = null,
 )
 
 interface CategorizableItem {

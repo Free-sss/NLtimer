@@ -43,11 +43,20 @@ fun MoveToGroupDialog(
     onConfirm: (Long?) -> Unit,
 ) {
     val groupItems = remember(allGroups) {
-        val list = listOf(ActivityGroup(id = 0L, name = "未分类", sortOrder = -1)) + allGroups
-        list.map { ActivityGroupCategorizable(it) }
+        allGroups.map { ActivityGroupCategorizable(it) }
     }
     val groupedGroups = remember(groupItems) {
-        listOf(CategoryGroup(id = 0L, name = "所有分组", items = groupItems))
+        listOf(
+            CategoryGroup(
+                id = 0L,
+                name = "所有分组",
+                items = groupItems,
+                onClear = {
+                    onConfirm(null)
+                },
+                clearLabel = "清除",
+            )
+        )
     }
 
     CategoryPickerDialog(
@@ -56,7 +65,7 @@ fun MoveToGroupDialog(
         categoryGroups = groupedGroups,
         selectedId = activity.groupId ?: 0L,
         onItemSelected = { id ->
-            onConfirm(if (id == 0L) null else id)
+            onConfirm(id)
         },
         onDismiss = onDismiss,
         showHeader = false,
