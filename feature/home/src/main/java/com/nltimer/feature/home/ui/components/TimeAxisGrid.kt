@@ -53,6 +53,18 @@ fun TimeAxisGrid(
     val visibleDateLabelState = LocalVisibleDateLabel.current
     val initialScrollDone = rememberSaveable { mutableStateOf(false) }
 
+    val dateIndexMap = remember(sections) {
+        val map = mutableMapOf<Int, String>()
+        var index = 0
+        if (isLoadingMore) index++
+        sections.forEach { section ->
+            map[index] = section.label
+            index++
+            index += section.rows.size
+        }
+        map
+    }
+
     val currentLabel by remember(dateIndexMap) {
         derivedStateOf {
             val firstIndex = listState.firstVisibleItemIndex
@@ -65,8 +77,6 @@ fun TimeAxisGrid(
 
     LaunchedEffect(currentLabel) {
         visibleDateLabelState.value = currentLabel
-    }
-
     }
 
     LaunchedEffect(currentHour) {
@@ -86,30 +96,6 @@ fun TimeAxisGrid(
             .distinctUntilChanged()
             .filter { it <= 5 && initialScrollDone.value }
             .collect { onLoadMore() }
-    }
-
-    val dateIndexMap = remember(sections) {
-        val map = mutableMapOf<Int, String>()
-        var index = 0
-        if (isLoadingMore) index++
-        sections.forEach { section ->
-            map[index] = section.label
-            index++
-            index += section.rows.size
-        }
-        map
-    }
-
-    LaunchedEffect(listState, dateIndexMap) {
-        snapshotFlow { listState.firstVisibleItemIndex }
-            .distinctUntilChanged()
-            .collect { firstIndex ->
-                val label = dateIndexMap.entries
-                    .filter { it.key <= firstIndex }
-                    .maxByOrNull { it.key }
-                    ?.value
-                visibleDateLabelState.value = label
-            }
     }
 
     LazyColumn(
