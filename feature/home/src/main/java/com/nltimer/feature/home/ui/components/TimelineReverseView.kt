@@ -90,7 +90,7 @@ fun TimelineReverseView(
         }
     }
 
-    val alpha by animateFloatAsState(
+    val alphaState = animateFloatAsState(
         targetValue = if (initialScrollDone.value) 1f else 0f,
         animationSpec = tween(durationMillis = 400),
         label = "TimelineFadeIn"
@@ -132,14 +132,24 @@ fun TimelineReverseView(
 
     Box(modifier = modifier
         .fillMaxSize()
-        .graphicsLayer { this.alpha = alpha }) {
+        .graphicsLayer { this.alpha = alphaState.value }) {
         LazyColumn(
             state = listState,
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(timelineStyle.itemSpacing.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
-            items(items = timelineItems, key = { it.key }) { item ->
+            items(
+                items = timelineItems,
+                key = { it.key },
+                contentType = {
+                    when (it) {
+                        is TimelineDisplayItem.Divider -> "divider"
+                        is TimelineDisplayItem.BehaviorRow -> "behavior"
+                        is TimelineDisplayItem.Idle -> "idle"
+                    }
+                }
+            ) { item ->
                 when (item) {
                     is TimelineDisplayItem.Divider -> DayDividerRow(label = item.label)
                     is TimelineDisplayItem.BehaviorRow -> TimelineBehaviorItem(

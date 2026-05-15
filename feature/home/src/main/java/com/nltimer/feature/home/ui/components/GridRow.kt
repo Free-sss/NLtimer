@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -35,22 +35,23 @@ fun GridRow(
 ) {
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
-    val gridMinHeight = gridStyle.minRowHeight.dp
-    Box(modifier = modifier.fillMaxWidth()) {
-        Column {
-            if (row.cells.isNotEmpty() && timeLabelConfig.visible) {
-                TimeFloatingLabel(
-                    time = row.startTime,
-                    isCurrentRow = row.isCurrentRow,
-                    config = timeLabelConfig,
-                    modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
-                )
-            }
+    val gridMinHeight = remember(gridStyle.minRowHeight) { gridStyle.minRowHeight.dp }
+    val columnSpacing = remember(gridStyle.columnSpacing) { gridStyle.columnSpacing.dp }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(gridStyle.columnSpacing.dp),
-            ) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        if (row.cells.isNotEmpty() && timeLabelConfig.visible) {
+            TimeFloatingLabel(
+                time = row.startTime,
+                isCurrentRow = row.isCurrentRow,
+                config = timeLabelConfig,
+                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(columnSpacing),
+        ) {
                 val addPlaceholderIndex = row.cells.indexOfFirst { it.isAddPlaceholder }
                 val firstEmptyIndex = row.cells.indexOfFirst { it.behaviorId == null }
                 val targetEmptyIndex = if (addPlaceholderIndex != -1) addPlaceholderIndex else firstEmptyIndex
@@ -83,15 +84,15 @@ fun GridRow(
                             }
                         }
                     }
-                }
             }
         }
-    }
 
-    detailCell?.let { cell ->
-        BehaviorDetailDialog(
-            cell = cell,
-            onDismiss = { detailCell = null },
-        )
+        detailCell?.let { cell ->
+            BehaviorDetailDialog(
+                cell = cell,
+                onDismiss = { detailCell = null },
+            )
+        }
     }
 }
+

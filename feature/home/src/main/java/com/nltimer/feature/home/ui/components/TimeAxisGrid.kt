@@ -21,7 +21,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +32,9 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
+import androidx.compose.runtime.saveable.rememberSaveable
 import java.time.LocalTime
+import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -54,7 +55,7 @@ fun TimeAxisGrid(
 ) {
     val listState = rememberLazyListState()
     val visibleDateLabelState = LocalVisibleDateLabel.current
-    val initialScrollDone = remember { mutableStateOf(false) }
+    val initialScrollDone = rememberSaveable { mutableStateOf(false) }
 
     // 初始定位到今天及当前小时
     LaunchedEffect(sections) {
@@ -73,7 +74,7 @@ fun TimeAxisGrid(
     }
 
     val dateIndexMap = remember(sections) {
-        val map = mutableMapOf<Int, String>()
+        val map = TreeMap<Int, String>()
         var index = 0
         if (isLoadingMore) index++
         sections.forEach { section ->
@@ -87,10 +88,7 @@ fun TimeAxisGrid(
     val currentLabel by remember(dateIndexMap) {
         derivedStateOf {
             val firstIndex = listState.firstVisibleItemIndex
-            dateIndexMap.entries
-                .filter { it.key <= firstIndex }
-                .maxByOrNull { it.key }
-                ?.value
+            dateIndexMap.floorEntry(firstIndex)?.value
         }
     }
 
@@ -117,7 +115,7 @@ fun TimeAxisGrid(
             .collect { onLoadMore() }
     }
 
-    val alpha by animateFloatAsState(
+    val alphaState = animateFloatAsState(
         targetValue = if (initialScrollDone.value) 1f else 0f,
         animationSpec = tween(durationMillis = 400),
         label = "GridFadeIn"
@@ -126,17 +124,24 @@ fun TimeAxisGrid(
     LazyColumn(
         state = listState,
         modifier = modifier
-            .graphicsLayer { this.alpha = alpha }
+            .graphicsLayer { this.alpha = alphaState.value }
             .padding(start = 10.dp, end = if (showTimeSideBar) 0.dp else 10.dp, top = 0.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
         contentPadding = PaddingValues(bottom = 630.dp, top = LocalImmersiveTopPadding.current),
     ) {
         if (isLoadingMore) item("loading-top") { LoadingMoreIndicator() }
         sections.forEach { section ->
-            item(key = "header-${section.date}") {
+            item(
+                key = "header-${section.date}",
+                contentType = "day_divider"
+            ) {
                 DayDividerRow(label = section.label)
             }
-            items(items = section.rows, key = { it.rowId }) { row ->
+            items(
+                items = section.rows,
+                key = { it.rowId },
+                contentType = { "grid_row" }
+            ) { row ->
                 GridRow(
                     row = row,
                     onEmptyCellClick = onEmptyCellClick,

@@ -59,7 +59,7 @@ fun BehaviorLogView(
         }
     }
 
-    val alpha by animateFloatAsState(
+    val alphaState = animateFloatAsState(
         targetValue = if (initialScrollDone.value) 1f else 0f,
         animationSpec = tween(durationMillis = 400),
         label = "LogFadeIn"
@@ -104,7 +104,7 @@ fun BehaviorLogView(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer { this.alpha = alpha },
+                .graphicsLayer { this.alpha = alphaState.value },
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, end = 16.dp, bottom = 180.dp),
         ) {
@@ -122,7 +122,16 @@ fun BehaviorLogView(
                     }
                 }
             } else {
-                items(items = displayItems, key = { it.key }) { item ->
+                items(
+                    items = displayItems,
+                    key = { it.key },
+                    contentType = {
+                        when (it) {
+                            is HomeListItem.DayDivider -> "divider"
+                            is HomeListItem.CellItem -> "behavior"
+                        }
+                    }
+                ) { item ->
                     when (item) {
                         is HomeListItem.DayDivider -> DayDividerRow(label = item.label)
                         is HomeListItem.CellItem -> BehaviorLogCard(

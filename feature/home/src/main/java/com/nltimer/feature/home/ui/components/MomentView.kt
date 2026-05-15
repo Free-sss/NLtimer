@@ -21,6 +21,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -37,6 +38,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -144,7 +146,7 @@ fun MomentView(
     var detailCell by remember { mutableStateOf<GridCellUiState?>(null) }
 
     val listState = rememberLazyListState()
-    val initialScrollDone = remember { mutableStateOf(false) }
+    val initialScrollDone = rememberSaveable { mutableStateOf(false) }
 
     val today = remember { LocalDate.now() }
     val behaviors = remember(cells, filterTab, sortMode) {
@@ -176,14 +178,14 @@ fun MomentView(
         }
     }
 
-    val alpha by animateFloatAsState(
+    val alphaState = animateFloatAsState(
         targetValue = if (initialScrollDone.value) 1f else 0f,
         animationSpec = tween(durationMillis = 400),
         label = "MomentFadeIn"
     )
 
     val dateIndexMap = remember(displayItems) {
-        val map = mutableMapOf<Int, String>()
+        val map = TreeMap<Int, String>()
         displayItems.forEachIndexed { index, item ->
             if (item is MomentDisplayItem.Divider) map[index] = item.label
         }
@@ -194,10 +196,7 @@ fun MomentView(
     val currentLabel by remember(dateIndexMap) {
         derivedStateOf {
             val firstIndex = listState.firstVisibleItemIndex
-            dateIndexMap.entries
-                .filter { it.key <= firstIndex }
-                .maxByOrNull { it.key }
-                ?.value
+            dateIndexMap.floorEntry(firstIndex)?.value
         }
     }
 
@@ -221,7 +220,7 @@ fun MomentView(
         state = listState,
         modifier = modifier
             .fillMaxSize()
-            .graphicsLayer { this.alpha = alpha },
+            .graphicsLayer { this.alpha = alphaState.value },
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
             start = 16.dp, end = 16.dp, top = 16.dp + LocalImmersiveTopPadding.current, bottom = 180.dp
@@ -236,7 +235,17 @@ fun MomentView(
             }
         }
 
-        items(items = displayItems, key = { it.key }) { item ->
+        items(
+            items = displayItems,
+            key = { it.key },
+            contentType = {
+                when (it) {
+                    is MomentDisplayItem.FocusCard -> "focus_card"
+                    is MomentDisplayItem.Divider -> "divider"
+                    is MomentDisplayItem.Behavior -> "behavior"
+                }
+            }
+        ) { item ->
             when (item) {
                 is MomentDisplayItem.FocusCard -> MomentFocusCard(
                     activeCell = activeCell,

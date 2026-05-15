@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ import com.nltimer.core.designsystem.theme.appBorder
 import com.nltimer.core.designsystem.theme.styledAlpha
 import com.nltimer.core.designsystem.theme.styledBorder
 import com.nltimer.core.designsystem.theme.styledCorner
+import com.nltimer.core.data.util.formatGridDurationHours
 import com.nltimer.feature.home.model.GridCellUiState
 
 private const val PLATINUM_RED_BASE = 0.78f
@@ -53,7 +55,7 @@ fun GridCell(
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
 ) {
     val isPlatinum = cell.wasPlanned && cell.status == BehaviorNature.COMPLETED
-    val platinumStrength = cell.achievementLevel?.let { it / 100f } ?: 0f
+    val platinumStrength = cell.platinumStrength
 
     val backgroundColor = when {
         cell.isCurrent -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = styledAlpha(gridStyle.activeBgAlpha))
@@ -126,7 +128,7 @@ fun GridCell(
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.Top,
         ) {
-            if (cell.activityName != null || cell.durationText().isNotEmpty()) {
+            if (cell.activityName != null || cell.formattedDuration.isNotEmpty()) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -143,36 +145,11 @@ fun GridCell(
                         )
                     } ?: Spacer(modifier = Modifier.weight(1f))
 
-                    val durationText = if (cell.isCurrent && cell.startEpochMs != null) {
-                        formatGridDurationHours(
-                            ms = LiveElapsedDuration(
-                                startEpochMs = cell.startEpochMs,
-                                isCurrent = true,
-                                fallbackDurationMs = cell.durationMs ?: (cell.actualDuration ?: 0L),
-                            ),
-                        )
-                    } else {
-                        cell.durationText()
-                    }
-                    if (durationText.isNotEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
-                                )
-                                .padding(horizontal = 3.dp, vertical = 0.5.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = durationText,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                fontWeight = FontWeight.Medium,
-                                maxLines = 1,
-                            )
-                        }
-                    }
+                    GridDurationLabel(
+                        cell = cell,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
                 }
             }
 
@@ -197,19 +174,40 @@ fun GridCell(
     }
 }
 
-private fun GridCellUiState.durationText(): String {
-    val duration = durationMs ?: actualDuration ?: 0L
-    return formatGridDurationHours(duration)
-}
-
-private fun formatGridDurationHours(ms: Long): String {
-    if (ms <= 0L) return ""
-    val tenths = ((ms * 10) / 3_600_000).coerceAtLeast(1)
-    val hours = tenths / 10
-    val fraction = tenths % 10
-    return if (fraction == 0L) {
-        "${hours}h"
+@Composable
+private fun GridDurationLabel(
+    cell: GridCellUiState,
+    style: TextStyle,
+    color: Color,
+) {
+    val durationText = if (cell.isCurrent && cell.startEpochMs != null) {
+        val ms = LiveElapsedDuration(
+            startEpochMs = cell.startEpochMs,
+            isCurrent = true,
+            fallbackDurationMs = cell.durationMs ?: (cell.actualDuration ?: 0L),
+        )
+        formatGridDurationHours(ms)
     } else {
-        "${hours}.${fraction}h"
+        cell.formattedDuration
+    }
+
+    if (durationText.isNotEmpty()) {
+        Box(
+            modifier = Modifier
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(styledCorner(ShapeTokens.CORNER_SMALL)),
+                )
+                .padding(horizontal = 3.dp, vertical = 0.5.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = durationText,
+                style = style,
+                color = color,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+            )
+        }
     }
 }

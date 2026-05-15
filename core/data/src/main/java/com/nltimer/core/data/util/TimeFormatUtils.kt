@@ -83,6 +83,18 @@ fun formatEpochTimeRange(startMs: Long, endMs: Long?): String {
     return if (end != null) "$start - $end" else start
 }
 
+fun formatGridDurationHours(ms: Long): String {
+    if (ms <= 0L) return ""
+    val tenths = ((ms * 10) / 3_600_000).coerceAtLeast(1)
+    val hours = tenths / 10
+    val fraction = tenths % 10
+    return if (fraction == 0L) {
+        "${hours}h"
+    } else {
+        "${hours}.${fraction}h"
+    }
+}
+
 fun formatTimestamp(timestamp: Long): String =
     yyyyMMddHHmmFormatter.format(Instant.ofEpochMilli(timestamp).atZone(ZoneId.systemDefault()).toLocalDateTime())
 

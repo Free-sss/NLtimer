@@ -28,4 +28,6 @@ data class GridCellUiState(
     val isAddPlaceholder: Boolean = false,
     val note: String? = null,
     val pomodoroCount: Int = 0,
+    val formattedDuration: String = "",
+    val platinumStrength: Float = 0f,
 )

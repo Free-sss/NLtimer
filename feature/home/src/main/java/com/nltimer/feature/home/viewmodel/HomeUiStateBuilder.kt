@@ -10,6 +10,7 @@ import com.nltimer.feature.home.model.GridRowUiState
 import com.nltimer.feature.home.model.HomeListItem
 import com.nltimer.feature.home.model.HomeUiState
 import com.nltimer.feature.home.model.TagUiState
+import com.nltimer.core.data.util.formatGridDurationHours
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -158,6 +159,8 @@ class HomeUiStateBuilder {
             status = null,
             isCurrent = false,
             isAddPlaceholder = true,
+            formattedDuration = "",
+            platinumStrength = 0f,
         )
         val row = GridRowUiState(
             rowId = "empty-row",
@@ -219,6 +222,14 @@ class HomeUiStateBuilder {
                     .toLocalTime()
             }
 
+            val isPlatinum = behavior.wasPlanned && behavior.status == BehaviorNature.COMPLETED
+            val platinumStrength = behavior.achievementLevel?.let { it / 100f } ?: 0f
+            val duration = if (isActive && behavior.startTime > 0) {
+                currentTimeMs - behavior.startTime
+            } else {
+                behavior.actualDuration ?: 0L
+            }
+
             GridCellUiState(
                 behaviorId = behavior.id,
                 activityIconKey = activity?.iconKey,
@@ -239,6 +250,8 @@ class HomeUiStateBuilder {
                 endEpochMs = behavior.endTime,
                 note = behavior.note,
                 pomodoroCount = behavior.pomodoroCount,
+                formattedDuration = formatGridDurationHours(duration),
+                platinumStrength = platinumStrength,
             )
         }
     }
@@ -258,6 +271,8 @@ class HomeUiStateBuilder {
             isAddPlaceholder = true,
             startTime = idleStart,
             endTime = idleEnd,
+            formattedDuration = "",
+            platinumStrength = 0f,
         )
     }
 
@@ -303,6 +318,8 @@ class HomeUiStateBuilder {
                         tags = emptyList(),
                         status = null,
                         isCurrent = false,
+                        formattedDuration = "",
+                        platinumStrength = 0f,
                     )
                 )
             }
