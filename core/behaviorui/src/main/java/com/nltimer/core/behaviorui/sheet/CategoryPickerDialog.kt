@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -126,6 +127,7 @@ fun <T : CategorizableItem> CategoryPickerDialog(
     onCategoryReordered: (List<Long>) -> Unit = {},
     onDismiss: () -> Unit,
     onAddNew: (() -> Unit)? = null,
+    showHeader: Boolean = true,
 ) {
     var sortMode by remember { mutableStateOf(SortMode.FREQUENCY) }
     val reorderedGroups = remember { mutableStateListOf<CategoryGroup<T>>() }
@@ -194,7 +196,7 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                     state = listState,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(400.dp),
+                        .heightIn(max = 450.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     contentPadding = PaddingValues(vertical = 4.dp),
                 ) {
@@ -218,6 +220,7 @@ fun <T : CategorizableItem> CategoryPickerDialog(
                             dragOffsetY = if (draggedIndex == index) dragOffsetY else 0f,
                             shiftOffset = shiftOffsets[index] ?: 0f,
                             collapsed = collapsed,
+                            showHeader = showHeader,
                             onDragStart = {
                                 draggedIndex = index
                                 currentTargetIndex = index

@@ -15,6 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.nltimer.core.data.model.Tag
+import com.nltimer.core.behaviorui.sheet.CategoryGroup
+import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
+import com.nltimer.core.behaviorui.sheet.StringCategoryCategorizable
 
 @Composable
 fun MoveTagDialogWrapper(
@@ -24,41 +27,24 @@ fun MoveTagDialogWrapper(
     onDismiss: () -> Unit,
     onConfirm: (String?) -> Unit,
 ) {
-    var selectedCategory by remember { mutableStateOf(currentCategory) }
+    val categoryItems = remember(categories) {
+        val list = listOf("未分类") + categories
+        list.map { StringCategoryCategorizable(it) }
+    }
+    val groupedCategories = remember(categoryItems) {
+        listOf(CategoryGroup(id = 0L, name = "所有分类", items = categoryItems))
+    }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("移动标签") },
-        text = {
-            Column {
-                Text(
-                    text = "将「${tag.name}」移动到：",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                androidx.compose.material3.DropdownMenuItem(
-                    text = { Text("未分类") },
-                    onClick = { selectedCategory = null },
-                )
-
-                categories.forEach { category ->
-                    androidx.compose.material3.DropdownMenuItem(
-                        text = { Text(category) },
-                        onClick = { selectedCategory = category },
-                    )
-                }
-            }
+    CategoryPickerDialog(
+        title = "将「${tag.name}」移动到：",
+        items = categoryItems,
+        categoryGroups = groupedCategories,
+        selectedId = currentCategory?.hashCode()?.toLong() ?: "未分类".hashCode().toLong(),
+        onItemSelected = { id ->
+            val selectedName = categoryItems.find { it.itemId == id }?.name
+            onConfirm(if (selectedName == "未分类") null else selectedName)
         },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(selectedCategory) }) {
-                Text("移动")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        },
+        onDismiss = onDismiss,
+        showHeader = false,
     )
 }

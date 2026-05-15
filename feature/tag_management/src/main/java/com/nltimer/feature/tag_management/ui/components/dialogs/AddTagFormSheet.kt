@@ -6,9 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.nltimer.core.data.model.Activity
+import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.model.Tag
-import com.nltimer.core.designsystem.component.CategoryPickerPopup
-import com.nltimer.core.designsystem.component.SingleSelectPickerPopup
+import com.nltimer.core.behaviorui.sheet.ActivityCategorizable
+import com.nltimer.core.behaviorui.sheet.CategoryGroup
+import com.nltimer.core.behaviorui.sheet.CategoryPickerDialog
+import com.nltimer.core.behaviorui.sheet.StringCategoryCategorizable
 import com.nltimer.core.designsystem.form.ActivityFormSpecs
 import com.nltimer.core.designsystem.form.FormRow
 import com.nltimer.core.designsystem.form.GenericFormSheet
@@ -20,6 +23,7 @@ fun AddTagFormSheet(
     initialCategory: String?,
     categories: List<String>,
     allActivities: List<Activity>,
+    activityGroups: List<ActivityGroup>,
     onDismiss: () -> Unit,
     onConfirm: AddTagCallback,
 ) {
@@ -68,19 +72,66 @@ fun AddTagFormSheet(
         },
         overlay = {
             if (showCategoryPicker) {
-                CategoryPickerPopup(
-                    categories = categories,
-                    selected = selectedCategory,
-                    onSelected = { selectedCategory = it },
+                val categoryItems = remember(categories) {
+                    val list = listOf("未分类") + categories
+                    list.map { StringCategoryCategorizable(it) }
+                }
+                val groupedCategories = remember(categoryItems) {
+                    listOf(CategoryGroup(id = 0L, name = "所有分类", items = categoryItems))
+                }
+                CategoryPickerDialog(
+                    title = "选择所属分类",
+                    items = categoryItems,
+                    categoryGroups = groupedCategories,
+                    selectedId = selectedCategory?.hashCode()?.toLong() ?: "未分类".hashCode().toLong(),
+                    onItemSelected = { id ->
+                        val selectedName = categoryItems.find { it.itemId == id }?.name
+                        selectedCategory = if (selectedName == "未分类") null else selectedName
+                        showCategoryPicker = false
+                    },
                     onDismiss = { showCategoryPicker = false },
+                    showHeader = false,
                 )
             }
             if (showActivityPicker) {
-                SingleSelectPickerPopup(
+                val categorizableActivities = remember(allActivities) {
+                    allActivities.map { ActivityCategorizable(it) }
+                }
+                val activityGroupsMap = remember(activityGroups) {
+                    activityGroups.associateBy { it.id }
+                }
+                val groupedActivities = remember(allActivities, activityGroups) {
+                    val groups = allActivities.groupBy { it.groupId }
+                        .map { (groupId, items) ->
+                            val group = if (groupId != null) activityGroupsMap[groupId] else null
+                            CategoryGroup(
+                                id = groupId ?: -1L,
+                                name = group?.name ?: "未分类",
+                                items = items.map { ActivityCategorizable(it) },
+                            )
+                        }
+                        .sortedBy { if (it.id == -1L) Long.MIN_VALUE else activityGroupsMap[it.id]?.sortOrder?.toLong() ?: Long.MAX_VALUE }
+                    
+                    // Add "None" option at the beginning
+                    val noneGroup = CategoryGroup(
+                        id = -2L,
+                        name = "无关联",
+                        items = listOf(ActivityCategorizable(
+                            Activity(id = -1L, name = "未关联")
+                        ))
+                    )
+                    listOf(noneGroup) + groups
+                }
+
+                CategoryPickerDialog(
                     title = "关联活动",
-                    items = activityItems,
-                    selectedId = selectedActivityId,
-                    onSelected = { selectedActivityId = it },
+                    items = categorizableActivities,
+                    categoryGroups = groupedActivities,
+                    selectedId = selectedActivityId ?: -1L,
+                    onItemSelected = { id ->
+                        selectedActivityId = if (id == -1L) null else id
+                        showActivityPicker = false
+                    },
                     onDismiss = { showActivityPicker = false },
                 )
             }
