@@ -6,7 +6,6 @@ import com.nltimer.core.data.model.Activity
 import com.nltimer.core.data.model.ActivityGroup
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.util.mapList
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,10 +22,6 @@ class ActivityRepositoryImpl @Inject constructor(
     private val activityDao: ActivityDao,
     private val groupDao: ActivityGroupDao,
 ) : ActivityRepository {
-
-    companion object {
-        private const val TAG = "DB_ActivityDao"
-    }
 
     override fun getAllActive(): Flow<List<Activity>> =
         activityDao.getAllActive().mapList { Activity.fromEntity(it) }
@@ -46,19 +41,12 @@ class ActivityRepositoryImpl @Inject constructor(
     override suspend fun getByName(name: String): Activity? =
         activityDao.getByName(name)?.let { Activity.fromEntity(it) }
 
-    override suspend fun insert(activity: Activity): Long {
-        val id = activityDao.insert(activity.toEntity())
-        Log.d(TAG, "✅ insert activity id=$id name=${activity.name}")
-        return id
-    }
+    override suspend fun insert(activity: Activity): Long =
+        activityDao.insert(activity.toEntity())
 
-    override suspend fun update(activity: Activity) {
+    override suspend fun update(activity: Activity) =
         activityDao.update(activity.toEntity())
-        Log.d(TAG, "✅ update activity id=${activity.id} name=${activity.name}")
-    }
 
-    override suspend fun setArchived(id: Long, archived: Boolean) {
+    override suspend fun setArchived(id: Long, archived: Boolean) =
         activityDao.setArchived(id, archived)
-        Log.d(TAG, "✅ setArchived id=$id archived=$archived")
-    }
 }

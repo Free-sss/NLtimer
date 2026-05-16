@@ -140,7 +140,11 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
-        return if (userAdjustedTime || mode == BehaviorNature.COMPLETED) {
+        // 补记场景：用户给定的时间已是绝对值，秒一律归零
+        if (mode == BehaviorNature.COMPLETED) {
+            return startTime.withSecond(0).withNano(0)
+        }
+        return if (userAdjustedTime) {
             startTime.withSecond(0).withNano(0)
         } else {
             val sourceSeconds = when (strategy) {

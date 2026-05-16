@@ -48,7 +48,8 @@ internal fun HomeSheetRouter(
                     Behavior(
                         id = cell.behaviorId!!,
                         activityId = 0,
-                        startTime = cell.startEpochMs ?: 0,
+                        startTime = cell.startEpochMs
+                            ?: error("startEpochMs missing for behaviorId=${cell.behaviorId}"),
                         endTime = cell.endEpochMs,
                         status = cell.status!!,
                         note = cell.note,

@@ -5,7 +5,6 @@ import com.nltimer.core.data.database.entity.ActivityTagBindingEntity
 import com.nltimer.core.data.model.Tag
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.util.mapList
-import android.util.Log
 import kotlinx.coroutines.flow.Flow
 import androidx.room.withTransaction
 import javax.inject.Inject
@@ -16,10 +15,6 @@ class TagRepositoryImpl @Inject constructor(
     private val tagDao: TagDao,
     private val database: com.nltimer.core.data.database.NLtimerDatabase,
 ) : TagRepository {
-
-    companion object {
-        private const val TAG = "DB_TagDao"
-    }
 
     override fun getAllActive(): Flow<List<Tag>> =
         tagDao.getAllActive().mapList { Tag.fromEntity(it) }
@@ -42,34 +37,23 @@ class TagRepositoryImpl @Inject constructor(
     override suspend fun getByName(name: String): Tag? =
         tagDao.getByName(name)?.let { Tag.fromEntity(it) }
 
-    override suspend fun insert(tag: Tag): Long {
-        val id = tagDao.insert(tag.toEntity())
-        Log.d(TAG, "✅ insert tag id=$id name=${tag.name}")
-        return id
-    }
+    override suspend fun insert(tag: Tag): Long =
+        tagDao.insert(tag.toEntity())
 
-    override suspend fun update(tag: Tag) {
+    override suspend fun update(tag: Tag) =
         tagDao.update(tag.toEntity())
-        Log.d(TAG, "✅ update tag id=${tag.id} name=${tag.name}")
-    }
 
-    override suspend fun setArchived(id: Long, archived: Boolean) {
+    override suspend fun setArchived(id: Long, archived: Boolean) =
         tagDao.setArchived(id, archived)
-        Log.d(TAG, "✅ setArchived id=$id archived=$archived")
-    }
 
     override fun getDistinctCategories(): Flow<List<String>> =
         tagDao.getDistinctCategories()
 
-    override suspend fun renameCategory(oldName: String, newName: String) {
+    override suspend fun renameCategory(oldName: String, newName: String) =
         tagDao.renameCategory(oldName, newName)
-        Log.d(TAG, "✅ renameCategory oldName=$oldName newName=$newName")
-    }
 
-    override suspend fun resetCategory(category: String) {
+    override suspend fun resetCategory(category: String) =
         tagDao.resetCategory(category)
-        Log.d(TAG, "✅ resetCategory category=$category")
-    }
 
     override suspend fun getActivityIdsForTag(tagId: Long): List<Long> =
         tagDao.getActivityIdsForTagSync(tagId)
@@ -84,7 +68,6 @@ class TagRepositoryImpl @Inject constructor(
                     }
                 )
             }
-            Log.d(TAG, "✅ setActivityTagBindings tagId=$tagId activityIds=$activityIds")
         }
     }
 }
