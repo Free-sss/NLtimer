@@ -33,6 +33,8 @@ import com.nltimer.feature.home.model.AddSheetMode
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.HomeUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -258,7 +260,7 @@ class HomeViewModel @Inject constructor(
                 addSheetMode = mode,
                 editBehaviorId = cell.behaviorId,
                 editInitialActivityId = null,
-                editInitialTagIds = cell.tags.map { tag -> tag.id },
+                editInitialTagIds = cell.tags.map { tag -> tag.id }.toPersistentList(),
                 editInitialNote = cell.note,
                 idleStartTime = cell.startTime,
                 idleEndTime = cell.endTime,
@@ -282,7 +284,7 @@ class HomeViewModel @Inject constructor(
                 idleEndTime = null,
                 editBehaviorId = null,
                 editInitialActivityId = null,
-                editInitialTagIds = emptyList(),
+                editInitialTagIds = persistentListOf(),
                 editInitialNote = null,
             )
         }

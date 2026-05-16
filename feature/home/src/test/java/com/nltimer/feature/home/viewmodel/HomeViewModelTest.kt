@@ -25,6 +25,7 @@ import com.nltimer.core.tools.match.ApplyNoteDirectivesUseCase
 import com.nltimer.core.tools.match.NoteMatcher
 import com.nltimer.feature.home.match.KeywordMatchStrategy
 import com.nltimer.feature.home.model.GridCellUiState
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -403,7 +404,7 @@ class HomeViewModelTest {
             behaviorId = 42L,
             activityIconKey = null,
             activityName = null,
-            tags = emptyList(),
+            tags = persistentListOf(),
             status = BehaviorNature.COMPLETED,
             isCurrent = false,
             wasPlanned = false,

@@ -2,6 +2,7 @@ package com.nltimer.feature.home.model
 
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.BehaviorNature
+import kotlinx.collections.immutable.PersistentList
 import java.time.LocalTime
 
 /**
@@ -13,7 +14,7 @@ data class GridCellUiState(
     val behaviorId: Long?, // null 表示空白/占位单元格
     val activityIconKey: String?,
     val activityName: String?,
-    val tags: List<TagUiState>,
+    val tags: PersistentList<TagUiState>,
     val status: BehaviorNature?,
     val isCurrent: Boolean, // 是否为正在进行的活跃行为
     val wasPlanned: Boolean = false, // 是否为预先计划的行为

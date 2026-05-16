@@ -78,6 +78,7 @@ import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
 import java.time.LocalTime
+import kotlinx.collections.immutable.persistentListOf
 
 private val DragOptionsWithActive = listOf("完成", "放弃", "特记", "+自定义")
 private val DragOptionsWithoutActive = listOf("完成", "目标", "当前", "+自定义")
@@ -556,18 +557,18 @@ private fun HomeScreenPreview() {
     val sampleSection = GridDaySection(
         date = java.time.LocalDate.of(2026, 5, 13),
         label = "今天 5/13",
-        rows = listOf(
+        rows = persistentListOf(
             GridRowUiState(
                 rowId = "1",
                 startTime = LocalTime.of(9, 0),
                 isCurrentRow = true,
                 isLocked = false,
-                cells = listOf(
+                cells = persistentListOf(
                     GridCellUiState(
                         behaviorId = 1L,
                         activityIconKey = "😊",
                         activityName = "Activity 1",
-                        tags = listOf(TagUiState(1, "Tag 1", null)),
+                        tags = persistentListOf(TagUiState(1, "Tag 1", null)),
                         status = BehaviorNature.ACTIVE,
                         isCurrent = true,
                     )
@@ -577,7 +578,7 @@ private fun HomeScreenPreview() {
     )
     val sampleUiState = HomeUiState(
         isLoading = false,
-        gridSections = listOf(sampleSection),
+        gridSections = persistentListOf(sampleSection),
         selectedTimeHour = 9,
     )
 
