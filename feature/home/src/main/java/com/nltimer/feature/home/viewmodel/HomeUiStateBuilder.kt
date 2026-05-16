@@ -15,6 +15,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -80,7 +81,7 @@ class HomeUiStateBuilder {
         }
         val momentCells = (todayCells + pendingCells + nonTodayCells).toPersistentList()
 
-        val addCell = buildAddCell(todayCells, now)
+        val addCell = buildAddCell(todayCells, today, now)
         val gridSections = buildGridSections(datedCellsByDate, sortedBehaviors, today, addCell, now, gridColumns, zoneId)
         val items = buildListItems(datedCellsByDate, today)
 
@@ -219,12 +220,12 @@ class HomeUiStateBuilder {
             } else {
                 Instant.ofEpochMilli(behavior.startTime)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
             val endLocal = behavior.endTime?.let {
                 Instant.ofEpochMilli(it)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
 
             val isPlatinum = behavior.wasPlanned && behavior.status == BehaviorNature.COMPLETED
@@ -261,10 +262,11 @@ class HomeUiStateBuilder {
         }
     }
 
-    private fun buildAddCell(cells: List<GridCellUiState>, now: LocalTime): GridCellUiState {
+    private fun buildAddCell(cells: List<GridCellUiState>, today: LocalDate, now: LocalTime): GridCellUiState {
+        val nowDateTime = today.atTime(now)
         val lastEnd = cells.lastOrNull()?.endTime
-        val idleStart = lastEnd ?: now
-        val idleEnd = now
+        val idleStart = lastEnd ?: nowDateTime
+        val idleEnd = nowDateTime
 
         return GridCellUiState(
             behaviorId = null,
@@ -347,14 +349,14 @@ class HomeUiStateBuilder {
         return behaviors.any { it.status == BehaviorNature.ACTIVE }
     }
 
-    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>, zoneId: ZoneId): LocalTime? {
+    private fun calculateLastBehaviorEndTime(behaviors: List<Behavior>, zoneId: ZoneId): LocalDateTime? {
         return behaviors
             .filter { it.endTime != null }
             .maxByOrNull { it.endTime ?: 0 }
             ?.let {
                 Instant.ofEpochMilli(it.endTime!!)
                     .atZone(zoneId)
-                    .toLocalTime()
+                    .toLocalDateTime()
             }
     }
 }

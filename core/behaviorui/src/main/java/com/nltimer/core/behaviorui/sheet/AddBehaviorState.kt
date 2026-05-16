@@ -18,15 +18,14 @@ import com.nltimer.core.designsystem.theme.PathDrawMode
 import com.nltimer.core.tools.match.NoteScanResult
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 
 @Suppress("LongParameterList")
 @Composable
 internal fun rememberAddBehaviorState(
     mode: BehaviorNature,
-    initialStartTime: LocalTime?,
-    initialEndTime: LocalTime?,
+    initialStartTime: LocalDateTime?,
+    initialEndTime: LocalDateTime?,
     initialActivityId: Long?,
     initialTagIds: List<Long>,
     initialNote: String?,
@@ -55,8 +54,8 @@ internal fun rememberAddBehaviorState(
 
 internal class AddBehaviorState(
     private val mode: BehaviorNature,
-    initialStartTime: LocalTime?,
-    initialEndTime: LocalTime?,
+    initialStartTime: LocalDateTime?,
+    initialEndTime: LocalDateTime?,
     initialActivityId: Long?,
     initialTagIds: List<Long>,
     initialNote: String?,
@@ -71,12 +70,8 @@ internal class AddBehaviorState(
     private val now = sheetOpenTime
     var userAdjustedTime by mutableStateOf(false)
         private set
-    var startTime by mutableStateOf(
-        initialStartTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
-    )
-    var endTime by mutableStateOf(
-        initialEndTime?.let { now.withHour(it.hour).withMinute(it.minute).withSecond(it.second) } ?: now
-    )
+    var startTime by mutableStateOf(initialStartTime ?: now)
+    var endTime by mutableStateOf(initialEndTime ?: now)
 
     /**
      * endTime 是否随系统时钟自动推进。
@@ -104,14 +99,13 @@ internal class AddBehaviorState(
 
     val hasTimeConflict: Boolean by derivedStateOf {
         if (mode == BehaviorNature.PENDING) return@derivedStateOf false
-        val today = LocalDateTime.now().toLocalDate()
         val nowEpoch = System.currentTimeMillis()
-        val startEpoch = today.atTime(startTime.toLocalTime())
+        val startEpoch = startTime
             .atZone(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
         val endEpoch = if (mode == BehaviorNature.COMPLETED) {
-            today.atTime(endTime.toLocalTime())
+            endTime
                 .atZone(ZoneId.systemDefault())
                 .toInstant()
                 .toEpochMilli()
@@ -146,7 +140,7 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
-        return if (userAdjustedTime) {
+        return if (userAdjustedTime || mode == BehaviorNature.COMPLETED) {
             startTime.withSecond(0).withNano(0)
         } else {
             val sourceSeconds = when (strategy) {

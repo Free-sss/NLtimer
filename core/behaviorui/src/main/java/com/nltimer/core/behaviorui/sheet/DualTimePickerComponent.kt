@@ -104,11 +104,9 @@ fun DualTimePicker(
 
     val leftDateTime = remember(leftSelectedDate, leftSelectedHour, leftSelectedMinute) {
         leftSelectedDate.date.atTime(leftSelectedHour.toInt(), leftSelectedMinute.toInt())
-            .withSecond(startProperty.second)
     }
     val rightDateTime = remember(rightSelectedDate, rightSelectedHour, rightSelectedMinute) {
         rightSelectedDate.date.atTime(rightSelectedHour.toInt(), rightSelectedMinute.toInt())
-            .withSecond(endProperty.second)
     }
 
     LaunchedEffect(leftDateTime, rightDateTime) {
@@ -257,7 +255,6 @@ fun SingleTimePicker(
 
     val currentDateTime = remember(selectedDate, selectedHour, selectedMinute) {
         selectedDate.date.atTime(selectedHour.toInt(), selectedMinute.toInt())
-            .withSecond(startProperty.second)
     }
 
     LaunchedEffect(currentDateTime) {

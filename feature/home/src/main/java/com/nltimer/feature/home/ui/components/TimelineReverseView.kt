@@ -63,7 +63,7 @@ import com.nltimer.feature.home.model.HomeListItem
 import com.nltimer.feature.home.model.TagUiState
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -71,7 +71,7 @@ import kotlinx.coroutines.flow.filter
 @Composable
 fun TimelineReverseView(
     items: List<HomeListItem>,
-    onAddClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onAddClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,
@@ -188,7 +188,7 @@ fun TimelineReverseView(
 private sealed class TimelineDisplayItem(val key: String) {
     class Divider(val date: LocalDate, val label: String) : TimelineDisplayItem("divider-$date")
     class BehaviorRow(val cell: GridCellUiState) : TimelineDisplayItem("behavior-${cell.behaviorId}")
-    class Idle(val start: LocalTime, val end: LocalTime) : TimelineDisplayItem("idle-$start-$end")
+    class Idle(val start: LocalDateTime, val end: LocalDateTime) : TimelineDisplayItem("idle-$start-$end")
 }
 
 private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<TimelineDisplayItem> {
@@ -203,7 +203,7 @@ private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<Timeline
 
     val result = mutableListOf<TimelineDisplayItem>()
     buckets.asReversed().forEach { bucket ->
-        val sortedAsc = bucket.cells.sortedBy { it.startTime?.toSecondOfDay() ?: 0 }
+        val sortedAsc = bucket.cells.sortedWith(compareBy(nullsFirst()) { it.startTime })
         if (sortedAsc.isEmpty()) return@forEach
         result.add(TimelineDisplayItem.Divider(bucket.divider.date, bucket.divider.label))
         for (i in sortedAsc.indices.reversed()) {
@@ -250,8 +250,8 @@ private fun LoadingMoreIndicator() {
 
 @Composable
 private fun TimelineIdleItem(
-    start: LocalTime,
-    end: LocalTime,
+    start: LocalDateTime,
+    end: LocalDateTime,
     timeFormatter: DateTimeFormatter,
     onAddClick: () -> Unit
 ) {

@@ -76,8 +76,8 @@ internal fun AddBehaviorSheetContent(
     activityGroups: List<ActivityGroup>,
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
-    initialStartTime: LocalTime? = null,
-    initialEndTime: LocalTime? = null,
+    initialStartTime: LocalDateTime? = null,
+    initialEndTime: LocalDateTime? = null,
     initialActivityId: Long? = null,
     initialTagIds: List<Long> = emptyList(),
     initialNote: String? = null,
@@ -86,7 +86,7 @@ internal fun AddBehaviorSheetContent(
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
-    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onConfirm: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismiss: () -> Unit,
     onActivityGroupsReordered: (List<Long>) -> Unit = {},
     onTagCategoriesReordered: (List<String>) -> Unit = {},
@@ -191,7 +191,7 @@ private fun SheetMainContent(
     allTags: List<Tag>,
     dialogConfig: DialogGridConfig,
     emphasisColor: Color,
-    onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
+    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
     onProcessNote: OnProcessNote,
     onMatchNote: (String) -> NoteScanResult,
@@ -412,7 +412,7 @@ private fun ConfirmButtonRow(
     state: AddBehaviorState,
     mode: BehaviorNature,
     secondsStrategy: SecondsStrategy,
-    onConfirm: (Long, List<Long>, LocalTime, LocalTime?, BehaviorNature, String?) -> Unit,
+    onConfirm: (Long, List<Long>, LocalDateTime, LocalDateTime?, BehaviorNature, String?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -442,7 +442,7 @@ private fun ConfirmButtonRow(
         Button(
             onClick = {
                 if (mode == BehaviorNature.COMPLETED
-                    && !state.startTime.toLocalTime().isBefore(state.endTime.toLocalTime())
+                    && !state.startTime.isBefore(state.endTime)
                 ) {
                     Toast.makeText(context, "开始时间必须早于结束时间", Toast.LENGTH_SHORT).show()
                     return@Button
@@ -450,14 +450,14 @@ private fun ConfirmButtonRow(
                 val confirmTime = LocalDateTime.now()
                 val resolvedStartTime = state.resolveStartTime(secondsStrategy, confirmTime)
                 val resolvedEndTime = if (mode == BehaviorNature.COMPLETED) {
-                    if (state.userAdjustedTime) state.endTime.withSecond(0).withNano(0) else state.endTime.withSecond(confirmTime.second).withNano(0)
+                    state.endTime.withSecond(0).withNano(0)
                 } else null
                 state.selectedActivityId?.let { activityId ->
                     onConfirm(
                         activityId,
                         state.selectedTagIds.toList(),
-                        resolvedStartTime.toLocalTime(),
-                        resolvedEndTime?.toLocalTime(),
+                        resolvedStartTime,
+                        resolvedEndTime,
                         mode,
                         state.note.ifBlank { null }
                     )

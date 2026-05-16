@@ -34,7 +34,7 @@ import com.nltimer.core.designsystem.theme.TimeLabelConfig
 import com.nltimer.feature.home.model.GridCellUiState
 import com.nltimer.feature.home.model.GridDaySection
 import com.nltimer.feature.home.model.GridRowUiState
-import java.time.LocalTime
+import java.time.LocalDateTime
 import java.util.TreeMap
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.filter
 fun TimeAxisGrid(
     modifier: Modifier = Modifier,
     sections: List<GridDaySection>,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit = {},
     onLoadMore: () -> Unit = {},
     isLoadingMore: Boolean = false,

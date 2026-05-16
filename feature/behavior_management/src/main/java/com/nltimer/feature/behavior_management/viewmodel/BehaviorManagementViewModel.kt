@@ -14,8 +14,6 @@ import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
-import com.nltimer.core.data.util.atTimeToEpochMillis
-import com.nltimer.core.data.util.epochToLocalDate
 import com.nltimer.core.data.util.startOfDayMillis
 import com.nltimer.feature.behavior_management.export.BehaviorExportData
 import com.nltimer.feature.behavior_management.export.JsonExporter
@@ -42,7 +40,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -279,31 +276,19 @@ class BehaviorManagementViewModel @Inject constructor(
         id: Long,
         activityId: Long,
         tagIds: List<Long>,
-        startTime: LocalTime,
-        endTime: LocalTime?,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime?,
         nature: BehaviorNature,
         note: String?,
     ) {
         viewModelScope.launch {
-            val existingBehavior = _uiState.value.behaviors
-                .firstOrNull { it.behavior.id == id }
-                ?.behavior
-                ?: behaviorRepository.getBehaviorWithDetails(id)?.behavior
-            val baseDate = existingBehavior
-                ?.startTime
-                ?.takeIf { it > 0L }
-                ?.epochToLocalDate()
-                ?: _uiState.value.rangeStartDate.normalizedFor(_uiState.value.timeRange)
             val startEpoch = if (nature == BehaviorNature.PENDING) {
                 0L
             } else {
-                baseDate.atTimeToEpochMillis(startTime)
+                startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             }
             val endEpoch = if (nature == BehaviorNature.COMPLETED) {
-                endTime?.let {
-                    val endDate = if (it.isBefore(startTime)) baseDate.plusDays(1) else baseDate
-                    endDate.atTimeToEpochMillis(it)
-                } ?: startEpoch
+                endTime?.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli() ?: startEpoch
             } else {
                 null
             }

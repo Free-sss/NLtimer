@@ -1,5 +1,6 @@
 package com.nltimer.core.data.repository.impl
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.nltimer.core.data.database.NLtimerDatabase
 import com.nltimer.core.data.database.dao.ActivityDao
@@ -28,6 +29,10 @@ class DataExportImportRepositoryImpl @Inject constructor(
     private val behaviorDao: BehaviorDao,
     private val database: NLtimerDatabase,
 ) : DataExportImportRepository {
+
+    companion object {
+        private const val TAG = "DB_ExportImport"
+    }
 
     override suspend fun exportAll(): ExportData {
         val groups = activityGroupDao.getAllSync()
@@ -141,6 +146,8 @@ class DataExportImportRepositoryImpl @Inject constructor(
         val tags = data.tags ?: emptyList()
         val activities = data.activities ?: emptyList()
 
+        Log.d(TAG, "✅ importAllSmart start groups=${groups.size} tags=${tags.size} activities=${activities.size}")
+
         val groupNameToId = mutableMapOf<String, Long>()
         for (group in groups) {
             val existing = activityGroupDao.getByName(group.name)
@@ -186,6 +193,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
             behaviorDao.insertActivityTagBindings(activityTagBindings)
         }
 
+        Log.d(TAG, "✅ importAllSmart done")
         return ImportResult.Success(
             activityGroupsImported = groups.size,
             activitiesImported = activities.size,
@@ -202,6 +210,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
             tagDao.deleteAll()
             activityDao.deleteAll()
             activityGroupDao.deleteAll()
+            Log.d(TAG, "✅ importAllOverwrite cleared all tables")
 
             val importedGroups = data.activityGroups ?: emptyList()
             val groupNameToId = mutableMapOf<String, Long>()
@@ -209,6 +218,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 val id = activityGroupDao.insert(group.toEntity())
                 groupNameToId[group.name] = id
             }
+            Log.d(TAG, "✅ importAllOverwrite groups=${importedGroups.size}")
 
             val importedTags = data.tags ?: emptyList()
             val tagNameToId = mutableMapOf<String, Long>()
@@ -216,6 +226,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 val id = tagDao.insert(tag.toEntity())
                 tagNameToId[tag.name] = id
             }
+            Log.d(TAG, "✅ importAllOverwrite tags=${importedTags.size}")
 
             val importedActivities = data.activities ?: emptyList()
             val activityTagBindings = mutableListOf<ActivityTagBindingEntity>()
@@ -230,8 +241,10 @@ class DataExportImportRepositoryImpl @Inject constructor(
             if (activityTagBindings.isNotEmpty()) {
                 behaviorDao.insertActivityTagBindings(activityTagBindings)
             }
+            Log.d(TAG, "✅ importAllOverwrite activities=${importedActivities.size}")
         }
 
+        Log.d(TAG, "✅ importAllOverwrite done")
         return ImportResult.Success(
             activityGroupsImported = data.activityGroups?.size ?: 0,
             activitiesImported = data.activities?.size ?: 0,
@@ -241,6 +254,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
     }
 
     private suspend fun importActivitiesSmart(activities: List<ExportedActivity>): ImportResult {
+        Log.d(TAG, "✅ importActivitiesSmart start count=${activities.size}")
         val groups = activityGroupDao.getAllSync()
         val groupNameToId = groups.associate { it.name to it.id }
 
@@ -267,10 +281,12 @@ class DataExportImportRepositoryImpl @Inject constructor(
             behaviorDao.insertActivityTagBindings(activityTagBindings)
         }
 
+        Log.d(TAG, "✅ importActivitiesSmart done imported=$imported")
         return ImportResult.Success(activitiesImported = imported)
     }
 
     private suspend fun importActivitiesOverwrite(activities: List<ExportedActivity>): ImportResult {
+        Log.d(TAG, "✅ importActivitiesOverwrite start count=${activities.size}")
         database.withTransaction {
             behaviorDao.deleteAllActivityTagBindings()
             behaviorDao.deleteAll()
@@ -295,10 +311,12 @@ class DataExportImportRepositoryImpl @Inject constructor(
             }
         }
 
+        Log.d(TAG, "✅ importActivitiesOverwrite done")
         return ImportResult.Success(activitiesImported = activities.size)
     }
 
     private suspend fun importTagsSmart(tags: List<ExportedTag>): ImportResult {
+        Log.d(TAG, "✅ importTagsSmart start count=${tags.size}")
         var imported = 0
         for (tag in tags) {
             val existing = tagDao.getByName(tag.name)
@@ -310,10 +328,12 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 imported++
             }
         }
+        Log.d(TAG, "✅ importTagsSmart done imported=$imported")
         return ImportResult.Success(tagsImported = imported)
     }
 
     private suspend fun importTagsOverwrite(tags: List<ExportedTag>): ImportResult {
+        Log.d(TAG, "✅ importTagsOverwrite start count=${tags.size}")
         database.withTransaction {
             behaviorDao.deleteAllTagCrossRefs()
             behaviorDao.deleteAllActivityTagBindings()
@@ -323,6 +343,7 @@ class DataExportImportRepositoryImpl @Inject constructor(
                 tagDao.insert(tag.toEntity())
             }
         }
+        Log.d(TAG, "✅ importTagsOverwrite done")
         return ImportResult.Success(tagsImported = tags.size)
     }
 

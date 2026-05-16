@@ -13,6 +13,7 @@ import com.nltimer.core.data.repository.ActivityManagementRepository
 import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import android.util.Log
 import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +35,8 @@ class ActivityManagementRepositoryImpl @Inject constructor(
 ) : ActivityManagementRepository {
 
     companion object {
-        // 首次使用时创建的预设活动列表
+        private const val TAG = "DB_ActivityDao"
+
         val PRESET_ACTIVITIES = listOf(
             Activity(name = "番剧视频", iconKey = "📺", isPreset = true),
             Activity(name = "娱乐视频", iconKey = "🎬", isPreset = true),
@@ -69,11 +71,16 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             )
         }
 
-    override suspend fun addActivity(activity: Activity): Long =
-        activityDao.insert(activity.toEntity())
+    override suspend fun addActivity(activity: Activity): Long {
+        val id = activityDao.insert(activity.toEntity())
+        Log.d(TAG, "✅ addActivity id=$id name=${activity.name}")
+        return id
+    }
 
-    override suspend fun updateActivity(activity: Activity) =
+    override suspend fun updateActivity(activity: Activity) {
         activityDao.update(activity.toEntity())
+        Log.d(TAG, "✅ updateActivity id=${activity.id} name=${activity.name}")
+    }
 
     override suspend fun deleteActivity(id: Long) {
         database.withTransaction {
@@ -81,22 +88,28 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             behaviorDao.deleteByActivityId(id)
             activityDao.deleteActivityTagBindingsForActivity(id)
             activityDao.deleteById(id)
+            Log.d(TAG, "✅ deleteActivity id=$id")
         }
     }
 
-    override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) =
+    override suspend fun moveActivityToGroup(activityId: Long, groupId: Long?) {
         activityDao.moveToGroup(activityId, groupId)
+        Log.d(TAG, "✅ moveActivityToGroup activityId=$activityId groupId=$groupId")
+    }
 
     override suspend fun addGroup(name: String): Long {
         val maxOrder = groupDao.getMaxSortOrder()
-        return groupDao.insert(
+        val id = groupDao.insert(
             ActivityGroupEntity(name = name, sortOrder = (maxOrder ?: -1) + 1)
         )
+        Log.d(TAG, "✅ addGroup id=$id name=$name")
+        return id
     }
 
     override suspend fun renameGroup(id: Long, newName: String) {
         val group = groupDao.getById(id) ?: return
         groupDao.update(group.copy(name = newName))
+        Log.d(TAG, "✅ renameGroup id=$id newName=$newName")
     }
 
     override suspend fun deleteGroup(id: Long) {
@@ -104,6 +117,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             groupDao.ungroupAllActivities(id)
             val group = groupDao.getById(id) ?: return@withTransaction
             groupDao.delete(group)
+            Log.d(TAG, "✅ deleteGroup id=$id name=${group.name}")
         }
     }
 
@@ -112,6 +126,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
             orderedIds.forEachIndexed { index, id ->
                 groupDao.updateSortOrder(id, index)
             }
+            Log.d(TAG, "✅ reorderGroups orderedIds=$orderedIds")
         }
     }
 
@@ -119,6 +134,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
         val existingPresets = activityDao.getAllPresetsSync()
         if (existingPresets.isEmpty()) {
             activityDao.insertAll(PRESET_ACTIVITIES.map { it.toEntity() })
+            Log.d(TAG, "✅ initializePresets count=${PRESET_ACTIVITIES.size}")
         }
     }
 
@@ -135,6 +151,7 @@ class ActivityManagementRepositoryImpl @Inject constructor(
                     }
                 )
             }
+            Log.d(TAG, "✅ setActivityTagBindings activityId=$activityId tagIds=$tagIds")
         }
     }
 

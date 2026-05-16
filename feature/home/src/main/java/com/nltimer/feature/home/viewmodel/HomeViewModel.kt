@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.inject.Inject
 
@@ -244,7 +245,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED, idleStart: LocalTime? = null, idleEnd: LocalTime? = null) {
+    fun showAddSheet(mode: AddSheetMode = AddSheetMode.COMPLETED, idleStart: LocalDateTime? = null, idleEnd: LocalDateTime? = null) {
         _uiState.update { it.copy(addSheetMode = mode, idleStartTime = idleStart, idleEndTime = idleEnd) }
     }
 

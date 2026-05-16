@@ -3,11 +3,13 @@ package com.nltimer.feature.home.model
 import androidx.compose.runtime.Immutable
 import com.nltimer.core.data.model.BehaviorNature
 import kotlinx.collections.immutable.PersistentList
-import java.time.LocalTime
+import java.time.LocalDateTime
 
 /**
  * 网格视图中单个单元格的 UI 状态。
  * 表示一次行为记录的显示信息，或空白占位单元格。
+ *
+ * startTime / endTime 携带完整日期信息（LocalDateTime），用于跨天回填补记弹窗时保留正确日期。
  */
 @Immutable
 data class GridCellUiState(
@@ -22,8 +24,8 @@ data class GridCellUiState(
     val estimatedDuration: Long? = null,
     val actualDuration: Long? = null,
     val durationMs: Long? = null,
-    val startTime: LocalTime? = null,
-    val endTime: LocalTime? = null,
+    val startTime: LocalDateTime? = null,
+    val endTime: LocalDateTime? = null,
     val startEpochMs: Long? = null,
     val endEpochMs: Long? = null,
     val isAddPlaceholder: Boolean = false,

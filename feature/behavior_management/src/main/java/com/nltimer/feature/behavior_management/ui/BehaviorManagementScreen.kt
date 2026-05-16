@@ -35,13 +35,12 @@ import com.nltimer.core.designsystem.component.EmptyStateView
 import com.nltimer.core.data.model.BehaviorNature
 import com.nltimer.core.data.model.BehaviorWithDetails
 import com.nltimer.core.data.util.epochToLocalDate
-import com.nltimer.core.data.util.epochToLocalTime
+import com.nltimer.core.data.util.epochToLocalDateTime
 import com.nltimer.core.data.util.formatDurationCompactHm
 import com.nltimer.feature.behavior_management.model.DuplicateHandling
 import com.nltimer.feature.behavior_management.model.ViewMode
 import com.nltimer.feature.behavior_management.viewmodel.BehaviorManagementViewModel
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -230,8 +229,8 @@ fun BehaviorManagementScreen(
     }
 
     editBehavior?.let { bwd ->
-        val initialStartTime = bwd.behavior.startTime.epochToLocalTime()
-        val initialEndTime = bwd.behavior.endTime?.epochToLocalTime()
+        val initialStartTime = bwd.behavior.startTime.epochToLocalDateTime()
+        val initialEndTime = bwd.behavior.endTime?.epochToLocalDateTime()
 
         AddBehaviorSheet(
             activities = activities,

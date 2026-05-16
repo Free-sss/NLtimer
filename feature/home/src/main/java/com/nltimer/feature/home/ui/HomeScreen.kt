@@ -77,6 +77,7 @@ import com.nltimer.feature.home.ui.components.TimeAxisGrid
 import com.nltimer.feature.home.ui.components.TimeLabelSettingsDialog
 import com.nltimer.feature.home.ui.components.TimeSideBar
 import com.nltimer.feature.home.ui.components.TimelineReverseView
+import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.collections.immutable.persistentListOf
 
@@ -94,10 +95,10 @@ fun HomeScreen(
     activityLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagLastUsedMap: Map<Long, Long?> = emptyMap(),
     tagCategoryOrder: List<String> = emptyList(),
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onShowAddSheet: (AddSheetMode) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
-    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalTime, endTime: LocalTime?, nature: BehaviorNature, note: String?) -> Unit,
+    onAddBehavior: (activityId: Long, tagIds: List<Long>, startTime: LocalDateTime, endTime: LocalDateTime?, nature: BehaviorNature, note: String?) -> Unit,
     onDismissSheet: () -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onToggleIdleMode: () -> Unit,
@@ -247,7 +248,7 @@ private fun HomeLayoutContent(
     uiState: HomeUiState,
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
@@ -419,7 +420,7 @@ private fun HomeLayoutContent(
 @Composable
 private fun GridContent(
     uiState: HomeUiState,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onHourClick: (Int) -> Unit,
     onLoadMore: () -> Unit,
@@ -467,7 +468,7 @@ private fun GridContent(
 @Composable
 private fun TimelineReverseContent(
     uiState: HomeUiState,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onLoadMore: () -> Unit,
     timelineStyle: TimelineLayoutStyle = TimelineLayoutStyle(),
@@ -513,7 +514,7 @@ private fun MomentContent(
     uiState: HomeUiState,
     activeCell: GridCellUiState?,
     nextPendingCell: GridCellUiState?,
-    onEmptyCellClick: (idleStart: LocalTime?, idleEnd: LocalTime?) -> Unit,
+    onEmptyCellClick: (idleStart: LocalDateTime?, idleEnd: LocalDateTime?) -> Unit,
     onCellLongClick: (GridCellUiState) -> Unit,
     onCompleteBehavior: (Long) -> Unit,
     onStartNextPending: () -> Unit,

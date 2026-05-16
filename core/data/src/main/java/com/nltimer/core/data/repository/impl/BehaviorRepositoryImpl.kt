@@ -18,6 +18,7 @@ import com.nltimer.core.data.util.mapList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
+import android.util.Log
 import androidx.room.withTransaction
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -38,6 +39,10 @@ class BehaviorRepositoryImpl @Inject constructor(
     private val clockService: ClockService,
     private val database: NLtimerDatabase,
 ) : BehaviorRepository {
+
+    companion object {
+        private const val TAG = "DB_BehaviorDao"
+    }
 
     override fun getByDayRange(dayStart: Long, dayEnd: Long): Flow<List<Behavior>> =
         behaviorDao.getByDayRange(dayStart, dayEnd).mapList { Behavior.fromEntity(it) }
@@ -85,6 +90,7 @@ class BehaviorRepositoryImpl @Inject constructor(
     override suspend fun insert(behavior: Behavior, tagIds: List<Long>): Long {
         return database.withTransaction {
             val id = behaviorDao.insert(behavior.toEntity())
+            Log.d(TAG, "✅ insert behavior id=$id activityId=${behavior.activityId} status=${behavior.status}")
             if (tagIds.isNotEmpty()) {
                 behaviorDao.insertTagCrossRefs(
                     tagIds.map { tagId ->
@@ -94,37 +100,54 @@ class BehaviorRepositoryImpl @Inject constructor(
                         )
                     }
                 )
+                Log.d(TAG, "✅ insert tagCrossRefs behaviorId=$id tagIds=$tagIds")
             }
             id
         }
     }
 
-    override suspend fun setEndTime(id: Long, endTime: Long) =
+    override suspend fun setEndTime(id: Long, endTime: Long) {
         behaviorDao.setEndTime(id, endTime)
+        Log.d(TAG, "✅ setEndTime id=$id endTime=$endTime")
+    }
 
-    override suspend fun setStatus(id: Long, status: String) =
+    override suspend fun setStatus(id: Long, status: String) {
         behaviorDao.setStatus(id, status)
+        Log.d(TAG, "✅ setStatus id=$id status=$status")
+    }
 
-    override suspend fun setStartTime(id: Long, startTime: Long) =
+    override suspend fun setStartTime(id: Long, startTime: Long) {
         behaviorDao.setStartTime(id, startTime)
+        Log.d(TAG, "✅ setStartTime id=$id startTime=$startTime")
+    }
 
-    override suspend fun setActualDuration(id: Long, duration: Long) =
+    override suspend fun setActualDuration(id: Long, duration: Long) {
         behaviorDao.setActualDuration(id, duration)
+        Log.d(TAG, "✅ setActualDuration id=$id duration=$duration")
+    }
 
-    override suspend fun setAchievementLevel(id: Long, level: Int) =
+    override suspend fun setAchievementLevel(id: Long, level: Int) {
         behaviorDao.setAchievementLevel(id, level)
+        Log.d(TAG, "✅ setAchievementLevel id=$id level=$level")
+    }
 
-    override suspend fun setSequence(id: Long, sequence: Int) =
+    override suspend fun setSequence(id: Long, sequence: Int) {
         behaviorDao.setSequence(id, sequence)
+        Log.d(TAG, "✅ setSequence id=$id sequence=$sequence")
+    }
 
-    override suspend fun setNote(id: Long, note: String?) =
+    override suspend fun setNote(id: Long, note: String?) {
         behaviorDao.setNote(id, note)
+        Log.d(TAG, "✅ setNote id=$id note=$note")
+    }
 
-    override suspend fun endCurrentBehavior(endTime: Long) =
+    override suspend fun endCurrentBehavior(endTime: Long) {
         behaviorDao.endCurrentBehavior(endTime)
+        Log.d(TAG, "✅ endCurrentBehavior endTime=$endTime")
+    }
 
     override suspend fun completeCurrentAndStartNext(currentId: Long, idleMode: Boolean): Behavior? {
-        return database.withTransaction {
+        return         database.withTransaction {
             val now = clockService.currentTimeMillis()
             val currentEntity = behaviorDao.getById(currentId) ?: return@withTransaction null
             val clampedEndTime = now.coerceAtLeast(currentEntity.startTime)
@@ -144,6 +167,7 @@ class BehaviorRepositoryImpl @Inject constructor(
 
             behaviorDao.setEndTime(currentId, clampedEndTime)
             behaviorDao.setStatus(currentId, BehaviorNature.COMPLETED.key)
+            Log.d(TAG, "✅ completeCurrent id=$currentId endTime=$clampedEndTime idleMode=$idleMode")
 
             if (idleMode) return@withTransaction null
 
@@ -151,6 +175,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             val nextNow = clockService.currentTimeMillis()
             behaviorDao.setStatus(nextPending.id, BehaviorNature.ACTIVE.key)
             behaviorDao.setStartTime(nextPending.id, nextNow)
+            Log.d(TAG, "✅ startNext currentId=$currentId nextId=${nextPending.id}")
             nextPending.let { Behavior.fromEntity(it) }
         }
     }
@@ -159,9 +184,13 @@ class BehaviorRepositoryImpl @Inject constructor(
         orderedIds.forEachIndexed { index, id ->
             behaviorDao.setSequence(id, index)
         }
+        Log.d(TAG, "✅ reorderGoals orderedIds=$orderedIds")
     }
 
-    override suspend fun delete(id: Long) = behaviorDao.delete(id)
+    override suspend fun delete(id: Long) {
+        behaviorDao.delete(id)
+        Log.d(TAG, "✅ delete id=$id")
+    }
 
     override suspend fun settleDay(dayStart: Long, dayEnd: Long) {
         // TODO: Implement day settlement
@@ -188,6 +217,7 @@ class BehaviorRepositoryImpl @Inject constructor(
             } else {
                 behaviorDao.setActualDuration(id, 0L)
             }
+            Log.d(TAG, "✅ updateBehavior id=$id activityId=$activityId status=$status")
         }
     }
 
@@ -195,6 +225,7 @@ class BehaviorRepositoryImpl @Inject constructor(
         database.withTransaction {
             behaviorDao.deleteTagsForBehavior(behaviorId)
             behaviorDao.insertTagCrossRefs(tagIds.map { BehaviorTagCrossRefEntity(behaviorId = behaviorId, tagId = it) })
+            Log.d(TAG, "✅ updateTagsForBehavior behaviorId=$behaviorId tagIds=$tagIds")
         }
     }
 
