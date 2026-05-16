@@ -15,6 +15,7 @@ import com.nltimer.core.data.repository.ActivityRepository
 import com.nltimer.core.data.repository.BehaviorRepository
 import com.nltimer.core.data.repository.TagRepository
 import com.nltimer.core.data.util.atTimeToEpochMillis
+import com.nltimer.core.data.util.epochToLocalDate
 import com.nltimer.core.data.util.startOfDayMillis
 import com.nltimer.feature.behavior_management.export.BehaviorExportData
 import com.nltimer.feature.behavior_management.export.JsonExporter
@@ -41,6 +42,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -88,9 +90,8 @@ class BehaviorManagementViewModel @Inject constructor(
                 .map { Pair(it.rangeStartDate, it.timeRange) }
                 .distinctUntilChanged()
                 .flatMapLatest { (date, preset) ->
-                    val startEpoch = date.startOfDayMillis()
-                    val endEpoch = startEpoch + preset.hours * 3600_000L
-                    behaviorRepository.getBehaviorsWithDetailsByTimeRange(startEpoch, endEpoch)
+                    val range = date.epochRangeFor(preset)
+                    behaviorRepository.getBehaviorsWithDetailsOverlappingTimeRange(range.startEpoch, range.endEpoch)
                         .combine(activityGroups) { behaviors, groups ->
                             Pair(behaviors, groups)
                         }
@@ -145,24 +146,33 @@ class BehaviorManagementViewModel @Inject constructor(
     }
 
     fun setTimeRange(preset: TimeRangePreset) {
-        _uiState.update { it.copy(timeRange = preset) }
+        _uiState.update {
+            it.copy(
+                timeRange = preset,
+                rangeStartDate = it.rangeStartDate.normalizedFor(preset),
+            )
+        }
     }
 
     fun setRangeStartDate(date: LocalDate) {
-        _uiState.update { it.copy(rangeStartDate = date) }
+        _uiState.update { it.copy(rangeStartDate = date.normalizedFor(it.timeRange)) }
     }
 
     fun navigateRange(direction: Int) {
         _uiState.update { state ->
-            val daysToAdd = when (state.timeRange) {
-                TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS -> 1L
-                TimeRangePreset.ONE_DAY -> 1L
-                TimeRangePreset.THREE_DAYS -> 3L
-                TimeRangePreset.SEVEN_DAYS -> 7L
-                TimeRangePreset.ONE_MONTH -> 30L
-                TimeRangePreset.ONE_YEAR -> 365L
+            val newDate = when (state.timeRange) {
+                TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS, TimeRangePreset.ONE_DAY ->
+                    state.rangeStartDate.plusDays(direction.toLong())
+                TimeRangePreset.THREE_DAYS ->
+                    state.rangeStartDate.plusDays(3L * direction)
+                TimeRangePreset.SEVEN_DAYS ->
+                    state.rangeStartDate.plusWeeks(direction.toLong())
+                TimeRangePreset.ONE_MONTH ->
+                    state.rangeStartDate.plusMonths(direction.toLong())
+                TimeRangePreset.ONE_YEAR ->
+                    state.rangeStartDate.plusYears(direction.toLong())
             }
-            state.copy(rangeStartDate = state.rangeStartDate.plusDays(daysToAdd * direction))
+            state.copy(rangeStartDate = newDate.normalizedFor(state.timeRange))
         }
     }
 
@@ -260,9 +270,28 @@ class BehaviorManagementViewModel @Inject constructor(
         note: String?,
     ) {
         viewModelScope.launch {
-            val today = LocalDate.now()
-            val startEpoch = today.atTimeToEpochMillis(startTime)
-            val endEpoch = endTime?.let { today.atTimeToEpochMillis(it) }
+            val existingBehavior = _uiState.value.behaviors
+                .firstOrNull { it.behavior.id == id }
+                ?.behavior
+                ?: behaviorRepository.getBehaviorWithDetails(id)?.behavior
+            val baseDate = existingBehavior
+                ?.startTime
+                ?.takeIf { it > 0L }
+                ?.epochToLocalDate()
+                ?: _uiState.value.rangeStartDate.normalizedFor(_uiState.value.timeRange)
+            val startEpoch = if (nature == BehaviorNature.PENDING) {
+                0L
+            } else {
+                baseDate.atTimeToEpochMillis(startTime)
+            }
+            val endEpoch = if (nature == BehaviorNature.COMPLETED) {
+                endTime?.let {
+                    val endDate = if (it.isBefore(startTime)) baseDate.plusDays(1) else baseDate
+                    endDate.atTimeToEpochMillis(it)
+                } ?: startEpoch
+            } else {
+                null
+            }
             behaviorRepository.updateBehavior(id, activityId, startEpoch, endEpoch, nature.key, note)
             behaviorRepository.updateTagsForBehavior(id, tagIds)
             finishEditBehavior()
@@ -351,5 +380,34 @@ class BehaviorManagementViewModel @Inject constructor(
         val eEnd = existingEnd ?: Long.MAX_VALUE
         val nEnd = newEnd ?: Long.MAX_VALUE
         return newStart < eEnd && existingStart < nEnd
+    }
+
+    private data class EpochRange(val startEpoch: Long, val endEpoch: Long)
+
+    private fun LocalDate.normalizedFor(preset: TimeRangePreset): LocalDate =
+        when (preset) {
+            TimeRangePreset.ONE_MONTH -> withDayOfMonth(1)
+            TimeRangePreset.ONE_YEAR -> withDayOfYear(1)
+            else -> this
+        }
+
+    private fun LocalDate.epochRangeFor(preset: TimeRangePreset): EpochRange {
+        val startDate = normalizedFor(preset)
+        val endEpoch = when (preset) {
+            TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS ->
+                startDate.atStartOfDay(ZoneId.systemDefault())
+                    .plusHours(preset.hours)
+                    .toInstant()
+                    .toEpochMilli()
+            TimeRangePreset.ONE_DAY -> startDate.plusDays(1).startOfDayMillis()
+            TimeRangePreset.THREE_DAYS -> startDate.plusDays(3).startOfDayMillis()
+            TimeRangePreset.SEVEN_DAYS -> startDate.plusWeeks(1).startOfDayMillis()
+            TimeRangePreset.ONE_MONTH -> startDate.plusMonths(1).startOfDayMillis()
+            TimeRangePreset.ONE_YEAR -> startDate.plusYears(1).startOfDayMillis()
+        }
+        return EpochRange(
+            startEpoch = startDate.startOfDayMillis(),
+            endEpoch = endEpoch,
+        )
     }
 }

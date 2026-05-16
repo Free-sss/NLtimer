@@ -229,6 +229,11 @@ class BehaviorRepositoryImpl @Inject constructor(
             assembleBehaviorWithDetailsList(entities)
         }.catch { emit(emptyList()) }
 
+    override fun getBehaviorsWithDetailsOverlappingTimeRange(startTime: Long, endTime: Long): Flow<List<BehaviorWithDetails>> =
+        behaviorDao.getByOverlappingTimeRange(startTime, endTime).map { entities ->
+            assembleBehaviorWithDetailsList(entities)
+        }.catch { emit(emptyList()) }
+
     override suspend fun getBehaviorsWithDetailsByTimeRangeSync(startTime: Long, endTime: Long): List<BehaviorWithDetails> {
         val entities = behaviorDao.getByTimeRangeSync(startTime, endTime)
         return assembleBehaviorWithDetailsList(entities)
