@@ -376,7 +376,7 @@ private fun HomeLayoutContent(
                 timeLabelConfig = timeLabelConfig,
                 onTimeLabelSettingsClick = onTimeLabelSettingsClick,
                 gridStyle = homeLayoutConfig.grid,
-                footer = focusCard,
+                header = focusCard,
                 modifier = Modifier.fillMaxSize(),
             )
             HomeLayout.TIMELINE_REVERSE -> TimelineReverseContent(
@@ -426,7 +426,7 @@ private fun GridContent(
     timeLabelConfig: TimeLabelConfig,
     onTimeLabelSettingsClick: () -> Unit,
     gridStyle: GridLayoutStyle = GridLayoutStyle(),
-    footer: @Composable (() -> Unit)? = null,
+    header: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val showSideBar = LocalTheme.current.showTimeSideBar
@@ -443,13 +443,13 @@ private fun GridContent(
             timeLabelConfig = timeLabelConfig,
             onTimeLabelSettingsClick = onTimeLabelSettingsClick,
             gridStyle = gridStyle,
-            footer = footer?.let { { it() } },
+            header = header?.let { { it() } },
             modifier = Modifier.weight(1f),
         )
         if (showSideBar) {
             val activeHours by remember {
                 derivedStateOf {
-                    uiState.gridSections.lastOrNull()?.rows.orEmpty()
+                    uiState.gridSections.firstOrNull()?.rows.orEmpty()
                         .filter { it.cells.any { cell -> cell.behaviorId != null } || it.isCurrentRow }
                         .map { it.startTime.hour }
                         .toSet()

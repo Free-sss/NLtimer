@@ -129,13 +129,13 @@ class HomeUiStateBuilder {
         zoneId: ZoneId,
     ): List<GridDaySection> {
         val sections = mutableListOf<GridDaySection>()
-        datedCellsByDate.keys.sorted().forEach { date ->
-            val cells = datedCellsByDate[date]!!.sortedBy { it.startEpochMs ?: Long.MAX_VALUE }
+        datedCellsByDate.keys.sortedDescending().forEach { date ->
+            val cells = datedCellsByDate[date]!!.sortedByDescending { it.startEpochMs ?: Long.MAX_VALUE }
             val cellsForSection = if (date == today) cells + todayAddCell else cells
             val dateBehaviors = sortedBehaviors.filter { b ->
                 if (b.status == BehaviorNature.PENDING) date == today
                 else b.startTime > 0L && Instant.ofEpochMilli(b.startTime).atZone(zoneId).toLocalDate() == date
-            }.sortedBy { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
+            }.sortedByDescending { if (it.status == BehaviorNature.PENDING) Long.MAX_VALUE else it.startTime }
 
             val isTodaySection = date == today
             val rowsTime = if (isTodaySection) now else dateBehaviors.firstOrNull()?.let {
