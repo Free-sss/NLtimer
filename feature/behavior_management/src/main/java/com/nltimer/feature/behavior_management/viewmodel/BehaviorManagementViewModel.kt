@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
@@ -87,10 +88,10 @@ class BehaviorManagementViewModel @Inject constructor(
     private fun observeBehaviors() {
         viewModelScope.launch {
             _uiState
-                .map { Pair(it.rangeStartDate, it.timeRange) }
+                .map { Triple(it.rangeStartDate, it.rangeStartHour, it.timeRange) }
                 .distinctUntilChanged()
-                .flatMapLatest { (date, preset) ->
-                    val range = date.epochRangeFor(preset)
+                .flatMapLatest { (date, hour, preset) ->
+                    val range = date.epochRangeFor(preset, hour)
                     behaviorRepository.getBehaviorsWithDetailsOverlappingTimeRange(range.startEpoch, range.endEpoch)
                         .combine(activityGroups) { behaviors, groups ->
                             Pair(behaviors, groups)
@@ -158,8 +159,22 @@ class BehaviorManagementViewModel @Inject constructor(
         _uiState.update { it.copy(rangeStartDate = date.normalizedFor(it.timeRange)) }
     }
 
+    fun setRangeStartHour(hour: Int) {
+        _uiState.update { it.copy(rangeStartHour = hour.coerceIn(0, 23)) }
+    }
+
     fun navigateRange(direction: Int) {
         _uiState.update { state ->
+            if (state.timeRange == TimeRangePreset.FOUR_HOURS || state.timeRange == TimeRangePreset.EIGHT_HOURS) {
+                val newStart = state.rangeStartDate
+                    .atTime(state.rangeStartHour, 0)
+                    .plusHours(state.timeRange.hours * direction)
+                return@update state.copy(
+                    rangeStartDate = newStart.toLocalDate(),
+                    rangeStartHour = newStart.hour,
+                )
+            }
+
             val newDate = when (state.timeRange) {
                 TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS, TimeRangePreset.ONE_DAY ->
                     state.rangeStartDate.plusDays(direction.toLong())
@@ -391,14 +406,16 @@ class BehaviorManagementViewModel @Inject constructor(
             else -> this
         }
 
-    private fun LocalDate.epochRangeFor(preset: TimeRangePreset): EpochRange {
+    private fun LocalDate.epochRangeFor(preset: TimeRangePreset, startHour: Int): EpochRange {
         val startDate = normalizedFor(preset)
+        val startDateTime = when (preset) {
+            TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS ->
+                startDate.atTime(startHour.coerceIn(0, 23), 0)
+            else -> startDate.atStartOfDay()
+        }
         val endEpoch = when (preset) {
             TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS ->
-                startDate.atStartOfDay(ZoneId.systemDefault())
-                    .plusHours(preset.hours)
-                    .toInstant()
-                    .toEpochMilli()
+                startDateTime.plusHours(preset.hours).toEpochMillis()
             TimeRangePreset.ONE_DAY -> startDate.plusDays(1).startOfDayMillis()
             TimeRangePreset.THREE_DAYS -> startDate.plusDays(3).startOfDayMillis()
             TimeRangePreset.SEVEN_DAYS -> startDate.plusWeeks(1).startOfDayMillis()
@@ -406,8 +423,11 @@ class BehaviorManagementViewModel @Inject constructor(
             TimeRangePreset.ONE_YEAR -> startDate.plusYears(1).startOfDayMillis()
         }
         return EpochRange(
-            startEpoch = startDate.startOfDayMillis(),
+            startEpoch = startDateTime.toEpochMillis(),
             endEpoch = endEpoch,
         )
     }
+
+    private fun LocalDateTime.toEpochMillis(): Long =
+        atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }

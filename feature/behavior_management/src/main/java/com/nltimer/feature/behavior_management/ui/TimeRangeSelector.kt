@@ -2,8 +2,10 @@ package com.nltimer.feature.behavior_management.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -45,8 +47,10 @@ import java.time.ZoneId
 fun TimeRangeSelector(
     currentPreset: TimeRangePreset,
     currentDate: LocalDate,
+    currentHour: Int,
     onPresetChange: (TimeRangePreset) -> Unit,
     onDateChange: (LocalDate) -> Unit,
+    onHourChange: (Int) -> Unit,
     onNavigate: (direction: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -54,7 +58,9 @@ fun TimeRangeSelector(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val navLabel = when (currentPreset) {
-        TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS, TimeRangePreset.ONE_DAY -> "天"
+        TimeRangePreset.FOUR_HOURS -> "4小时"
+        TimeRangePreset.EIGHT_HOURS -> "8小时"
+        TimeRangePreset.ONE_DAY -> "天"
         TimeRangePreset.THREE_DAYS -> "3天"
         TimeRangePreset.SEVEN_DAYS -> "周"
         TimeRangePreset.ONE_MONTH -> "月"
@@ -109,7 +115,7 @@ fun TimeRangeSelector(
             onClick = { showDatePicker = true },
             label = {
                 Text(
-                    text = formatDate(currentDate, currentPreset),
+                    text = formatDate(currentDate, currentPreset, currentHour),
                     style = MaterialTheme.typography.labelMedium,
                 )
             },
@@ -127,6 +133,18 @@ fun TimeRangeSelector(
 
     if (showDatePicker) {
         when (currentPreset) {
+            TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS -> {
+                HourAnchorPickerDialog(
+                    initialDate = currentDate,
+                    initialHour = currentHour,
+                    onDismiss = { showDatePicker = false },
+                    onConfirm = { date, hour ->
+                        onDateChange(date)
+                        onHourChange(hour)
+                        showDatePicker = false
+                    }
+                )
+            }
             TimeRangePreset.ONE_YEAR -> {
                 YearPickerDialog(
                     initialYear = currentDate.year,
@@ -182,11 +200,76 @@ fun TimeRangeSelector(
     }
 }
 
-private fun formatDate(date: LocalDate, preset: TimeRangePreset): String {
+private fun formatDate(date: LocalDate, preset: TimeRangePreset, hour: Int): String {
     return when (preset) {
         TimeRangePreset.ONE_YEAR -> "${date.year}年"
         TimeRangePreset.ONE_MONTH -> "${date.year}年${date.monthValue}月"
+        TimeRangePreset.FOUR_HOURS, TimeRangePreset.EIGHT_HOURS ->
+            "${date.year}/${date.monthValue}/${date.dayOfMonth} ${hour.coerceIn(0, 23).toString().padStart(2, '0')}:00"
         else -> "${date.year}/${date.monthValue}/${date.dayOfMonth}"
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HourAnchorPickerDialog(
+    initialDate: LocalDate,
+    initialHour: Int,
+    onDismiss: () -> Unit,
+    onConfirm: (LocalDate, Int) -> Unit,
+) {
+    val initialMillis = initialDate
+        .atStartOfDay(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialMillis)
+    var selectedHour by remember(initialHour) { mutableStateOf(initialHour.coerceIn(0, 23)) }
+    val anchors = (0..23).toList()
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                val selectedDate = datePickerState.selectedDateMillis?.let { millis ->
+                    Instant.ofEpochMilli(millis)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                } ?: initialDate
+                onConfirm(selectedDate, selectedHour)
+            }) {
+                Text("确定")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        },
+    ) {
+        Column {
+            DatePicker(state = datePickerState)
+            LazyVerticalGrid(
+                modifier = Modifier.height(160.dp),
+                columns = GridCells.Fixed(4),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(anchors) { hour ->
+                    AssistChip(
+                        onClick = { selectedHour = hour },
+                        label = { Text("${hour.toString().padStart(2, '0')}:00") },
+                        colors = if (hour == selectedHour) {
+                            AssistChipDefaults.assistChipColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        } else {
+                            AssistChipDefaults.assistChipColors()
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
