@@ -33,7 +33,17 @@ internal fun rememberAddBehaviorState(
     existingBehaviors: List<Behavior>,
     dialogConfig: DialogGridConfig,
 ): AddBehaviorState {
-    return remember {
+    return remember(
+        mode,
+        initialStartTime,
+        initialEndTime,
+        initialActivityId,
+        initialTagIds,
+        initialNote,
+        editBehaviorId,
+        existingBehaviors,
+        dialogConfig,
+    ) {
         AddBehaviorState(
             mode = mode,
             initialStartTime = initialStartTime,
@@ -54,8 +64,8 @@ internal fun rememberAddBehaviorState(
 
 internal class AddBehaviorState(
     private val mode: BehaviorNature,
-    initialStartTime: LocalDateTime?,
-    initialEndTime: LocalDateTime?,
+    private val initialStartTime: LocalDateTime?,
+    private val initialEndTime: LocalDateTime?,
     initialActivityId: Long?,
     initialTagIds: List<Long>,
     initialNote: String?,
@@ -140,9 +150,9 @@ internal class AddBehaviorState(
     var innerBoxPositionInWindow by mutableStateOf(Offset.Zero)
 
     fun resolveStartTime(strategy: SecondsStrategy, confirmTime: LocalDateTime): LocalDateTime {
-        // 补记场景：用户给定的时间已是绝对值，秒一律归零
+        // 补记空闲段会携带毫秒级边界；用户未改时间时必须保留，避免边界重叠。
         if (mode == BehaviorNature.COMPLETED) {
-            return startTime.withSecond(0).withNano(0)
+            return if (userAdjustedTime) startTime.withSecond(0).withNano(0) else initialStartTime ?: startTime
         }
         return if (userAdjustedTime) {
             startTime.withSecond(0).withNano(0)
@@ -153,6 +163,11 @@ internal class AddBehaviorState(
             }
             startTime.withSecond(sourceSeconds).withNano(0)
         }
+    }
+
+    fun resolveEndTime(): LocalDateTime? {
+        if (mode != BehaviorNature.COMPLETED) return null
+        return if (userAdjustedTime) endTime.withSecond(0).withNano(0) else initialEndTime ?: endTime
     }
 
     /**

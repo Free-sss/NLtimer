@@ -65,6 +65,7 @@ import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
@@ -172,7 +173,7 @@ fun TimelineReverseView(
                         start = item.start,
                         end = item.end,
                         timeFormatter = timeFormatter,
-                        onAddClick = { onAddClick(item.start, item.end) },
+                        onAddClick = { onAddClick(item.start.plusOneMillis(), item.end) },
                     )
                 }
             }
@@ -190,6 +191,9 @@ private sealed class TimelineDisplayItem(val key: String) {
     class BehaviorRow(val cell: GridCellUiState) : TimelineDisplayItem("behavior-${cell.behaviorId}")
     class Idle(val start: LocalDateTime, val end: LocalDateTime) : TimelineDisplayItem("idle-$start-$end")
 }
+
+private fun LocalDateTime.plusOneMillis(): LocalDateTime =
+    plus(1, ChronoUnit.MILLIS)
 
 private fun buildTimelineItemsReversed(items: List<HomeListItem>): List<TimelineDisplayItem> {
     data class DayBucket(val divider: HomeListItem.DayDivider, val cells: MutableList<GridCellUiState>)

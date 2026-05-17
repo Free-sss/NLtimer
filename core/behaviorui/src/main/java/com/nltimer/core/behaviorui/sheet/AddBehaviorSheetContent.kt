@@ -449,9 +449,7 @@ private fun ConfirmButtonRow(
                 }
                 val confirmTime = LocalDateTime.now()
                 val resolvedStartTime = state.resolveStartTime(secondsStrategy, confirmTime)
-                val resolvedEndTime = if (mode == BehaviorNature.COMPLETED) {
-                    state.endTime.withSecond(0).withNano(0)
-                } else null
+                val resolvedEndTime = state.resolveEndTime()
                 state.selectedActivityId?.let { activityId ->
                     onConfirm(
                         activityId,
